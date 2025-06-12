@@ -173,193 +173,6 @@ GET /api/categories/{id}
 
 ```
 
-### Layer Dependencies
-
-1. **Interface Layer → Application Layer**
-   - Controllers depend on Application Services
-   - Example: `CategoryController` uses `CategoryService`
-   - Converts HTTP requests to application DTOs
-   ```java
-   @RestController
-   public class CategoryController {
-       private final CategoryService categoryService;
-       // Controller uses application service
-   }
-   ```
-
-2. **Application Layer → Domain Layer & Infrastructure**
-   - Services operate on domain entities
-   - Uses repository interfaces from domain
-   - Uses infrastructure implementations through dependency injection
-   - Example: `CategoryService` uses both domain and infrastructure
-   ```java
-   @Service
-   public class CategoryService {
-       private final CategoryRepository categoryRepository; // Domain interface
-       
-       public CategoryService(CategoryRepositoryImpl repositoryImpl) { // Infrastructure implementation
-           this.categoryRepository = repositoryImpl;
-       }
-       
-       public Category createCategory(Category category) {
-           // Uses infrastructure through domain interface
-           return categoryRepository.save(category);
-       }
-   }
-   ```
-
-3. **Infrastructure Layer → Domain Layer**
-   - Implements domain repository interfaces
-   - No domain layer dependency on infrastructure
-   - Example: `CategoryRepositoryImpl` implements `CategoryRepository`
-   ```java
-   @Repository
-   public class CategoryRepositoryImpl implements CategoryRepository {
-       private final CategoryJpaRepository jpaRepository;
-       // Infrastructure implements domain interface
-   }
-   ```
-
-### Key Principles
-
-1. **Dependency Rule**
-   - Inner layers don't know about outer layers
-   - Dependencies point inward toward domain layer
-   - Domain is the most stable layer
-
-2. **Anti-Corruption Layer**
-   - DTOs prevent domain model leakage
-   - Mappers convert between layers
-   - Example: `CategoryResponse` DTO in interface layer
-
-3. **Communication Flow Examples**
-
-   a) **Reading Data (GET Category)**
-   ```
-   HTTP Request (GET /api/categories/{id})
-      ↓
-   CategoryController
-      ↓
-   CategoryService.findById(id)
-      ↓
-   CategoryRepository.findById(id) → CategoryRepositoryImpl
-      ↓                                    ↓
-   Domain Category ← CategoryEntityMapper ← CategoryEntity
-                                            (from DB via JPA)
-   ```
-
-   b) **Writing Data (CREATE/UPDATE Category)**
-   ```
-   HTTP Request (POST/PUT /api/categories)
-      ↓
-   CategoryController
-      ↓
-   CategoryRequest DTO → CategoryService.createCategory()
-      ↓
-   Domain Category → CategoryRepositoryImpl.save()
-      ↓                    ↓
-   Domain Validation    CategoryEntityMapper.toEntity()
-      ↓                    ↓
-   CategoryRepository → CategoryJpaRepository.save()
-                          ↓
-                       Database
-   ```
-
-   c) **Full Data Flow with Transformations**
-   ```
-   Client Request (JSON)
-         ↓
-   CategoryRequest DTO (Interface Layer)
-         ↓
-   Domain Category (Application Layer maps from DTO)
-         ↓
-   Business Logic & Validation (Domain Layer)
-         ↓
-   CategoryEntity (Infrastructure Layer via Mapper)
-         ↓
-   Database Operation
-         ↓
-   CategoryEntity (Result from DB)
-         ↓
-   Domain Category (Mapped back to domain)
-         ↓
-   CategoryResponse DTO (Interface Layer)
-         ↓
-   Client Response (JSON)
-   ```
-
-### Data Transformation Examples
-
-1. **Interface → Application Layer (Request)**
-```java
-@RestController
-public class CategoryController {
-    @PostMapping("/categories")
-    public CategoryResponse createCategory(@RequestBody CategoryRequest request) {
-        // Convert DTO to Domain
-        Category category = new Category(
-            null,
-            request.getName(),
-            request.getIcon(),
-            request.getType(),
-            null
-        );
-        // Call application service
-        Category created = categoryService.createCategory(category);
-        // Convert back to Response DTO
-        return CategoryResponse.fromDomain(created);
-    }
-}
-```
-
-2. **Application → Infrastructure Layer (Save)**
-```java
-@Service
-public class CategoryService {
-    public Category createCategory(Category category) {
-        // Domain validation
-        validateCategory(category);
-        
-        // Save via repository (infrastructure)
-        return categoryRepository.save(category);
-    }
-}
-```
-
-3. **Infrastructure Layer Transformations**
-```java
-@Repository
-public class CategoryRepositoryImpl implements CategoryRepository {
-    public Category save(Category category) {
-        // Domain → Entity
-        CategoryEntity entity = CategoryEntityMapper.toEntity(category);
-        
-        // Save to database
-        CategoryEntity savedEntity = jpaRepository.save(entity);
-        
-        // Entity → Domain
-        return CategoryEntityMapper.toDomain(savedEntity);
-    }
-}
-```
-
-### Key Points About Data Flow
-
-1. **Each Layer's Responsibility**
-   - Interface Layer: HTTP ↔ DTOs
-   - Application Layer: DTOs ↔ Domain Objects
-   - Infrastructure Layer: Domain Objects ↔ Entities
-
-2. **Data Integrity**
-   - Domain validation happens before persistence
-   - Entity mapping preserves all data
-   - Consistent object state across transformations
-
-3. **Error Handling**
-   - Domain validation errors propagate up
-   - Infrastructure errors are wrapped in domain exceptions
-   - Each layer can add its own error context
-
 ### Sequence Diagrams
 
 1. **Create Category Flow**
@@ -453,6 +266,70 @@ These sequence diagrams illustrate:
 - Interaction between components
 - Domain model protection
 - Infrastructure abstraction
+
+### Layer Dependencies
+
+1. **Interface Layer → Application Layer**
+   - Controllers depend on Application Services
+   - Example: `CategoryController` uses `CategoryService`
+   - Converts HTTP requests to application DTOs
+   ```java
+   @RestController
+   public class CategoryController {
+       private final CategoryService categoryService;
+       // Controller uses application service
+   }
+   ```
+
+2. **Application Layer → Domain Layer & Infrastructure**
+   - Services operate on domain entities
+   - Uses repository interfaces from domain
+   - Uses infrastructure implementations through dependency injection
+   - Example: `CategoryService` uses both domain and infrastructure
+   ```java
+   @Service
+   public class CategoryService {
+       private final CategoryRepository categoryRepository; // Domain interface
+       
+       public CategoryService(CategoryRepositoryImpl repositoryImpl) { // Infrastructure implementation
+           this.categoryRepository = repositoryImpl;
+       }
+       
+       public Category createCategory(Category category) {
+           // Uses infrastructure through domain interface
+           return categoryRepository.save(category);
+       }
+   }
+   ```
+
+3. **Infrastructure Layer → Domain Layer**
+   - Implements domain repository interfaces
+   - No domain layer dependency on infrastructure
+   - Example: `CategoryRepositoryImpl` implements `CategoryRepository`
+   ```java
+   @Repository
+   public class CategoryRepositoryImpl implements CategoryRepository {
+       private final CategoryJpaRepository jpaRepository;
+       // Infrastructure implements domain interface
+   }
+   ```
+
+### Key Points About Data Flow
+
+1. **Each Layer's Responsibility**
+   - Interface Layer: HTTP ↔ DTOs
+   - Application Layer: DTOs ↔ Domain Objects
+   - Infrastructure Layer: Domain Objects ↔ Entities
+
+2. **Data Integrity**
+   - Domain validation happens before persistence
+   - Entity mapping preserves all data
+   - Consistent object state across transformations
+
+3. **Error Handling**
+   - Domain validation errors propagate up
+   - Infrastructure errors are wrapped in domain exceptions
+   - Each layer can add its own error context
 
 ## License
 
