@@ -363,89 +363,87 @@ public class CategoryRepositoryImpl implements CategoryRepository {
 ### Sequence Diagrams
 
 1. **Create Category Flow**
-```plantuml
-@startuml
-participant "Client" as client
-participant "CategoryController\n(Interface)" as controller
-participant "CategoryService\n(Application)" as service
-participant "Category\n(Domain)" as domain
-participant "CategoryRepositoryImpl\n(Infrastructure)" as repoImpl
-participant "CategoryJpaRepository\n(Infrastructure)" as jpaRepo
-participant "Database" as db
+```mermaid
+sequenceDiagram
+    participant client as Client
+    participant controller as CategoryController<br/>(Interface)
+    participant service as CategoryService<br/>(Application)
+    participant domain as Category<br/>(Domain)
+    participant repoImpl as CategoryRepositoryImpl<br/>(Infrastructure)
+    participant jpaRepo as CategoryJpaRepository<br/>(Infrastructure)
+    participant db as Database
 
-client -> controller: POST /categories
-activate controller
-controller -> controller: Convert JSON to CategoryRequest
+    client->>controller: POST /categories
+    activate controller
+    controller->>controller: Convert JSON to CategoryRequest
 
-controller -> service: createCategory(request)
-activate service
+    controller->>service: createCategory(request)
+    activate service
 
-service -> domain: new Category(...)
-activate domain
-domain -> domain: validate()
-domain --> service: category
-deactivate domain
+    service->>domain: new Category(...)
+    activate domain
+    domain->>domain: validate()
+    domain-->>service: category
+    deactivate domain
 
-service -> repoImpl: save(category)
-activate repoImpl
+    service->>repoImpl: save(category)
+    activate repoImpl
 
-repoImpl -> repoImpl: toEntity(category)
-repoImpl -> jpaRepo: save(entity)
-activate jpaRepo
-jpaRepo -> db: insert
-db --> jpaRepo: entity
-deactivate jpaRepo
+    repoImpl->>repoImpl: toEntity(category)
+    repoImpl->>jpaRepo: save(entity)
+    activate jpaRepo
+    jpaRepo->>db: insert
+    db-->>jpaRepo: entity
+    deactivate jpaRepo
 
-repoImpl -> repoImpl: toDomain(entity)
-repoImpl --> service: savedCategory
-deactivate repoImpl
+    repoImpl->>repoImpl: toDomain(entity)
+    repoImpl-->>service: savedCategory
+    deactivate repoImpl
 
-service --> controller: savedCategory
-deactivate service
+    service-->>controller: savedCategory
+    deactivate service
 
-controller -> controller: toResponse(savedCategory)
-controller --> client: CategoryResponse
-deactivate controller
-@enduml
+    controller->>controller: toResponse(savedCategory)
+    controller-->>client: CategoryResponse
+    deactivate controller
 ```
 
 2. **Get Category Flow**
-```plantuml
-@startuml
-participant "Client" as client
-participant "CategoryController\n(Interface)" as controller
-participant "CategoryService\n(Application)" as service
-participant "CategoryRepositoryImpl\n(Infrastructure)" as repoImpl
-participant "CategoryJpaRepository\n(Infrastructure)" as jpaRepo
-participant "Database" as db
+```mermaid
+sequenceDiagram
+    participant client as Client
+    participant controller as CategoryController<br/>(Interface)
+    participant service as CategoryService<br/>(Application)
+    participant repoImpl as CategoryRepositoryImpl<br/>(Infrastructure)
+    participant jpaRepo as CategoryJpaRepository<br/>(Infrastructure)
+    participant db as Database
 
-client -> controller: GET /categories/{id}
-activate controller
+    client->>controller: GET /categories/{id}
+    activate controller
 
-controller -> service: findById(id)
-activate service
+    controller->>service: findById(id)
+    activate service
 
-service -> repoImpl: findById(id)
-activate repoImpl
+    service->>repoImpl: findById(id)
+    activate repoImpl
 
-repoImpl -> jpaRepo: findById(id)
-activate jpaRepo
-jpaRepo -> db: select
-db --> jpaRepo: entity
-jpaRepo --> repoImpl: Optional<CategoryEntity>
-deactivate jpaRepo
+    repoImpl->>jpaRepo: findById(id)
+    activate jpaRepo
+    jpaRepo->>db: select
+    db-->>jpaRepo: entity
+    jpaRepo-->>repoImpl: Optional<CategoryEntity>
+    deactivate jpaRepo
 
-repoImpl -> repoImpl: toDomain(entity)
-repoImpl --> service: category
-deactivate repoImpl
+    repoImpl->>repoImpl: toDomain(entity)
+    repoImpl-->>service: category
+    deactivate repoImpl
 
-service --> controller: category
-deactivate service
+    service-->>controller: category
+    deactivate service
 
-controller -> controller: toResponse(category)
-controller --> client: CategoryResponse
-deactivate controller
-@enduml
+    controller->>controller: toResponse(category)
+    controller-->>client: CategoryResponse
+    deactivate controller
 ```
 
 These sequence diagrams illustrate:
