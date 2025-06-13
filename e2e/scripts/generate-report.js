@@ -1,5 +1,5 @@
-import reporter from "multiple-cucumber-html-reporter";
-import path from "path";
+const reporter = require("multiple-cucumber-html-reporter");
+const path = require("path");
 
 reporter.generate({
   jsonDir: path.join(__dirname, "..", "reports"),
