@@ -1,6 +1,2 @@
-/.idea
-/.settings
-/target
-/.vscode
-.project
-.classpath
+/e2e/node_modules
+/e2e/reports
