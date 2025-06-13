@@ -3,21 +3,12 @@ name: E2E Tests and Report
 on:
   push:
     branches:
-      - main
       - develop
+      - master
   pull_request:
     branches:
-      - main
       - develop
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * 0'  # Every Sunday at midnight UTC
-    - cron: '0 0 * * 1'  # Every Monday at midnight UTC
-    - cron: '0 0 * * 2'  # Every Tuesday at midnight UTC
-    - cron: '0 0 * * 3'  # Every Wednesday at midnight UTC
-    - cron: '0 0 * * 4'  # Every Thursday at midnight UTC
-    - cron: '0 0 * * 5'  # Every Friday at midnight UTC
-    - cron: '0 0 * * 6'  # Every Saturday at midnight UTC  
+      - master
 
 jobs:
   e2e:
