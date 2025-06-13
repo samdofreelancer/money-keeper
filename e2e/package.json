@@ -1,0 +1,29 @@
+{
+  "name": "bdd-playwright-cucumber",
+  "version": "1.0.0",
+  "description": "BDD framework using Cucumber + Playwright in TypeScript",
+  "scripts": {
+    "test": "cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
+    "report": "node scripts/generate-report.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test:parallel": "cucumber-js --parallel 4 --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^8.8.0",
+    "@cucumber/pretty-formatter": "^1.0.0",
+    "@playwright/test": "^1.30.0",
+    "@types/node": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^8.0.0",
+    "eslint-plugin-import": "^2.25.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.7.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.7.0",
+    "multiple-cucumber-html-reporter": "^1.20.0",
+    "dotenv": "^16.0.0"
+  }
+}
