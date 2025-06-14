@@ -11,7 +11,10 @@
     "rootDir": ".",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "typeRoots": ["./node_modules/@types", "./types"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types/declarations"
+    ],
     "types": ["node"]
   },
   "ts-node": {
@@ -19,7 +22,6 @@
   },
   "include": [
     "src/**/*.ts",
-    "types/**/*.d.ts",
     "*.ts",
     "scripts/**/*.ts"
   ],
