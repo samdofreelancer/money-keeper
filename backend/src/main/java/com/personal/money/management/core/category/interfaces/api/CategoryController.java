@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
@@ -32,5 +35,19 @@ public class CategoryController {
                 category.getType(),
                 category.getParent() != null ? category.getParent().getId() : null
         );
+    }
+
+    @GetMapping
+    public List<CategoryResponse> getAllSortedByName() {
+        List<Category> categories = categoryService.getAllCategoriesSortedByName();
+        return categories.stream()
+                .map(category -> new CategoryResponse(
+                        category.getId(),
+                        category.getName(),
+                        category.getIcon(),
+                        category.getType(),
+                        category.getParent() != null ? category.getParent().getId() : null
+                ))
+                .collect(Collectors.toList());
     }
 }

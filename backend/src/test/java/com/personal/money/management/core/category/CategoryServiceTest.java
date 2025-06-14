@@ -69,4 +69,23 @@ class CategoryServiceTest {
         assertNotNull(result);
         assertEquals(parent, result.getParent());
     }
+
+    @Test
+    void getAllCategoriesSortedByName_shouldReturnSortedCategories() {
+        Category category1 = new Category(1L, "B", "iconB", CategoryType.EXPENSE, null);
+        Category category2 = new Category(2L, "A", "iconA", CategoryType.EXPENSE, null);
+        Category category3 = new Category(3L, "C", "iconC", CategoryType.EXPENSE, null);
+
+        when(categoryRepository.findAllSortedByName()).thenReturn(java.util.List.of(category2, category1, category3));
+
+        java.util.List<Category> result = categoryService.getAllCategoriesSortedByName();
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals("A", result.get(0).getName());
+        assertEquals("B", result.get(1).getName());
+        assertEquals("C", result.get(2).getName());
+
+        verify(categoryRepository).findAllSortedByName();
+    }
 }
