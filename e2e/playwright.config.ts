@@ -9,7 +9,8 @@ const isCI = !!process.env.CI;
 // Generate cucumber HTML report after tests
 
 export default defineConfig({
-  testDir: "./tests",
+  // Adjusted testDir to match actual test files location or clarify usage
+  testDir: "./features",
   timeout: 30 * 1000,
   expect: {
     timeout: 5000,

@@ -1,9 +1,8 @@
 {
   "name": "bdd-playwright-cucumber",
   "version": "1.0.0",
-  "description": "BDD framework using Cucumber + Playwright in TypeScript",
-  "scripts": {
-    "test": "cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
+  "description": "BDD framework using Cucumber + Playwright in TypeScript",  "scripts": {
+    "test": "ts-node support/formatter-setup.ts && cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
     "test:playwright": "playwright test",
     "pretest": "npm run lint && tsc --noEmit",
     "report": "node scripts/generate-report.js",
