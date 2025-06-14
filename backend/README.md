@@ -59,4 +59,38 @@ mvn test
 
 ---
 
+## Project Architecture
+
+This project follows a Domain-Driven Design (DDD) approach with a layered architecture:
+
+- **Domain Layer:** Contains the core business logic and domain models (e.g., `Category`, `CategoryType`).
+- **Application Layer:** Contains services that orchestrate domain operations (e.g., `CategoryService`).
+- **Infrastructure Layer:** Handles persistence and external system interactions (e.g., JPA repositories, database entities).
+- **Interface Layer:** Exposes RESTful APIs for clients (e.g., `CategoryController`).
+
+## Sequence Diagram
+
+Below is a simplified sequence diagram illustrating the flow of creating a new category and retrieving all categories via the API in Mermaid format:
+
+```mermaid
+sequenceDiagram
+    Client->>CategoryController: POST /api/categories (CategoryRequest)
+    CategoryController->>CategoryService: createCategory(name, icon, type, parentId)
+    CategoryService->>CategoryRepository: save(Category)
+    CategoryRepository->>Database: insert Category record
+    Database-->>CategoryRepository: return saved Category
+    CategoryService-->>CategoryController: return CategoryResponse
+    CategoryController-->>Client: HTTP 200 OK with CategoryResponse
+
+    Client->>CategoryController: GET /api/categories
+    CategoryController->>CategoryService: getAllCategoriesSortedByName()
+    CategoryService->>CategoryRepository: findAllSortedByName()
+    CategoryRepository->>Database: query all categories sorted by name
+    Database-->>CategoryRepository: return category list
+    CategoryService-->>CategoryController: return list of CategoryResponse
+    CategoryController-->>Client: HTTP 200 OK with category list
+```
+
+---
+
 If you need further assistance or additional features, please let me know.
