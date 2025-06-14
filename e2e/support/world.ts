@@ -8,6 +8,8 @@ import {
   webkit,
 } from "@playwright/test";
 
+import { logger } from "./logger";
+
 export class CustomWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
@@ -38,8 +40,9 @@ export class CustomWorld extends World {
       }
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
+      logger.info(`Browser launched: ${browserName}`);
     } catch (error) {
-      console.error("Error launching browser:", error);
+      logger.error("Error launching browser:", error);
       throw error;
     }
   }

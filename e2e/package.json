@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "BDD framework using Cucumber + Playwright in TypeScript",
   "scripts": {
-    "test": "cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
+    "test": "ts-node support/formatter-setup.ts && cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
     "test:playwright": "playwright test",
     "pretest": "npm run lint && tsc --noEmit",
     "report": "node scripts/generate-report.js",
@@ -16,16 +16,17 @@
     "@cucumber/pretty-formatter": "^1.0.0",
     "@playwright/test": "^1.30.0",
     "@types/node": "^18.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "dotenv": "^16.0.0",
     "eslint": "^8.0.0",
-    "eslint-config-prettier": "^8.0.0",
-    "eslint-plugin-import": "^2.25.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "prettier": "^2.7.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "multiple-cucumber-html-reporter": "^1.20.0",
+    "prettier": "^2.8.8",
     "ts-node": "^10.0.0",
     "typescript": "^4.7.0",
-    "multiple-cucumber-html-reporter": "^1.20.0",
-    "dotenv": "^16.0.0"
+    "winston": "^3.17.0"
   }
 }
