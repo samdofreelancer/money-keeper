@@ -5,11 +5,12 @@
   "scripts": {
     "test": "ts-node support/formatter-setup.ts && cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
     "test:playwright": "playwright test",
-    "pretest": "npm run lint && tsc --noEmit",
+    "pretest": "npm run validate-env && npm run lint && tsc --noEmit",
     "report": "node scripts/generate-report.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test:parallel": "cucumber-js --parallel 4 --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json"
+    "test:parallel": "cucumber-js --parallel 4 --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
+    "validate-env": "ts-node src/utils/validate-env.ts"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^8.8.0",
@@ -18,7 +19,7 @@
     "@types/node": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.5.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-import": "^2.31.0",

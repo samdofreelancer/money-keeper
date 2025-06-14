@@ -2,11 +2,12 @@ import { Before, After, AfterStep, Status } from "@cucumber/cucumber";
 import * as fs from "fs";
 import * as path from "path";
 
+import { config } from "../src/config/env.config";
 import { logger } from "./logger";
 
 // Create reports directory structure immediately when the module is loaded
-const reportsDir = path.join(__dirname, "..", "reports");
-const screenshotsDir = path.join(reportsDir, "screenshots");
+const reportsDir = config.reportsDir;
+const screenshotsDir = config.screenshotsDir;
 
 if (!fs.existsSync(reportsDir)) {
   fs.mkdirSync(reportsDir, { recursive: true });
@@ -29,9 +30,19 @@ After(async function () {
 AfterStep(async function ({ result }) {
   if (result.status === Status.FAILED) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const screenshotPath = `reports/screenshots/failed-step-${timestamp}.png`;
+    const screenshotPath = path.join(
+      screenshotsDir,
+      `failed-step-${timestamp}.png`
+    );
+    const screenshot = await this.page.screenshot({ path: screenshotPath });
+    this.attach(screenshot, "image/png");
+  } else if (config.screenshotOnSuccess) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const screenshotPath = path.join(
+      screenshotsDir,
+      `success-step-${timestamp}.png`
+    );
     const screenshot = await this.page.screenshot({ path: screenshotPath });
     this.attach(screenshot, "image/png");
   }
-  // Removed screenshot on success to improve performance
 });

@@ -8,6 +8,7 @@ import {
   webkit,
 } from "@playwright/test";
 
+import { config } from "../src/config/env.config";
 import { logger } from "./logger";
 
 export class CustomWorld extends World {
@@ -19,12 +20,10 @@ export class CustomWorld extends World {
     super(options);
   }
 
-  async launchBrowser(browserName = "chromium") {
+  async launchBrowser(browserName = config.browser.name) {
     try {
-      const headlessEnv = process.env.HEADLESS;
-      const headless = headlessEnv
-        ? headlessEnv.toLowerCase() === "true"
-        : true;
+      const { headless } = config.browser;
+
       switch (browserName) {
         case "chromium":
           this.browser = await chromium.launch({ headless });
