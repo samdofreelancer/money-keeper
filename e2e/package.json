@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "BDD framework using Cucumber + Playwright in TypeScript",
   "scripts": {
-    "test": "ts-node src/support/formatter-setup.ts && cucumber-js",
+    "test": "npm run cleanup-reports && ts-node src/support/formatter-setup.ts && cucumber-js",
     "pretest": "npm run validate-env && npm run lint && tsc --noEmit",
     "report": "node scripts/generate-report.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test:parallel": "cucumber-js --parallel 4",
-    "validate-env": "ts-node src/utils/validate-env.ts"
+    "validate-env": "ts-node src/utils/validate-env.ts",
+    "cleanup-reports": "ts-node scripts/cleanup-reports.ts"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^8.11.1",

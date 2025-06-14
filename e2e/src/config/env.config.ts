@@ -10,6 +10,10 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const isCI = !!process.env.CI;
 
+/**
+ * Environment configuration for the E2E tests.
+ * Includes settings for screenshots, reports, browser, timeouts, retries, and devices.
+ */
 export const config: EnvironmentConfig = {
   // Screenshot configurations
   screenshotOnSuccess: process.env.SCREENSHOT_ON_SUCCESS === "true",
