@@ -21,7 +21,9 @@ The project uses consistent line endings across different operating systems:
 New developers should:
 1. Use the provided `.gitattributes` and `.prettierrc` configurations
 2. Run `npm run lint:fix` before committing changes
-3. Ensure Git is configured properly: `git config core.autocrlf true` (on Windows)
+3. Configure Git based on your OS:
+   - Windows: `git config core.autocrlf true`
+   - Linux/macOS: `git config core.autocrlf input`
 
 ## 📁 Project Structure
 
