@@ -15,6 +15,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
+/**
+ * Integration tests for Category API.
+ * Tests full stack including HTTP, service, and persistence layers.
+ * Focuses on end-to-end behavior and validation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class CategoryApiIntegrationTest {
@@ -83,5 +88,51 @@ class CategoryApiIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidRequest))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAllSortedByName_shouldReturnSortedCategories() throws Exception {
+        // Create categories
+        CategoryRequest request1 = new CategoryRequest();
+        request1.setName("B");
+        request1.setIcon("iconB");
+        request1.setType(CategoryType.EXPENSE);
+        request1.setParentId(null);
+
+        CategoryRequest request2 = new CategoryRequest();
+        request2.setName("A");
+        request2.setIcon("iconA");
+        request2.setType(CategoryType.EXPENSE);
+        request2.setParentId(null);
+
+        CategoryRequest request3 = new CategoryRequest();
+        request3.setName("C");
+        request3.setIcon("iconC");
+        request3.setType(CategoryType.EXPENSE);
+        request3.setParentId(null);
+
+        // Create categories via API
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request3)))
+                .andExpect(status().isOk());
+
+        // Test GET /api/categories returns sorted list by name
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].name").value("A"))
+                .andExpect(jsonPath("$[1].name").value("B"))
+                .andExpect(jsonPath("$[2].name").value("C"));
     }
 }

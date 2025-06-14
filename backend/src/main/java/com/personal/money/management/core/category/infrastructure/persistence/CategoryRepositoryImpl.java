@@ -25,4 +25,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 .map(CategoryEntityMapper::toDomain)
                 .orElse(null);
     }
+
+    @Override
+    public java.util.List<Category> findAllSortedByName() {
+        return jpaRepository.findAll(org.springframework.data.domain.Sort.by("name")).stream()
+                .map(CategoryEntityMapper::toDomain)
+                .toList();
+    }
 }
