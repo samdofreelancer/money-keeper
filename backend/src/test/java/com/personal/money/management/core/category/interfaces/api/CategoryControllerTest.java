@@ -15,6 +15,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for CategoryController.
+ * Focuses on HTTP request handling with mocked service layer.
+ * Integration tested separately.
+ */
 @WebMvcTest(CategoryController.class)
 class CategoryControllerTest {
     @Autowired

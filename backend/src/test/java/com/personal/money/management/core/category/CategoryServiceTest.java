@@ -11,6 +11,11 @@ import org.mockito.ArgumentCaptor;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for CategoryService.
+ * Focuses on business logic with mocked dependencies.
+ * Persistence and integration tested separately.
+ */
 class CategoryServiceTest {
     private CategoryRepository categoryRepository;
     private CategoryService categoryService;

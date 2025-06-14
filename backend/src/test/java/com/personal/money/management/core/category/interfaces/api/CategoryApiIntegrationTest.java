@@ -15,6 +15,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
+/**
+ * Integration tests for Category API.
+ * Tests full stack including HTTP, service, and persistence layers.
+ * Focuses on end-to-end behavior and validation.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 class CategoryApiIntegrationTest {
