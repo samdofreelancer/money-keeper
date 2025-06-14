@@ -17,32 +17,42 @@ export class CustomWorld extends World {
     super(options);
   }
 
-  // To fix the warning about 'any' type, you can define a proper interface for options
-  // or use 'unknown' and add type guards as needed.
-  // For now, this suppresses the warning.
-
   async launchBrowser(browserName = "chromium") {
-    switch (browserName) {
-      case "chromium":
-        this.browser = await chromium.launch({ headless: true });
-        break;
-      case "firefox":
-        this.browser = await firefox.launch({ headless: true });
-        break;
-      case "webkit":
-        this.browser = await webkit.launch({ headless: true });
-        break;
-      default:
-        this.browser = await chromium.launch({ headless: true });
+    try {
+      const headlessEnv = process.env.HEADLESS;
+      const headless = headlessEnv
+        ? headlessEnv.toLowerCase() === "true"
+        : true;
+      switch (browserName) {
+        case "chromium":
+          this.browser = await chromium.launch({ headless });
+          break;
+        case "firefox":
+          this.browser = await firefox.launch({ headless });
+          break;
+        case "webkit":
+          this.browser = await webkit.launch({ headless });
+          break;
+        default:
+          this.browser = await chromium.launch({ headless });
+      }
+      this.context = await this.browser.newContext();
+      this.page = await this.context.newPage();
+    } catch (error) {
+      console.error("Error launching browser:", error);
+      throw error;
     }
-    this.context = await this.browser.newContext();
-    this.page = await this.context.newPage();
   }
 
   async closeBrowser() {
-    await this.page.close();
-    await this.context.close();
-    await this.browser.close();
+    try {
+      if (this.page) await this.page.close();
+      if (this.context) await this.context.close();
+      if (this.browser) await this.browser.close();
+    } catch (error) {
+      console.error("Error closing browser:", error);
+      throw error;
+    }
   }
 }
 

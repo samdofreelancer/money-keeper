@@ -13,6 +13,6 @@
     "resolveJsonModule": true,
     "types": ["node", "playwright", "@cucumber/cucumber"]
   },
-  "include": ["steps/**/*.ts", "support/**/*.ts", "world.ts", "hooks.ts"],
+  "include": ["steps/**/*.ts", "support/**/*.ts", "world.ts", "hooks.ts", "src/types/**/*.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

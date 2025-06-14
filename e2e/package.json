@@ -4,6 +4,8 @@
   "description": "BDD framework using Cucumber + Playwright in TypeScript",
   "scripts": {
     "test": "cucumber-js --require-module ts-node/register --require steps/**/*.ts --require support/hooks.ts --format @cucumber/pretty-formatter --format json:reports/cucumber-report.json",
+    "test:playwright": "playwright test",
+    "pretest": "npm run lint && tsc --noEmit",
     "report": "node scripts/generate-report.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
