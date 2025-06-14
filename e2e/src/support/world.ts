@@ -8,23 +8,24 @@ import {
   webkit,
 } from "@playwright/test";
 
+import { config } from "../config/env.config";
 import { logger } from "./logger";
+import { BasePage } from "../pages";
 
 export class CustomWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
+  currentPage!: BasePage;
 
   constructor(options: IWorldOptions<unknown>) {
     super(options);
   }
 
-  async launchBrowser(browserName = "chromium") {
+  async launchBrowser(browserName = config.browser.name) {
     try {
-      const headlessEnv = process.env.HEADLESS;
-      const headless = headlessEnv
-        ? headlessEnv.toLowerCase() === "true"
-        : true;
+      const { headless } = config.browser;
+
       switch (browserName) {
         case "chromium":
           this.browser = await chromium.launch({ headless });
@@ -40,6 +41,7 @@ export class CustomWorld extends World {
       }
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
+      this.currentPage = new BasePage(this.page);
       logger.info(`Browser launched: ${browserName}`);
     } catch (error) {
       logger.error("Error launching browser:", error);

@@ -11,8 +11,19 @@
     "rootDir": ".",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "types": ["node", "playwright", "@cucumber/cucumber"]
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types/declarations"
+    ],
+    "types": ["node"]
   },
-  "include": ["**/*.ts"],
+  "ts-node": {
+    "files": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "*.ts",
+    "scripts/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

@@ -10,7 +10,7 @@ const logFormat = winston.format.combine(
 );
 
 // Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, "..", "logs");
+const logsDir = path.join(__dirname, "..", "..", "logs");
 
 // Create the logger instance
 export const logger = winston.createLogger({
