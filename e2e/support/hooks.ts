@@ -1,12 +1,28 @@
 import { Before, After, AfterStep, Status } from "@cucumber/cucumber";
+import * as fs from "fs";
+import * as path from "path";
+
+import { logger } from "./logger";
+
+// Create reports directory structure immediately when the module is loaded
+const reportsDir = path.join(__dirname, "..", "reports");
+const screenshotsDir = path.join(reportsDir, "screenshots");
+
+if (!fs.existsSync(reportsDir)) {
+  fs.mkdirSync(reportsDir, { recursive: true });
+}
+
+if (!fs.existsSync(screenshotsDir)) {
+  fs.mkdirSync(screenshotsDir, { recursive: true });
+}
 
 Before(async function () {
-  console.log("Before scenario: Launching browser");
+  logger.info("Before scenario: Launching browser");
   await this.launchBrowser();
 });
 
 After(async function () {
-  console.log("After scenario: Closing browser");
+  logger.info("After scenario: Closing browser");
   await this.closeBrowser();
 });
 

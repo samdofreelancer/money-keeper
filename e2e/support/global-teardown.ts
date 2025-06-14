@@ -1,5 +1,7 @@
 import { generate } from "multiple-cucumber-html-reporter";
 
+import { logger } from "./logger";
+
 export default async function globalTeardown() {
   generate({
     jsonDir: "reports",
@@ -24,5 +26,5 @@ export default async function globalTeardown() {
       ],
     },
   });
-  console.log("Global teardown: Cucumber HTML report generated");
+  logger.info("Global teardown: Cucumber HTML report generated");
 }
