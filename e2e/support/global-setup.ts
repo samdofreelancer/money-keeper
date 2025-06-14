@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 
+import { logger } from "./logger";
+
 export default async function globalSetup() {
   dotenv.config();
-  console.log("Global setup: Environment variables loaded");
+  logger.info("Global setup: Environment variables loaded");
 }
