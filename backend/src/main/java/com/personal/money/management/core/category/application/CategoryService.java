@@ -5,6 +5,8 @@ import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
@@ -20,5 +22,9 @@ public class CategoryService {
         }
         Category category = new Category(null, name, icon, type, parent);
         return categoryRepository.save(category);
+    }
+
+    public List<Category> getAllCategoriesSortedByName() {
+        return categoryRepository.findAllSortedByName();
     }
 }
