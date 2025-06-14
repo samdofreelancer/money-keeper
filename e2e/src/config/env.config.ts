@@ -25,5 +25,6 @@ export const config: EnvironmentConfig = {
     headless: process.env.HEADLESS
       ? process.env.HEADLESS.toLowerCase() === "true"
       : true,
+    baseUrl: process.env.BASE_URL || "https://example.com",
   },
 };

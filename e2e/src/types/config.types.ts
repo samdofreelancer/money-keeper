@@ -10,5 +10,6 @@ export interface EnvironmentConfig {
   browser: {
     name: "chromium" | "firefox" | "webkit";
     headless: boolean;
+    baseUrl: string;
   };
 }

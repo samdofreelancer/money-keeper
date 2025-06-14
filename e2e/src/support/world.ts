@@ -8,13 +8,15 @@ import {
   webkit,
 } from "@playwright/test";
 
-import { config } from "../src/config/env.config";
+import { config } from "../config/env.config";
 import { logger } from "./logger";
+import { BasePage } from "../pages";
 
 export class CustomWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
+  currentPage!: BasePage;
 
   constructor(options: IWorldOptions<unknown>) {
     super(options);
@@ -39,6 +41,7 @@ export class CustomWorld extends World {
       }
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
+      this.currentPage = new BasePage(this.page);
       logger.info(`Browser launched: ${browserName}`);
     } catch (error) {
       logger.error("Error launching browser:", error);
