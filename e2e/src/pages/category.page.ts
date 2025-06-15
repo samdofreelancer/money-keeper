@@ -54,19 +54,44 @@ export class CategoryPage {
     await this.categoryForm.waitFor();
   }
 
-  async fillCategoryForm(name: string) {
+  async fillCategoryForm(
+    name: string,
+    icon: string,
+    categoryType: string,
+    parentCategory: string
+  ) {
     await this.categoryNameInput.fill(name);
-    await this.categoryTypeSelectWrapper.click();
-    await this.categoryTypeDropdown.waitFor({
-      state: "visible",
-      timeout: 5000,
-    });
-    await this.categoryTypeDropdownItemGrid.click();
-    await this.categoryTypeRadioExpense.waitFor({
-      state: "visible",
-      timeout: 5000,
-    });
-    await this.categoryTypeRadioExpense.click();
+
+    // Select icon from dropdown
+    const iconSelect = this.page.locator(
+      'div.el-form-item:has(label:has-text("Icon")) .el-select'
+    );
+    await iconSelect.click();
+    const iconOption = this.page.locator(
+      `.el-select-dropdown__item:has-text("${icon}")`
+    );
+    await iconOption.waitFor({ state: "visible", timeout: 5000 });
+    await iconOption.click();
+
+    // Select category type radio button
+    const typeRadio = this.page.locator(
+      `label.el-radio-button:has(input[value="${categoryType}"])`
+    );
+    await typeRadio.waitFor({ state: "visible", timeout: 5000 });
+    await typeRadio.click();
+
+    // Select parent category if not None
+    if (parentCategory && parentCategory !== "None") {
+      const parentSelect = this.page.locator(
+        'div.el-form-item:has(label:has-text("Parent Category")) .el-select'
+      );
+      await parentSelect.click();
+      const parentOption = this.page.locator(
+        `.el-select-dropdown__item:has-text("${parentCategory}")`
+      );
+      await parentOption.waitFor({ state: "visible", timeout: 5000 });
+      await parentOption.click();
+    }
   }
 
   async submitCategoryForm() {

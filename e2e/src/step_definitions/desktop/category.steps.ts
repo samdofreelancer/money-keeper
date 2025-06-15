@@ -26,10 +26,23 @@ When("I open the create category dialog", async function () {
 });
 
 When(
-  "I fill in the category form with valid data {string}",
-  async function (categoryName: string) {
-    logger.info(`Filling category form with test data: ${categoryName}`);
-    await categoryPage.fillCategoryForm(categoryName);
+  "I fill in the category form with valid data {string}, {string}, {string}, {string}",
+  async function (
+    this: any,
+    categoryName: string,
+    icon: string,
+    categoryType: string,
+    parentCategory: string
+  ) {
+    logger.info(
+      `Filling category form with test data: ${categoryName}, ${icon}, ${categoryType}, ${parentCategory}`
+    );
+    await categoryPage.fillCategoryForm(
+      categoryName,
+      icon,
+      categoryType,
+      parentCategory
+    );
   }
 );
 

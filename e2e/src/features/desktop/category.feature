@@ -9,11 +9,11 @@ Feature: Category management
     Given I open the homepage
     When I navigate to the Categories page
     And I open the create category dialog
-    And I fill in the category form with valid data "<categoryName>"
+    And I fill in the category form with valid data "<categoryName>", "<icon>", "<categoryType>", "<parentCategory>"
     And I submit the category form
     Then I should see the new category in the list "<categoryName>"
 
     Examples:
-      | categoryName   |
-      | Test Category  |
-      | Sample Category|
+      | categoryName   | icon          | categoryType | parentCategory |
+      | Test Category  | Grid          | EXPENSE      | None           |
+      | Sample Category| Shopping  | INCOME       | None           |
