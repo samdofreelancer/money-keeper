@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -128,11 +129,62 @@ class CategoryApiIntegrationTest {
                 .andExpect(status().isOk());
 
         // Test GET /api/categories returns sorted list by name
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/categories"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].name").value("A"))
                 .andExpect(jsonPath("$[1].name").value("B"))
                 .andExpect(jsonPath("$[2].name").value("C"));
+    }
+
+    @Test
+    void updateCategory_shouldPersistAndReturnUpdatedCategory() throws Exception {
+        // Create a category first
+        CategoryRequest createRequest = new CategoryRequest();
+        createRequest.setName("Initial Name");
+        createRequest.setIcon("initial_icon");
+        createRequest.setType(CategoryType.EXPENSE);
+        createRequest.setParentId(null);
+
+        String createResponse = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Long categoryId = objectMapper.readTree(createResponse).get("id").asLong();
+
+        // Update the category
+        CategoryRequest updateRequest = new CategoryRequest();
+        updateRequest.setName("Updated Name");
+        updateRequest.setIcon("updated_icon");
+        updateRequest.setType(CategoryType.INCOME);
+        updateRequest.setParentId(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(categoryId))
+                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.icon").value("updated_icon"))
+                .andExpect(jsonPath("$.type").value("INCOME"))
+                .andExpect(jsonPath("$.parentId").doesNotExist());
+    }
+
+    @Test
+    void updateCategory_shouldReturn500IfCategoryNotFound() throws Exception {
+        Long nonExistentCategoryId = 9999L;
+
+        CategoryRequest updateRequest = new CategoryRequest();
+        updateRequest.setName("Non Existent");
+        updateRequest.setIcon("no_icon");
+        updateRequest.setType(CategoryType.EXPENSE);
+        updateRequest.setParentId(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/categories/{id}", nonExistentCategoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest());
     }
 }

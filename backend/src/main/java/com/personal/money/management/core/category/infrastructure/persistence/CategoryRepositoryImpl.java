@@ -2,7 +2,10 @@ package com.personal.money.management.core.category.infrastructure.persistence;
 
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class CategoryRepositoryImpl implements CategoryRepository {
@@ -27,8 +30,8 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
 
     @Override
-    public java.util.List<Category> findAllSortedByName() {
-        return jpaRepository.findAll(org.springframework.data.domain.Sort.by("name")).stream()
+    public List<Category> findAllSortedByName() {
+        return jpaRepository.findAll(Sort.by("name")).stream()
                 .map(CategoryEntityMapper::toDomain)
                 .toList();
     }

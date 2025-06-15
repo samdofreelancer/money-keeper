@@ -1,6 +1,6 @@
-package com.personal.money.management.core.category;
+package com.personal.money.management.core.category.application;
 
-import com.personal.money.management.core.category.application.CategoryService;
+import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
@@ -87,5 +87,43 @@ class CategoryServiceTest {
         assertEquals("C", result.get(2).getName());
 
         verify(categoryRepository).findAllSortedByName();
+    }
+
+    @Test
+    void updateCategory_shouldUpdateAndSaveCategory() {
+        Long categoryId = 1L;
+        Category existingCategory = new Category(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
+        Category parentCategory = new Category(2L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
+
+        when(categoryRepository.findById(categoryId)).thenReturn(existingCategory);
+        when(categoryRepository.findById(2L)).thenReturn(parentCategory);
+        when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Category updatedCategory = categoryService.updateCategory(categoryId, "New Name", "new_icon", CategoryType.INCOME, 2L);
+
+        assertNotNull(updatedCategory);
+        assertEquals(categoryId, updatedCategory.getId());
+        assertEquals("New Name", updatedCategory.getName());
+        assertEquals("new_icon", updatedCategory.getIcon());
+        assertEquals(CategoryType.INCOME, updatedCategory.getType());
+        assertEquals(parentCategory, updatedCategory.getParent());
+
+        ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
+        verify(categoryRepository).save(captor.capture());
+        Category savedCategory = captor.getValue();
+        assertEquals("New Name", savedCategory.getName());
+    }
+
+    @Test
+    void updateCategory_shouldThrowExceptionIfCategoryNotFound() {
+        Long categoryId = 1L;
+        when(categoryRepository.findById(categoryId)).thenReturn(null);
+
+        CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
+            categoryService.updateCategory(categoryId, "Name", "icon", CategoryType.EXPENSE, null);
+        });
+
+        assertEquals("Category not found with id: " + categoryId, exception.getMessage());
+        verify(categoryRepository, never()).save(any());
     }
 }

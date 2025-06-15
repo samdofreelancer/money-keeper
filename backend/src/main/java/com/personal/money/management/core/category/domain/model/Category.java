@@ -22,5 +22,9 @@ public class Category {
     public CategoryType getType() { return type; }
     public Category getParent() { return parent; }
 
+    public static Category reconstruct(Long id, String name, String icon, CategoryType type, Category parent) {
+        return new Category(id, name, icon, type, parent);
+    }
+
     // equals, hashCode, toString omitted for brevity
 }

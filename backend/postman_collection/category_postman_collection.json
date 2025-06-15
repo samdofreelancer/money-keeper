@@ -58,6 +58,34 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Update Category",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Category\",\n  \"icon\": \"updated-icon\",\n  \"type\": \"INCOME\",\n  \"parentId\": null\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/categories/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "categories",
+            "1"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }

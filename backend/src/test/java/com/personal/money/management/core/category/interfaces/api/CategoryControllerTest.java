@@ -50,4 +50,29 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.type").value("EXPENSE"))
                 .andExpect(jsonPath("$.parentId").doesNotExist());
     }
+
+    @Test
+    void updateCategory_shouldReturnUpdatedCategoryResponse() throws Exception {
+        Long categoryId = 1L;
+        Category updatedCategory = new Category(categoryId, "Updated Name", "updated_icon", CategoryType.INCOME, null);
+        when(categoryService.updateCategory(categoryId, "Updated Name", "updated_icon", CategoryType.INCOME, null))
+                .thenReturn(updatedCategory);
+
+        String requestBody = "{" +
+                "\"name\":\"Updated Name\"," +
+                "\"icon\":\"updated_icon\"," +
+                "\"type\":\"INCOME\"," +
+                "\"parentId\":null" +
+                "}";
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(categoryId))
+                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.icon").value("updated_icon"))
+                .andExpect(jsonPath("$.type").value("INCOME"))
+                .andExpect(jsonPath("$.parentId").doesNotExist());
+    }
 }
