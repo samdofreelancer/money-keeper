@@ -1,8 +1,10 @@
 package com.personal.money.management.core.category.application;
 
+import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,5 +28,18 @@ public class CategoryService {
 
     public List<Category> getAllCategoriesSortedByName() {
         return categoryRepository.findAllSortedByName();
+    }
+
+    public Category updateCategory(Long id, String name, String icon, CategoryType type, Long parentId) {
+        Category category = categoryRepository.findById(id);
+        if (category == null) {
+            throw new CategoryNotFoundException(id);
+        }
+        Category parent = null;
+        if (parentId != null) {
+            parent = categoryRepository.findById(parentId);
+        }
+        Category updatedCategory = new Category(id, name, icon, type, parent);
+        return categoryRepository.save(updatedCategory);
     }
 }

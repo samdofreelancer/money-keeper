@@ -50,4 +50,22 @@ public class CategoryController {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @PutMapping("/{id}")
+    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
+        Category updatedCategory = categoryService.updateCategory(
+                id,
+                request.getName(),
+                request.getIcon(),
+                request.getType(),
+                request.getParentId()
+        );
+        return new CategoryResponse(
+                updatedCategory.getId(),
+                updatedCategory.getName(),
+                updatedCategory.getIcon(),
+                updatedCategory.getType(),
+                updatedCategory.getParent() != null ? updatedCategory.getParent().getId() : null
+        );
+    }
 }
