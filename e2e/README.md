@@ -9,6 +9,22 @@ This project implements End-to-End testing using Playwright with Cucumber for BD
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 - [Winston](https://github.com/winstonjs/winston) - Logging framework
 
+## 📝 Code Style & Formatting
+
+### Line Endings Configuration
+The project uses consistent line endings across different operating systems:
+
+- `.gitattributes` enforces LF (Line Feed) line endings in the repository
+- `.prettierrc` is configured with `"endOfLine": "auto"` to respect the OS defaults
+- ESLint and Prettier work together to maintain consistent code style
+
+New developers should:
+1. Use the provided `.gitattributes` and `.prettierrc` configurations
+2. Run `npm run lint:fix` before committing changes
+3. Configure Git based on your OS:
+   - Windows: `git config core.autocrlf true`
+   - Linux/macOS: `git config core.autocrlf input`
+
 ## 📁 Project Structure
 
 ```
