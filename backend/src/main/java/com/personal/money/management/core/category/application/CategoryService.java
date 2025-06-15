@@ -39,7 +39,7 @@ public class CategoryService {
         if (parentId != null) {
             parent = categoryRepository.findById(parentId);
         }
-        Category updatedCategory = new Category(id, name, icon, type, parent);
+        Category updatedCategory = Category.reconstruct(category.getId(), name, icon, type, parent);
         return categoryRepository.save(updatedCategory);
     }
 }
