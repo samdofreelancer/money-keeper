@@ -39,44 +39,38 @@
         </el-input>
       </div>
 
-      <el-table 
-        :data="filteredCategories" 
-        style="width: 100%"
-        :default-sort="{ prop: 'name', order: 'ascending' }"
+      <el-tree
+        :data="nestedCategories"
+        :props="treeProps"
+        node-key="id"
+        default-expand-all
+        highlight-current
+        class="category-tree"
       >
-        <el-table-column prop="icon" label="" width="70">
-          <template #default="{ row }">
-            <el-icon size="20" :style="{ color: getIconColor(row.type) }">
-              <component :is="row.icon || 'Grid'" />
-            </el-icon>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="Name" sortable />
-        <el-table-column prop="type" label="Type" width="120">
-          <template #default="{ row }">
-            <el-tag :type="row.type === 'EXPENSE' ? 'danger' : 'success'">
-              {{ row.type }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="Parent Category">
-          <template #default="{ row }">
-            {{ getParentName(row.parentId) }}
-          </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="Actions" width="120">
-          <template #default="{ row }">
-            <el-button-group>
-              <el-button type="primary" link @click="handleEdit(row)">
-                <el-icon><Edit /></el-icon>
-              </el-button>
-              <el-button type="danger" link @click="handleDelete(row)">
-                <el-icon><Delete /></el-icon>
-              </el-button>
-            </el-button-group>
-          </template>
-        </el-table-column>
-      </el-table>
+        <template #default="{ node, data }">
+          <div class="tree-node-content" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center;">
+              <el-icon size="20" :style="{ color: getIconColor(data.type) }" class="mr-2">
+                <component :is="data.icon || 'Grid'" />
+              </el-icon>
+              <span>{{ data.name }}</span>
+              <el-tag :type="data.type === 'EXPENSE' ? 'danger' : 'success'" size="small" style="margin-left: 8px;">
+                {{ data.type }}
+              </el-tag>
+            </div>
+            <div>
+              <el-button-group>
+                <el-button type="primary" link @click.stop="handleEdit(data)">
+                  <el-icon><Edit /></el-icon>
+                </el-button>
+                <el-button type="danger" link @click.stop="handleDelete(data)">
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-button-group>
+            </div>
+          </div>
+        </template>
+      </el-tree>
     </el-card>
 
     <!-- Create/Edit Category Dialog -->
@@ -229,6 +223,32 @@ const filteredCategories = computed(() => {
 
   return categories
 })
+
+const nestedCategories = computed(() => {
+  const map = new Map()
+  const roots: any[] = []
+
+  // Initialize map with all categories
+  filteredCategories.value.forEach(cat => {
+    map.set(cat.id, { ...cat, children: [] })
+  })
+
+  // Build tree structure
+  map.forEach(cat => {
+    if (cat.parentId && map.has(cat.parentId)) {
+      map.get(cat.parentId).children.push(cat)
+    } else {
+      roots.push(cat)
+    }
+  })
+
+  return roots
+})
+
+const treeProps = {
+  children: 'children',
+  label: 'name'
+}
 
 const availableParents = computed(() => {
   return categoryStore.categories.filter(c => c.id !== editingId.value)
