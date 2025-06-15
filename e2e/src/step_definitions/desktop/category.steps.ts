@@ -25,16 +25,22 @@ When("I open the create category dialog", async function () {
   await categoryPage.openCreateCategoryDialog();
 });
 
-When("I fill in the category form with valid data", async function () {
-  logger.info("Filling category form with test data");
-  await categoryPage.fillCategoryForm("Test Category");
-});
+When(
+  "I fill in the category form with valid data {string}",
+  async function (categoryName: string) {
+    logger.info(`Filling category form with test data: ${categoryName}`);
+    await categoryPage.fillCategoryForm(categoryName);
+  }
+);
 
 When("I submit the category form", async function () {
   await categoryPage.submitCategoryForm();
 });
 
-Then("I should see the new category in the list", async function () {
-  const isPresent = await categoryPage.isCategoryPresent("Test Category");
-  expect(isPresent).toBe(true);
-});
+Then(
+  "I should see the new category in the list {string}",
+  async function (categoryName: string) {
+    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    expect(isPresent).toBe(true);
+  }
+);
