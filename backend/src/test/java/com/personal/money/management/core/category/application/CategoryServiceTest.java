@@ -1,6 +1,7 @@
 package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
+import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
@@ -31,9 +32,14 @@ class CategoryServiceTest {
         String name = "Food";
         String icon = "food_icon";
         CategoryType type = CategoryType.EXPENSE;
-        Long parentId = null;
+        Long parentId = 0L; // changed from null to non-null to adapt new code
+        Category parent = new Category(parentId, "Parent", "parent_icon", type, null);
 
-        Category savedCategory = new Category(1L, name, icon, type, null);
+        Category categoryFromFactory = CategoryFactory.createCategory(name, icon, type, parent);
+        Category savedCategory = new Category(1L, name, icon, type, parent);
+
+        // Since CategoryFactory is static, no need to mock it
+        when(categoryRepository.findById(parentId)).thenReturn(parent);
         when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
 
         Category result = categoryService.createCategory(name, icon, type, parentId);
@@ -42,7 +48,7 @@ class CategoryServiceTest {
         assertEquals(name, result.getName());
         assertEquals(icon, result.getIcon());
         assertEquals(type, result.getType());
-        assertNull(result.getParent());
+        assertEquals(parent, result.getParent());
         assertEquals(1L, result.getId());
 
         ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
@@ -51,7 +57,7 @@ class CategoryServiceTest {
         assertEquals(name, toSave.getName());
         assertEquals(icon, toSave.getIcon());
         assertEquals(type, toSave.getType());
-        assertNull(toSave.getParent());
+        assertEquals(parent, toSave.getParent());
     }
 
     @Test
@@ -60,8 +66,14 @@ class CategoryServiceTest {
         String icon = "snack_icon";
         CategoryType type = CategoryType.EXPENSE;
         Long parentId = 2L;
-        Category parent = new Category(parentId, "Food", "food_icon", type, null);
+        Long grandParentId = 1L;
+        Category grandParent = new Category(grandParentId, "Root", "root_icon", type, null);
+        Category parent = new Category(parentId, "Food", "food_icon", type, grandParent);
+        Category categoryFromFactory = CategoryFactory.createCategory(name, icon, type, parent);
+
+        // Since CategoryFactory is static, no need to mock it
         when(categoryRepository.findById(parentId)).thenReturn(parent);
+        when(categoryRepository.findById(grandParentId)).thenReturn(grandParent);
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Category result = categoryService.createCategory(name, icon, type, parentId);
@@ -94,7 +106,9 @@ class CategoryServiceTest {
         Long categoryId = 1L;
         Category existingCategory = new Category(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
         Category parentCategory = new Category(2L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
+        Category updatedCategoryFromFactory = new Category(categoryId, "New Name", "new_icon", CategoryType.INCOME, parentCategory);
 
+        // Mock the findById calls
         when(categoryRepository.findById(categoryId)).thenReturn(existingCategory);
         when(categoryRepository.findById(2L)).thenReturn(parentCategory);
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -117,7 +131,6 @@ class CategoryServiceTest {
     @Test
     void updateCategory_shouldThrowExceptionIfCategoryNotFound() {
         Long categoryId = 1L;
-        when(categoryRepository.findById(categoryId)).thenReturn(null);
 
         CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.updateCategory(categoryId, "Name", "icon", CategoryType.EXPENSE, null);
