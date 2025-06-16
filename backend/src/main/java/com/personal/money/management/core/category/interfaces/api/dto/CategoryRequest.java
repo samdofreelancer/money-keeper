@@ -4,10 +4,13 @@ import com.personal.money.management.core.category.domain.model.CategoryType;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 public class CategoryRequest {
     @NotBlank
+    @Size(max = 100)
     private String name;
+    @Size(max = 50)
     private String icon;
     @NotNull
     private CategoryType type;

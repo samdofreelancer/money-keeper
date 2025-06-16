@@ -2,6 +2,7 @@ package com.personal.money.management.core.category.interfaces.api;
 
 import com.personal.money.management.core.category.application.CategoryService;
 import com.personal.money.management.core.category.domain.model.Category;
+import com.personal.money.management.core.category.interfaces.api.CategoryMapper;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryRequest;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryResponse;
 import org.springframework.web.bind.annotation.*;
@@ -28,26 +29,26 @@ public class CategoryController {
                 request.getType(),
                 request.getParentId()
         );
-        return new CategoryResponse(
-                category.getId(),
-                category.getName(),
-                category.getIcon(),
-                category.getType(),
-                category.getParent() != null ? category.getParent().getId() : null
-        );
+        return CategoryMapper.toResponse(category);
     }
 
     @GetMapping
     public List<CategoryResponse> getAllSortedByName() {
         List<Category> categories = categoryService.getAllCategoriesSortedByName();
         return categories.stream()
-                .map(category -> new CategoryResponse(
-                        category.getId(),
-                        category.getName(),
-                        category.getIcon(),
-                        category.getType(),
-                        category.getParent() != null ? category.getParent().getId() : null
-                ))
+                .map(CategoryMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @PutMapping("/{id}")
+    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) {
+        Category updatedCategory = categoryService.updateCategory(
+                id,
+                request.getName(),
+                request.getIcon(),
+                request.getType(),
+                request.getParentId()
+        );
+        return CategoryMapper.toResponse(updatedCategory);
     }
 }
