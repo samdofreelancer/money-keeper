@@ -160,7 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useCategoryStore } from '@/stores/category'
 import { Plus, Search, Edit, Delete, Grid } from '@element-plus/icons-vue'
@@ -335,6 +335,20 @@ async function confirmDelete() {
     ElMessage.error('Failed to delete category')
   }
 }
+
+// Watch dialogVisible to reset form when dialog closes
+watch(dialogVisible, (newVal, oldVal) => {
+  if (oldVal === true && newVal === false) {
+    if (formRef.value) {
+      formRef.value.resetFields()
+    }
+    categoryForm.value = {
+      name: '',
+      icon: '',
+      type: 'EXPENSE'
+    }
+  }
+})
 </script>
 
 <style scoped>
