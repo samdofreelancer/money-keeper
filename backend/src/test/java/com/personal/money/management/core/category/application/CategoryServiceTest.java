@@ -139,4 +139,38 @@ class CategoryServiceTest {
         assertEquals("Category not found with id: " + categoryId, exception.getMessage());
         verify(categoryRepository, never()).save(any());
     }
+
+    @Test
+    void createCategory_shouldThrowExceptionIfParentNotFound() {
+        String name = "Invalid Parent Category";
+        String icon = "icon";
+        CategoryType type = CategoryType.EXPENSE;
+        Long invalidParentId = 999L;
+
+        when(categoryRepository.findById(invalidParentId)).thenReturn(null);
+
+        CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
+            categoryService.createCategory(name, icon, type, invalidParentId);
+        });
+
+        assertEquals("Category not found with id: " + invalidParentId, exception.getMessage());
+        verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void updateCategory_shouldThrowExceptionIfParentNotFound() {
+        Long categoryId = 1L;
+        Long invalidParentId = 999L;
+        Category existingCategory = new Category(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
+
+        when(categoryRepository.findById(categoryId)).thenReturn(existingCategory);
+        when(categoryRepository.findById(invalidParentId)).thenReturn(null);
+
+        CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
+            categoryService.updateCategory(categoryId, "New Name", "new_icon", CategoryType.INCOME, invalidParentId);
+        });
+
+        assertEquals("Category not found with id: " + invalidParentId, exception.getMessage());
+        verify(categoryRepository, never()).save(any());
+    }
 }

@@ -92,6 +92,20 @@ class CategoryApiIntegrationTest {
     }
 
     @Test
+    void createCategory_shouldReturn404ForInvalidParent() throws Exception {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Invalid Parent");
+        request.setIcon("icon");
+        request.setType(CategoryType.EXPENSE);
+        request.setParentId(99999L); // Non-existent parentId
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void getAllSortedByName_shouldReturnSortedCategories() throws Exception {
         // Create categories
         CategoryRequest request1 = new CategoryRequest();
@@ -173,7 +187,7 @@ class CategoryApiIntegrationTest {
     }
 
     @Test
-    void updateCategory_shouldReturn500IfCategoryNotFound() throws Exception {
+    void updateCategory_shouldReturn404IfCategoryNotFound() throws Exception {
         Long nonExistentCategoryId = 9999L;
 
         CategoryRequest updateRequest = new CategoryRequest();
@@ -185,6 +199,6 @@ class CategoryApiIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/categories/{id}", nonExistentCategoryId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }
