@@ -7,6 +7,7 @@ import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class CategoryService {
         return parent;
     }
 
+    @Transactional
     public Category createCategory(String name, String icon, CategoryType type, Long parentId) {
         Category parent = validateParentExists(parentId);
         Category category = CategoryFactory.createCategory(name, icon, type, parent);
@@ -46,6 +48,7 @@ public class CategoryService {
         return categoryRepository.findAllSortedByName();
     }
 
+    @Transactional
     public Category updateCategory(Long id, String name, String icon, CategoryType type, Long parentId) {
         Category category = categoryRepository.findById(id);
         if (category == null) {
