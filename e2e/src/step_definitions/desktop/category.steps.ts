@@ -34,11 +34,19 @@ When(
     categoryType: string,
     parentCategory: string
   ) {
+    // Handle placeholder for createdCategoryName
+    if (categoryName === "<createdCategoryName>") {
+      categoryName = this.uniqueCategoryName;
+    }
+    // Append unique suffix to categoryName to ensure uniqueness
+    const uniqueSuffix = Date.now().toString();
+    const uniqueCategoryName = `${categoryName} ${uniqueSuffix}`;
+    this.uniqueCategoryName = uniqueCategoryName; // store for later steps
     logger.info(
-      `Filling category form with test data: ${categoryName}, ${icon}, ${categoryType}, ${parentCategory}`
+      `Filling category form with test data: ${uniqueCategoryName}, ${icon}, ${categoryType}, ${parentCategory}`
     );
     await categoryPage.fillCategoryForm(
-      categoryName,
+      uniqueCategoryName,
       icon,
       categoryType,
       parentCategory
@@ -53,7 +61,36 @@ When("I submit the category form", async function () {
 Then(
   "I should see the new category in the list {string}",
   async function (categoryName: string) {
-    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    // Use stored unique category name if available
+    const nameToCheck = this.uniqueCategoryName || categoryName;
+    const isPresent = await categoryPage.isCategoryPresent(nameToCheck);
+    expect(isPresent).toBe(true);
+  }
+);
+
+When(
+  "I open the edit category dialog for {string}",
+  async function (categoryName: string) {
+    // Handle placeholder for createdCategoryName
+    if (categoryName === "<createdCategoryName>") {
+      categoryName = this.uniqueCategoryName;
+    }
+    try {
+      await categoryPage.openEditCategoryDialog(categoryName);
+    } catch (error) {
+      console.error(`Failed to open edit dialog for category "${categoryName}":`, error);
+      await this.page.screenshot({ path: `error-open-edit-dialog-${Date.now()}.png` });
+      throw error;
+    }
+  }
+);
+
+Then(
+  "I should see the updated category in the list {string}",
+  async function (categoryName: string) {
+    // Use stored unique category name if available
+    const nameToCheck = this.uniqueCategoryName || categoryName;
+    const isPresent = await categoryPage.isCategoryPresent(nameToCheck);
     expect(isPresent).toBe(true);
   }
 );

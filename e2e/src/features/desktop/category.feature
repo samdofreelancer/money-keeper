@@ -14,6 +14,18 @@ Feature: Category management
     Then I should see the new category in the list "<categoryName>"
 
     Examples:
-      | categoryName   | icon          | categoryType | parentCategory |
-      | Test Category  | Grid          | EXPENSE      | None           |
-      | Sample Category| Shopping  | INCOME       | None           |
+      | categoryName       | icon          | categoryType | parentCategory |
+      | Test Category 1234 | Grid          | EXPENSE      | None           |
+      | Sample Category 5678| Shopping  | INCOME       | None           |
+
+  Scenario Outline: Update an existing category
+    Given I open the homepage
+    When I navigate to the Categories page
+    And I open the edit category dialog for "<existingCategoryName>"
+    And I fill in the category form with valid data "<newCategoryName>", "<icon>", "<categoryType>", "<parentCategory>"
+    And I submit the category form
+    Then I should see the updated category in the list "<newCategoryName>"
+
+    Examples:
+      | existingCategoryName | newCategoryName    | icon     | categoryType | parentCategory |
+      | <createdCategoryName> | Updated Category 1 | Grid     | EXPENSE      | None           |

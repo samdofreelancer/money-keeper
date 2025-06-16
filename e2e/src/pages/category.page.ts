@@ -96,7 +96,7 @@ export class CategoryPage {
 
   async submitCategoryForm() {
     await this.createButton.click();
-    await this.categoryForm.waitFor({ state: "detached" });
+    await this.categoryForm.waitFor({ state: "detached", timeout: 15000 });
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
@@ -104,5 +104,34 @@ export class CategoryPage {
       hasText: name,
     });
     return (await newCategory.count()) > 0;
+  }
+
+  async openEditCategoryDialog(categoryName: string) {
+    // Use first matching category item to avoid strict mode violation
+    const categoryItems = this.page.locator(
+      ".category-tree .tree-node-content",
+      {
+        hasText: categoryName,
+      }
+    );
+    const count = await categoryItems.count();
+    console.log(`Found ${count} categories matching "${categoryName}"`);
+    if (count === 0) {
+      throw new Error(`Category with name "${categoryName}" not found`);
+    }
+    const categoryItem = categoryItems.nth(0);
+    await categoryItem.hover();
+    console.log(`Hovering over category: ${categoryName}`);
+    const editButton = categoryItem.locator('button[title="Edit"]');
+    await editButton.waitFor({ state: "visible", timeout: 10000 });
+    await editButton.click();
+    console.log(`Clicked edit button for category: ${categoryName}`);
+    try {
+      await this.categoryForm.waitFor({ timeout: 20000 });
+      console.log(`Category form appeared for editing`);
+    } catch (error) {
+      console.error(`Error waiting for category form: ${error}`);
+      throw error;
+    }
   }
 }
