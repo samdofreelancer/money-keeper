@@ -201,4 +201,46 @@ class CategoryApiIntegrationTest {
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void createCategory_shouldReturn400ForBlankName() throws Exception {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("");
+        request.setIcon("icon");
+        request.setType(CategoryType.EXPENSE);
+        request.setParentId(null);
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createCategory_shouldReturn400ForNameExceedingMaxLength() throws Exception {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("a".repeat(101)); // 101 chars
+        request.setIcon("icon");
+        request.setType(CategoryType.EXPENSE);
+        request.setParentId(null);
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createCategory_shouldReturn400ForIconExceedingMaxLength() throws Exception {
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Valid Name");
+        request.setIcon("i".repeat(51)); // 51 chars
+        request.setType(CategoryType.EXPENSE);
+        request.setParentId(null);
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 }
