@@ -1,6 +1,7 @@
 package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
+import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
 import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
@@ -37,6 +38,16 @@ public class CategoryService {
         return parent;
     }
 
+    private void checkCyclicDependency(Category category, Category newParent) {
+        Category current = newParent;
+        while (current != null) {
+            if (current.getId() != null && current.getId().equals(category.getId())) {
+                throw new CategoryCyclicDependencyException("Cyclic dependency detected: category cannot be its own ancestor");
+            }
+            current = current.getParent();
+        }
+    }
+
     @Transactional
     public Category createCategory(String name, String icon, CategoryType type, Long parentId) {
         Category parent = validateParentExists(parentId);
@@ -55,6 +66,7 @@ public class CategoryService {
             throw new CategoryNotFoundException(id);
         }
         Category parent = validateParentExists(parentId);
+        checkCyclicDependency(category, parent);
         Category updatedCategory = CategoryFactory.updateCategory(id, name, icon, type, parent);
         return categoryRepository.save(updatedCategory);
     }

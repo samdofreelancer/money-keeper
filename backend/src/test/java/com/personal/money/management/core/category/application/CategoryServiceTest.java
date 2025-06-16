@@ -1,6 +1,7 @@
 package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
+import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
 import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
@@ -172,5 +173,21 @@ class CategoryServiceTest {
 
         assertEquals("Category not found with id: " + invalidParentId, exception.getMessage());
         verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void updateCategory_shouldThrowExceptionIfCyclicDependency() {
+        Long categoryId = 1L;
+        Long parentId = 2L;
+
+        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category parent = new Category(parentId, "Category2", "icon2", CategoryType.EXPENSE, category); // cyclic parent
+
+        when(categoryRepository.findById(categoryId)).thenReturn(category);
+        when(categoryRepository.findById(parentId)).thenReturn(parent);
+
+        assertThrows(CategoryCyclicDependencyException.class, () -> {
+            categoryService.updateCategory(categoryId, "name", "icon", CategoryType.EXPENSE, parentId);
+        });
     }
 }
