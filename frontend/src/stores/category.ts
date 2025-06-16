@@ -44,6 +44,25 @@ export const useCategoryStore = defineStore('category', () => {
     }
   }
 
+  async function updateCategory(id: string, category: CategoryCreate) {
+    try {
+      loading.value = true
+      error.value = null
+      const updatedCategory = await categoryApi.update(id, category)
+      const index = categories.value.findIndex(c => c.id === id)
+      if (index !== -1) {
+        categories.value[index] = updatedCategory
+      }
+      return updatedCategory
+    } catch (e) {
+      error.value = 'Failed to update category'
+      console.error(e)
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   function getCategoryById(id: string): Category | undefined {
     return categories.value.find(c => c.id === id)
   }
@@ -56,6 +75,7 @@ export const useCategoryStore = defineStore('category', () => {
     error,
     fetchCategories,
     createCategory,
+    updateCategory,
     getCategoryById
   }
 })

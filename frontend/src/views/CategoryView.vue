@@ -78,7 +78,6 @@
       v-model="dialogVisible"
       :title="isEditing ? 'Edit Category' : 'Create Category'"
       width="500px"
-      destroy-on-close
     >
       <el-form
         ref="formRef"
@@ -297,20 +296,28 @@ function getParentName(parentId: string | null) {
 }
 
 async function handleSubmit() {
-  if (!formRef.value) return
+  console.log('handleSubmit called')
+  if (!formRef.value) {
+    console.log('formRef is not set')
+    return
+  }
 
   await formRef.value.validate(async (valid) => {
+    console.log('form validation result:', valid)
     if (valid) {
       try {
         if (isEditing.value && editingId.value) {
-          // TODO: Implement update
+          console.log('Calling updateCategory with id:', editingId.value, 'data:', categoryForm.value)
+          await categoryStore.updateCategory(editingId.value, categoryForm.value)
           ElMessage.success('Category updated successfully')
         } else {
+          console.log('Calling createCategory with data:', categoryForm.value)
           await categoryStore.createCategory(categoryForm.value)
           ElMessage.success('Category created successfully')
         }
         dialogVisible.value = false
       } catch (error) {
+        console.error('Error in handleSubmit:', error)
         ElMessage.error(isEditing.value ? 'Failed to update category' : 'Failed to create category')
       }
     }
