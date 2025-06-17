@@ -1,5 +1,6 @@
 package com.personal.money.management.core.config;
 
+import com.personal.money.management.core.category.application.exception.CategoryHasChildException;
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,5 +15,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
-    // Other global exception handlers can be added here
+    @ExceptionHandler(CategoryHasChildException.class)
+    public ResponseEntity<String> handleCategoryHasChildException(com.personal.money.management.core.category.application.exception.CategoryHasChildException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 }
