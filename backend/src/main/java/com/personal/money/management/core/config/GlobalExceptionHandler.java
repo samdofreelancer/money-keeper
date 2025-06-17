@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CategoryHasChildException.class)
-    public ResponseEntity<String> handleCategoryHasChildException(com.personal.money.management.core.category.application.exception.CategoryHasChildException ex) {
+    public ResponseEntity<String> handleCategoryHasChildException(CategoryHasChildException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
