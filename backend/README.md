@@ -59,6 +59,38 @@ mvn test
 
 ---
 
+## Running Unit and Integration Tests Separately
+
+This project uses Maven profiles to separate unit and integration tests based on naming conventions.
+
+### Run Unit Tests (Small Tests)
+
+Run the following command to execute unit tests (tests matching `**/*Test.java` excluding `**/*IntegrationTest.java`):
+
+```
+mvn test -Psmall-test
+```
+
+### Run Integration Tests (Medium Tests)
+
+Run the following command to execute integration tests (tests matching `**/*IntegrationTest.java`):
+
+```
+mvn failsafe:integration-test failsafe:verify -Pmedium-test
+```
+
+### Run All Tests
+
+To run both unit and integration tests together, use:
+
+```
+mvn verify
+```
+
+Note: This will run unit tests first, then integration tests.
+
+---
+
 ## Project Architecture
 
 This project follows a Domain-Driven Design (DDD) approach with a layered architecture:
@@ -94,3 +126,11 @@ sequenceDiagram
 ---
 
 If you need further assistance or additional features, please let me know.
+To run both unit and integration tests together, use:
+
+mvn failsafe:integration-test failsafe:verify -Pmedium-test
+mvn test -Psmall-test
+mvn test
+junit.jupiter.execution.parallel.mode.classes.default = concurrent
+JUnit 5 parallel execution is enabled via the `src/test/resources/junit-platform.properties` file with the following settings:
+
