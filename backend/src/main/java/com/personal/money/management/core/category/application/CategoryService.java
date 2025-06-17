@@ -2,6 +2,7 @@ package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
 import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
+import com.personal.money.management.core.category.application.exception.CategoryHasChildException;
 import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
@@ -76,6 +77,10 @@ public class CategoryService {
         Category category = categoryRepository.findById(id);
         if (category == null) {
             throw new CategoryNotFoundException(id);
+        }
+        var children = categoryRepository.findByParent(category);
+        if (!children.isEmpty()) {
+            throw new CategoryHasChildException(id);
         }
         categoryRepository.deleteById(id);
     }

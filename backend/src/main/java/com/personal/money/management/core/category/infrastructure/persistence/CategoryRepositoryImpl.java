@@ -40,4 +40,12 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public List<Category> findByParent(Category parent) {
+        var parentEntity = CategoryEntityMapper.toEntity(parent);
+        return jpaRepository.findByParent(parentEntity).stream()
+                .map(CategoryEntityMapper::toDomain)
+                .toList();
+    }
 }
