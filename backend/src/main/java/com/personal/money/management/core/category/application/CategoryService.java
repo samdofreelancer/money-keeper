@@ -70,4 +70,13 @@ public class CategoryService {
         Category updatedCategory = CategoryFactory.updateCategory(id, name, icon, type, parent);
         return categoryRepository.save(updatedCategory);
     }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id);
+        if (category == null) {
+            throw new CategoryNotFoundException(id);
+        }
+        categoryRepository.deleteById(id);
+    }
 }

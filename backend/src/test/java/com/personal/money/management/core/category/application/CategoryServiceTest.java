@@ -190,4 +190,33 @@ class CategoryServiceTest {
             categoryService.updateCategory(categoryId, "name", "icon", CategoryType.EXPENSE, parentId);
         });
     }
+
+    @Test
+    void deleteCategory_shouldDeleteCategorySuccessfully() {
+        Long categoryId = 1L;
+        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+
+        when(categoryRepository.findById(categoryId)).thenReturn(category);
+        doNothing().when(categoryRepository).deleteById(categoryId);
+
+        assertDoesNotThrow(() -> categoryService.deleteCategory(categoryId));
+
+        verify(categoryRepository).findById(categoryId);
+        verify(categoryRepository).deleteById(categoryId);
+    }
+
+    @Test
+    void deleteCategory_shouldThrowExceptionIfCategoryNotFound() {
+        Long categoryId = 1L;
+
+        when(categoryRepository.findById(categoryId)).thenReturn(null);
+
+        CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
+            categoryService.deleteCategory(categoryId);
+        });
+
+        assertEquals("Category not found with id: " + categoryId, exception.getMessage());
+        verify(categoryRepository).findById(categoryId);
+        verify(categoryRepository, never()).deleteById(any());
+    }
 }

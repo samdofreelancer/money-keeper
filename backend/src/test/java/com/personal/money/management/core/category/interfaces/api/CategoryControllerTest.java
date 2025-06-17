@@ -14,6 +14,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 
 /**
  * Unit tests for CategoryController.
@@ -74,5 +76,26 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.icon").value("updated_icon"))
                 .andExpect(jsonPath("$.type").value("INCOME"))
                 .andExpect(jsonPath("$.parentId").doesNotExist());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnNoContent() throws Exception {
+        Long categoryId = 1L;
+
+        doNothing().when(categoryService).deleteCategory(categoryId);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnNotFound() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryNotFoundException(categoryId))
+                .when(categoryService).deleteCategory(categoryId);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isNotFound());
     }
 }
