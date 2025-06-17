@@ -131,4 +131,35 @@ class CategoryControllerTest {
                 .content(requestBody))
                 .andExpect(status().isConflict());
     }
+
+    @Test
+    void updateCategory_shouldReturnConflictIfCategoryConflictException() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryConflictException("Concurrent modification"))
+                .when(categoryService).updateCategory(anyLong(), anyString(), anyString(), any(), any());
+
+        String requestBody = "{" +
+                "\"name\":\"Updated Name\"," +
+                "\"icon\":\"updated_icon\"," +
+                "\"type\":\"INCOME\"," +
+                "\"parentId\":null" +
+                "}";
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/categories/{id}", categoryId)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnConflictIfCategoryConflictException() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryConflictException("Concurrent modification"))
+                .when(categoryService).deleteCategory(anyLong());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isConflict());
+    }
 }

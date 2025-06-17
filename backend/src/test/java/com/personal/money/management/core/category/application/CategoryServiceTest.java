@@ -2,6 +2,7 @@ package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
 import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
+import com.personal.money.management.core.category.application.exception.CategoryConflictException;
 import com.personal.money.management.core.category.application.exception.CategoryHasChildException;
 import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
