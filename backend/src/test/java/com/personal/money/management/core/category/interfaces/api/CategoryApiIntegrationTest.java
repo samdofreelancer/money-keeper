@@ -263,7 +263,7 @@ class CategoryApiIntegrationTest {
 
         // Delete the category
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         // Verify deletion by attempting to delete again (should return 404)
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))

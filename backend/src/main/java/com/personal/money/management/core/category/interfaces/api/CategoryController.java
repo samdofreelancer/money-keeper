@@ -6,6 +6,8 @@ import com.personal.money.management.core.category.interfaces.api.CategoryMapper
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryRequest;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.Valid;
 
@@ -53,6 +55,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         categoryService.deleteCategory(id);
     }

@@ -85,7 +85,7 @@ class CategoryControllerTest {
         doNothing().when(categoryService).deleteCategory(categoryId);
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
