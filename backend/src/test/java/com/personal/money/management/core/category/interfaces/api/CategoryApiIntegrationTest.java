@@ -243,4 +243,38 @@ class CategoryApiIntegrationTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void deleteCategory_shouldReturnNoContent() throws Exception {
+        // Create a category first
+        CategoryRequest createRequest = new CategoryRequest();
+        createRequest.setName("Delete Test");
+        createRequest.setIcon("delete_icon");
+        createRequest.setType(CategoryType.EXPENSE);
+        createRequest.setParentId(null);
+
+        String createResponse = mockMvc.perform(post("/api/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Long categoryId = objectMapper.readTree(createResponse).get("id").asLong();
+
+        // Delete the category
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isOk());
+
+        // Verify deletion by attempting to delete again (should return 404)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnNotFoundForNonExistentId() throws Exception {
+        Long nonExistentId = 999999L;
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/categories/{id}", nonExistentId))
+                .andExpect(status().isNotFound());
+    }
+
 }

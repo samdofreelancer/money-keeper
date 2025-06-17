@@ -9,4 +9,5 @@ public interface CategoryRepository {
     Category save(Category category);
     Category findById(Long id);
     List<Category> findAllSortedByName();
+    void deleteById(Long id);
 }

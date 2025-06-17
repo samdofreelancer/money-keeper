@@ -51,4 +51,9 @@ public class CategoryController {
         );
         return CategoryMapper.toResponse(updatedCategory);
     }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+    }
 }

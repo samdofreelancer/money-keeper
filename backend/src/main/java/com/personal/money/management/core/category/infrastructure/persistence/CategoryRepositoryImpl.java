@@ -35,4 +35,9 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 .map(CategoryEntityMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaRepository.deleteById(id);
+    }
 }
