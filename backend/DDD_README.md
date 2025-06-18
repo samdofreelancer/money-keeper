@@ -1,8 +1,255 @@
 # Domain-Driven Design (DDD) in the Money Keeper Backend
 
-This document provides an overview and coaching guide on how Domain-Driven Design (DDD) principles are implemented in the Money Keeper backend project. It is intended to help developers understand the architecture, design patterns, and best practices used in this codebase.
+This document provides a comprehensive overview and coaching guide on how Domain-Driven Design (DDD) principles are implemented in the Money Keeper backend project. It is designed to help developers at all levels understand the architecture, design patterns, best practices, and practical considerations used in this codebase.
 
 ---
+
+## What is Domain-Driven Design (DDD)?
+
+Domain-Driven Design (DDD) is a software development approach that focuses on modeling software to closely match a complex business domain. It emphasizes collaboration between technical and domain experts to create a shared understanding and a rich domain model that reflects real-world business rules and processes.
+
+Key principles of DDD include:
+
+- **Ubiquitous Language:** A common language shared by developers and domain experts to ensure clear communication.
+- **Bounded Contexts:** Explicit boundaries within which a particular domain model applies, helping to manage complexity.
+- **Entities and Value Objects:** Core building blocks of the domain model representing business concepts with identity and attributes.
+- **Aggregates:** Clusters of domain objects treated as a single unit for data changes and consistency.
+- **Repositories:** Abstractions for retrieving and persisting aggregates, decoupling domain logic from infrastructure.
+- **Domain Services:** Operations that don’t naturally fit within entities or value objects but are part of the domain logic.
+- **Layered Architecture:** Separation of concerns into layers such as domain, application, infrastructure, and interfaces to organize code and responsibilities.
+
+---
+
+## DDD Implementation in This Backend Project
+
+The Money Keeper backend follows DDD principles with a clear layered architecture that promotes separation of concerns and maintainability:
+
+```
+backend/src/main/java/com/personal/money/management/core/category/
+├── domain/
+│   ├── model/
+│   │   └── Category.java
+│   └── repository/
+│       └── CategoryRepository.java
+├── application/
+│   └── CategoryService.java
+├── infrastructure/
+│   └── persistence/
+│       ├── CategoryEntity.java
+│       ├── CategoryJpaRepository.java
+│       └── CategoryRepositoryImpl.java
+└── interfaces/
+    └── api/
+        ├── CategoryController.java
+        ├── CategoryMapper.java
+        └── dto/
+            ├── CategoryRequest.java
+            └── CategoryResponse.java
+```
+
+### Domain Layer
+
+- **Purpose:** Encapsulates the core business logic and rules.
+- **Example:** `Category.java` represents the Category entity with attributes like `id`, `name`, `icon`, `type`, and `parent`.
+- **Repository Interface:** `CategoryRepository.java` defines methods for saving, finding, and deleting categories, abstracting persistence details.
+- **Characteristics:** Free from technical concerns, focused purely on business concepts and rules.
+
+### Application Layer
+
+- **Purpose:** Coordinates domain operations and business use cases.
+- **Example:** `CategoryService.java` contains methods like `createCategory`, `updateCategory`, and `deleteCategory`.
+- **Responsibilities:** Validates business rules (e.g., cyclic dependency checks), manages transactions, handles exceptions, and delegates persistence to repositories.
+- **Characteristics:** Does not contain domain logic but orchestrates domain model usage and application workflows.
+
+### Infrastructure Layer
+
+- **Purpose:** Implements technical details such as database access and external integrations.
+- **Example:** `CategoryJpaRepository.java` is a Spring Data JPA repository; `CategoryRepositoryImpl.java` implements the domain repository interface.
+- **Characteristics:** Depends on frameworks and external systems, isolated from domain logic to maintain separation.
+
+### Interfaces Layer (API)
+
+- **Purpose:** Exposes application functionality to clients via REST APIs.
+- **Example:** `CategoryController.java` handles HTTP requests and responses, mapping DTOs to domain objects and vice versa.
+- **Characteristics:** Keeps API concerns separate from domain and application logic, focusing on communication and data transfer.
+
+---
+
+## Key Design Patterns and Practices
+
+- **Repository Pattern:** Abstracts data access behind interfaces in the domain layer, allowing flexibility in persistence implementation and easier testing.
+- **Entity Modeling:** Domain entities encapsulate business data and behavior, ensuring integrity, consistency, and encapsulation of business rules.
+- **Service Layer:** Application services manage use cases, transactions, and business workflows, coordinating domain objects without containing domain logic.
+- **Exception Handling:** Custom exceptions represent domain-specific errors, improving error clarity and enabling precise error management.
+- **Layered Architecture:** Clear separation of concerns enhances maintainability, testability, scalability, and team collaboration.
+
+---
+
+## Testing and Quality Assurance
+
+To ensure the robustness and correctness of the DDD implementation, the following testing areas are covered:
+
+### 1. Domain Layer Testing
+
+- Unit tests for `Category` entity behavior and invariants.
+- Tests for domain factory methods (e.g., `CategoryFactory`).
+- Validation of domain rules such as cyclic dependency prevention.
+
+### 2. Repository Layer Testing
+
+- Unit tests for `CategoryRepository` interface implementations.
+- Integration tests with the database for `CategoryJpaRepository` and `CategoryRepositoryImpl`.
+- Verification of CRUD operations and query methods (e.g., `findByParent`).
+
+### 3. Application Layer Testing
+
+- Unit tests for `CategoryService` methods:
+  - `createCategory`, `updateCategory`, `deleteCategory`.
+  - Validation logic (parent existence, cyclic dependency).
+  - Exception handling (e.g., `CategoryNotFoundException`, `CategoryConflictException`).
+- Concurrency tests to simulate optimistic locking conflicts.
+
+### 4. API Layer Testing
+
+- Integration tests for `CategoryController` endpoints:
+  - POST `/api/categories`
+  - GET `/api/categories`
+  - PUT `/api/categories/{id}`
+  - DELETE `/api/categories/{id}`
+- Validation of request payloads and response DTOs.
+- Error response handling and status codes.
+
+### 5. Cross-Cutting Concerns
+
+- Global exception handling via `GlobalExceptionHandler`.
+- Transaction management and rollback scenarios.
+
+---
+
+## Benefits of This DDD Approach
+
+- Aligns software design closely with business domain concepts.
+- Improves code organization, readability, and maintainability.
+- Facilitates unit testing by isolating domain logic.
+- Enables flexibility to change infrastructure without affecting domain.
+- Supports complex business rules and validations effectively.
+- Enhances team collaboration through clear separation of concerns.
+
+---
+
+## Why Use Domain-Driven Design (DDD)?
+
+DDD helps manage complex business domains by aligning software design closely with business concepts. It promotes a shared language between developers and domain experts, improving communication and reducing misunderstandings. DDD encourages building a rich domain model that encapsulates business rules, leading to more maintainable and flexible software.
+
+---
+
+## Difference Between DDD and Spring MVC
+
+- **DDD** is an architectural and design approach focused on modeling the business domain with layers such as domain, application, infrastructure, and interfaces. It emphasizes domain logic and separation of concerns.
+- **Spring MVC** is a web framework primarily concerned with handling HTTP requests and responses, routing, and view rendering. It is often used in the interfaces layer of a DDD application but does not prescribe domain modeling or architectural patterns.
+
+In short, Spring MVC can be part of a DDD implementation but does not replace the domain modeling and layered architecture principles of DDD.
+
+---
+
+## When Should We Choose DDD?
+
+DDD is most beneficial when:
+
+- The business domain is complex and requires deep understanding.
+- The project involves complex business rules and workflows.
+- Long-term maintainability and flexibility are priorities.
+- Collaboration between domain experts and developers is essential.
+- The system needs to evolve with changing business requirements.
+
+For simple CRUD applications or projects with minimal business logic, DDD might be overkill.
+
+---
+
+## Challenges When Applying DDD
+
+- Requires significant upfront investment in learning and modeling the domain.
+- Can increase initial development time due to complexity.
+- Needs close collaboration with domain experts.
+- Risk of over-engineering if applied to simple domains.
+- Requires discipline to maintain separation of concerns and avoid anemic domain models.
+
+---
+
+## Can We Apply DDD in Projects Without Direct Database Access?
+
+Yes, DDD can be applied in projects that do not have direct database access, such as those that only call third-party APIs or Java server faces with XHTML and JavaBeans. The key is to focus on modeling the domain and business logic regardless of the data source. The infrastructure layer can adapt to different data sources or external systems, while the domain and application layers remain consistent.
+
+---
+
+## Abstracting Transaction Management to Reduce Framework Dependency
+
+In the current backend project, the application layer uses Spring Boot's transaction management via the `@Transactional` annotation. While this is a common and effective approach, it does introduce some coupling to the Spring framework, which can make switching to another framework more challenging.
+
+### Trade-offs of Using Spring Transactions Directly
+
+- **Pros:**
+  - Simplifies transaction management with declarative annotations.
+  - Integrates seamlessly with Spring's data access and persistence layers.
+  - Reduces boilerplate code for transaction demarcation.
+
+- **Cons:**
+  - Couples the application layer to Spring-specific APIs.
+  - Makes it harder to migrate to other frameworks or platforms.
+  - Can obscure transaction boundaries if not carefully managed.
+
+### Recommendations to Minimize Coupling
+
+1. **Use a Transaction Script or Unit of Work Pattern:**
+   - Encapsulate transaction boundaries in dedicated classes or services.
+   - The application service calls these transaction scripts, which internally manage transactions.
+   - This isolates transaction management from business logic.
+
+2. **Define a Transaction Manager Interface:**
+   - Create an abstraction for transaction management in the domain or application layer.
+   - Implement this interface using Spring's transaction manager in the infrastructure layer.
+   - This allows swapping implementations without changing domain or application code.
+
+3. **Keep Domain Layer Free of Transaction Annotations:**
+   - Ensure that transaction management annotations or APIs are only in the application or infrastructure layers.
+   - The domain layer remains pure and framework-agnostic.
+
+4. **Use Programmatic Transaction Management if Needed:**
+   - Instead of annotations, use programmatic transaction management in infrastructure classes.
+   - This can provide finer control and clearer separation.
+
+### Example: Transaction Manager Interface
+
+```java
+public interface TransactionManager {
+    void begin();
+    void commit();
+    void rollback();
+}
+```
+
+An implementation using Spring's `PlatformTransactionManager` can be provided in the infrastructure layer.
+
+### Summary
+
+By abstracting transaction management behind interfaces and isolating it from domain logic, you can reduce framework dependency and improve portability. This approach aligns well with DDD principles of separation of concerns and maintaining a pure domain model.
+
+---
+
+## Summary
+
+This backend project demonstrates a robust implementation of Domain-Driven Design principles. Understanding this structure and the responsibilities of each layer will help developers contribute effectively and maintain the codebase with best practices.
+
+For further learning, consider exploring:
+
+- Eric Evans' *Domain-Driven Design: Tackling Complexity in the Heart of Software*
+- Vaughn Vernon's *Implementing Domain-Driven Design*
+- Spring Framework documentation on layered architecture and repositories
+
+---
+
+This concludes the DDD coaching guide for the Money Keeper backend.
+            └── CategoryResponse.java
 
 ## What is Domain-Driven Design (DDD)?
 
@@ -130,6 +377,42 @@ To ensure the robustness and correctness of the DDD implementation, the followin
 - Supports complex business rules and validations effectively.
 
 ---
+## Why Use Domain-Driven Design (DDD)?
+
+DDD helps manage complex business domains by aligning software design closely with business concepts. It promotes a shared language between developers and domain experts, improving communication and reducing misunderstandings. DDD encourages building a rich domain model that encapsulates business rules, leading to more maintainable and flexible software.
+
+## Difference Between DDD and Spring MVC
+
+- **DDD** is an architectural and design approach focused on modeling the business domain with layers such as domain, application, infrastructure, and interfaces. It emphasizes domain logic and separation of concerns.
+- **Spring MVC** is a web framework primarily concerned with handling HTTP requests and responses, routing, and view rendering. It is often used in the interfaces layer of a DDD application but does not prescribe domain modeling or architectural patterns.
+
+In short, Spring MVC can be part of a DDD implementation but does not replace the domain modeling and layered architecture principles of DDD.
+
+## When Should We Choose DDD?
+
+DDD is most beneficial when:
+
+- The business domain is complex and requires deep understanding.
+- The project involves complex business rules and workflows.
+- Long-term maintainability and flexibility are priorities.
+- Collaboration between domain experts and developers is essential.
+- The system needs to evolve with changing business requirements.
+
+For simple CRUD applications or projects with minimal business logic, DDD might be overkill.
+
+## Challenges When Applying DDD
+
+- Requires significant upfront investment in learning and modeling the domain.
+- Can increase initial development time due to complexity.
+- Needs close collaboration with domain experts.
+- Risk of over-engineering if applied to simple domains.
+- Requires discipline to maintain separation of concerns and avoid anemic domain models.
+
+## Can We Apply DDD in Projects Without Direct Database Access?
+
+Yes, DDD can be applied in projects that do not have direct database access, such as those that only call third-party APIs or Java server faces with XHTML and JavaBeans. The key is to focus on modeling the domain and business logic regardless of the data source. The infrastructure layer can adapt to different data sources or external systems, while the domain and application layers remain consistent.
+
+---
 
 ## Summary
 
@@ -140,6 +423,59 @@ For further learning, consider exploring:
 - Eric Evans' *Domain-Driven Design: Tackling Complexity in the Heart of Software*
 - Vaughn Vernon's *Implementing Domain-Driven Design*
 - Spring Framework documentation on layered architecture and repositories
+
+---
+## Abstracting Transaction Management to Reduce Framework Dependency
+
+In the current backend project, the application layer uses Spring Boot's transaction management via the `@Transactional` annotation. While this is a common and effective approach, it does introduce some coupling to the Spring framework, which can make switching to another framework more challenging.
+
+### Trade-offs of Using Spring Transactions Directly
+
+- **Pros:**
+  - Simplifies transaction management with declarative annotations.
+  - Integrates seamlessly with Spring's data access and persistence layers.
+  - Reduces boilerplate code for transaction demarcation.
+
+- **Cons:**
+  - Couples the application layer to Spring-specific APIs.
+  - Makes it harder to migrate to other frameworks or platforms.
+  - Can obscure transaction boundaries if not carefully managed.
+
+### Recommendations to Minimize Coupling
+
+1. **Use a Transaction Script or Unit of Work Pattern:**
+   - Encapsulate transaction boundaries in dedicated classes or services.
+   - The application service calls these transaction scripts, which internally manage transactions.
+   - This isolates transaction management from business logic.
+
+2. **Define a Transaction Manager Interface:**
+   - Create an abstraction for transaction management in the domain or application layer.
+   - Implement this interface using Spring's transaction manager in the infrastructure layer.
+   - This allows swapping implementations without changing domain or application code.
+
+3. **Keep Domain Layer Free of Transaction Annotations:**
+   - Ensure that transaction management annotations or APIs are only in the application or infrastructure layers.
+   - The domain layer remains pure and framework-agnostic.
+
+4. **Use Programmatic Transaction Management if Needed:**
+   - Instead of annotations, use programmatic transaction management in infrastructure classes.
+   - This can provide finer control and clearer separation.
+
+### Example: Transaction Manager Interface
+
+```java
+public interface TransactionManager {
+    void begin();
+    void commit();
+    void rollback();
+}
+```
+
+An implementation using Spring's `PlatformTransactionManager` can be provided in the infrastructure layer.
+
+### Summary
+
+By abstracting transaction management behind interfaces and isolating it from domain logic, you can reduce framework dependency and improve portability. This approach aligns well with DDD principles of separation of concerns and maintaining a pure domain model.
 
 ---
 
