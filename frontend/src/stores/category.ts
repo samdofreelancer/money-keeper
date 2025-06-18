@@ -101,6 +101,29 @@ export const useCategoryStore = defineStore('category', () => {
     return categories.value.find(c => c.id === id)
   }
 
+  async function deleteCategory(id: string) {
+    const index = categories.value.findIndex(c => c.id === id)
+    if (index === -1) {
+      error.value = 'Category not found'
+      throw new Error('Category not found')
+    }
+    // Optimistically remove the category
+    const removedCategory = categories.value[index]
+    categories.value.splice(index, 1)
+    try {
+      loading.value = true
+      error.value = null
+      await categoryApi.delete(id)
+    } catch (e) {
+      // Rollback: add the category back
+      categories.value.splice(index, 0, removedCategory)
+      error.value = 'Failed to delete category'
+      throw e
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     categories,
     expenseCategories,
@@ -110,6 +133,7 @@ export const useCategoryStore = defineStore('category', () => {
     fetchCategories,
     createCategory,
     updateCategory,
-    getCategoryById
+    getCategoryById,
+    deleteCategory
   }
 })

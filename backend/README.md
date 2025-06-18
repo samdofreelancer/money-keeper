@@ -125,6 +125,36 @@ sequenceDiagram
 
 ---
 
+## API Error Response Update
+
+The API now returns structured error responses for category-related errors to facilitate easier client-side handling. The error response format is as follows:
+
+```json
+{
+  "timestamp": "2024-06-01T12:34:56.789",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Category has child categories and cannot be deleted."
+}
+```
+
+### Error Cases
+
+- **CategoryNotFoundException**: Returns HTTP 404 Not Found with a structured error message.
+- **CategoryHasChildException**: Returns HTTP 409 Conflict when attempting to delete a category that has child categories.
+- **CategoryCyclicDependencyException**: Returns HTTP 409 Conflict for cyclic dependency errors.
+- **CategoryConflictException**: Returns HTTP 409 Conflict for other category conflicts.
+
+### Important Notes
+
+- Deleting a category with child categories is not allowed and will result in a `CategoryHasChildException` with a structured error response.
+- Clients should handle these structured error responses accordingly.
+
+Please update your client applications to handle these structured error responses.
+
+mvn failsafe:integration-test failsafe:verify -Pmedium-test
+junit.jupiter.execution.parallel.mode.classes.default = concurrent
+
 If you need further assistance or additional features, please let me know.
 To run both unit and integration tests together, use:
 

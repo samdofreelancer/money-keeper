@@ -14,6 +14,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  * Unit tests for CategoryController.
@@ -74,5 +78,88 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.icon").value("updated_icon"))
                 .andExpect(jsonPath("$.type").value("INCOME"))
                 .andExpect(jsonPath("$.parentId").doesNotExist());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnNoContent() throws Exception {
+        Long categoryId = 1L;
+
+        doNothing().when(categoryService).deleteCategory(categoryId);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnNotFound() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryNotFoundException(categoryId))
+                .when(categoryService).deleteCategory(categoryId);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnConflictIfCategoryHasChildren() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryHasChildException(categoryId))
+                .when(categoryService).deleteCategory(categoryId);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updateCategory_shouldReturnConflictIfCyclicDependency() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException("Cyclic dependency detected"))
+                .when(categoryService).updateCategory(anyLong(), anyString(), anyString(), any(), any());
+
+        String requestBody = "{" +
+                "\"name\":\"Updated Name\"," +
+                "\"icon\":\"updated_icon\"," +
+                "\"type\":\"INCOME\"," +
+                "\"parentId\":null" +
+                "}";
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/categories/{id}", categoryId)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updateCategory_shouldReturnConflictIfCategoryConflictException() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryConflictException("Concurrent modification"))
+                .when(categoryService).updateCategory(anyLong(), anyString(), anyString(), any(), any());
+
+        String requestBody = "{" +
+                "\"name\":\"Updated Name\"," +
+                "\"icon\":\"updated_icon\"," +
+                "\"type\":\"INCOME\"," +
+                "\"parentId\":null" +
+                "}";
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/categories/{id}", categoryId)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void deleteCategory_shouldReturnConflictIfCategoryConflictException() throws Exception {
+        Long categoryId = 1L;
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryConflictException("Concurrent modification"))
+                .when(categoryService).deleteCategory(anyLong());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isConflict());
     }
 }

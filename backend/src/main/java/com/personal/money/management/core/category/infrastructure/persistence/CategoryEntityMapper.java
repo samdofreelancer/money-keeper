@@ -3,15 +3,23 @@ package com.personal.money.management.core.category.infrastructure.persistence;
 import com.personal.money.management.core.category.domain.model.Category;
 
 public class CategoryEntityMapper {
-    public static CategoryEntity toEntity(Category category) {
+
+    public static CategoryEntity toEntity(Category category, CategoryEntity existingEntity, CategoryEntity parentEntity) {
         if (category == null) return null;
-        CategoryEntity entity = new CategoryEntity();
-        entity.setId(category.getId());
-        entity.setName(category.getName());
-        entity.setIcon(category.getIcon());
-        entity.setType(category.getType());
-        entity.setParent(category.getParent() != null ? toEntity(category.getParent()) : null);
-        return entity;
+        if (existingEntity == null) {
+            existingEntity = new CategoryEntity();
+        }
+        existingEntity.setId(category.getId());
+        existingEntity.setName(category.getName());
+        existingEntity.setIcon(category.getIcon());
+        existingEntity.setType(category.getType());
+        existingEntity.setParent(parentEntity);
+        // Preserve version field by not modifying it here
+        return existingEntity;
+    }
+
+    public static CategoryEntity toEntity(Category category) {
+        return toEntity(category, null, null);
     }
 
     public static Category toDomain(CategoryEntity entity) {
