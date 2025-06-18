@@ -17,6 +17,9 @@ public class CategoryEntity {
     @JoinColumn(name = "parent_id")
     private CategoryEntity parent;
 
+    @Version
+    private Long version;
+
     public Long getId() {
         return id;
     }
@@ -55,5 +58,13 @@ public class CategoryEntity {
 
     public void setParent(CategoryEntity parent) {
         this.parent = parent;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }
