@@ -3,22 +3,114 @@
 This document provides a comprehensive overview and coaching guide on how Domain-Driven Design (DDD) principles are implemented in the Money Keeper backend project. It is designed to help developers at all levels understand the architecture, design patterns, best practices, and practical considerations used in this codebase.
 
 ---
-
 ## What is Domain-Driven Design (DDD)?
 
 Domain-Driven Design (DDD) is a software development approach that focuses on modeling software to closely match a complex business domain. It emphasizes collaboration between technical and domain experts to create a shared understanding and a rich domain model that reflects real-world business rules and processes.
 
 Key principles of DDD include:
 
-- **Ubiquitous Language:** A common language shared by developers and domain experts to ensure clear communication.
-- **Bounded Contexts:** Explicit boundaries within which a particular domain model applies, helping to manage complexity.
+- **Ubiquitous Language:** A common language shared by developers and domain experts to ensure clear communication.  
+  _Example:_ In this project, terms like **Category**, **Parent**, **Type**, and **Icon** are used consistently across code and business discussions.
+
+- **Bounded Contexts:** Explicit boundaries within which a particular domain model applies, helping to manage complexity.  
+  _Example:_ The Money Keeper backend currently focuses on the **Category** bounded context, separating concerns from other domains like transactions or users.
+
 - **Entities and Value Objects:** Core building blocks of the domain model representing business concepts with identity and attributes.
+
 - **Aggregates:** Clusters of domain objects treated as a single unit for data changes and consistency.
+
 - **Repositories:** Abstractions for retrieving and persisting aggregates, decoupling domain logic from infrastructure.
+
 - **Domain Services:** Operations that don’t naturally fit within entities or value objects but are part of the domain logic.
+
 - **Layered Architecture:** Separation of concerns into layers such as domain, application, infrastructure, and interfaces to organize code and responsibilities.
 
 ---
+
+## Common Pitfalls in DDD
+
+- **Anemic Domain Model:** Domain objects that only hold data without behavior, leading to procedural code scattered elsewhere.
+
+- **Leaking Infrastructure:** Mixing persistence or framework concerns into the domain layer, reducing purity and testability.
+
+- **Over-Engineering:** Applying DDD patterns to simple domains unnecessarily, increasing complexity.
+
+- **Poor Ubiquitous Language:** Inconsistent terminology between domain experts and developers causing misunderstandings.
+
+---
+
+## Testing and Quality Assurance
+
+To ensure the robustness and correctness of the DDD implementation, the following testing areas are covered:
+
+### 1. Domain Layer Testing
+
+- Unit tests for `Category` entity behavior and invariants.  
+- Tests for domain factory methods (e.g., `CategoryFactory`).  
+- Validation of domain rules such as cyclic dependency prevention.
+
+### 2. Repository Layer Testing
+
+- Unit tests for `CategoryRepository` interface implementations.  
+- Integration tests with the database for `CategoryJpaRepository` and `CategoryRepositoryImpl`.  
+- Verification of CRUD operations and query methods (e.g., `findByParent`).
+
+### 3. Application Layer Testing
+
+- Unit tests for `CategoryService` methods:  
+  - `createCategory`, `updateCategory`, `deleteCategory`.  
+  - Validation logic (parent existence, cyclic dependency).  
+  - Exception handling (e.g., `CategoryNotFoundException`, `CategoryConflictException`).  
+- Concurrency tests to simulate optimistic locking conflicts.
+
+### 4. API Layer Testing
+
+- Integration tests for `CategoryController` endpoints:  
+  - POST `/api/categories`  
+  - GET `/api/categories`  
+  - PUT `/api/categories/{id}`  
+  - DELETE `/api/categories/{id}`  
+- Validation of request payloads and response DTOs.  
+- Error response handling and status codes.
+
+### 5. Cross-Cutting Concerns
+
+- Global exception handling via `GlobalExceptionHandler`.  
+- Transaction management and rollback scenarios.
+
+---
+
+## Benefits of This DDD Approach
+
+- Aligns software design closely with business domain concepts.  
+- Improves code organization, readability, and maintainability.  
+- Facilitates unit testing by isolating domain logic.  
+- Enables flexibility to change infrastructure without affecting domain.  
+- Supports complex business rules and validations effectively.  
+- Enhances team collaboration through clear separation of concerns.
+
+---
+
+## API Layer and DTO Mapping
+
+The API layer uses Data Transfer Objects (DTOs) such as `CategoryRequest` and `CategoryResponse` to maintain separation between the domain model and external clients. This approach:
+
+- Prevents leaking domain internals to clients.  
+- Allows API evolution and versioning without impacting domain logic.  
+- Simplifies validation and serialization concerns.
+
+---
+
+## References and Further Reading
+
+- [Domain-Driven Design by Eric Evans](https://www.domainlanguage.com/ddd/)  
+- [Implementing Domain-Driven Design by Vaughn Vernon](https://www.amazon.com/Implementing-Domain-Driven-Design-Vaughn-Vernon/dp/0321834577)  
+- [Spring Framework Documentation](https://spring.io/projects/spring-framework)  
+- [DDD Community Resources](https://dddcommunity.org/)
+
+---
+
+This concludes the DDD coaching guide for the Money Keeper backend.
 
 ## DDD Implementation in This Backend Project
 
