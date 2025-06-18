@@ -247,6 +247,115 @@ For further learning, consider exploring:
 - Spring Framework documentation on layered architecture and repositories
 
 ---
+## Case Study: Breaking Down a Large Pull Request (PR)
+
+When working on complex features or improvements, large PRs can become difficult to review and manage. Here is a case study and tips on how to effectively break down big PRs into manageable, logical units.
+
+### Example Case Study: Optimistic Locking and Child Category Check
+
+A big PR was split into multiple smaller PRs with clear scopes:
+
+1. **Backend: Add Optimistic Locking and Child Category Check**
+   - Add `@Version` to `CategoryEntity` for optimistic locking.
+   - Update `CategoryService`, `CategoryRepository`, and implementation to:
+     - Check for child categories before delete.
+     - Add `findByParent()` method to repository.
+     - Use setters in `Category` domain model.
+   - Add DB migration for index on `parent_category_id`.
+   - Files involved: `CategoryService.java`, `CategoryRepository.java`, `CategoryRepositoryImpl.java`, `CategoryEntity.java`, `CategoryJpaRepository.java`, `CategoryEntityMapper.java`, `Category.java`, `V2__add_index_on_parent_category_id.sql`.
+
+2. **Backend: Introduce Custom Exceptions for Category Operations**
+   - Add new exception classes: `CategoryConflictException`, `CategoryHasChildException`.
+   - Files: `CategoryConflictException.java`, `CategoryHasChildException.java`.
+
+3. **Backend: Update API Error Handling and Response Structure**
+   - Add `ApiErrorResponse` DTO.
+   - Update `GlobalExceptionHandler` for structured error responses.
+   - Update README to document new error response format.
+   - Files: `ApiErrorResponse.java`, `GlobalExceptionHandler.java`, `backend/README.md`.
+
+4. **Backend: Unit and Integration Test Enhancements**
+   - Add/extend test coverage for concurrency, deletion with children, error cases.
+   - Files: `CategoryServiceTest.java`, `CategoryControllerTest.java`, `CategoryServiceConcurrencyTest.java`.
+
+5. **Frontend: Add Delete Category API & Store Support**
+   - Add delete method in API client and store.
+   - Files: `src/api/category.ts`, `src/stores/category.ts`.
+
+6. **Frontend: Integrate Category Deletion in UI**
+   - Wire up delete confirmation dialog and call store delete method.
+   - File: `CategoryView.vue`.
+
+### Suggested PR Delivery Order
+
+| PR # | Scope/Type                  | Depends On |
+|-------|----------------------------|------------|
+| 1     | DB/model changes            | —          |
+| 2     | Service/repository logic    | 1          |
+| 3     | API handlers/controllers    | 2          |
+| 4     | Frontend store/api          | 3          |
+| 5     | UI                         | 4          |
+| 6     | Tests                      | Each above |
+| 7     | Documentation              | Each above |
+
+### Tips for Breaking Down PRs
+
+- **Identify Logical Units of Change:** Group related changes by feature, bugfix, or refactor.
+- **Categorize by Type:** Backend logic, DB migration, API changes, frontend, tests, docs.
+- **Create PRs in Logical Order:** Foundation first, then dependent features.
+- **Keep PRs Reviewable:** Limit size, single responsibility, clear descriptions.
+- **Use Feature Branches and Stacking:** Stack PRs on previous branches if needed.
+- **Avoid Mixing Concerns:** Separate bugfixes, features, and refactors.
+
+### Additional Suggestions
+
+- Ensure exception messages are clear and user-friendly.
+- Handle null and edge cases in mappers and repositories.
+- Add tests for concurrency and error scenarios.
+- Consider logging and user notifications in frontend error handling.
+- Maintain consistent HTTP status codes for API errors.
+- Use generic exception handlers for unexpected errors.
+- Consider internationalization for error messages if applicable.
+
+---
+
+This case study and tips provide practical guidance for managing large changes effectively, improving code quality, and facilitating team collaboration.
+
+---
+## Reference Pull Requests for Case Study and Implementation
+
+For detailed examples and practical implementation of the concepts discussed in this guide, please refer to the following pull requests in the Money Keeper project repository:
+
+1. **Backend: Add Optimistic Locking and Child Category Check**  
+   [PR #24](https://github.com/samdofreelancer/money-keeper/pull/24)  
+   - Adds `@Version` to `CategoryEntity` for optimistic locking.  
+   - Updates `CategoryService`, `CategoryRepository`, and implementation to check for child categories before delete, add `findByParent()` method, and use setters in the domain model.  
+   - Includes DB migration for index on `parent_category_id`.
+
+2. **Backend: Introduce Custom Exceptions for Category Operations**  
+   [PR #25](https://github.com/samdofreelancer/money-keeper/pull/25)  
+   - Adds new exception classes: `CategoryConflictException`, `CategoryHasChildException`.
+
+3. **Backend: Update API Error Handling and Response Structure**  
+   [PR #26](https://github.com/samdofreelancer/money-keeper/pull/26)  
+   - Adds `ApiErrorResponse` DTO and updates `GlobalExceptionHandler` for structured error responses.  
+   - Updates README to document new error response format.
+
+4. **Backend: Unit and Integration Test Enhancements**  
+   [PR #27](https://github.com/samdofreelancer/money-keeper/pull/27)  
+   - Adds and extends test coverage for concurrency, deletion with children, and error cases.
+
+5. **Frontend: Add Delete Category API & Store Support**  
+   [PR #28](https://github.com/samdofreelancer/money-keeper/pull/28)  
+   - Adds delete method in API client and store.
+
+6. **Frontend: Integrate Category Deletion in UI**  
+   [PR #29](https://github.com/samdofreelancer/money-keeper/pull/29)  
+   - Wires up delete confirmation dialog and calls store delete method.
+
+These PRs provide a practical breakdown of the implementation, testing, and integration of features following DDD principles and best practices.
+
+---
 
 This concludes the DDD coaching guide for the Money Keeper backend.
             └── CategoryResponse.java
