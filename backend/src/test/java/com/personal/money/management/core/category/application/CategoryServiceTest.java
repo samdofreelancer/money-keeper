@@ -2,6 +2,8 @@ package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryNotFoundException;
 import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
+import com.personal.money.management.core.category.application.exception.CategoryConflictException;
+import com.personal.money.management.core.category.application.exception.CategoryHasChildException;
 import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
@@ -9,6 +11,9 @@ import com.personal.money.management.core.category.domain.repository.CategoryRep
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -89,7 +94,7 @@ class CategoryServiceTest {
         Category category2 = new Category(2L, "A", "iconA", CategoryType.EXPENSE, null);
         Category category3 = new Category(3L, "C", "iconC", CategoryType.EXPENSE, null);
 
-        when(categoryRepository.findAllSortedByName()).thenReturn(java.util.List.of(category2, category1, category3));
+        when(categoryRepository.findAllSortedByName()).thenReturn(List.of(category2, category1, category3));
 
         java.util.List<Category> result = categoryService.getAllCategoriesSortedByName();
 
@@ -197,11 +202,13 @@ class CategoryServiceTest {
         Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
 
         when(categoryRepository.findById(categoryId)).thenReturn(category);
+        when(categoryRepository.findByParent(category)).thenReturn(Collections.emptyList());
         doNothing().when(categoryRepository).deleteById(categoryId);
 
         assertDoesNotThrow(() -> categoryService.deleteCategory(categoryId));
 
         verify(categoryRepository).findById(categoryId);
+        verify(categoryRepository).findByParent(category);
         verify(categoryRepository).deleteById(categoryId);
     }
 
@@ -217,6 +224,25 @@ class CategoryServiceTest {
 
         assertEquals("Category not found with id: " + categoryId, exception.getMessage());
         verify(categoryRepository).findById(categoryId);
+        verify(categoryRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteCategory_shouldThrowExceptionIfCategoryHasChildren() {
+        Long categoryId = 1L;
+        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category childCategory = new Category(2L, "ChildCategory", "icon2", CategoryType.EXPENSE, category);
+
+        when(categoryRepository.findById(categoryId)).thenReturn(category);
+        when(categoryRepository.findByParent(category)).thenReturn(List.of(childCategory));
+
+        CategoryHasChildException exception = assertThrows(CategoryHasChildException.class, () -> {
+            categoryService.deleteCategory(categoryId);
+        });
+
+        assertEquals("Cannot delete category with child categories. Category id: " + categoryId, exception.getMessage());
+        verify(categoryRepository).findById(categoryId);
+        verify(categoryRepository).findByParent(category);
         verify(categoryRepository, never()).deleteById(any());
     }
 }
