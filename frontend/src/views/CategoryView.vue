@@ -328,11 +328,12 @@ async function confirmDelete() {
   if (!editingId.value) return
 
   try {
-    // TODO: Implement delete
+    await categoryStore.deleteCategory(editingId.value)
     ElMessage.success('Category deleted successfully')
     deleteDialogVisible.value = false
   } catch (error) {
-    ElMessage.error('Failed to delete category')
+    // Remove explicit error message to avoid duplicate messages
+    deleteDialogVisible.value = false
   }
 }
 
