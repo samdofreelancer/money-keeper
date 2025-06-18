@@ -17,7 +17,18 @@ public class CategoryRepositoryImpl implements CategoryRepository {
 
     @Override
     public Category save(Category category) {
-        CategoryEntity entity = CategoryEntityMapper.toEntity(category);
+        if (category == null) {
+            return null;
+        }
+        CategoryEntity existingEntity = null;
+        if (category.getId() != null) {
+            existingEntity = jpaRepository.findById(category.getId()).orElse(null);
+        }
+        CategoryEntity parentEntity = null;
+        if (category.getParent() != null && category.getParent().getId() != null) {
+            parentEntity = jpaRepository.findById(category.getParent().getId()).orElse(null);
+        }
+        CategoryEntity entity = CategoryEntityMapper.toEntity(category, existingEntity, parentEntity);
         CategoryEntity saved = jpaRepository.save(entity);
         return CategoryEntityMapper.toDomain(saved);
     }
@@ -39,5 +50,16 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Category> findByParent(Category parent) {
+        var parentEntity = CategoryEntityMapper.toEntity(parent);
+        if (parentEntity != null && parentEntity.getId() != null) {
+            parentEntity = jpaRepository.findById(parentEntity.getId()).orElse(null);
+        }
+        return jpaRepository.findByParent(parentEntity).stream()
+                .map(CategoryEntityMapper::toDomain)
+                .toList();
     }
 }
