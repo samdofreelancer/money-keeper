@@ -36,5 +36,9 @@ export const categoryApi = {
   async update(id: string, category: CategoryCreate): Promise<Category> {
     const response = await api.put(`/categories/${id}`, category)
     return response.data
+  },
+
+  async delete(id: string): Promise<void> {
+    await api.delete(`/categories/${id}`)
   }
 }
