@@ -205,11 +205,33 @@ Testing covers domain logic, repositories, application services, and API endpoin
 
 *Testing strategies in DDD include:*
 
-- *Unit tests* for domain entities and value objects to verify business rules and invariants in isolation.
-- *Integration tests* for repositories and infrastructure components to ensure correct data persistence and interaction with external systems.
-- *End-to-end tests* for application services and APIs to validate workflows, use cases, and user interactions.
+- *Unit tests* for domain entities, value objects, and domain services to verify business rules and invariants in isolation. For example, testing that a `Category` entity enforces rules like preventing cyclic parent relationships.
+- *Unit tests* for application services to verify business workflows and use case logic in isolation, ensuring that services like `CategoryService` correctly coordinate domain operations and transactions.
+- *Integration tests* for repositories and infrastructure components to ensure correct data persistence and interaction with external systems, such as database operations through `CategoryRepositoryImpl`.
+- *Unit tests* for Interfaces layer components like controllers to verify request handling, validation, and response formatting.
+- *Integration tests* for Interfaces layer to validate end-to-end API behavior, including routing, middleware, and error handling, for example through `CategoryControllerTest`.
+
+*Examples from the Money Keeper backend:*
+
+- `CategoryTest` demonstrates unit testing of domain entities, ensuring business rules and invariants are correctly enforced.
+- `CategoryServiceTest` shows unit testing of application services with mocked repositories, verifying business workflows and use case logic without external dependencies.
+- `CategoryControllerTest` provides unit tests for the Interfaces layer controllers using mocked services, validating request handling, input validation, and response formatting.
+- `CategoryRepositoryImplIntegrationTest` and `CategoryApiIntegrationTest` cover integration testing of repositories and API endpoints respectively, ensuring correct data persistence and end-to-end API behavior.
+
+*These tests illustrate why each type of testing is important in a real project:*
+
+- Unit tests catch logic errors early and run quickly, facilitating rapid development and refactoring.
+- Integration tests verify that components work together correctly and that external dependencies behave as expected.
+- Together, they provide confidence in both the correctness of individual components and the overall system behavior.
 
 *This layered testing approach helps ensure each part of the system behaves correctly both independently and when integrated.*
+
+*To avoid duplication of effort between unit and integration tests:*
+
+- *Unit tests* should focus on core business logic, edge cases, and isolated component behavior.
+- *Integration tests* should primarily verify interactions between components and external systems, such as database access and API routing.
+- This separation helps maintain efficient test suites that are both fast and comprehensive, reducing redundant coverage while ensuring robustness.
+
 
 ---
 
