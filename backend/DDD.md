@@ -13,26 +13,26 @@ Domain-Driven Design (DDD) is a software development approach that focuses on mo
 - **Bounded Contexts**: Explicit boundaries within which a particular domain model applies, helping to manage complexity.  
   *The Money Keeper backend is organized into bounded contexts to manage complexity. The Category bounded context focuses specifically on managing budget and transaction groupings. This separation ensures that the category model is tailored to its specific domain, without being influenced by unrelated concerns like transaction processing or user authentication. Other bounded contexts, such as transactions or user management, are handled separately to maintain clarity and avoid overlapping models.*
 - **Entities and Value Objects**: Core building blocks representing business concepts.  
-  *Value Objects* are immutable objects that represent descriptive aspects of the domain with no conceptual identity, such as a monetary amount or a date range. They help model concepts that are defined only by their attributes and not by a unique identity.
+  *Value Objects* are immutable objects that represent descriptive aspects of the domain with no conceptual identity, such as a monetary amount or a date range. They help model concepts defined solely by their attributes rather than a unique identity.
 - **Aggregates**: Clusters of domain objects treated as a single unit for data changes and consistency.
 - **Repositories**: Abstractions for retrieving and persisting aggregates.
-- **Domain Services**: Operations that don’t fit within entities or value objects.
-- **Layered Architecture**: Separation of concerns into layers.
+- **Domain Services**: Operations that don’t fit naturally within entities or value objects.
+- **Layered Architecture**: Separation of concerns into distinct layers.
 
 ---
 
 ## Ubiquitous Language: Money Keeper Glossary
 
 - **Category**: Represents a budget or transaction grouping (e.g., Food).
-- **Parent**: A parent category, allowing hierarchies.
+- **Parent**: A parent category, allowing hierarchical relationships.
 - **Type**: The kind of category (e.g., Expense, Income).
-- **Icon**: Visual icon or symbol for a category.
+- **Icon**: Visual icon or symbol representing a category.
 
 ---
 
 ## Architecture Overview
 
-The Money Keeper backend is built using **Domain-Driven Design (DDD)** principles, which emphasize a clear separation of concerns and a focus on the core business domain. The architecture is organized into four distinct layers: **Interfaces**, **Application**, **Domain**, and **Infrastructure**. Each layer has a specific role, ensuring the system is modular, maintainable, and scalable.
+The Money Keeper backend is built using **Domain-Driven Design (DDD)** principles, emphasizing a clear separation of concerns and a focus on the core business domain. The architecture is organized into four distinct layers: **Interfaces**, **Application**, **Domain**, and **Infrastructure**. Each layer has a specific role, ensuring the system is modular, maintainable, and scalable.
 
 ### Layered Architecture
 
@@ -64,7 +64,7 @@ The Money Keeper backend is built using **Domain-Driven Design (DDD)** principle
      - Repository Implementations (e.g., `CategoryRepositoryImpl`)  
      - Database Access (e.g., JPA, JDBC)  
      - External Service Clients  
-   - **Responsibility**: Provides concrete implementations for the interfaces defined in the Domain layer, keeping technical concerns isolated.
+   - **Responsibility**: Provides concrete implementations for the interfaces defined in the Domain layer, isolating technical concerns.
 
 ### Architecture Diagram
 
@@ -83,12 +83,12 @@ The following textual diagram illustrates how the layers interact:
                 ↓
 +--------------------------------------+
 |           Domain Layer               |
-|  (Entities, Repository Interfaces)   |
+|  (Entities, Repository Interfaces)  |
 +--------------------------------------+
                 ↑
 +--------------------------------------+
 |        Infrastructure Layer          |
-|  (Repository Implementations, DB)    |
+|  (Repository Implementations, DB)   |
 +--------------------------------------+
 ```
 
@@ -231,7 +231,6 @@ Testing covers domain logic, repositories, application services, and API endpoin
 - *Unit tests* should focus on core business logic, edge cases, and isolated component behavior.
 - *Integration tests* should primarily verify interactions between components and external systems, such as database access and API routing.
 - This separation helps maintain efficient test suites that are both fast and comprehensive, reducing redundant coverage while ensuring robustness.
-
 
 ---
 
