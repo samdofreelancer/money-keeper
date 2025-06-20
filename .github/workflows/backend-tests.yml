@@ -38,6 +38,8 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2
     needs: build
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Print working directory before unit tests
         run: pwd
       - name: List files in working directory before unit tests
@@ -55,6 +57,8 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2
     needs: build
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Print working directory before integration tests
         run: pwd
       - name: List files in working directory before integration tests
