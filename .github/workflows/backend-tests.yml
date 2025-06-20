@@ -57,7 +57,7 @@ jobs:
         with:
           name: Unit Tests
           path: backend/target/surefire-reports/*.xml
-          reporter: junit
+          reporter: JUnit
           fail-on-error: true
 
   integration-test:
@@ -87,5 +87,5 @@ jobs:
         with:
           name: Integration Tests
           path: backend/target/surefire-reports/*.xml
-          reporter: junit
+          reporter: JUnit
           fail-on-error: true
