@@ -45,10 +45,20 @@ jobs:
         run: mvn test -Psmall-test
         working-directory: ./backend
       - name: Upload Surefire Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: surefire-report
           path: backend/target/surefire-reports/
+
+      - name: Publish Unit Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        continue-on-error: true
+        with:
+          name: Unit Tests
+          path: backend/target/surefire-reports/*.xml
+          reporter: junit
+          fail-on-error: true
 
   integration-test:
     name: Run Integration Tests
@@ -65,7 +75,17 @@ jobs:
         run: mvn test -Pmedium-test
         working-directory: ./backend
       - name: Upload Surefire Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: surefire-report
           path: backend/target/surefire-reports/
+
+      - name: Publish Integration Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        continue-on-error: true
+        with:
+          name: Integration Tests
+          path: backend/target/surefire-reports/*.xml
+          reporter: junit
+          fail-on-error: true
