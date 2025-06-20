@@ -55,6 +55,9 @@ jobs:
           name: surefire-report-small
           path: backend/target/surefire-reports/
 
+      - name: List Surefire Report Directory
+        run: ls -la backend/target/surefire-reports
+
       - name: Publish Unit Test Results
         run: |
           cd .github/actions/custom-test-reporter
@@ -88,6 +91,9 @@ jobs:
         with:
           name: surefire-report-medium
           path: backend/target/surefire-reports/
+
+      - name: List Surefire Report Directory
+        run: ls -la backend/target/surefire-reports
 
       - name: Publish Integration Test Results
         run: |
