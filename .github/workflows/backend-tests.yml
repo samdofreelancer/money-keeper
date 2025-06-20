@@ -47,15 +47,16 @@ jobs:
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-report
+          name: surefire-report-small
           path: backend/target/surefire-reports/
 
       - name: Publish Unit Test Results
-        uses: ./.github/actions/custom-test-reporter
+        run: |
+          cd .github/actions/custom-test-reporter
+          npm install
+          node index.js --report-path ../../backend/target/surefire-reports
         if: always()
         continue-on-error: true
-        with:
-          report-path: backend/target/surefire-reports
 
   integration-test:
     name: Run Integration Tests
@@ -74,7 +75,7 @@ jobs:
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-report
+          name: surefire-report-medium
           path: backend/target/surefire-reports/
 
       - name: Publish Integration Test Results
