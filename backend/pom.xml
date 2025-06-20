@@ -83,6 +83,7 @@
                 <configuration>
                     <includes>
                         <include>**/*Test.java</include>
+                        <include>**/*TestSuite.java</include>
                     </includes>
                     <excludes>
                         <exclude>**/*IntegrationTest.java</exclude>
