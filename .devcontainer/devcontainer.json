@@ -14,7 +14,6 @@
     "redhat.vscode-yaml",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "octref.vetur",
     "vue.volar"
   ],
   "forwardPorts": [
