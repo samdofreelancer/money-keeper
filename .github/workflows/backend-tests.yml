@@ -27,8 +27,8 @@ jobs:
         run: ls -la
 
       - name: Build project
-        run: cd backend && mvn clean install -DskipTests
-        working-directory: /github/workspace
+        run: mvn clean install -DskipTests
+        working-directory: ./backend
 
   unit-test:
     name: Run Unit Tests
@@ -44,8 +44,8 @@ jobs:
         run: ls -la
 
       - name: Run unit tests
-        run: cd backend && mvn test -Psmall-test
-        working-directory: /github/workspace
+        run: mvn test -Psmall-test
+        working-directory: ./backend
 
   integration-test:
     name: Run Integration Tests
@@ -61,5 +61,5 @@ jobs:
         run: ls -la
 
       - name: Run integration tests
-        run: cd backend && mvn test -Pmedium-test
-        working-directory: /github/workspace
+        run: mvn test -Pmedium-test
+        working-directory: ./backend
