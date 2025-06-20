@@ -26,6 +26,7 @@ jobs:
 
       - name: Build project
         run: cd backend && mvn clean install -DskipTests
+        working-directory: /github/workspace
 
   unit-test:
     name: Run Unit Tests
@@ -40,6 +41,7 @@ jobs:
 
       - name: Run unit tests
         run: cd backend && mvn test -Psmall-test
+        working-directory: /github/workspace
 
   integration-test:
     name: Run Integration Tests
@@ -54,3 +56,4 @@ jobs:
 
       - name: Run integration tests
         run: cd backend && mvn test -Pmedium-test
+        working-directory: /github/workspace
