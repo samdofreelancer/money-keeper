@@ -51,14 +51,11 @@ jobs:
           path: backend/target/surefire-reports/
 
       - name: Publish Unit Test Results
-        uses: dorny/test-reporter@v1
+        uses: ./.github/actions/custom-test-reporter
         if: always()
         continue-on-error: true
         with:
-          name: Unit Tests
-          path: backend/target/surefire-reports/*.xml
-          reporter: junitxml
-          fail-on-error: true
+          report-path: backend/target/surefire-reports
 
   integration-test:
     name: Run Integration Tests
@@ -81,11 +78,8 @@ jobs:
           path: backend/target/surefire-reports/
 
       - name: Publish Integration Test Results
-        uses: dorny/test-reporter@v1
+        uses: ./.github/actions/custom-test-reporter
         if: always()
         continue-on-error: true
         with:
-          name: Integration Tests
-          path: backend/target/surefire-reports/*.xml
-          reporter: junitxml
-          fail-on-error: true
+          report-path: backend/target/surefire-reports

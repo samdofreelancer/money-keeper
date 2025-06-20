@@ -1,0 +1,9 @@
+name: 'Custom Surefire Test Reporter'
+description: 'Custom GitHub Action to parse Surefire XML reports and publish test results in GitHub Actions UI'
+inputs:
+  report-path:
+    description: 'Path to Surefire XML reports'
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'
