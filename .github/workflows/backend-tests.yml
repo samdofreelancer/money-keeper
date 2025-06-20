@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=bind,source=${{ github.workspace }},target=/github/workspace --mount type=volume,source=maven-repo,target=/root/.m2
+      options: --mount type=volume,source=maven-repo,target=/root/.m2
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=bind,source=${{ github.workspace }},target=/github/workspace --mount type=volume,source=maven-repo,target=/root/.m2
+      options: --mount type=volume,source=maven-repo,target=/root/.m2
     needs: build
     steps:
       - name: Print working directory before unit tests
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=bind,source=${{ github.workspace }},target=/github/workspace --mount type=volume,source=maven-repo,target=/root/.m2
+      options: --mount type=volume,source=maven-repo,target=/root/.m2
     needs: build
     steps:
       - name: Print working directory before integration tests
