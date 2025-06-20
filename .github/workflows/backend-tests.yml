@@ -21,8 +21,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Print working directory before build
+        run: pwd
+
       - name: Build project
-        run: mvn clean install -DskipTests
+        run: cd backend && mvn clean install -DskipTests
 
   unit-test:
     name: Run Unit Tests
@@ -32,8 +35,11 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2 --mount type=volume,source=maven-build,target=/github/workspace/target
     needs: build
     steps:
+      - name: Print working directory before unit tests
+        run: pwd
+
       - name: Run unit tests
-        run: mvn test -Psmall-test
+        run: cd backend && mvn test -Psmall-test
 
   integration-test:
     name: Run Integration Tests
@@ -43,5 +49,8 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2 --mount type=volume,source=maven-build,target=/github/workspace/target
     needs: build
     steps:
+      - name: Print working directory before integration tests
+        run: pwd
+
       - name: Run integration tests
-        run: mvn test -Pmedium-test
+        run: cd backend && mvn test -Pmedium-test
