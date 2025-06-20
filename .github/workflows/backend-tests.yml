@@ -41,6 +41,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
       - name: Run unit tests
         run: mvn test -Psmall-test
         working-directory: ./backend
@@ -51,11 +56,12 @@ jobs:
           path: backend/target/surefire-reports/
 
       - name: Publish Unit Test Results
-        uses: ./.github/actions/custom-test-reporter
+        run: |
+          cd .github/actions/custom-test-reporter
+          npm install
+          node index.js --report-path ../../backend/target/surefire-reports
         if: always()
         continue-on-error: true
-        with:
-          report-path: backend/target/surefire-reports
 
   integration-test:
     name: Run Integration Tests
@@ -68,6 +74,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
       - name: Run integration tests
         run: mvn test -Pmedium-test
         working-directory: ./backend
@@ -78,8 +88,9 @@ jobs:
           path: backend/target/surefire-reports/
 
       - name: Publish Integration Test Results
-        uses: ./.github/actions/custom-test-reporter
+        run: |
+          cd .github/actions/custom-test-reporter
+          npm install
+          node index.js --report-path ../../backend/target/surefire-reports
         if: always()
         continue-on-error: true
-        with:
-          report-path: backend/target/surefire-reports
