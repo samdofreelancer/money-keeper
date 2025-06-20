@@ -60,6 +60,8 @@ jobs:
           cd .github/actions/custom-test-reporter
           npm install
           node index.js --report-path ../../backend/target/surefire-reports
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: always()
         continue-on-error: true
 
