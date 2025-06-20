@@ -51,12 +51,11 @@ jobs:
           path: backend/target/surefire-reports/
 
       - name: Publish Unit Test Results
-        run: |
-          cd .github/actions/custom-test-reporter
-          npm install
-          node index.js --report-path ../../backend/target/surefire-reports
+        uses: ./.github/actions/custom-test-reporter
         if: always()
         continue-on-error: true
+        with:
+          report-path: backend/target/surefire-reports
 
   integration-test:
     name: Run Integration Tests
