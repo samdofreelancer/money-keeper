@@ -40,14 +40,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Print working directory before unit tests
-        run: pwd
-      - name: List files in working directory before unit tests
-        run: ls -la
 
       - name: Run unit tests
         run: mvn test -Psmall-test
         working-directory: ./backend
+      - name: Upload Surefire Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: surefire-report
+          path: backend/target/surefire-reports/
 
   integration-test:
     name: Run Integration Tests
@@ -59,11 +60,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Print working directory before integration tests
-        run: pwd
-      - name: List files in working directory before integration tests
-        run: ls -la
 
       - name: Run integration tests
         run: mvn test -Pmedium-test
         working-directory: ./backend
+      - name: Upload Surefire Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: surefire-report
+          path: backend/target/surefire-reports/
