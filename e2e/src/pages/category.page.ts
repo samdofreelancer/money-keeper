@@ -95,11 +95,22 @@ export class CategoryPage {
   }
 
   async submitCategoryForm() {
+    console.log("Submitting category form...");
     await this.createButton.click();
-    // Increase timeout to 10 seconds for form to detach
-    await this.categoryForm.waitFor({ state: "detached", timeout: 10000 });
-    // Optionally wait for success message or dialog to close
-    await this.page.waitForTimeout(500); // small delay to ensure UI updates
+    console.log(
+      "Clicked create button, waiting for dialog to close and success message..."
+    );
+    // Wait for dialog to close
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "hidden",
+      timeout: 10000,
+    });
+    console.log("Dialog closed.");
+    // Wait for success message to appear
+    await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
+    console.log("Success message appeared.");
+    // Small delay to ensure UI updates
+    await this.page.waitForTimeout(500);
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
