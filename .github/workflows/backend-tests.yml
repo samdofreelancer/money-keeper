@@ -21,6 +21,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Print working directory before build
         run: pwd
       - name: List files in working directory before build
@@ -40,6 +48,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Run unit tests
         run: mvn clean test -Psmall-test
@@ -61,6 +77,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
         working-directory: ./backend
@@ -69,3 +93,32 @@ jobs:
         with:
           name: surefire-report-medium
           path: backend/target/medium-test-reports/
+
+  coverage:
+    name: Generate and Upload Code Coverage Report
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3.8.6-openjdk-18
+      options: --mount type=volume,source=maven-repo,target=/root/.m2
+    needs: [unit-test, integration-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run coverage report
+        run: mvn jacoco:report
+        working-directory: ./backend
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/target/site/jacoco/
