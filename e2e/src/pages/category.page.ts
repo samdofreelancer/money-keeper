@@ -96,7 +96,10 @@ export class CategoryPage {
 
   async submitCategoryForm() {
     await this.createButton.click();
-    await this.categoryForm.waitFor({ state: "detached" });
+    // Increase timeout to 10 seconds for form to detach
+    await this.categoryForm.waitFor({ state: "detached", timeout: 10000 });
+    // Optionally wait for success message or dialog to close
+    await this.page.waitForTimeout(500); // small delay to ensure UI updates
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
