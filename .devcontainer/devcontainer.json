@@ -1,0 +1,25 @@
+{
+  "name": "Money Keeper Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  "extensions": [
+    "vscjava.vscode-java-pack",
+    "redhat.vscode-yaml",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "vue.volar"
+  ],
+  "forwardPorts": [
+    5173,
+    8080
+  ],
+  "postCreateCommand": "cd backend && mvn dependency:resolve && cd ../frontend && npm install && cd ../e2e && npm install",
+  "remoteUser": "vscode"
+}
