@@ -37,11 +37,13 @@ When(
     logger.info(
       `Filling category form with test data: ${categoryName}, ${icon}, ${categoryType}, ${parentCategory}`
     );
+    // Convert "None" to null for parentCategory
+    const parentCat = parentCategory === "None" ? null : parentCategory;
     await categoryPage.fillCategoryForm(
       categoryName,
       icon,
       categoryType,
-      parentCategory
+      parentCat
     );
   }
 );
