@@ -81,6 +81,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M7</version>
                 <configuration>
+                    <skip>${skipUnitTests}</skip>
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*TestSuite.java</include>
@@ -107,6 +108,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
+                            <reportsDirectory>${project.build.directory}/small-test-reports</reportsDirectory>
                             <includes>
                                 <include>**/*Test.java</include>
                             </includes>
@@ -125,7 +127,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.0.0-M7</version>
                         <configuration>
+                            <reportsDirectory>${project.build.directory}/medium-test-reports</reportsDirectory>
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
