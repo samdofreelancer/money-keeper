@@ -1,6 +1,7 @@
 import { Given, When, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 
+import { getAllCategories } from "../../api/categoryApiHelper";
 import { CategoryPage } from "../../pages/category.page";
 import { config } from "../../config/env.config";
 import { logger } from "../../support/logger";
@@ -17,8 +18,18 @@ When("I navigate to the Categories page", async function () {
 });
 
 Then("I should see a list of categories", async function () {
-  const count = await categoryPage.getCategoryCount();
-  expect(count).toBeGreaterThan(0);
+  // Fetch categories from backend API
+  const categories = await getAllCategories();
+
+  // Verify the UI shows the categories fetched from backend
+  const uiCount = await categoryPage.getCategoryCount();
+  expect(uiCount).toBe(categories.length);
+
+  // Optionally, verify category names in UI match API data
+  for (const category of categories) {
+    const isPresent = await categoryPage.isCategoryPresent(category.name);
+    expect(isPresent).toBe(true);
+  }
 });
 
 When("I open the create category dialog", async function () {
