@@ -66,8 +66,35 @@ When(
   }
 );
 
+
 When("I submit the category form", async function () {
-  await categoryPage.submitCategoryForm();
+  console.log("Determining which submit button to click...");
+  const buttonText = await this.page.evaluate(() => {
+    // Find the primary button inside the dialog form or fallback to any primary button visible
+    const dialog = document.querySelector(".el-dialog__wrapper");
+    console.log("Dialog found:", dialog ? "Yes" : "No");
+    console.log("Searching for primary button inside dialog...");
+    console.log("Dialog content:", dialog ? dialog.innerHTML : "No dialog content");
+    let saveButton = null;
+    if (dialog) {
+      saveButton = dialog.querySelector("button.el-button.el-button--primary span[data-testid='button-submit']") || dialog.querySelector("button.el-button.el-button--primary span");
+    }
+    if (!saveButton) {
+      // fallback: find any primary button span visible on page
+      const buttons = Array.from(document.querySelectorAll("button.el-button.el-button--primary span"));
+      saveButton = buttons.find(btn => btn instanceof HTMLElement && btn.offsetParent !== null) || null;
+    }
+    return saveButton && saveButton.textContent ? saveButton.textContent.trim() : null;
+  });
+  console.log(`Submit button text found: ${buttonText}`);
+  if (buttonText === "Save") {
+    console.log("Clicking Save button...");
+    await categoryPage.submitSaveForm();
+  } else {
+    console.log("Clicking Create button...");
+    await categoryPage.submitCreateForm();
+  }
+  console.log("Submit action completed.");
 });
 
 Then(

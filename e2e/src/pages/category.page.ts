@@ -94,34 +94,36 @@ export class CategoryPage {
     }
   }
 
-  async submitCategoryForm() {
-    console.log("Submitting category form...");
-    const buttonText = await this.page.evaluate(() => {
-      const saveButton = document.querySelector(
-        "button.el-button.el-button--primary span"
-      );
-      return saveButton ? saveButton.textContent : null;
-    });
-    if (buttonText === "Save") {
-      const saveButton = this.page.locator('button:has-text("Save")');
-      await saveButton.click();
-    } else {
-      await this.createButton.click();
-    }
-    console.log(
-      "Clicked submit button, waiting for dialog to close and success message..."
-    );
-    // Wait for dialog to close
-    await this.page.waitForSelector(".el-dialog__wrapper", {
-      state: "hidden",
-      timeout: 10000,
-    });
-    console.log("Dialog closed.");
-    // Wait for success message to appear
-    await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
-    console.log("Success message appeared.");
-    // Removed fixed waitForTimeout(500) to speed up tests
-  }
+async submitSaveForm() {
+  console.log("Submitting category form with Save button...");
+  const saveButton = this.page.locator('button:has-text("Save")');
+  await saveButton.click();
+  console.log(
+    "Clicked Save button, waiting for dialog to close and success message..."
+  );
+  await this.page.waitForSelector(".el-dialog__wrapper", {
+    state: "hidden",
+    timeout: 10000,
+  });
+  console.log("Dialog closed.");
+  await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
+  console.log("Success message appeared.");
+}
+
+async submitCreateForm() {
+  console.log("Submitting category form with Create button...");
+  await this.createButton.click();
+  console.log(
+    "Clicked Create button, waiting for dialog to close and success message..."
+  );
+  await this.page.waitForSelector(".el-dialog__wrapper", {
+    state: "hidden",
+    timeout: 10000,
+  });
+  console.log("Dialog closed.");
+  await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
+  console.log("Success message appeared.");
+}
 
   async isCategoryPresent(name: string): Promise<boolean> {
     const newCategory = this.page.locator(".category-tree .tree-node-content", {

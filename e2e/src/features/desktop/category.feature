@@ -5,6 +5,7 @@ Feature: Category management
     When I navigate to the Categories page
     Then I should see a list of categories
 
+  @focus
   Scenario Outline: Create a new category
     Given I open the homepage
     When I navigate to the Categories page
@@ -18,6 +19,7 @@ Feature: Category management
       | Test Category  | Grid          | EXPENSE      | None           |
       | Sample Category| Shopping      | INCOME       | None           |
 
+  @focus
   Scenario Outline: Edit an existing category
     Given I open the homepage
     When I navigate to the Categories page
