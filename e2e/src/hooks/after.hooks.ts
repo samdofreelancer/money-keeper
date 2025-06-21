@@ -47,6 +47,8 @@ AfterAll(async function (this: World) {
       }
     } catch (error) {
       logger.error(`Error during category cleanup: ${error}`);
+      // Fail the test suite on cleanup errors for stricter reliability
+      throw error;
     }
   }
 });

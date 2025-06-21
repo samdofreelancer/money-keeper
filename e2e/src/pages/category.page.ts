@@ -15,14 +15,14 @@ export class CategoryPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.categoriesMenuItem = page.locator(
-      'li.el-menu-item:has-text("Categories")'
+    this.categoriesMenuItem = page.locator('[data-testid="page-title"]');
+    this.categoryItems = page.locator('[data-testid="tree-node-content"]');
+    this.addCategoryButton = page.locator(
+      '[data-testid="add-category-button"]'
     );
-    this.categoryItems = page.locator(".category-tree .tree-node-content");
-    this.addCategoryButton = page.locator('button:has-text("Add Category")');
-    this.categoryForm = page.locator("form.category-form");
+    this.categoryForm = page.locator('[data-testid="category-form"]');
     this.categoryNameInput = page.locator(
-      'input[placeholder="Enter category name"]'
+      '[data-testid="input-category-name"]'
     );
     this.categoryTypeSelectWrapper = page
       .locator('div.el-select__wrapper:has-text("Select")')
@@ -31,10 +31,10 @@ export class CategoryPage {
       .locator(".el-select-dropdown:visible")
       .first();
     this.categoryTypeDropdownItemGrid = page.locator(
-      '.el-select-dropdown__item:has-text("Grid")'
+      '[data-testid="option-icon"]:has-text("Grid")'
     );
     this.categoryTypeRadioExpense = page.locator(
-      'label.el-radio-button:has(input[value="EXPENSE"])'
+      '[data-testid="radio-expense"]'
     );
     this.createButton = page.locator('button:has-text("Create")');
   }
@@ -120,8 +120,7 @@ export class CategoryPage {
     // Wait for success message to appear
     await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
     console.log("Success message appeared.");
-    // Small delay to ensure UI updates
-    await this.page.waitForTimeout(500);
+    // Removed fixed waitForTimeout(500) to speed up tests
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
@@ -169,21 +168,19 @@ export class CategoryPage {
   }
 
   async searchCategories(query: string) {
-    const searchInput = this.page.locator(
-      'input[placeholder="Search categories..."]'
-    );
+    const searchInput = this.page.locator('[data-testid="search-input"]');
     await searchInput.fill(query);
-    // Wait for UI to update
-    await this.page.waitForTimeout(500);
+    // Wait for UI to update by waiting for category tree to update
+    await this.page.waitForSelector('[data-testid="category-tree"]');
   }
 
   async filterByTab(tabName: string) {
     const tab = this.page.locator(
-      `.category-tabs .el-tab-pane[aria-label="${tabName}"]`
+      `[data-testid="tab-${tabName.toLowerCase()}"]`
     );
     await tab.click();
-    // Wait for UI to update
-    await this.page.waitForTimeout(500);
+    // Wait for UI to update by waiting for category tree to update
+    await this.page.waitForSelector('[data-testid="category-tree"]');
   }
 
   async clearCategoryNameField() {
