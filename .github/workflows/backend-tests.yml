@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-report-small
-          path: backend/target/surefire-reports/
+          path: backend/target/small-test-reports/
 
   integration-test:
     name: Run Integration Tests
@@ -68,4 +68,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-report-medium
-          path: backend/target/surefire-reports/
+          path: backend/target/medium-test-reports/
