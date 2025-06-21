@@ -37,8 +37,8 @@ When(
     logger.info(
       `Filling category form with test data: ${categoryName}, ${icon}, ${categoryType}, ${parentCategory}`
     );
-    // Convert "None" to null for parentCategory
-    const parentCat = parentCategory === "None" ? null : parentCategory;
+    // Convert "None" to empty string for parentCategory to satisfy string type
+    const parentCat = parentCategory === "None" ? "" : parentCategory;
     await categoryPage.fillCategoryForm(
       categoryName,
       icon,
