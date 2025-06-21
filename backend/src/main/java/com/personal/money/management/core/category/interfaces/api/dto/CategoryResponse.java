@@ -1,10 +1,9 @@
 package com.personal.money.management.core.category.interfaces.api.dto;
 
-import com.personal.money.management.core.category.domain.model.CategoryType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
