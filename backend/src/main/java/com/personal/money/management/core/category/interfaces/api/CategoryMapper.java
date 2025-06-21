@@ -9,12 +9,12 @@ public class CategoryMapper {
         if (category == null) {
             return null;
         }
-        return new CategoryResponse(
-                category.getId(),
-                category.getName(),
-                category.getIcon(),
-                category.getType(),
-                category.getParent() != null ? category.getParent().getId() : null
-        );
+        CategoryResponse response = new CategoryResponse();
+        response.setId(category.getId());
+        response.setName(category.getName());
+        response.setIcon(category.getIcon());
+        response.setType(category.getType());
+        response.setParentId(category.getParent() != null ? category.getParent().getId() : null);
+        return response;
     }
 }

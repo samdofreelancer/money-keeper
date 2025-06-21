@@ -2,14 +2,15 @@ package com.personal.money.management.core.category.interfaces.api.dto;
 
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class CategoryResponse extends AbstractCategoryDto {
-    private Long id;
+public abstract class AbstractCategoryDto {
+    private String name;
+    private String icon;
+    private CategoryType type;
+    private Long parentId;
 }
