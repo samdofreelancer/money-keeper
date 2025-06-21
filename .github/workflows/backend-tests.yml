@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-report-small
-          path: backend/target/small-test-reports/
+          path: ./backend/target/small-test-reports/
 
   integration-test:
     name: Run Integration Tests
@@ -92,33 +92,38 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: surefire-report-medium
-          path: backend/target/medium-test-reports/
+          path: ./backend/target/medium-test-reports/
 
-  coverage:
-    name: Generate and Upload Code Coverage Report
+  sonarqube:
+    name: Build and analyze
     runs-on: ubuntu-latest
     container:
       image: maven:3.8.6-openjdk-18
       options: --mount type=volume,source=maven-repo,target=/root/.m2
     needs: [unit-test, integration-test]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu' # Alternative distribution options are available.
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Run coverage report
-        run: mvn jacoco:report
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=samdofreelancer_money-keeper
         working-directory: ./backend
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: backend/target/site/jacoco/
