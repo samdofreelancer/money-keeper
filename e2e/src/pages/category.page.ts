@@ -96,9 +96,20 @@ export class CategoryPage {
 
   async submitCategoryForm() {
     console.log("Submitting category form...");
-    await this.createButton.click();
+    const buttonText = await this.page.evaluate(() => {
+      const saveButton = document.querySelector(
+        "button.el-button.el-button--primary span"
+      );
+      return saveButton ? saveButton.textContent : null;
+    });
+    if (buttonText === "Save") {
+      const saveButton = this.page.locator('button:has-text("Save")');
+      await saveButton.click();
+    } else {
+      await this.createButton.click();
+    }
     console.log(
-      "Clicked create button, waiting for dialog to close and success message..."
+      "Clicked submit button, waiting for dialog to close and success message..."
     );
     // Wait for dialog to close
     await this.page.waitForSelector(".el-dialog__wrapper", {
@@ -118,5 +129,64 @@ export class CategoryPage {
       hasText: name,
     });
     return (await newCategory.count()) > 0;
+  }
+
+  // New methods added below
+
+  async openEditCategoryDialog(categoryName: string) {
+    const categoryNode = this.page.locator(
+      ".category-tree .tree-node-content",
+      {
+        hasText: categoryName,
+      }
+    );
+    const editButton = categoryNode.locator("button.el-button--primary");
+    await editButton.click();
+    await this.categoryForm.waitFor();
+  }
+
+  async openDeleteCategoryDialog(categoryName: string) {
+    const categoryNode = this.page.locator(
+      ".category-tree .tree-node-content",
+      {
+        hasText: categoryName,
+      }
+    );
+    const deleteButton = categoryNode.locator("button.el-button--danger");
+    await deleteButton.click();
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "visible",
+    });
+  }
+
+  async confirmDelete() {
+    const confirmButton = this.page.locator(
+      '.el-dialog__wrapper button:has-text("Delete")'
+    );
+    await confirmButton.click();
+    await this.page.waitForSelector(".el-dialog__wrapper", { state: "hidden" });
+    await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
+  }
+
+  async searchCategories(query: string) {
+    const searchInput = this.page.locator(
+      'input[placeholder="Search categories..."]'
+    );
+    await searchInput.fill(query);
+    // Wait for UI to update
+    await this.page.waitForTimeout(500);
+  }
+
+  async filterByTab(tabName: string) {
+    const tab = this.page.locator(
+      `.category-tabs .el-tab-pane[aria-label="${tabName}"]`
+    );
+    await tab.click();
+    // Wait for UI to update
+    await this.page.waitForTimeout(500);
+  }
+
+  async clearCategoryNameField() {
+    await this.categoryNameInput.fill("");
   }
 }

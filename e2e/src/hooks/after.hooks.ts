@@ -1,4 +1,9 @@
-import { After, World, ITestCaseHookParameter } from "@cucumber/cucumber";
+import {
+  After,
+  AfterAll,
+  World,
+  ITestCaseHookParameter,
+} from "@cucumber/cucumber";
 
 import { logger } from "../support/logger";
 import {
@@ -7,18 +12,31 @@ import {
   Category,
 } from "../api/categoryApiHelper";
 
+const createdCategoryNamesGlobal: string[] = [];
+
 After(async function (
   this: World & { createdCategoryNames?: string[] },
   { pickle, result }: ITestCaseHookParameter
 ) {
   logger.info(
-    `After scenario: Cleaning up categories and closing browser for scenario "${pickle.name}" with status ${result?.status}`
+    `After scenario: Closing browser for scenario "${pickle.name}" with status ${result?.status}`
   );
 
+  // Accumulate created category names globally for cleanup after all scenarios
   if (this.createdCategoryNames && this.createdCategoryNames.length > 0) {
+    createdCategoryNamesGlobal.push(...this.createdCategoryNames);
+  }
+
+  await this.closeBrowser();
+});
+
+AfterAll(async function (this: World) {
+  logger.info("AfterAll: Cleaning up categories and closing browser");
+
+  if (createdCategoryNamesGlobal.length > 0) {
     try {
       const allCategories: Category[] = await getAllCategories();
-      for (const name of this.createdCategoryNames) {
+      for (const name of createdCategoryNamesGlobal) {
         const category = allCategories.find(
           (cat: Category) => cat.name === name
         );
@@ -31,6 +49,4 @@ After(async function (
       logger.error(`Error during category cleanup: ${error}`);
     }
   }
-
-  await this.closeBrowser();
 });

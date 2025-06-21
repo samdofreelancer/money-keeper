@@ -75,3 +75,70 @@ Then(
     expect(isPresent).toBe(true);
   }
 );
+
+// New step definitions added below
+
+When(
+  "I open the edit category dialog for {string}",
+  async function (categoryName: string) {
+    await categoryPage.openEditCategoryDialog(categoryName);
+  }
+);
+
+When(
+  "I open the delete category dialog for {string}",
+  async function (categoryName: string) {
+    await categoryPage.openDeleteCategoryDialog(categoryName);
+  }
+);
+
+When("I confirm the delete action", async function () {
+  await categoryPage.confirmDelete();
+});
+
+When("I search categories with query {string}", async function (query: string) {
+  await categoryPage.searchCategories(query);
+});
+
+When("I filter categories by tab {string}", async function (tabName: string) {
+  await categoryPage.filterByTab(tabName);
+});
+
+Then(
+  "I should not see category {string} in the list",
+  async function (categoryName: string) {
+    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    expect(isPresent).toBe(false);
+  }
+);
+
+Then(
+  "I should see category {string} in the list",
+  async function (categoryName: string) {
+    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    expect(isPresent).toBe(true);
+  }
+);
+
+When("I clear the category name field", async function () {
+  await categoryPage.clearCategoryNameField();
+});
+
+Then(
+  "I should see the updated category in the list {string}",
+  async function (categoryName: string) {
+    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    expect(isPresent).toBe(true);
+  }
+);
+
+Then(
+  "I should see a validation error message {string}",
+  async function (message: string) {
+    const errorMessage = this.page.locator(".el-form-item__error", {
+      hasText: message,
+    });
+    await errorMessage.waitFor({ state: "visible", timeout: 5000 });
+    expect(await errorMessage.isVisible()).toBe(true);
+  }
+);
