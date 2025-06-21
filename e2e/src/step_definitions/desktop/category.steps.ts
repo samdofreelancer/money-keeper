@@ -57,6 +57,8 @@ When(
       parentCat
     );
     // Store created category names in World context for cleanup
+    // This global array is used to track categories created during tests
+    // so they can be cleaned up after all scenarios run, preventing test data pollution
     if (!this.createdCategoryNames) {
       this.createdCategoryNames = [];
     }
