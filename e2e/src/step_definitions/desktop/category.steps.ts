@@ -45,6 +45,11 @@ When(
       categoryType,
       parentCat
     );
+    // Store created category names in World context for cleanup
+    if (!this.createdCategoryNames) {
+      this.createdCategoryNames = [];
+    }
+    this.createdCategoryNames.push(categoryName);
   }
 );
 
