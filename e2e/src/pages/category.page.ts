@@ -15,14 +15,14 @@ export class CategoryPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.categoriesMenuItem = page.locator(
-      'li.el-menu-item:has-text("Categories")'
+    this.categoriesMenuItem = page.locator('[data-testid="page-title"]');
+    this.categoryItems = page.locator('[data-testid="tree-node-content"]');
+    this.addCategoryButton = page.locator(
+      '[data-testid="add-category-button"]'
     );
-    this.categoryItems = page.locator(".category-tree .tree-node-content");
-    this.addCategoryButton = page.locator('button:has-text("Add Category")');
-    this.categoryForm = page.locator("form.category-form");
+    this.categoryForm = page.locator('[data-testid="category-form"]');
     this.categoryNameInput = page.locator(
-      'input[placeholder="Enter category name"]'
+      '[data-testid="input-category-name"]'
     );
     this.categoryTypeSelectWrapper = page
       .locator('div.el-select__wrapper:has-text("Select")')
@@ -31,10 +31,10 @@ export class CategoryPage {
       .locator(".el-select-dropdown:visible")
       .first();
     this.categoryTypeDropdownItemGrid = page.locator(
-      '.el-select-dropdown__item:has-text("Grid")'
+      '[data-testid="option-icon"]:has-text("Grid")'
     );
     this.categoryTypeRadioExpense = page.locator(
-      'label.el-radio-button:has(input[value="EXPENSE"])'
+      '[data-testid="radio-expense"]'
     );
     this.createButton = page.locator('button:has-text("Create")');
   }
@@ -95,8 +95,32 @@ export class CategoryPage {
   }
 
   async submitCategoryForm() {
-    await this.createButton.click();
-    await this.categoryForm.waitFor({ state: "detached" });
+    console.log("Submitting category form...");
+    const buttonText = await this.page.evaluate(() => {
+      const saveButton = document.querySelector(
+        "button.el-button.el-button--primary span"
+      );
+      return saveButton ? saveButton.textContent : null;
+    });
+    if (buttonText === "Save") {
+      const saveButton = this.page.locator('button:has-text("Save")');
+      await saveButton.click();
+    } else {
+      await this.createButton.click();
+    }
+    console.log(
+      "Clicked submit button, waiting for dialog to close and success message..."
+    );
+    // Wait for dialog to close
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "hidden",
+      timeout: 10000,
+    });
+    console.log("Dialog closed.");
+    // Wait for success message to appear
+    await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
+    console.log("Success message appeared.");
+    // Removed fixed waitForTimeout(500) to speed up tests
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
@@ -104,5 +128,62 @@ export class CategoryPage {
       hasText: name,
     });
     return (await newCategory.count()) > 0;
+  }
+
+  // New methods added below
+
+  async openEditCategoryDialog(categoryName: string) {
+    const categoryNode = this.page.locator(
+      ".category-tree .tree-node-content",
+      {
+        hasText: categoryName,
+      }
+    );
+    const editButton = categoryNode.locator("button.el-button--primary");
+    await editButton.click();
+    await this.categoryForm.waitFor();
+  }
+
+  async openDeleteCategoryDialog(categoryName: string) {
+    const categoryNode = this.page.locator(
+      ".category-tree .tree-node-content",
+      {
+        hasText: categoryName,
+      }
+    );
+    const deleteButton = categoryNode.locator("button.el-button--danger");
+    await deleteButton.click();
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "visible",
+    });
+  }
+
+  async confirmDelete() {
+    const confirmButton = this.page.locator(
+      '.el-dialog__wrapper button:has-text("Delete")'
+    );
+    await confirmButton.click();
+    await this.page.waitForSelector(".el-dialog__wrapper", { state: "hidden" });
+    await this.page.waitForSelector(".el-message--success", { timeout: 10000 });
+  }
+
+  async searchCategories(query: string) {
+    const searchInput = this.page.locator('[data-testid="search-input"]');
+    await searchInput.fill(query);
+    // Wait for UI to update by waiting for category tree to update
+    await this.page.waitForSelector('[data-testid="category-tree"]');
+  }
+
+  async filterByTab(tabName: string) {
+    const tab = this.page.locator(
+      `[data-testid="tab-${tabName.toLowerCase()}"]`
+    );
+    await tab.click();
+    // Wait for UI to update by waiting for category tree to update
+    await this.page.waitForSelector('[data-testid="category-tree"]');
+  }
+
+  async clearCategoryNameField() {
+    await this.categoryNameInput.fill("");
   }
 }
