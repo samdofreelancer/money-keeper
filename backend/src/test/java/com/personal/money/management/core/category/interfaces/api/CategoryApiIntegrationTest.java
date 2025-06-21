@@ -80,6 +80,21 @@ class CategoryApiIntegrationTest {
     }
 
     @Test
+    void createCategory_withoutParent_shouldPersistWithoutParent() throws Exception {
+        CategoryRequest noParentRequest = new CategoryRequest();
+        noParentRequest.setName("No Parent");
+        noParentRequest.setIcon("no_icon");
+        noParentRequest.setType(CategoryType.EXPENSE);
+        noParentRequest.setParentId(null);
+
+        mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(noParentRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.parentId").doesNotExist());
+    }
+
+    @Test
     void createCategory_shouldReturn400ForInvalidRequest() throws Exception {
         // Missing name and type
         String invalidRequest = "{" +
