@@ -12,13 +12,22 @@ import { config } from "../config/env.config";
 import { logger } from "./logger";
 import { BasePage } from "../pages";
 
-export class CustomWorld extends World {
+export interface CustomWorld extends World {
+  browser: Browser;
+  context: BrowserContext;
+  page: Page;
+  currentPage: BasePage;
+  createdCategoryNames: string[];
+}
+
+export class CustomWorldContext extends World implements CustomWorld {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
   currentPage!: BasePage;
+  createdCategoryNames: string[] = [];
 
-  constructor(options: IWorldOptions<unknown>) {
+  constructor(options: IWorldOptions) {
     super(options);
   }
 
@@ -61,4 +70,4 @@ export class CustomWorld extends World {
   }
 }
 
-setWorldConstructor(CustomWorld);
+setWorldConstructor(CustomWorldContext);

@@ -7,6 +7,7 @@ module.exports = {
     "--format @cucumber/pretty-formatter",
     "--format json:reports/cucumber-report.json",
     "--publish-quiet",
+    "--world-parameters '{\"stepTimeout\": 30000}'",
     "src/features/**/*.feature",
   ].join(" "),
 };
