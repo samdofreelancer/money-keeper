@@ -20,6 +20,7 @@ Feature: Category management
 
   Scenario Outline: Edit an existing category
     Given a "Sample Category" category exists
+    And I open the homepage
     When I navigate to the Categories page
     And I open the edit category dialog for "Sample Category"
     And I fill in the category form with valid data "<newCategoryName>", "<icon>", "<categoryType>", "<parentCategory>"
@@ -32,6 +33,7 @@ Feature: Category management
 
   Scenario: Delete a category
     Given a "Test Category" category exists
+    And I open the homepage
     When I navigate to the Categories page
     And I open the delete category dialog for "Test Category"
     And I confirm the delete action
@@ -40,6 +42,7 @@ Feature: Category management
   Scenario Outline: Search categories
     Given a "Test Category" category exists
     And a "Sample Category" category exists
+    And I open the homepage
     When I navigate to the Categories page
     And I search categories with query "<searchQuery>"
     Then I should see category "<expectedCategory>" in the list
@@ -53,6 +56,7 @@ Feature: Category management
   Scenario Outline: Filter categories by tab
     Given a "Test Category" category of type "EXPENSE" exists
     And a "Sample Category" category of type "INCOME" exists
+    And I open the homepage
     When I navigate to the Categories page
     And I filter categories by tab "<tabName>"
     Then I should see category "<expectedCategory>" in the list

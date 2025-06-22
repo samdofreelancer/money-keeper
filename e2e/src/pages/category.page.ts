@@ -1,4 +1,5 @@
 import { Page, Locator } from "@playwright/test";
+
 import { logger } from "../support/logger";
 import { config } from "../config/env.config";
 
@@ -17,7 +18,8 @@ export class CategoryPage {
   readonly searchInput: Locator;
   readonly confirmDeleteButton: Locator;
 
-  private readonly actionTimeout: number = config.browser.actionTimeout || 10000;
+  private readonly actionTimeout: number =
+    config.browser.actionTimeout || 10000;
 
   constructor(page: Page) {
     this.page = page;
@@ -77,9 +79,7 @@ export class CategoryPage {
       .locator("button.el-button--primary")
       .first();
   private deleteButtonOnNode = (categoryName: string) =>
-    this.categoryNode(categoryName)
-      .locator("button.el-button--danger")
-      .first();
+    this.categoryNode(categoryName).locator("button.el-button--danger").first();
   private tab = (tabName: string) =>
     this.page.locator(
       `[role="tab"][aria-controls="pane-${tabName.toLowerCase()}"]`

@@ -6,19 +6,24 @@ import {
   chromium,
   firefox,
   webkit,
+  PlaywrightTestOptions,
 } from "@playwright/test";
 
 import { config } from "../config/env.config";
 import { logger } from "./logger";
 import { BasePage } from "../pages";
+import { CategoryPage } from "../pages/category.page";
 
 export interface CustomWorld extends World {
   browser: Browser;
   context: BrowserContext;
   page: Page;
   currentPage: BasePage;
+  categoryPage?: CategoryPage;
   createdCategoryNames: string[];
+  createdCategoryIds: string[];
   uniqueData: Map<string, string>;
+  playwrightOptions?: PlaywrightTestOptions;
 }
 
 export class CustomWorldContext extends World implements CustomWorld {
@@ -26,12 +31,14 @@ export class CustomWorldContext extends World implements CustomWorld {
   context!: BrowserContext;
   page!: Page;
   currentPage!: BasePage;
+  categoryPage?: CategoryPage;
   createdCategoryNames: string[] = [];
-  uniqueData: Map<string, string>;
+  createdCategoryIds: string[] = [];
+  uniqueData: Map<string, string> = new Map();
+  playwrightOptions?: PlaywrightTestOptions;
 
   constructor(options: IWorldOptions) {
     super(options);
-    this.uniqueData = new Map<string, string>();
   }
 
   async launchBrowser(browserName = config.browser.name) {
