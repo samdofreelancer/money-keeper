@@ -94,6 +94,8 @@ export class CategoryPage {
     this.page.locator(".category-tree .tree-node-content", {
       hasText: name,
     });
+  public globalErrorMessage = (message: string) =>
+    this.page.locator('[data-testid="error-message"]', { hasText: message });
 
   async navigateToCategories() {
     await this.categoriesMenuItem.waitFor({

@@ -54,11 +54,13 @@ export const useCategoryStore = defineStore('category', () => {
         categories.value[index] = newCategory
       }
       return newCategory
-    } catch (e) {
+    } catch (e: any) {
       // Rollback: remove temp category
       categories.value = categories.value.filter(c => c.id !== tempId)
-      error.value = 'Failed to create category'
-      // console.error(e)
+      // Debug log for error object
+      console.error('Create category error:', e, e?.response?.data);
+      // Use backend error message if available
+      error.value = e?.response?.data?.message || e?.message || 'Failed to create category'
       throw e
     } finally {
       loading.value = false
@@ -86,11 +88,13 @@ export const useCategoryStore = defineStore('category', () => {
       const updatedCategory = await categoryApi.update(id, category)
       categories.value[index] = updatedCategory
       return updatedCategory
-    } catch (e) {
+    } catch (e: any) {
       // Rollback to old category
       categories.value[index] = oldCategory
-      error.value = 'Failed to update category'
-      // console.error(e)
+      // Debug log for error object
+      console.error('Update category error:', e, e?.response?.data);
+      // Use backend error message if available
+      error.value = e?.response?.data?.message || e?.message || 'Failed to update category'
       throw e
     } finally {
       loading.value = false

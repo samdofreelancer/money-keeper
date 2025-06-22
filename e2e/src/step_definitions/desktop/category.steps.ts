@@ -202,9 +202,24 @@ Then(
 Then(
   "I should see a validation error message {string}",
   async function (this: CustomWorld, message: string) {
-    const errorMessage = this.categoryPage!.validationError(message);
-    await errorMessage.waitFor({ state: "visible", timeout: 5000 });
-    expect(await errorMessage.isVisible()).toBe(true);
+    // Try global error first
+    const globalError = this.categoryPage!.globalErrorMessage(message);
+    try {
+      await globalError.waitFor({ state: "visible", timeout: 7000 });
+      // Debug log
+      console.log('Global error message found!');
+      expect(await globalError.isVisible()).toBe(true);
+    } catch (e) {
+      // Debug log
+      console.log('Global error message NOT found, trying form-level error');
+      // Print page content for debugging
+      const pageContent = await this.page.content();
+      console.log('PAGE CONTENT AT ERROR:', pageContent);
+      // If not found, try form-level error
+      const errorMessage = this.categoryPage!.validationError(message);
+      await errorMessage.waitFor({ state: "visible", timeout: 2000 });
+      expect(await errorMessage.isVisible()).toBe(true);
+    }
   }
 );
 

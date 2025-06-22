@@ -327,7 +327,7 @@ async function handleSubmit() {
         dialogVisible.value = false
       } catch (error) {
         console.error('Error in handleSubmit:', error)
-        ElMessage.error(isEditing.value ? 'Failed to update category' : 'Failed to create category')
+        ElMessage.error(categoryStore.error || (isEditing.value ? 'Failed to update category' : 'Failed to create category'))
       }
     }
   })
