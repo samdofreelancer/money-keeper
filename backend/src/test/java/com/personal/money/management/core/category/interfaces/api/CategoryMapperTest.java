@@ -17,9 +17,9 @@ class CategoryMapperTest {
 
     @Test
     void toResponse_shouldMapFieldsCorrectly_whenCategoryIsNotNull() {
-        Category parent = new Category(1L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
+        Category parent = Category.reconstruct(1L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
 
-        Category category = new Category(2L, "Test Category", "test_icon", CategoryType.INCOME, parent);
+        Category category = Category.reconstruct(2L, "Test Category", "test_icon", CategoryType.INCOME, parent);
 
         CategoryResponse response = CategoryMapper.toResponse(category);
 

@@ -34,7 +34,7 @@ class CategoryControllerTest {
 
     @Test
     void createCategory_shouldReturnCategoryResponse() throws Exception {
-        Category category = new Category(1L, "Groceries", "shopping_cart", CategoryType.EXPENSE, null);
+        Category category = Category.reconstruct(1L, "Groceries", "shopping_cart", CategoryType.EXPENSE, null);
         when(categoryService.createCategory(any(), any(), any(), any())).thenReturn(category);
 
         String requestBody = "{" +
@@ -47,7 +47,7 @@ class CategoryControllerTest {
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Groceries"))
                 .andExpect(jsonPath("$.icon").value("shopping_cart"))
@@ -58,7 +58,7 @@ class CategoryControllerTest {
     @Test
     void updateCategory_shouldReturnUpdatedCategoryResponse() throws Exception {
         Long categoryId = 1L;
-        Category updatedCategory = new Category(categoryId, "Updated Name", "updated_icon", CategoryType.INCOME, null);
+        Category updatedCategory = Category.reconstruct(categoryId, "Updated Name", "updated_icon", CategoryType.INCOME, null);
         when(categoryService.updateCategory(categoryId, "Updated Name", "updated_icon", CategoryType.INCOME, null))
                 .thenReturn(updatedCategory);
 

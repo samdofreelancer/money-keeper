@@ -18,10 +18,11 @@ class CategoryRepositoryImplIntegrationTest {
 
     @Test
     void saveAndFindById_shouldPersistAndRetrieveCategory() {
-        Category category = new Category(null, "Test", "test_icon", CategoryType.EXPENSE, null);
+        Category category = new Category("Test", "test_icon", CategoryType.EXPENSE, null);
         Category saved = categoryRepository.save(category);
         assertNotNull(saved.getId());
-        Category found = categoryRepository.findById(saved.getId());
+
+        Category found = categoryRepository.findById(saved.getId()).orElseThrow();
         assertNotNull(found);
         assertEquals("Test", found.getName());
         assertEquals("test_icon", found.getIcon());
@@ -31,11 +32,13 @@ class CategoryRepositoryImplIntegrationTest {
 
     @Test
     void saveWithParent_shouldPersistParentRelationship() {
-        Category parent = new Category(null, "Parent", "parent_icon", CategoryType.EXPENSE, null);
+        Category parent = new Category("Parent", "parent_icon", CategoryType.EXPENSE, null);
         Category savedParent = categoryRepository.save(parent);
-        Category child = new Category(null, "Child", "child_icon", CategoryType.EXPENSE, savedParent);
+
+        Category child = new Category("Child", "child_icon", CategoryType.EXPENSE, savedParent);
         Category savedChild = categoryRepository.save(child);
-        Category foundChild = categoryRepository.findById(savedChild.getId());
+
+        Category foundChild = categoryRepository.findById(savedChild.getId()).orElseThrow();
         assertNotNull(foundChild.getParent());
         assertEquals(savedParent.getId(), foundChild.getParent().getId());
     }
