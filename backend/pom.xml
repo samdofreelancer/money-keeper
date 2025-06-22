@@ -171,6 +171,10 @@
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
+                            <additionalClasspathElements>
+                                <additionalClasspathElement>${project.build.outputDirectory}</additionalClasspathElement>
+                            </additionalClasspathElements>
+                            <argLine>-verbose:class</argLine>
                         </configuration>
                         <executions>
                             <execution>
