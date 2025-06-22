@@ -70,7 +70,6 @@ Feature: Category management
     And I fill in the category form with valid data "<categoryName>", "<icon>", "<categoryType>", "<parentCategory>"
     And I clear the category name field
     And I click the submit button
-    And I submit the category form
     Then I should see a validation error message "Please input category name"
 
     Examples:
