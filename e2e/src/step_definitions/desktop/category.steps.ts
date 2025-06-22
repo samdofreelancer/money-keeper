@@ -199,9 +199,7 @@ Then(
 Then(
   "I should see a validation error message {string}",
   async function (this: CustomWorld, message: string) {
-    const errorMessage = this.page.locator(".el-form-item__error", {
-      hasText: message,
-    });
+    const errorMessage = categoryPage.validationError(message);
     await errorMessage.waitFor({ state: "visible", timeout: 5000 });
     expect(await errorMessage.isVisible()).toBe(true);
   }
