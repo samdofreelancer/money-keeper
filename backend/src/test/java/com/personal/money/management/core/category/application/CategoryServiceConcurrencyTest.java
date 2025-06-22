@@ -10,9 +10,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.dao.OptimisticLockingFailureException;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+/**
+ * Concurrency tests for the CategoryService.
+ * Focuses on verifying the behavior of the service under optimistic locking scenarios.
+ * Uses mocks to simulate database behavior and trigger concurrency-related exceptions.
+ */
 public class CategoryServiceConcurrencyTest {
 
     private CategoryRepository categoryRepository;
@@ -27,11 +34,11 @@ public class CategoryServiceConcurrencyTest {
     @Test
     public void updateCategory_shouldThrowCategoryConflictException_onOptimisticLockingFailure() {
         Long categoryId = 1L;
-        Category existingCategory = new Category(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
-        Category parentCategory = new Category(2L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
+        Category existingCategory = Category.reconstruct(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
+        Category parentCategory = Category.reconstruct(2L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
 
-        when(categoryRepository.findById(categoryId)).thenReturn(existingCategory);
-        when(categoryRepository.findById(2L)).thenReturn(parentCategory);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
+        when(categoryRepository.findById(2L)).thenReturn(Optional.of(parentCategory));
         when(categoryRepository.save(any(Category.class))).thenThrow(new OptimisticLockingFailureException("Optimistic lock failure"));
 
         assertThrows(CategoryConflictException.class, () -> {
@@ -43,12 +50,16 @@ public class CategoryServiceConcurrencyTest {
         verify(categoryRepository).save(any(Category.class));
     }
 
+    /**
+     * Verifies that deleting a category throws a CategoryConflictException
+     * when an OptimisticLockingFailureException is thrown by the repository.
+     */
     @Test
     public void deleteCategory_shouldThrowCategoryConflictException_onOptimisticLockingFailure() {
         Long categoryId = 1L;
-        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category category = Category.reconstruct(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
 
-        when(categoryRepository.findById(categoryId)).thenReturn(category);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
         when(categoryRepository.findByParent(category)).thenReturn(java.util.Collections.emptyList());
         doThrow(new OptimisticLockingFailureException("Optimistic lock failure")).when(categoryRepository).deleteById(categoryId);
 

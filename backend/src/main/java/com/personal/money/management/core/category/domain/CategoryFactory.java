@@ -6,10 +6,6 @@ import com.personal.money.management.core.category.domain.model.CategoryType;
 public class CategoryFactory {
 
     public static Category createCategory(String name, String icon, CategoryType type, Category parent) {
-        return new Category(null, name, icon, type, parent);
-    }
-
-    public static Category updateCategory(Long id, String name, String icon, CategoryType type, Category parent) {
-        return Category.reconstruct(id, name, icon, type, parent);
+        return new Category(name, icon, type, parent);
     }
 }

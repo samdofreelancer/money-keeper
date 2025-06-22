@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -27,18 +28,8 @@ public class CategoryService {
         if (parentId == null) {
             return null;
         }
-        return categoryRepository.findById(parentId);
-    }
-
-    private Category validateParentExists(Long parentId) {
-        if (parentId == null) {
-            return null;
-        }
-        Category parent = getParentCategory(parentId);
-        if (parent == null) {
-            throw new CategoryNotFoundException(parentId);
-        }
-        return parent;
+        return categoryRepository.findById(parentId)
+                .orElseThrow(() -> new CategoryNotFoundException("Parent category not found with id: " + parentId));
     }
 
     private void checkCyclicDependency(Category category, Category newParent) {
@@ -53,7 +44,7 @@ public class CategoryService {
 
     @Transactional
     public Category createCategory(String name, String icon, CategoryType type, Long parentId) {
-        Category parent = validateParentExists(parentId);
+        Category parent = getParentCategory(parentId);
         Category category = CategoryFactory.createCategory(name, icon, type, parent);
         return categoryRepository.save(category);
     }
@@ -65,17 +56,15 @@ public class CategoryService {
     @Transactional
     public Category updateCategory(Long id, String name, String icon, CategoryType type, Long parentId) {
         try {
-            Category category = categoryRepository.findById(id);
-            if (category == null) {
-                throw new CategoryNotFoundException(id);
-            }
-            Category parent = validateParentExists(parentId);
+            Category category = categoryRepository.findById(id)
+                    .orElseThrow(() -> new CategoryNotFoundException(id));
+
+            Category parent = getParentCategory(parentId);
             checkCyclicDependency(category, parent);
-            // Update fields on the existing category instance
-            category.setName(name);
-            category.setIcon(icon);
-            category.setType(type);
+
+            category.update(name, icon, type);
             category.setParent(parent);
+
             return categoryRepository.save(category);
         } catch (OptimisticLockingFailureException e) {
             throw new CategoryConflictException("Category update failed due to concurrent modification. Please retry.", e);
@@ -85,10 +74,8 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(Long id) {
         try {
-            Category category = categoryRepository.findById(id);
-            if (category == null) {
-                throw new CategoryNotFoundException(id);
-            }
+            Category category = categoryRepository.findById(id)
+                    .orElseThrow(() -> new CategoryNotFoundException(id));
             var children = categoryRepository.findByParent(category);
             if (!children.isEmpty()) {
                 throw new CategoryHasChildException(id);
