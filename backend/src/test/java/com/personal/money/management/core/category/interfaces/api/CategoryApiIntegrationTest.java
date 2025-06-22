@@ -41,7 +41,7 @@ class CategoryApiIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
-        result.andExpect(status().isOk())
+        result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.name").value("Groceries"))
                 .andExpect(jsonPath("$.icon").value("shopping_cart"))
@@ -61,7 +61,7 @@ class CategoryApiIntegrationTest {
         String parentResponse = mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(parentRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         Long parentId = objectMapper.readTree(parentResponse).get("id").asLong();
 
@@ -75,7 +75,7 @@ class CategoryApiIntegrationTest {
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(childRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.parentId").value(parentId));
     }
 
@@ -90,7 +90,7 @@ class CategoryApiIntegrationTest {
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(noParentRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.parentId").doesNotExist());
     }
 
@@ -145,17 +145,17 @@ class CategoryApiIntegrationTest {
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request3)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // Test GET /api/categories returns sorted list by name
         mockMvc.perform(MockMvcRequestBuilders.get("/api/categories"))
@@ -178,7 +178,7 @@ class CategoryApiIntegrationTest {
         String createResponse = mockMvc.perform(post("/api/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
         Long categoryId = objectMapper.readTree(createResponse).get("id").asLong();
@@ -271,7 +271,7 @@ class CategoryApiIntegrationTest {
         String createResponse = mockMvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
 
         Long categoryId = objectMapper.readTree(createResponse).get("id").asLong();

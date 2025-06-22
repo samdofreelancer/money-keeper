@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class CategoryRepositoryImpl implements CategoryRepository {
@@ -34,10 +35,9 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
 
     @Override
-    public Category findById(Long id) {
+    public Optional<Category> findById(Long id) {
         return jpaRepository.findById(id)
-                .map(CategoryEntityMapper::toDomain)
-                .orElse(null);
+                .map(CategoryEntityMapper::toDomain);
     }
 
     @Override

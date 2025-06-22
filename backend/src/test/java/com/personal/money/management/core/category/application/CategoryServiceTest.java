@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -38,14 +39,11 @@ class CategoryServiceTest {
         String name = "Food";
         String icon = "food_icon";
         CategoryType type = CategoryType.EXPENSE;
-        Long parentId = 0L; // changed from null to non-null to adapt new code
-        Category parent = new Category(parentId, "Parent", "parent_icon", type, null);
+        Long parentId = 1L;
+        Category parent = new Category("Parent", "parent_icon", type, null);
+        Category savedCategory = Category.reconstruct(2L, name, icon, type, parent);
 
-        Category categoryFromFactory = CategoryFactory.createCategory(name, icon, type, parent);
-        Category savedCategory = new Category(1L, name, icon, type, parent);
-
-        // Since CategoryFactory is static, no need to mock it
-        when(categoryRepository.findById(parentId)).thenReturn(parent);
+        when(categoryRepository.findById(parentId)).thenReturn(Optional.of(parent));
         when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
 
         Category result = categoryService.createCategory(name, icon, type, parentId);
@@ -55,7 +53,7 @@ class CategoryServiceTest {
         assertEquals(icon, result.getIcon());
         assertEquals(type, result.getType());
         assertEquals(parent, result.getParent());
-        assertEquals(1L, result.getId());
+        assertEquals(2L, result.getId());
 
         ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
         verify(categoryRepository).save(captor.capture());
@@ -72,14 +70,9 @@ class CategoryServiceTest {
         String icon = "snack_icon";
         CategoryType type = CategoryType.EXPENSE;
         Long parentId = 2L;
-        Long grandParentId = 1L;
-        Category grandParent = new Category(grandParentId, "Root", "root_icon", type, null);
-        Category parent = new Category(parentId, "Food", "food_icon", type, grandParent);
-        Category categoryFromFactory = CategoryFactory.createCategory(name, icon, type, parent);
+        Category parent = new Category("Food", "food_icon", type, null);
 
-        // Since CategoryFactory is static, no need to mock it
-        when(categoryRepository.findById(parentId)).thenReturn(parent);
-        when(categoryRepository.findById(grandParentId)).thenReturn(grandParent);
+        when(categoryRepository.findById(parentId)).thenReturn(Optional.of(parent));
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Category result = categoryService.createCategory(name, icon, type, parentId);
@@ -90,13 +83,13 @@ class CategoryServiceTest {
 
     @Test
     void getAllCategoriesSortedByName_shouldReturnSortedCategories() {
-        Category category1 = new Category(1L, "B", "iconB", CategoryType.EXPENSE, null);
-        Category category2 = new Category(2L, "A", "iconA", CategoryType.EXPENSE, null);
-        Category category3 = new Category(3L, "C", "iconC", CategoryType.EXPENSE, null);
+        Category category1 = Category.reconstruct(1L, "B", "iconB", CategoryType.EXPENSE, null);
+        Category category2 = Category.reconstruct(2L, "A", "iconA", CategoryType.EXPENSE, null);
+        Category category3 = Category.reconstruct(3L, "C", "iconC", CategoryType.EXPENSE, null);
 
         when(categoryRepository.findAllSortedByName()).thenReturn(List.of(category2, category1, category3));
 
-        java.util.List<Category> result = categoryService.getAllCategoriesSortedByName();
+        List<Category> result = categoryService.getAllCategoriesSortedByName();
 
         assertNotNull(result);
         assertEquals(3, result.size());
@@ -110,33 +103,25 @@ class CategoryServiceTest {
     @Test
     void updateCategory_shouldUpdateAndSaveCategory() {
         Long categoryId = 1L;
-        Category existingCategory = new Category(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
-        Category parentCategory = new Category(2L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
-        Category updatedCategoryFromFactory = new Category(categoryId, "New Name", "new_icon", CategoryType.INCOME, parentCategory);
+        Category existingCategory = spy(new Category("Old Name", "old_icon", CategoryType.EXPENSE, null));
+        Category parentCategory = new Category("Parent", "parent_icon", CategoryType.EXPENSE, null);
 
-        // Mock the findById calls
-        when(categoryRepository.findById(categoryId)).thenReturn(existingCategory);
-        when(categoryRepository.findById(2L)).thenReturn(parentCategory);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
+        when(categoryRepository.findById(2L)).thenReturn(Optional.of(parentCategory));
         when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Category updatedCategory = categoryService.updateCategory(categoryId, "New Name", "new_icon", CategoryType.INCOME, 2L);
 
         assertNotNull(updatedCategory);
-        assertEquals(categoryId, updatedCategory.getId());
-        assertEquals("New Name", updatedCategory.getName());
-        assertEquals("new_icon", updatedCategory.getIcon());
-        assertEquals(CategoryType.INCOME, updatedCategory.getType());
-        assertEquals(parentCategory, updatedCategory.getParent());
-
-        ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
-        verify(categoryRepository).save(captor.capture());
-        Category savedCategory = captor.getValue();
-        assertEquals("New Name", savedCategory.getName());
+        verify(existingCategory).update("New Name", "new_icon", CategoryType.INCOME);
+        verify(existingCategory).setParent(parentCategory);
+        verify(categoryRepository).save(existingCategory);
     }
 
     @Test
     void updateCategory_shouldThrowExceptionIfCategoryNotFound() {
         Long categoryId = 1L;
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
         CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.updateCategory(categoryId, "Name", "icon", CategoryType.EXPENSE, null);
@@ -153,13 +138,13 @@ class CategoryServiceTest {
         CategoryType type = CategoryType.EXPENSE;
         Long invalidParentId = 999L;
 
-        when(categoryRepository.findById(invalidParentId)).thenReturn(null);
+        when(categoryRepository.findById(invalidParentId)).thenReturn(Optional.empty());
 
         CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.createCategory(name, icon, type, invalidParentId);
         });
 
-        assertEquals("Category not found with id: " + invalidParentId, exception.getMessage());
+        assertEquals("Parent category not found with id: " + invalidParentId, exception.getMessage());
         verify(categoryRepository, never()).save(any());
     }
 
@@ -167,16 +152,16 @@ class CategoryServiceTest {
     void updateCategory_shouldThrowExceptionIfParentNotFound() {
         Long categoryId = 1L;
         Long invalidParentId = 999L;
-        Category existingCategory = new Category(categoryId, "Old Name", "old_icon", CategoryType.EXPENSE, null);
+        Category existingCategory = new Category("Old Name", "old_icon", CategoryType.EXPENSE, null);
 
-        when(categoryRepository.findById(categoryId)).thenReturn(existingCategory);
-        when(categoryRepository.findById(invalidParentId)).thenReturn(null);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
+        when(categoryRepository.findById(invalidParentId)).thenReturn(Optional.empty());
 
         CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.updateCategory(categoryId, "New Name", "new_icon", CategoryType.INCOME, invalidParentId);
         });
 
-        assertEquals("Category not found with id: " + invalidParentId, exception.getMessage());
+        assertEquals("Parent category not found with id: " + invalidParentId, exception.getMessage());
         verify(categoryRepository, never()).save(any());
     }
 
@@ -185,11 +170,11 @@ class CategoryServiceTest {
         Long categoryId = 1L;
         Long parentId = 2L;
 
-        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
-        Category parent = new Category(parentId, "Category2", "icon2", CategoryType.EXPENSE, category); // cyclic parent
+        Category category = Category.reconstruct(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category parent = Category.reconstruct(parentId, "Category2", "icon2", CategoryType.EXPENSE, category); // cyclic parent
 
-        when(categoryRepository.findById(categoryId)).thenReturn(category);
-        when(categoryRepository.findById(parentId)).thenReturn(parent);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+        when(categoryRepository.findById(parentId)).thenReturn(Optional.of(parent));
 
         assertThrows(CategoryCyclicDependencyException.class, () -> {
             categoryService.updateCategory(categoryId, "name", "icon", CategoryType.EXPENSE, parentId);
@@ -199,9 +184,9 @@ class CategoryServiceTest {
     @Test
     void deleteCategory_shouldDeleteCategorySuccessfully() {
         Long categoryId = 1L;
-        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category category = new Category("Category1", "icon1", CategoryType.EXPENSE, null);
 
-        when(categoryRepository.findById(categoryId)).thenReturn(category);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
         when(categoryRepository.findByParent(category)).thenReturn(Collections.emptyList());
         doNothing().when(categoryRepository).deleteById(categoryId);
 
@@ -216,7 +201,7 @@ class CategoryServiceTest {
     void deleteCategory_shouldThrowExceptionIfCategoryNotFound() {
         Long categoryId = 1L;
 
-        when(categoryRepository.findById(categoryId)).thenReturn(null);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
         CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.deleteCategory(categoryId);
@@ -230,10 +215,10 @@ class CategoryServiceTest {
     @Test
     void deleteCategory_shouldThrowExceptionIfCategoryHasChildren() {
         Long categoryId = 1L;
-        Category category = new Category(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
-        Category childCategory = new Category(2L, "ChildCategory", "icon2", CategoryType.EXPENSE, category);
+        Category category = Category.reconstruct(categoryId, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category childCategory = new Category("ChildCategory", "icon2", CategoryType.EXPENSE, category);
 
-        when(categoryRepository.findById(categoryId)).thenReturn(category);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
         when(categoryRepository.findByParent(category)).thenReturn(List.of(childCategory));
 
         CategoryHasChildException exception = assertThrows(CategoryHasChildException.class, () -> {

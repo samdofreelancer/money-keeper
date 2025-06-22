@@ -24,7 +24,7 @@ public class CategoryEntityMapper {
 
     public static Category toDomain(CategoryEntity entity) {
         if (entity == null) return null;
-        return new Category(
+        return Category.reconstruct(
             entity.getId(),
             entity.getName(),
             entity.getIcon(),
