@@ -14,19 +14,7 @@ import { logger } from "./logger";
 import { BasePage } from "../pages";
 import { CategoryPage } from "../pages/category.page";
 
-export interface CustomWorld extends World {
-  browser: Browser;
-  context: BrowserContext;
-  page: Page;
-  currentPage: BasePage;
-  categoryPage?: CategoryPage;
-  createdCategoryNames: string[];
-  createdCategoryIds: string[];
-  uniqueData: Map<string, string>;
-  playwrightOptions?: PlaywrightTestOptions;
-}
-
-export class CustomWorldContext extends World implements CustomWorld {
+export class CustomWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
@@ -74,10 +62,10 @@ export class CustomWorldContext extends World implements CustomWorld {
       if (this.context) await this.context.close();
       if (this.browser) await this.browser.close();
     } catch (error) {
-      console.error("Error closing browser:", error);
+      logger.error("Error closing browser:", error);
       throw error;
     }
   }
 }
 
-setWorldConstructor(CustomWorldContext);
+setWorldConstructor(CustomWorld);
