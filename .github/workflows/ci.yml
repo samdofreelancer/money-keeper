@@ -213,21 +213,21 @@ jobs:
         run: npm run report
         working-directory: ./e2e
 
-      # - name: Upload report for Github Pages
-      #   uses: actions/upload-pages-artifact@v2
-      #   with:
-      #     path: e2e/reports
+      - name: Upload report for Github Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: e2e/reports
 
-  # deploy-report:
-  #   needs: e2e-test
-  #   permissions:
-  #     pages: write
-  #     id-token: write
-  #   environment:
-  #     name: github-pages
-  #     url: ${{ steps.deployment.outputs.page_url }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy to GitHub Pages
-  #       id: deployment
-  #       uses: actions/deploy-pages@v2
+  deploy-report:
+    needs: e2e-test
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
