@@ -1,3 +1,4 @@
+# This is a comment to force a workflow re-run
 name: Backend Tests
 
 on:
@@ -19,10 +20,10 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
@@ -38,6 +39,12 @@ jobs:
         run: mvn clean install -DskipTests
         working-directory: ./backend
 
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/springboot-ddd-category-1.0-SNAPSHOT.jar
+
   unit-test:
     name: Run Unit Tests
     runs-on: ubuntu-latest
@@ -47,10 +54,10 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
@@ -75,10 +82,10 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
@@ -127,3 +134,103 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify -Pmedium-test org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=samdofreelancer_money-keeper
         working-directory: ./backend
+
+  e2e-test:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download backend JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+
+      - name: Set up JDK 18
+        uses: actions/setup-java@v4
+        with:
+          java-version: 18
+          distribution: 'zulu'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      - name: Start frontend
+        run: npm start &
+        working-directory: ./frontend
+
+      - name: Start backend
+        run: java -jar springboot-ddd-category-1.0-SNAPSHOT.jar &
+
+      - name: Verify backend status
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:8080/actuator/health; then
+              echo "Backend is up!"
+              break
+            fi
+            echo "Backend not up yet. Retrying in 5 seconds..."
+            sleep 5
+          done
+
+      - name: Verify frontend status
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:5173; then
+              echo "Frontend is up!"
+              break
+            fi
+            echo "Frontend not up yet. Retrying in 5 seconds..."
+            sleep 5
+          done
+
+      - name: Install e2e dependencies
+        run: npm install
+        working-directory: ./e2e
+
+      - name: Create .env file
+        run: cp .env.example .env
+        working-directory: ./e2e
+
+      - name: Install Playwright Browsers
+        run: npx playwright install
+        working-directory: ./e2e
+
+      - name: Run e2e tests
+        run: npm run test:parallel
+        working-directory: ./e2e
+
+      - name: Generate report
+        run: npm run report
+        working-directory: ./e2e
+
+      - name: Upload report for Github Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'e2e/reports/cucumber-html-report.html'
+
+  deploy-report:
+    needs: e2e-test
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Print Report URL
+        run: echo "Report is available at ${{ steps.deployment.outputs.page_url }}"
