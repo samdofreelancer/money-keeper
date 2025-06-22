@@ -174,8 +174,16 @@ jobs:
       - name: Start backend
         run: java -jar springboot-ddd-category-1.0-SNAPSHOT.jar > backend.log 2>&1 &
 
+      - name: Wait for log file
+        run: sleep 5
+
+      - name: Show backend log
+        run: cat backend.log
+
       - name: Verify backend status
         run: |
+          echo "Verifying backend status..."
+          cat backend.log
           for i in {1..30}; do
             if curl -sf http://localhost:8080/actuator/health; then
               echo "Backend is up!"
