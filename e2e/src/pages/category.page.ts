@@ -105,6 +105,10 @@ export class CategoryPage {
     });
   }
 
+  async clickSubmit() {
+    await this.createButton.click({ timeout: 10000 });
+  }
+
   async isCategoryPresent(name: string): Promise<boolean> {
     const newCategory = this.page.locator(".category-tree .tree-node-content", {
       hasText: name,
@@ -166,8 +170,10 @@ export class CategoryPage {
   }
 
   async filterByTab(tabName: string) {
+    // In Element Plus, we need to target the tab button, not the tab panel
+    // The tab button has aria-controls attribute that matches the panel id
     const tab = this.page.locator(
-      `[data-testid="tab-${tabName.toLowerCase()}"]`
+      `[role="tab"][aria-controls="pane-${tabName.toLowerCase()}"]`
     );
     await tab.click({ timeout: 10000 });
     // Wait for UI to update by waiting for category tree to update

@@ -115,6 +115,10 @@ When("I submit the category form", async function (this: CustomWorld) {
   await categoryPage.submitForm();
 });
 
+When("I click the submit button", async function (this: CustomWorld) {
+  await categoryPage.clickSubmit();
+});
+
 Then(
   "I should see the new category in the list {string}",
   async function (this: CustomWorld, categoryName: string) {
