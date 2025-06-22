@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface CategoryJpaRepository extends JpaRepository<CategoryEntity, Long> {
     List<CategoryEntity> findByParent(CategoryEntity parent);
+    CategoryEntity findByName(String name);
 }

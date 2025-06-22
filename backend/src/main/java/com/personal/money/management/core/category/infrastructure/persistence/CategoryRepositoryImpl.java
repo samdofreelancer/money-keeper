@@ -62,4 +62,10 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 .map(CategoryEntityMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public Optional<Category> findByName(String name) {
+        CategoryEntity entity = jpaRepository.findByName(name);
+        return Optional.ofNullable(entity).map(CategoryEntityMapper::toDomain);
+    }
 }
