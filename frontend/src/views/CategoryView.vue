@@ -169,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useCategoryStore } from '@/stores/category'
 import { Plus, Search, Edit, Delete, Grid } from '@element-plus/icons-vue'
@@ -339,9 +339,13 @@ async function confirmDelete() {
   try {
     await categoryStore.deleteCategory(editingId.value)
     ElMessage.success('Category deleted successfully')
-    deleteDialogVisible.value = false
+    await categoryStore.fetchCategories(true)
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 100))
   } catch (error) {
-    // Remove explicit error message to avoid duplicate messages
+    // ElMessage.error is already called from the store
+    throw error
+  } finally {
     deleteDialogVisible.value = false
   }
 }

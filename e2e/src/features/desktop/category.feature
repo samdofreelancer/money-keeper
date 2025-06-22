@@ -5,7 +5,6 @@ Feature: Category management
     When I navigate to the Categories page
     Then I should see a list of categories
 
-  @focus
   Scenario Outline: Create a new category
     Given I open the homepage
     When I navigate to the Categories page
@@ -19,32 +18,28 @@ Feature: Category management
       | Test Category  | Grid          | EXPENSE      | None           |
       | Sample Category| Shopping      | INCOME       | None           |
 
-  @focus
   Scenario Outline: Edit an existing category
-    Given I open the homepage
+    Given a "Sample Category" category exists
     When I navigate to the Categories page
-    And I open the edit category dialog for "<existingCategory>"
+    And I open the edit category dialog for "Sample Category"
     And I fill in the category form with valid data "<newCategoryName>", "<icon>", "<categoryType>", "<parentCategory>"
     And I submit the category form
     Then I should see the updated category in the list "<newCategoryName>"
 
     Examples:
-      | existingCategory | newCategoryName | icon     | categoryType | parentCategory |
-      | Test Category    | Updated Category| Food     | EXPENSE      | None           |
+      | newCategoryName  | icon | categoryType | parentCategory |
+      | Updated Category | Food | EXPENSE      | None           |
 
-  Scenario Outline: Delete a category
-    Given I open the homepage
+  Scenario: Delete a category
+    Given a "Test Category" category exists
     When I navigate to the Categories page
-    And I open the delete category dialog for "<categoryName>"
+    And I open the delete category dialog for "Test Category"
     And I confirm the delete action
-    Then I should not see category "<categoryName>" in the list
-
-    Examples:
-      | categoryName     |
-      | Sample Category  |
+    Then I should not see category "Test Category" in the list
 
   Scenario Outline: Search categories
-    Given I open the homepage
+    Given a "Test Category" category exists
+    And a "Sample Category" category exists
     When I navigate to the Categories page
     And I search categories with query "<searchQuery>"
     Then I should see category "<expectedCategory>" in the list
@@ -56,7 +51,8 @@ Feature: Category management
       | Sample     | Sample Category  | Test Category      |
 
   Scenario Outline: Filter categories by tab
-    Given I open the homepage
+    Given a "Test Category" category of type "EXPENSE" exists
+    And a "Sample Category" category of type "INCOME" exists
     When I navigate to the Categories page
     And I filter categories by tab "<tabName>"
     Then I should see category "<expectedCategory>" in the list
