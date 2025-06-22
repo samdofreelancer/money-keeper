@@ -214,7 +214,7 @@ jobs:
         working-directory: ./e2e
 
       - name: Upload report for Github Pages
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v4
         with:
           path: e2e/reports
 
@@ -230,4 +230,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
