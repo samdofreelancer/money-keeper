@@ -170,20 +170,39 @@ jobs:
       - name: Start backend
         run: java -jar springboot-ddd-category-1.0-SNAPSHOT.jar &
 
-      - name: Wait for backend to start
-        run: sleep 30 # wait for backend to be ready. A more robust solution would be to poll an endpoint.
+      - name: Verify backend status
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:8080/actuator/health; then
+              echo "Backend is up!"
+              break
+            fi
+            echo "Backend not up yet. Retrying in 5 seconds..."
+            sleep 5
+          done
 
-      # - name: Install e2e dependencies
-      #   run: npm install
-      #   working-directory: ./e2e
+      - name: Verify frontend status
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:5173; then
+              echo "Frontend is up!"
+              break
+            fi
+            echo "Frontend not up yet. Retrying in 5 seconds..."
+            sleep 5
+          done
 
-      # - name: Run e2e tests
-      #   run: npm run test:parallel
-      #   working-directory: ./e2e
+      - name: Install e2e dependencies
+        run: npm install
+        working-directory: ./e2e
 
-      # - name: Generate report
-      #   run: npm run report
-      #   working-directory: ./e2e
+      - name: Run e2e tests
+        run: npm run test:parallel
+        working-directory: ./e2e
+
+      - name: Generate report
+        run: npm run report
+        working-directory: ./e2e
 
       # - name: Upload report for Github Pages
       #   uses: actions/upload-pages-artifact@v2
