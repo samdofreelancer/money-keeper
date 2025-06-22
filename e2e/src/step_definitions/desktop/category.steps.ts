@@ -207,3 +207,11 @@ Then(
     expect(await errorMessage.isVisible()).toBe(true);
   }
 );
+
+When("I cancel the category form", async function (this: CustomWorld) {
+  await this.categoryPage!.cancelCategoryForm();
+});
+
+When("I cancel the delete action", async function (this: CustomWorld) {
+  await this.categoryPage!.cancelDelete();
+});

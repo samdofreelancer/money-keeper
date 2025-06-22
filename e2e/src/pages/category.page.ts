@@ -17,6 +17,8 @@ export class CategoryPage {
   readonly createButton: Locator;
   readonly searchInput: Locator;
   readonly confirmDeleteButton: Locator;
+  readonly cancelButton: Locator;
+  readonly cancelDeleteButton: Locator;
 
   private readonly actionTimeout: number =
     config.browser.actionTimeout || 10000;
@@ -49,6 +51,8 @@ export class CategoryPage {
     this.confirmDeleteButton = this.page.locator(
       '[data-testid="button-confirm-delete"]'
     );
+    this.cancelButton = this.page.locator('[data-testid="button-cancel"]');
+    this.cancelDeleteButton = this.page.locator('[data-testid="button-cancel-delete"]');
   }
 
   // Locators defined within methods for dynamic values
@@ -202,5 +206,15 @@ export class CategoryPage {
 
   async clearCategoryNameField() {
     await this.categoryNameInput.fill("");
+  }
+
+  async cancelCategoryForm() {
+    await this.cancelButton.click({ timeout: this.actionTimeout });
+    await this.page.waitForSelector('.el-dialog__wrapper', { state: 'hidden', timeout: this.actionTimeout });
+  }
+
+  async cancelDelete() {
+    await this.cancelDeleteButton.click({ timeout: this.actionTimeout });
+    await this.page.waitForSelector('.el-dialog__wrapper', { state: 'hidden', timeout: this.actionTimeout });
   }
 }
