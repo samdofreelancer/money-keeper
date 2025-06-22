@@ -1,6 +1,6 @@
 import { Given, When, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-
+import { generateUniqueName } from "../../utils/testDataHelper";
 import { getAllCategories } from "../../api/categoryApiHelper";
 import { CategoryPage } from "../../pages/category.page";
 import { config } from "../../config/env.config";
@@ -12,20 +12,17 @@ let categoryPage: CategoryPage;
 Given(
   "a {string} category exists",
   async function (this: CustomWorld, categoryName: string) {
+    const uniqueName = generateUniqueName(categoryName);
+    this.uniqueData.set(categoryName, uniqueName);
     await this.page.goto(config.browser.baseUrl);
     categoryPage = new CategoryPage(this.page);
     await categoryPage.openCreateCategoryDialog();
-    await categoryPage.fillCategoryForm(
-      categoryName,
-      "Grid",
-      "EXPENSE",
-      "None"
-    );
+    await categoryPage.fillCategoryForm(uniqueName, "Grid", "EXPENSE", "None");
     await categoryPage.submitForm();
     if (!this.createdCategoryNames) {
       this.createdCategoryNames = [];
     }
-    this.createdCategoryNames.push(categoryName);
+    this.createdCategoryNames.push(uniqueName);
   }
 );
 
@@ -36,11 +33,13 @@ Given(
     categoryName: string,
     categoryType: string
   ) {
+    const uniqueName = generateUniqueName(categoryName);
+    this.uniqueData.set(categoryName, uniqueName);
     await this.page.goto(config.browser.baseUrl);
     categoryPage = new CategoryPage(this.page);
     await categoryPage.openCreateCategoryDialog();
     await categoryPage.fillCategoryForm(
-      categoryName,
+      uniqueName,
       "Grid",
       categoryType,
       "None"
@@ -49,7 +48,7 @@ Given(
     if (!this.createdCategoryNames) {
       this.createdCategoryNames = [];
     }
-    this.createdCategoryNames.push(categoryName);
+    this.createdCategoryNames.push(uniqueName);
   }
 );
 
@@ -90,13 +89,15 @@ When(
     categoryType: string,
     parentCategory: string
   ) {
+    const uniqueName = generateUniqueName(categoryName);
+    this.uniqueData.set(categoryName, uniqueName);
     logger.info(
-      `Filling category form with test data: ${categoryName}, ${icon}, ${categoryType}, ${parentCategory}`
+      `Filling category form with test data: ${uniqueName}, ${icon}, ${categoryType}, ${parentCategory}`
     );
     // Convert "None" to empty string for parentCategory to satisfy string type
     const parentCat = parentCategory === "None" ? "" : parentCategory;
     await categoryPage.fillCategoryForm(
-      categoryName,
+      uniqueName,
       icon,
       categoryType,
       parentCat
@@ -107,7 +108,7 @@ When(
     if (!this.createdCategoryNames) {
       this.createdCategoryNames = [];
     }
-    this.createdCategoryNames.push(categoryName);
+    this.createdCategoryNames.push(uniqueName);
   }
 );
 
@@ -122,7 +123,8 @@ When("I click the submit button", async function (this: CustomWorld) {
 Then(
   "I should see the new category in the list {string}",
   async function (this: CustomWorld, categoryName: string) {
-    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+    const isPresent = await categoryPage.isCategoryPresent(uniqueName);
     expect(isPresent).toBe(true);
   }
 );
@@ -132,14 +134,16 @@ Then(
 When(
   "I open the edit category dialog for {string}",
   async function (this: CustomWorld, categoryName: string) {
-    await categoryPage.openEditCategoryDialog(categoryName);
+    const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+    await categoryPage.openEditCategoryDialog(uniqueName);
   }
 );
 
 When(
   "I open the delete category dialog for {string}",
   async function (this: CustomWorld, categoryName: string) {
-    await categoryPage.openDeleteCategoryDialog(categoryName);
+    const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+    await categoryPage.openDeleteCategoryDialog(uniqueName);
   }
 );
 
@@ -164,7 +168,8 @@ When(
 Then(
   "I should not see category {string} in the list",
   async function (this: CustomWorld, categoryName: string) {
-    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+    const isPresent = await categoryPage.isCategoryPresent(uniqueName);
     expect(isPresent).toBe(false);
   }
 );
@@ -172,7 +177,8 @@ Then(
 Then(
   "I should see category {string} in the list",
   async function (this: CustomWorld, categoryName: string) {
-    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+    const isPresent = await categoryPage.isCategoryPresent(uniqueName);
     expect(isPresent).toBe(true);
   }
 );
@@ -184,7 +190,8 @@ When("I clear the category name field", async function (this: CustomWorld) {
 Then(
   "I should see the updated category in the list {string}",
   async function (this: CustomWorld, categoryName: string) {
-    const isPresent = await categoryPage.isCategoryPresent(categoryName);
+    const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+    const isPresent = await categoryPage.isCategoryPresent(uniqueName);
     expect(isPresent).toBe(true);
   }
 );

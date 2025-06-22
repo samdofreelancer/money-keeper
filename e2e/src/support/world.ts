@@ -18,6 +18,7 @@ export interface CustomWorld extends World {
   page: Page;
   currentPage: BasePage;
   createdCategoryNames: string[];
+  uniqueData: Map<string, string>;
 }
 
 export class CustomWorldContext extends World implements CustomWorld {
@@ -26,9 +27,11 @@ export class CustomWorldContext extends World implements CustomWorld {
   page!: Page;
   currentPage!: BasePage;
   createdCategoryNames: string[] = [];
+  uniqueData: Map<string, string>;
 
   constructor(options: IWorldOptions) {
     super(options);
+    this.uniqueData = new Map<string, string>();
   }
 
   async launchBrowser(browserName = config.browser.name) {
