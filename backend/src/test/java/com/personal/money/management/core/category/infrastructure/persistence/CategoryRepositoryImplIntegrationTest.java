@@ -5,13 +5,16 @@ import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import com.personal.money.management.core.PersonalMoneyManagementApplication;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@Import(CategoryRepositoryImpl.class)
+@SpringBootTest(classes = PersonalMoneyManagementApplication.class)
+@Transactional
 class CategoryRepositoryImplIntegrationTest {
     @Autowired
     private CategoryRepository categoryRepository;
