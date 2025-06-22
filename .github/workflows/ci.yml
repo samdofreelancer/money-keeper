@@ -210,6 +210,7 @@ jobs:
         working-directory: ./e2e
 
       - name: Generate report
+        if: always()
         run: npm run report
         working-directory: ./e2e
 
