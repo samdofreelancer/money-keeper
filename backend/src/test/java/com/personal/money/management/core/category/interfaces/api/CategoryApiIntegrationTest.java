@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.personal.money.management.core.PersonalMoneyManagementApplication;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -24,6 +25,7 @@ import static org.hamcrest.Matchers.*;
  */
 @SpringBootTest(classes = PersonalMoneyManagementApplication.class)
 @AutoConfigureMockMvc
+@Transactional
 class CategoryApiIntegrationTest {
     @Autowired
     private MockMvc mockMvc;

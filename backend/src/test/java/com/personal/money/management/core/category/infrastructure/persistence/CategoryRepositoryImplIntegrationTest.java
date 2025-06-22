@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import com.personal.money.management.core.PersonalMoneyManagementApplication;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = PersonalMoneyManagementApplication.class)
+@Transactional
 class CategoryRepositoryImplIntegrationTest {
     @Autowired
     private CategoryRepository categoryRepository;
