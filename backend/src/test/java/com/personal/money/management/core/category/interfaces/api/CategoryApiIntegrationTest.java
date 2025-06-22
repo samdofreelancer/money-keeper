@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import com.personal.money.management.core.PersonalMoneyManagementApplication;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -21,7 +22,7 @@ import static org.hamcrest.Matchers.*;
  * Tests full stack including HTTP, service, and persistence layers.
  * Focuses on end-to-end behavior and validation.
  */
-@SpringBootTest
+@SpringBootTest(classes = PersonalMoneyManagementApplication.class)
 @AutoConfigureMockMvc
 class CategoryApiIntegrationTest {
     @Autowired
