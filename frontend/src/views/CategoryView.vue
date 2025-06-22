@@ -1,37 +1,39 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" data-testid="category-page">
     <error-message 
       :error="categoryStore.error"
       @close="categoryStore.error = null"
+      data-testid="error-message"
     />
     
-    <div class="page-header">
+    <div class="page-header" data-testid="page-header">
       <div class="left">
-        <h2 class="title">Categories</h2>
-        <p class="description">Manage your income and expense categories</p>
+        <h2 class="title" data-testid="page-title">Categories</h2>
+        <p class="description" data-testid="page-description">Manage your income and expense categories</p>
       </div>
       <div class="right">
-        <el-button type="primary" @click="showCreateDialog">
+        <el-button type="primary" @click="showCreateDialog" data-testid="add-category-button">
           <el-icon class="mr-2"><Plus /></el-icon>
           Add Category
         </el-button>
       </div>
     </div>
 
-    <el-card shadow="never" class="table-card">
-      <loading-overlay :loading="categoryStore.loading" />
+      <el-card shadow="never" class="table-card" data-testid="category-card">
+      <loading-overlay :loading="categoryStore.loading" data-testid="loading-overlay" />
 
-      <el-tabs v-model="activeTab" class="category-tabs">
-        <el-tab-pane label="All" name="all" />
-        <el-tab-pane label="Expense" name="expense" />
-        <el-tab-pane label="Income" name="income" />
+      <el-tabs v-model="activeTab" class="category-tabs" data-testid="category-tabs">
+        <el-tab-pane label="All" name="all" data-testid="tab-all" />
+        <el-tab-pane label="Expense" name="expense" data-testid="tab-expense" />
+        <el-tab-pane label="Income" name="income" data-testid="tab-income" />
       </el-tabs>
 
-      <div class="table-toolbar">
+      <div class="table-toolbar" data-testid="table-toolbar">
         <el-input
           v-model="searchQuery"
           placeholder="Search categories..."
           class="search-input"
+          data-testid="search-input"
         >
           <template #prefix>
             <el-icon><Search /></el-icon>
@@ -46,24 +48,25 @@
         default-expand-all
         highlight-current
         class="category-tree"
+        data-testid="category-tree"
       >
         <template #default="{ node, data }">
-          <div class="tree-node-content" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div class="tree-node-content" style="display: flex; align-items: center; justify-content: space-between; width: 100%;" data-testid="tree-node-content">
             <div style="display: flex; align-items: center;">
-              <el-icon size="20" :style="{ color: getIconColor(data.type) }" class="mr-2">
+              <el-icon size="20" :style="{ color: getIconColor(data.type) }" class="mr-2" data-testid="category-icon">
                 <component :is="data.icon || 'Grid'" />
               </el-icon>
-              <span>{{ data.name }}</span>
-              <el-tag :type="data.type === 'EXPENSE' ? 'danger' : 'success'" size="small" style="margin-left: 8px;">
+              <span data-testid="category-name">{{ data.name }}</span>
+              <el-tag :type="data.type === 'EXPENSE' ? 'danger' : 'success'" size="small" style="margin-left: 8px;" data-testid="category-type">
                 {{ data.type }}
               </el-tag>
             </div>
             <div>
-              <el-button-group>
-                <el-button type="primary" link @click.stop="handleEdit(data)">
+              <el-button-group data-testid="category-button-group">
+                <el-button type="primary" link @click.stop="handleEdit(data)" data-testid="edit-category-button">
                   <el-icon><Edit /></el-icon>
                 </el-button>
-                <el-button type="danger" link @click.stop="handleDelete(data)">
+                <el-button type="danger" link @click.stop="handleDelete(data)" data-testid="delete-category-button">
                   <el-icon><Delete /></el-icon>
                 </el-button>
               </el-button-group>
@@ -78,6 +81,7 @@
       v-model="dialogVisible"
       :title="isEditing ? 'Edit Category' : 'Create Category'"
       width="500px"
+      data-testid="category-dialog"
     >
       <el-form
         ref="formRef"
@@ -85,18 +89,20 @@
         :rules="rules"
         label-width="120px"
         class="category-form"
+        data-testid="category-form"
       >
-        <el-form-item label="Name" prop="name">
-          <el-input v-model="categoryForm.name" placeholder="Enter category name" />
+        <el-form-item label="Name" prop="name" data-testid="form-item-name">
+          <el-input v-model="categoryForm.name" placeholder="Enter category name" data-testid="input-category-name" />
         </el-form-item>
         
-        <el-form-item label="Icon" prop="icon">
-          <el-select v-model="categoryForm.icon" class="icon-select">
+        <el-form-item label="Icon" prop="icon" data-testid="form-item-icon">
+          <el-select v-model="categoryForm.icon" class="icon-select" data-testid="select-icon">
             <el-option
               v-for="icon in availableIcons"
               :key="icon.value"
               :label="icon.label"
               :value="icon.value"
+              data-testid="option-icon"
             >
               <el-icon><component :is="icon.value" /></el-icon>
               <span class="ml-2">{{ icon.label }}</span>
@@ -104,19 +110,20 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Type" prop="type">
-          <el-radio-group v-model="categoryForm.type">
-            <el-radio-button label="EXPENSE">Expense</el-radio-button>
-            <el-radio-button label="INCOME">Income</el-radio-button>
+        <el-form-item label="Type" prop="type" data-testid="form-item-type">
+          <el-radio-group v-model="categoryForm.type" data-testid="radio-group-type">
+            <el-radio-button label="EXPENSE" data-testid="radio-expense">Expense</el-radio-button>
+            <el-radio-button label="INCOME" data-testid="radio-income">Income</el-radio-button>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="Parent Category">
+        <el-form-item label="Parent Category" data-testid="form-item-parent-category">
           <el-select
             v-model="categoryForm.parentId"
             clearable
             placeholder="Select parent category"
             class="parent-select"
+            data-testid="select-parent-category"
           >
             <el-option
               v-for="category in availableParents"
@@ -124,6 +131,7 @@
               :label="category.name"
               :value="category.id"
               :disabled="category.id === editingId"
+              data-testid="option-parent-category"
             >
               <el-icon><component :is="category.icon || 'Grid'" /></el-icon>
               <span class="ml-2">{{ category.name }}</span>
@@ -133,9 +141,9 @@
       </el-form>
 
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="handleSubmit">
+        <span class="dialog-footer" data-testid="dialog-footer">
+          <el-button @click="dialogVisible = false" data-testid="button-cancel">Cancel</el-button>
+          <el-button type="primary" @click="handleSubmit" data-testid="button-submit">
             {{ isEditing ? 'Save' : 'Create' }}
           </el-button>
         </span>
@@ -147,12 +155,13 @@
       v-model="deleteDialogVisible"
       title="Delete Category"
       width="400px"
+      data-testid="delete-dialog"
     >
-      <p>Are you sure you want to delete this category? This action cannot be undone.</p>
+      <p data-testid="delete-dialog-message">Are you sure you want to delete this category? This action cannot be undone.</p>
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="deleteDialogVisible = false">Cancel</el-button>
-          <el-button type="danger" @click="confirmDelete">Delete</el-button>
+        <span class="dialog-footer" data-testid="delete-dialog-footer">
+          <el-button @click="deleteDialogVisible = false" data-testid="button-cancel-delete">Cancel</el-button>
+          <el-button type="danger" @click="confirmDelete" data-testid="button-confirm-delete">Delete</el-button>
         </span>
       </template>
     </el-dialog>
@@ -160,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useCategoryStore } from '@/stores/category'
 import { Plus, Search, Edit, Delete, Grid } from '@element-plus/icons-vue'
@@ -330,9 +339,13 @@ async function confirmDelete() {
   try {
     await categoryStore.deleteCategory(editingId.value)
     ElMessage.success('Category deleted successfully')
-    deleteDialogVisible.value = false
+    await categoryStore.fetchCategories(true)
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 100))
   } catch (error) {
-    // Remove explicit error message to avoid duplicate messages
+    // ElMessage.error is already called from the store
+    throw error
+  } finally {
     deleteDialogVisible.value = false
   }
 }

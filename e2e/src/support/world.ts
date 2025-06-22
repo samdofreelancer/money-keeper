@@ -6,19 +6,26 @@ import {
   chromium,
   firefox,
   webkit,
+  PlaywrightTestOptions,
 } from "@playwright/test";
 
 import { config } from "../config/env.config";
 import { logger } from "./logger";
 import { BasePage } from "../pages";
+import { CategoryPage } from "../pages/category.page";
 
 export class CustomWorld extends World {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
   currentPage!: BasePage;
+  categoryPage?: CategoryPage;
+  createdCategoryNames: string[] = [];
+  createdCategoryIds: string[] = [];
+  uniqueData: Map<string, string> = new Map();
+  playwrightOptions?: PlaywrightTestOptions;
 
-  constructor(options: IWorldOptions<unknown>) {
+  constructor(options: IWorldOptions) {
     super(options);
   }
 
@@ -55,7 +62,7 @@ export class CustomWorld extends World {
       if (this.context) await this.context.close();
       if (this.browser) await this.browser.close();
     } catch (error) {
-      console.error("Error closing browser:", error);
+      logger.error("Error closing browser:", error);
       throw error;
     }
   }
