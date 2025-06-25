@@ -1,11 +1,14 @@
 name: Integration Tests
 
 on:
-  workflow_run:
-    workflows:
-      - build.yml
-    types:
-      - completed
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+      - master
 
 jobs:
   integration-test:
