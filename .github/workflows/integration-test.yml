@@ -29,6 +29,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set environment variable for Spring profile
+        run: echo "SPRING_PROFILES_ACTIVE=ci" >> $GITHUB_ENV
+
       - name: Set up JDK 18
         uses: actions/setup-java@v3
         with:
@@ -61,29 +64,8 @@ jobs:
         run: mvn -B -ntp flyway:migrate -Pmedium-test
         working-directory: ./backend
 
-      - name: Install Oracle Instant Client and sqlplus
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libaio1 libaio-dev unzip
-          curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linux.x64-21.9.0.0.0.zip
-          curl -o instantclient-sqlplus.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linux.x64-21.9.0.0.0.zip
-          unzip instantclient-basiclite.zip -d $HOME/instantclient
-          unzip instantclient-sqlplus.zip -d $HOME/instantclient
-          export LD_LIBRARY_PATH=$HOME/instantclient/instantclient_21_9:$LD_LIBRARY_PATH
-          export PATH=$HOME/instantclient/instantclient_21_9:$PATH
-          sqlplus -v
-
-      - name: Query categories from DB using sqlplus
-        run: |
-          echo "SET PAGESIZE 50
-          SET LINESIZE 200
-          SET FEEDBACK OFF
-          SET HEADING ON
-          CONNECT system/oracle123@localhost:1521/XEPDB1
-          @backend/src/main/resources/db/query_verify_categories.sql
-          EXIT" > query.sql
-          sqlplus /nolog @query.sql
-        working-directory: ./backend
+      - name: Query categories from DB using Maven Exec Plugin
+        run: mvn compile exec:java -Dexec.mainClass="com.personal.money.management.core.category.infrastructure.persistence.CategoryQueryRunner" -Dexec.args="system oracle123 localhost 1521 XEPDB1"
 
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
