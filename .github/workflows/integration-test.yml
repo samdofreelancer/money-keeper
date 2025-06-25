@@ -14,9 +14,16 @@ jobs:
   integration-test:
     name: Run Integration Tests
     runs-on: ubuntu-latest
-    container:
-      image: maven:3.8.6-openjdk-18
-      options: --mount type=volume,source=maven-repo,target=/root/.m2
+    services:
+      oracle:
+        image: gvenzl/oracle-xe:latest
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/oracle123@localhost:1521/XEPDB1 | grep -q 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,19 +36,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Start Oracle container
+      - name: Wait for Oracle to be healthy
         run: |
-          docker run -d --name oracle-xe -p 1521:1521 -e ORACLE_PASSWORD=oracle123 gvenzl/oracle-xe:latest
-          echo "Waiting for Oracle to be ready..."
           for i in {1..30}; do
-            docker logs oracle-xe | grep "DATABASE IS READY TO USE" && break
+            echo "Checking Oracle connection..."
+            if echo "select 1 from dual;" | sqlplus -s system/oracle123@localhost:1521/XEPDB1 | grep -q 1; then
+              echo "Oracle is healthy"
+              exit 0
+            fi
             echo "Oracle not ready yet. Waiting 10 seconds..."
             sleep 10
           done
+          exit 1
 
       - name: Run Flyway migrations
-        run: |
-          docker run --rm --network host -v ${{ github.workspace }}/backend/src/main/resources/db/migration:/flyway/sql flyway/flyway -url=jdbc:oracle:thin:@localhost:1521/XEPDB1 -user=system -password=oracle123 migrate
+        run: mvn flyway:migrate -Pmedium-test
+        working-directory: ./backend
 
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
