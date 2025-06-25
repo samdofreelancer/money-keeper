@@ -91,7 +91,7 @@ jobs:
         working-directory: ./e2e
 
       - name: Install Playwright Browsers
-        run: npx playwright install
+        run: npx playwright install-deps    
         working-directory: ./e2e
 
       - name: Run e2e tests

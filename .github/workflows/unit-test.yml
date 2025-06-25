@@ -33,8 +33,28 @@ jobs:
         run: mvn clean test -Psmall-test
         working-directory: ./backend
 
+      - name: Install Node.js
+        run: |
+          curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+          apt-get install -y nodejs
+        working-directory: ./backend
+
+      - name: Install xml2js package
+        run: npm install xml2js
+        working-directory: ./backend/scripts
+
+      - name: Run test report aggregation script
+        run: node aggregate-test-report.js
+        working-directory: ./backend/scripts
+
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
         with:
           name: surefire-report-small
           path: ./backend/target/small-test-reports/
+
+      - name: Upload Overview Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: overview-report
+          path: ./backend/target/small-test-reports/overview-report.json
