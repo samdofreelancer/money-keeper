@@ -58,7 +58,8 @@ jobs:
         working-directory: ./frontend
 
       - name: Start backend
-        run: java -jar springboot-ddd-category-1.0-SNAPSHOT.jar &
+        run: mvn spring-boot:run -DskipTests
+        working-directory: ./backend
 
       - name: Verify backend status
         run: |
