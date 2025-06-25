@@ -64,7 +64,7 @@ jobs:
       - name: Install Oracle Instant Client and sqlplus
         run: |
           sudo apt-get update
-          sudo apt-get install -y libaio1 unzip
+          sudo apt-get install -y libaio unzip
           curl -o instantclient-basiclite.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linux.x64-21.9.0.0.0.zip
           curl -o instantclient-sqlplus.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linux.x64-21.9.0.0.0.zip
           unzip instantclient-basiclite.zip -d $HOME/instantclient
