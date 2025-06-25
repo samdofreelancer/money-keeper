@@ -148,7 +148,9 @@
                     <user>system</user>
                     <password>oracle123</password>
                     <baselineOnMigrate>true</baselineOnMigrate>
-                    <!-- Removed schemas configuration to use default schema -->
+                    <schemas>
+                        <schema>CORE</schema>
+                    </schemas>
                     <locations>
                         <location>filesystem:src/main/resources/db/migration</location>
                     </locations>
