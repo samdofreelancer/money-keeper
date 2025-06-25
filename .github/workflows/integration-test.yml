@@ -64,9 +64,6 @@ jobs:
         run: mvn -B -ntp flyway:migrate -Pmedium-test
         working-directory: ./backend
 
-      - name: Query categories from DB using Maven Exec Plugin
-        run: mvn compile exec:java -Dexec.mainClass="com.personal.money.management.core.category.infrastructure.persistence.CategoryQueryRunner" -Dexec.args="system oracle123 localhost 1521 XEPDB1"
-
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
         working-directory: ./backend
