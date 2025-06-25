@@ -58,7 +58,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Start backend
-        run: mvn spring-boot:run -DskipTests
+        run: mvn spring-boot:run -DskipTests &
         working-directory: ./backend
 
       - name: Verify backend status
