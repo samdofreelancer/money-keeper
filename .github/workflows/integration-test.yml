@@ -62,7 +62,7 @@ jobs:
         working-directory: ./backend
 
       - name: Query categories from DB using Maven Exec Plugin
-        run: mvn exec:java -Dexec.mainClass="com.personal.money.management.core.category.infrastructure.persistence.CategoryQueryRunner" -Dexec.args="system oracle123 localhost 1521 XEPDB1"
+        run: mvn compile exec:java -Dexec.mainClass="com.personal.money.management.core.category.infrastructure.persistence.CategoryQueryRunner" -Dexec.args="system oracle123 localhost 1521 XEPDB1"
         working-directory: ./backend
 
       - name: Run integration tests
