@@ -21,6 +21,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install xml2js package
+        run: npm install xml2js
+        working-directory: ./backend/scripts
+                
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
@@ -33,17 +42,8 @@ jobs:
         run: mvn clean test -Psmall-test
         working-directory: ./backend
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install xml2js package
-        run: npm install xml2js
-        working-directory: ./backend/scripts
-
       - name: Run test report aggregation script
-        run: node aggregate-test-report.js
+        run: node aggregate-test-report.js ../target/small-test-reports ../target/medium-test-reports
         working-directory: ./backend/scripts
 
       - name: Upload Surefire Report
@@ -51,9 +51,3 @@ jobs:
         with:
           name: surefire-report-small
           path: ./backend/target/small-test-reports/
-
-      - name: Upload Overview Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: overview-report
-          path: ./backend/target/small-test-reports/overview-report.json
