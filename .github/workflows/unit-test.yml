@@ -33,11 +33,10 @@ jobs:
         run: mvn clean test -Psmall-test
         working-directory: ./backend
 
-      - name: Install Node.js
-        run: |
-          curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-          apt-get install -y nodejs
-        working-directory: ./backend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
       - name: Install xml2js package
         run: npm install xml2js
