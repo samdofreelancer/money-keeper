@@ -22,7 +22,17 @@ async function aggregateReports() {
 
     for (const dir of reportDirs) {
       const reportsDir = path.resolve(__dirname, dir);
-      const files = await fs.promises.readdir(reportsDir);
+      let files = [];
+      try {
+        files = await fs.promises.readdir(reportsDir);
+      } catch (err) {
+        if (err.code === 'ENOENT') {
+          console.warn(`Warning: Report directory not found: ${reportsDir}. Skipping.`);
+          continue;
+        } else {
+          throw err;
+        }
+      }
       const xmlFiles = files.filter(f => f.endsWith('.xml'));
 
       for (const file of xmlFiles) {
@@ -50,9 +60,13 @@ async function aggregateReports() {
       totalSkipped,
     };
 
-    const outputFile = path.resolve(__dirname, '../target/overview-report.json');
-    await fs.promises.writeFile(outputFile, JSON.stringify(overview, null, 2), 'utf-8');
-    console.log('Overview report generated at:', outputFile);
+    // Write overview report to each report directory
+    for (const dir of reportDirs) {
+      const reportsDir = path.resolve(__dirname, dir);
+      const outputFile = path.join(reportsDir, 'overview-report.json');
+      await fs.promises.writeFile(outputFile, JSON.stringify(overview, null, 2), 'utf-8');
+      console.log('Overview report generated at:', outputFile);
+    }
   } catch (err) {
     console.error('Error aggregating test reports:', err);
     process.exit(1);

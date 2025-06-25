@@ -43,7 +43,7 @@ jobs:
         working-directory: ./backend
 
       - name: Run test report aggregation script
-        run: node aggregate-test-report.js ../target/small-test-reports ../target/medium-test-reports
+        run: node aggregate-test-report.js ../target/small-test-reports
         working-directory: ./backend/scripts
 
       - name: Upload Surefire Report
