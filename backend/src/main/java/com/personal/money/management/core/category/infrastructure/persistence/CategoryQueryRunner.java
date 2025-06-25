@@ -23,7 +23,7 @@ public class CategoryQueryRunner {
         String jdbcUrl = String.format("jdbc:oracle:thin:@%s:%s/%s", host, port, service);
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
-            String sql = "SELECT id, name, icon, type, parent_id FROM categories ORDER BY id";
+            String sql = "SELECT id, name, icon, type, parent_id FROM CORE.categories ORDER BY id";
             try (PreparedStatement stmt = conn.prepareStatement(sql);
                  ResultSet rs = stmt.executeQuery()) {
 
