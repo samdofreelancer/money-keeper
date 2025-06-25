@@ -1,0 +1,54 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+      - master
+
+jobs:
+  integration-test:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3.8.6-openjdk-18
+      options: --mount type=volume,source=maven-repo,target=/root/.m2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Start Oracle container
+        run: |
+          docker run -d --name oracle-xe -p 1521:1521 -e ORACLE_PASSWORD=oracle123 gvenzl/oracle-xe:latest
+          echo "Waiting for Oracle to be ready..."
+          for i in {1..30}; do
+            docker logs oracle-xe | grep "DATABASE IS READY TO USE" && break
+            echo "Oracle not ready yet. Waiting 10 seconds..."
+            sleep 10
+          done
+
+      - name: Run Flyway migrations
+        run: |
+          docker run --rm --network host -v ${{ github.workspace }}/backend/src/main/resources/db/migration:/flyway/sql flyway/flyway -url=jdbc:oracle:thin:@localhost:1521/XEPDB1 -user=system -password=oracle123 migrate
+
+      - name: Run integration tests
+        run: mvn clean verify -Pmedium-test -DskipUnitTests=true
+        working-directory: ./backend
+
+      - name: Upload Surefire Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-report-medium
+          path: ./backend/target/medium-test-reports/
