@@ -51,7 +51,7 @@ jobs:
           exit 1
 
       - name: Run Flyway migrations
-        run: mvn flyway:migrate -Pmedium-test
+        run: mvn -B -ntp flyway:migrate -Pmedium-test
         working-directory: ./backend
 
       - name: Run integration tests
