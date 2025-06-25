@@ -147,6 +147,7 @@
                     <url>jdbc:oracle:thin:@localhost:1521/XEPDB1</url>
                     <user>system</user>
                     <password>oracle123</password>
+                    <baselineOnMigrate>true</baselineOnMigrate>
                     <!-- Removed schemas configuration to use default schema -->
                     <locations>
                         <location>filesystem:src/main/resources/db/migration</location>
