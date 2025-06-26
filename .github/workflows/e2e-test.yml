@@ -100,6 +100,20 @@ jobs:
         run: cp .env.example .env
         working-directory: ./e2e
 
+      - name: Wait for frontend service to be healthy
+        run: |
+          for i in {1..30}; do
+            if curl -f http://frontend:5173; then
+              echo "Frontend is healthy"
+              exit 0
+            else
+              echo "Waiting for frontend to be healthy..."
+              sleep 5
+            fi
+          done
+          echo "Frontend did not become healthy in time"
+          exit 1
+
       - name: Run e2e tests
         run: npm run test:parallel
         working-directory: ./e2e
