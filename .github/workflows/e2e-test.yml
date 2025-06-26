@@ -102,7 +102,7 @@ jobs:
 
       - name: Wait for Oracle DB to be ready
         run: |
-          apt-get update && apt-get install -y netcat
+          apt-get update && apt-get install -y netcat-openbsd
           chmod +x backend/wait-for-oracle.sh
           ./backend/wait-for-oracle.sh
           working        
