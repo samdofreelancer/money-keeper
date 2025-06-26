@@ -14,20 +14,34 @@ jobs:
   build-images:
     name: Build Backend and Frontend Docker Images
     runs-on: ubuntu-latest
+    container:
+      image: maven:3.8.6-openjdk-18
+    env:
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+      IMAGE_TAG: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build backend image
         run: |
           cd backend
           mvn clean package -DskipTests
-          docker build -t money-keeper-backend .
+          docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG .
+          docker push $REGISTRY/money-keeper-backend:$IMAGE_TAG
 
       - name: Build frontend image
         run: |
           cd frontend
-          docker build -t money-keeper-frontend .
+          docker build -t $REGISTRY/money-keeper-frontend:$IMAGE_TAG .
+          docker push $REGISTRY/money-keeper-frontend:$IMAGE_TAG
 
   e2e-test:
     name: Run E2E Tests
@@ -37,6 +51,8 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.53.0-noble
     env:
       SPRING_PROFILES_ACTIVE: ci
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+      IMAGE_TAG: ${{ github.sha }}
     services:
       oracle:
         image: gvenzl/oracle-xe:latest
@@ -49,7 +65,7 @@ jobs:
           --health-timeout 5s
           --health-retries 30
       backend:
-        image: money-keeper-backend
+        image: ${{ env.REGISTRY }}/money-keeper-backend:${{ env.IMAGE_TAG }}
         ports:
           - 8080:8080
         options: >-
@@ -60,7 +76,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: ci
       frontend:
-        image: money-keeper-frontend
+        image: ${{ env.REGISTRY }}/money-keeper-frontend:${{ env.IMAGE_TAG }}
         ports:
           - 5173:5173
         options: >-
