@@ -100,6 +100,13 @@ jobs:
         run: cp .env.example .env
         working-directory: ./e2e
 
+      - name: Wait for Oracle DB to be ready
+        run: |
+          apt-get update && apt-get install -y netcat
+          chmod +x backend/wait-for-oracle.sh
+          ./backend/wait-for-oracle.sh
+          working        
+          
       - name: Wait for frontend service to be healthy
         run: |
           for i in {1..30}; do
