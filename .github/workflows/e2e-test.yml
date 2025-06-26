@@ -34,8 +34,6 @@ jobs:
       - name: Build project
         run: mvn clean install -DskipTests
         working-directory: ./backend
-        env:
-          JAVA_HOME: /usr/lib/jvm/java-18-temurin
 
       - name: Upload backend artifact
         id: upload-artifact
