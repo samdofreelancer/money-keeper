@@ -68,15 +68,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 30
-      frontend:
-        image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
-        ports:
-          - 5173:5173
-        options: >-
-          --health-cmd "curl -f http://localhost:5173 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -100,6 +91,11 @@ jobs:
           -e SPRING_PROFILES_ACTIVE=ci \
           --network host \
           ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
+
+      - name: Run frontend container
+        run: |
+          docker run -d --name frontend -p 5173:5173 \
+          ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
 
       - name: Install e2e dependencies
         run: npm install
