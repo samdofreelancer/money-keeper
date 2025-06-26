@@ -34,13 +34,12 @@ jobs:
         working-directory: ./backend
 
       - name: Start backend service
-        run: mvn spring-boot:run -DskipTests
+        run: mvn spring-boot:run -DskipTests &
         working-directory: ./backend
 
   frontend-service:
     name: Frontend Service
     runs-on: ubuntu-latest
-    needs: backend-service
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,7 +54,7 @@ jobs:
         working-directory: ./frontend
 
       - name: Start frontend service
-        run: npm start
+        run: npm start &
         working-directory: ./frontend
 
   e2e-test:
