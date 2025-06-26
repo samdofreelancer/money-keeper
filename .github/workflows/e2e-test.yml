@@ -65,7 +65,7 @@ jobs:
           --health-timeout 5s
           --health-retries 30
       backend:
-        image: ${{ env.REGISTRY }}/money-keeper-backend:${{ env.IMAGE_TAG }}
+        image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
         ports:
           - 8080:8080
         options: >-
@@ -76,7 +76,7 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: ci
       frontend:
-        image: ${{ env.REGISTRY }}/money-keeper-frontend:${{ env.IMAGE_TAG }}
+        image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
         ports:
           - 5173:5173
         options: >-
