@@ -126,3 +126,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'e2e/reports/cucumber-html-report.html'
+
+  deploy-report:
+    name: Deploy E2E Report to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: e2e-test
+    steps:
+      - name: Download report artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./cucumber-html-report
