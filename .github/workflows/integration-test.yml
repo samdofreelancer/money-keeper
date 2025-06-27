@@ -93,13 +93,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Wait for Oracle DB to be ready
-        run: |
-          apt-get update && apt-get install -y netcat-openbsd
-          chmod +x backend/wait-for-oracle.sh
-          ./backend/wait-for-oracle.sh
-          echo "Oracle DB is ready"  
-
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
         working-directory: ./backend
