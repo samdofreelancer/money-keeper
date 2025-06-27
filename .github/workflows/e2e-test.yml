@@ -139,7 +139,7 @@ jobs:
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'e2e/reports/cucumber-html-report/'
+          path: 'e2e/reports/cucumber-html-report.html/'
           name: pages
 
   deploy-report:
