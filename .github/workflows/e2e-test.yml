@@ -119,6 +119,11 @@ jobs:
         run: |
           chmod +x backend/wait-for-frontend-port.sh
           ./backend/wait-for-frontend-port.sh
+
+      - name: Wait for backend service to be healthy
+        run: |
+          chmod +x backend/wait-for-backend-port.sh
+          ./backend/wait-for-backend-port.sh
         
       - name: Run e2e tests
         run: npm run test:parallel
