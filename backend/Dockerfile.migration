@@ -1,11 +1,12 @@
 FROM maven:3.8.6-openjdk-18
 
+RUN yum install -y nc
+
 WORKDIR /app
 
 COPY . .
 
 # Wait for Oracle DB to be ready
-RUN apt-get update && apt-get install -y netcat
 CMD /bin/sh -c "\
   until nc -z oracle 1521; do \
     echo 'Waiting for Oracle DB...'; \
