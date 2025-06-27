@@ -143,7 +143,6 @@ jobs:
           name: pages
 
   deploy-report:
-    if: always()
     name: Deploy E2E Report to GitHub Pages
     runs-on: ubuntu-latest
     needs: e2e-test
