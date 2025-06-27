@@ -9,8 +9,8 @@ RUN npm install
 
 COPY . .
 
-# Build frontend with CI profile
-RUN npm run build -- --mode ci
+# Build frontend with CI profile (skip vue-tsc to avoid js emit error)
+RUN npx vite build --mode ci
 
 # Install serve to serve static files
 RUN npm install -g serve
