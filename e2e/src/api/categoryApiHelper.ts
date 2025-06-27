@@ -36,6 +36,7 @@ export async function getAllCategories(): Promise<Category[]> {
     const response = await axios.get<Category[]>(`${API_BASE_URL}/categories`);
     return response.data;
   } catch (error) {
+    console.error("Error fetching categories:", error);
     if (axios.isAxiosError(error)) {
       throw new Error(
         `Failed to fetch categories: ${
