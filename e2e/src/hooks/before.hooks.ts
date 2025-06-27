@@ -9,13 +9,15 @@ Before(async function (this: CustomWorld, { pickle }) {
     `Before scenario: Launching browser for scenario "${pickle.name}"`
   );
 
-  // Capture browser console logs and output to test logs
-  this.page.on('console', msg => {
-    const type = msg.type();
-    const text = msg.text();
-    console.log(`Browser console [${type}]: ${text}`);
-  });
-
   await this.launchBrowser();
   this.categoryPage = new CategoryPage(this.page);
+
+  // Capture browser console logs and output to test logs
+  if (this.page) {
+    this.page.on('console', msg => {
+      const type = msg.type();
+      const text = msg.text();
+      console.log(`Browser console [${type}]: ${text}`);
+    });
+  }
 });
