@@ -109,17 +109,8 @@ jobs:
           
       - name: Wait for frontend service to be healthy
         run: |
-          for i in {1..30}; do
-            if curl --retry 1 --retry-delay 5 --retry-connrefused -sSf http://frontend:5173; then
-              echo "Frontend is healthy"
-              exit 0
-            else
-              echo "Waiting for frontend to be healthy..."
-              sleep 5
-            fi
-          done
-          echo "Frontend did not become healthy in time"
-          exit 1
+          chmod +x backend/wait-for-frontend-port.sh
+          ./backend/wait-for-frontend-port.sh
 
       - name: Run e2e tests
         run: npm run test:parallel
