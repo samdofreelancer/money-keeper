@@ -63,6 +63,7 @@ jobs:
       SPRING_PROFILES_ACTIVE: ci
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
+      VITE_BACKEND_HOST: backend
     services:
       oracle:
         image: gvenzl/oracle-xe:latest
@@ -139,6 +140,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'e2e/reports/cucumber-html-report.html'
+          name: pages
 
   deploy-report:
     if: always()
