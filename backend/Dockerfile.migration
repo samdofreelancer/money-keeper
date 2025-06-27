@@ -1,6 +1,6 @@
 FROM maven:3.8.6-openjdk-18
 
-RUN yum install -y nc
+RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
