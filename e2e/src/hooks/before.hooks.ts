@@ -17,7 +17,7 @@ Before(async function (this: CustomWorld, { pickle }) {
     this.page.on('console', msg => {
       const type = msg.type();
       const text = msg.text();
-      console.log(`Browser console [${type}]: ${text}`);
+      logger.info(`Browser console [${type}]: ${text}`);
     });
   }
 });
