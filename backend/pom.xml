@@ -145,7 +145,7 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>9.16.1</version>
                 <configuration>
-                    <url>jdbc:oracle:thin:@localhost:1521/XEPDB1</url>
+                    <url>jdbc:oracle:thin:@oracle:1521/XEPDB1</url>
                     <user>system</user>
                     <password>oracle123</password>
                     <baselineOnMigrate>true</baselineOnMigrate>
