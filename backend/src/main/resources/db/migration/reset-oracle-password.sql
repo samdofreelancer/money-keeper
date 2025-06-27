@@ -1,0 +1,2 @@
+ALTER USER system IDENTIFIED BY oracle123;
+COMMIT;
