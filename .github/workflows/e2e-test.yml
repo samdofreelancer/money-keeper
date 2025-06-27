@@ -105,7 +105,7 @@ jobs:
           apt-get update && apt-get install -y netcat-openbsd
           chmod +x backend/wait-for-oracle.sh
           ./backend/wait-for-oracle.sh
-          working        
+          echo "Oracle DB is ready"        
           
       - name: Wait for frontend service to be healthy
         run: |
