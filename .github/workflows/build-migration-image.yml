@@ -30,4 +30,4 @@ jobs:
       - name: Build migration image
         run: |
           docker build -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration-image:$IMAGE_TAG backend
-          docker push $REGISTRY/money-keeper-migration:$IMAGE_TAG
+          docker push $REGISTRY/money-keeper-migration-image:$IMAGE_TAG
