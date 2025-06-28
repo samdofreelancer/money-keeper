@@ -26,9 +26,7 @@ export const useCategoryStore = defineStore('category', () => {
       error.value = null
       categories.value = await categoryApi.getAll()
     } catch (e: any) {
-      //error.value = `${e.message || 'Failed to fetch categories.'} API URL: ${apiUrl}`
-      error.value = `\nPlease check if the backend is running at ${import.meta.env.VITE_API_URL}`
-      // console.error(e)
+      error.value = 'Failed to fetch categories'
     } finally {
       loading.value = false
     }
