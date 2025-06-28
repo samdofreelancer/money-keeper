@@ -1,0 +1,37 @@
+name: Build Backend Image
+
+on:
+  workflow_call:
+    inputs:
+      REGISTRY:
+        required: true
+        type: string
+      IMAGE_TAG:
+        required: true
+        type: string
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: \${{ inputs.REGISTRY }}
+      IMAGE_TAG: \${{ inputs.IMAGE_TAG }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 18
+        uses: actions/setup-java@v4
+        with:
+          java-version: 18
+          distribution: 'temurin'
+
+      - name: Build backend image
+        run: |
+          docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new -t $REGISTRY/money-keeper-backend:$IMAGE_TAG backend
+          docker push $REGISTRY/money-keeper-backend:$IMAGE_TAG
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

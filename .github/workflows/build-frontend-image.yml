@@ -1,0 +1,32 @@
+name: Build Frontend Image
+
+on:
+  workflow_call:
+    inputs:
+      REGISTRY:
+        required: true
+        type: string
+      IMAGE_TAG:
+        required: true
+        type: string
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY: \${{ inputs.REGISTRY }}
+      IMAGE_TAG: \${{ inputs.IMAGE_TAG }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build frontend image
+        run: |
+          cd frontend
+          docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new -t $REGISTRY/money-keeper-frontend:$IMAGE_TAG .
+          docker push $REGISTRY/money-keeper-frontend:$IMAGE_TAG
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

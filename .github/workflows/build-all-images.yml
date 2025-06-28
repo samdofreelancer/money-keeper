@@ -1,0 +1,30 @@
+name: Build All Images
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+      - master
+
+jobs:
+  build-migration:
+    uses: ./.github/workflows/build-migration-image.yml
+    with:
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+      IMAGE_TAG: ${{ github.sha }}
+
+  build-backend:
+    uses: ./.github/workflows/build-backend-image.yml
+    with:
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+      IMAGE_TAG: ${{ github.sha }}
+
+  build-frontend:
+    uses: ./.github/workflows/build-frontend-image.yml
+    with:
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
+      IMAGE_TAG: ${{ github.sha }}
