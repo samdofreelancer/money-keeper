@@ -104,18 +104,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Oracle Instant Client and sqlplus
-        run: |
-          apt-get update
-          apt-get install -y libaio unzip
-          cp deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip instantclient-basic.zip
-          cp deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip instantclient-sqlplus.zip
-          unzip instantclient-basic.zip -d $HOME/instantclient
-          unzip instantclient-sqlplus.zip -d $HOME/instantclient
-          export LD_LIBRARY_PATH=$HOME/instantclient/instantclient_12_2:$LD_LIBRARY_PATH
-          export PATH=$HOME/instantclient/instantclient_12_2:$PATH
-          ln -s $HOME/instantclient/instantclient_12_2/sqlplus /usr/bin/sqlplus
-
       - name: Install e2e dependencies
         run: npm install
         working-directory: ./e2e
@@ -127,23 +115,6 @@ jobs:
       - name: Create .env file
         run: cp .env.example .env
         working-directory: ./e2e
-
-      - name: Wait for Oracle DB to be ready
-        run: |
-          apt-get update && apt-get install -y netcat-openbsd
-          chmod +x backend/wait-for-oracle.sh
-          ./backend/wait-for-oracle.sh
-          echo "Oracle DB is ready"        
-          
-      - name: Wait for frontend service to be healthy
-        run: |
-          chmod +x backend/wait-for-frontend-port.sh
-          ./backend/wait-for-frontend-port.sh
-
-      - name: Wait for backend service to be healthy
-        run: |
-          chmod +x backend/wait-for-backend-port.sh
-          ./backend/wait-for-backend-port.sh
         
       - name: Run e2e tests
         run: npm run test:parallel
