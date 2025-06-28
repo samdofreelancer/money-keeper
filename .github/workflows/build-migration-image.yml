@@ -18,17 +18,14 @@ jobs:
       REGISTRY: ${{ inputs.REGISTRY }}
       IMAGE_TAG: ${{ inputs.IMAGE_TAG }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+      - name: Call common build image steps
+        uses: ./.github/workflows/build-image-common.yml
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY: ${{ inputs.REGISTRY }}
 
       - name: Build migration image
         run: |
-          docker build -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
+          docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-migration:$IMAGE_TAG
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
