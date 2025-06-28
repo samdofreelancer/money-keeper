@@ -5,9 +5,9 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-FROM openjdk:18-jdk-slim
+RUN mvn clean package -DskipTests
 
-RUN mvn -B -ntp clean package -DskipTests
+FROM openjdk:18-jdk-slim
 
 RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/lists/*
 
