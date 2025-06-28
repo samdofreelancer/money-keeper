@@ -40,4 +40,14 @@ EXPOSE 8080
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["./wait-for-oracle.sh", "java", "-jar", "app.jar", "--spring.profiles.active=ci"]
+# Wait for Oracle DB to be ready and reset Oracle password
+CMD /bin/sh -c "\
+  until nc -z oracle 1521; do \
+    echo 'Waiting for Oracle DB...'; \
+    sleep 5; \
+  done; \
+  echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
+  echo \"set lines 200 pages 1000; select * from core.categories;\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
+  tail -f /dev/null"
+
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=ci"]
