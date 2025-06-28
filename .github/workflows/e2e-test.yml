@@ -142,14 +142,11 @@ jobs:
         with:
           name: pages
 
-      - name: List contents of publish directory for debugging
-        run: ls -la ./cucumber-html-report || echo "Directory not found"
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./cucumber-html-report
+          publish_dir: ./
 
       - name: Print GitHub Pages URL
         run: |
