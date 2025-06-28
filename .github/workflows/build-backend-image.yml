@@ -29,6 +29,11 @@ jobs:
           java-version: 18
           distribution: 'temurin'
 
+      - name: Debug current directory and list files
+        run: |
+          pwd
+          ls -la
+
       - name: Build backend image
         run: |
           docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG backend
