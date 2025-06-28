@@ -55,9 +55,10 @@ jobs:
         image: gvenzl/oracle-xe:latest
         ports:
           - 1521:1521
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
-          -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }}
-          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 | grep -q 1'"
+          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/$ORACLE_PASSWORD@localhost:1521/XEPDB1 | grep -q 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 30
