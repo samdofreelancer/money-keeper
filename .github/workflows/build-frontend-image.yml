@@ -23,10 +23,5 @@ jobs:
       - name: Build frontend image
         run: |
           cd frontend
-          docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new -t $REGISTRY/money-keeper-frontend:$IMAGE_TAG .
+          docker build -t $REGISTRY/money-keeper-frontend:$IMAGE_TAG .
           docker push $REGISTRY/money-keeper-frontend:$IMAGE_TAG
-
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
