@@ -29,6 +29,10 @@ jobs:
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
 
+  call-unit-test:
+    uses: ./.github/workflows/unit-test.yml
+    secrets: inherit
+
   call-e2e-test:
     needs:
       - build-migration
