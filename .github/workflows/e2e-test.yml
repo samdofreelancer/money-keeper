@@ -36,15 +36,12 @@ jobs:
 
       - name: Build backend image
         run: |
-          cd backend
-          mvn clean package -DskipTests
-          docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG .
+          docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-backend:$IMAGE_TAG
 
       - name: Build migration image
         run: |
-          cd backend
-          docker build -f Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG .
+          docker build -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-migration:$IMAGE_TAG
 
       - name: Build frontend image
@@ -69,14 +66,19 @@ jobs:
         image: gvenzl/oracle-xe:latest
         ports:
           - 1521:1521
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
-          -e ORACLE_PASSWORD=oracle123
-          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/oracle123@localhost:1521/XEPDB1 | grep -q 1'"
+          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/$ORACLE_PASSWORD@localhost:1521/XEPDB1 | grep -q 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 30
       migration:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-migration:${{ github.sha }}
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+        options: >-
+          --health-cmd "bash -c 'exit 0'"
       backend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
         ports:
@@ -88,6 +90,7 @@ jobs:
           --health-retries 5
         env:
           SPRING_PROFILES_ACTIVE: ci
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
       frontend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
         ports:
@@ -105,26 +108,13 @@ jobs:
         run: npm install
         working-directory: ./e2e
 
+      - name: Install e2e dependencies
+        run: npm install
+        working-directory: ./e2e
+
       - name: Create .env file
         run: cp .env.example .env
         working-directory: ./e2e
-
-      - name: Wait for Oracle DB to be ready
-        run: |
-          apt-get update && apt-get install -y netcat-openbsd
-          chmod +x backend/wait-for-oracle.sh
-          ./backend/wait-for-oracle.sh
-          echo "Oracle DB is ready"        
-          
-      - name: Wait for frontend service to be healthy
-        run: |
-          chmod +x backend/wait-for-frontend-port.sh
-          ./backend/wait-for-frontend-port.sh
-
-      - name: Wait for backend service to be healthy
-        run: |
-          chmod +x backend/wait-for-backend-port.sh
-          ./backend/wait-for-backend-port.sh
         
       - name: Run e2e tests
         run: npm run test:parallel
@@ -139,7 +129,7 @@ jobs:
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'e2e/reports/cucumber-html-report.html/'
+          path: 'e2e/reports'
           name: pages
 
   deploy-report:
@@ -153,13 +143,13 @@ jobs:
           name: pages
 
       - name: List contents of publish directory for debugging
-        run: ls -la ./cucumber-html-report || echo "Directory not found"
+        run: ls -la ./ || echo "Directory not found"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./cucumber-html-report
+          publish_dir: ./reports
 
       - name: Print GitHub Pages URL
         run: |

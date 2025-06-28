@@ -152,6 +152,81 @@ The API now returns structured error responses for category-related errors to fa
 
 Please update your client applications to handle these structured error responses.
 
+---
+
+## Building and Running the Backend Locally
+
+To build and run the backend locally, you can use the provided Dockerfile or run the application directly with Maven.
+
+### Using Docker
+
+1. Ensure Docker is installed and running.
+2. Build the Docker image:
+
+```bash
+docker build -t money-keeper-backend ./backend
+```
+
+3. Run the Docker container, setting the Oracle password as an environment variable:
+
+```bash
+docker run -e ORACLE_PASSWORD=your_password -p 8080:8080 money-keeper-backend
+```
+
+The container will:
+- Download and install Oracle Instant Client.
+- Build the backend application.
+- Wait for the Oracle database to be ready.
+- Reset the Oracle system user password using the provided `ORACLE_PASSWORD`.
+- Start the backend server on port 8080.
+
+### Running with Maven
+
+1. Set the `ORACLE_PASSWORD` environment variable in your shell:
+
+```bash
+export ORACLE_PASSWORD=your_password
+```
+
+2. Run the backend application:
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+---
+
+## Secrets Management
+
+The backend requires the Oracle system user password to connect to the Oracle database. This password should be provided via the `ORACLE_PASSWORD` environment variable.
+
+- When running the backend in Docker, pass the password using the `-e ORACLE_PASSWORD=your_password` flag.
+- When running locally with Maven, export the environment variable before starting the application.
+- Ensure this password is kept secure and not hardcoded in any files or scripts.
+
+---
+
+## Handling Oracle Setup Failures
+
+The backend includes a script `wait-for-oracle.sh` that waits for the Oracle database to be ready before starting the application.
+
+- The script retries the connection every 5 seconds (configurable via `RETRY_INTERVAL`) up to 60 times (configurable via `MAX_RETRIES`).
+- If the Oracle database is not ready after the maximum retries, the script exits with an error, and the backend startup will fail.
+- In case of failure:
+  - Check the Oracle database container logs for errors.
+  - Ensure the Oracle database container is running and accessible.
+  - Restart the Oracle container if necessary.
+  - Verify the `ORACLE_PASSWORD` environment variable is set correctly and matches the Oracle system user password.
+- You can adjust retry intervals and max retries by setting the `RETRY_INTERVAL` and `MAX_RETRIES` environment variables when running the container or script.
+
+---
+
+If you need further assistance or additional documentation, please reach out to the development team.
+mvn spring-boot:run
+docker run -e ORACLE_PASSWORD=your_password -p 8080:8080 money-keeper-backend
+docker build -t money-keeper-backend ./backend
+
 mvn failsafe:integration-test failsafe:verify -Pmedium-test
 junit.jupiter.execution.parallel.mode.classes.default = concurrent
 

@@ -36,8 +36,7 @@ jobs:
 
       - name: Build migration image
         run: |
-          cd backend
-          docker build -f Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG .
+          docker build -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-migration:$IMAGE_TAG
 
   integration-test:
@@ -50,19 +49,25 @@ jobs:
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
+      ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
     services:
       oracle:
         image: gvenzl/oracle-xe:latest
         ports:
           - 1521:1521
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
-          -e ORACLE_PASSWORD=oracle123
-          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/oracle123@localhost:1521/XEPDB1 | grep -q 1'"
+          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/$ORACLE_PASSWORD@localhost:1521/XEPDB1 | grep -q 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 30
       migration:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-migration:${{ github.sha }}
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+        options: >-
+          --health-cmd "bash -c 'exit 0'"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
