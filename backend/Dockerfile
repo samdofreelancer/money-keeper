@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/list
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
-COPY wait-for-oracle.sh wait-for-oracle.sh
+COPY backend/wait-for-oracle.sh wait-for-oracle.sh
 
 RUN chmod +x wait-for-oracle.sh
 
