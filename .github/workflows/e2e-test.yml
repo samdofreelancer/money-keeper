@@ -34,7 +34,7 @@ jobs:
         options: >-
           --health-cmd "bash -c 'exit 0'"
       backend:
-        image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
+        image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend-image:${{ github.sha }}
         ports:
           - 8080:8080
         options: >-
@@ -46,7 +46,7 @@ jobs:
           SPRING_PROFILES_ACTIVE: ci
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
       frontend:
-        image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
+        image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend-image:${{ github.sha }}
         ports:
           - 5173:5173
         options: >-
