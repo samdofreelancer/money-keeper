@@ -5,7 +5,8 @@ RUN apk add --no-cache curl netcat-openbsd
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+
+RUN npm ci
 
 COPY . .
 
