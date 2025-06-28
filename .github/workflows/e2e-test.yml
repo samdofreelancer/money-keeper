@@ -75,6 +75,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 30
+        command: >
+          /bin/sh -c "echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD; COMMIT;\" | sqlplus system/$ORACLE_PASSWORD@localhost:1521/XEPDB1"
       migration:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-migration:${{ github.sha }}
         env:
