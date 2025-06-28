@@ -36,8 +36,7 @@ jobs:
 
       - name: Build migration image
         run: |
-          cd backend
-          docker build -f Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG .
+          docker build -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-migration:$IMAGE_TAG
 
   integration-test:
@@ -65,7 +64,9 @@ jobs:
       migration:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-migration:${{ github.sha }}
         env:
-          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }}
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+        options: >-
+          --health-cmd "bash -c 'exit 0'"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
