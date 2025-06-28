@@ -38,3 +38,13 @@ jobs:
     steps:
       - name: Debug Build All Images completion
         run: echo "Build All Images workflow completed successfully"
+
+  call-e2e-test:
+    needs: debug-notify
+    uses: ./.github/workflows/e2e-test.yml
+    secrets: inherit
+
+  call-integration-test:
+    needs: debug-notify
+    uses: ./.github/workflows/integration-test.yml
+    secrets: inherit

@@ -1,11 +1,7 @@
 name: Integration Tests
 
 on:
-  workflow_run:
-    workflows:
-      - Build All Images
-    types:
-      - completed
+  workflow_call:
 
 jobs:
   integration-test:
