@@ -2,12 +2,16 @@ FROM maven:3.8.6-openjdk-18
 
 RUN microdnf install -y nc curl unzip libaio
 
-# Copy Oracle Instant Client zip files from deployment/images folder
-COPY deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip /tmp/instantclient-basic.zip
-COPY deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip /tmp/instantclient-sqlplus.zip
+# Install dependencies including python3 and pip for gdown
+RUN microdnf install -y libnsl python3 python3-pip curl unzip && \
+    pip3 install gdown
 
-# Install Oracle Instant Client Basic and SQL*Plus and dependencies
-RUN microdnf install -y libnsl && \
+# Download Oracle Instant Client zip files from Google Drive using gdown
+ENV FILE_ID_BASIC="1c44k0-0bPxSJsX6Iu7zgJXYhZJ3Q-G35"
+ENV FILE_ID_SQLPLUS="1rMijC54Zjjr7q7jTENf_FN-La6xxd41i"
+
+RUN gdown --id $FILE_ID_BASIC -O /tmp/instantclient-basic.zip && \
+    gdown --id $FILE_ID_SQLPLUS -O /tmp/instantclient-sqlplus.zip && \
     unzip /tmp/instantclient-basic.zip -d /opt/oracle && \
     unzip /tmp/instantclient-sqlplus.zip -d /opt/oracle && \
     rm /tmp/instantclient-basic.zip /tmp/instantclient-sqlplus.zip && \
