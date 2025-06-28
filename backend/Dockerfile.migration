@@ -26,12 +26,12 @@ WORKDIR /app
 
 COPY . .
 
+ENV RETRY_INTERVAL=5
+ENV MAX_RETRIES=60
+
 # Wait for Oracle DB to be ready and reset Oracle password
 CMD /bin/sh -c "\
-  until nc -z oracle 1521; do \
-    echo 'Waiting for Oracle DB...'; \
-    sleep 5; \
-  done; \
+  ./wait-for-oracle.sh && \
   echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
   mvn -B -ntp -Pmedium-test flyway:migrate -Doracle.password=$ORACLE_PASSWORD && \
   echo \"select * from core.categories;\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
