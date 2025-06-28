@@ -90,6 +90,7 @@ jobs:
           --health-retries 5
         env:
           SPRING_PROFILES_ACTIVE: ci
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
       frontend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
         ports:
