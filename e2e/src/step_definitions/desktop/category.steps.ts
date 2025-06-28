@@ -62,6 +62,7 @@ When("I navigate to the Categories page", async function (this: CustomWorld) {
 Then("I should see a list of categories", async function (this: CustomWorld) {
   // Fetch categories from backend API
   const categories = await getAllCategories();
+  logger.info(`Fetched ${categories.length} categories from backend.`);
 
   // Verify the UI shows the categories fetched from backend
   const uiCount = await this.categoryPage!.getCategoryCount();
