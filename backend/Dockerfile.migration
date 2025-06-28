@@ -28,5 +28,5 @@ CMD /bin/sh -c "\
     echo 'Waiting for Oracle DB...'; \
     sleep 5; \
   done; \
-  echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD; COMMIT;\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
-  mvn -B -ntp flyway:migrate -Pmedium-test -Doracle.password=$ORACLE_PASSWORD"
+  echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
+  mvn -B -ntp -Pmedium-test flyway:migrate -Doracle.password=$ORACLE_PASSWORD"
