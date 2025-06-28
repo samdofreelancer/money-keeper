@@ -147,7 +147,7 @@
                 <configuration>
                     <url>jdbc:oracle:thin:@oracle:1521/XEPDB1</url>
                     <user>system</user>
-                    <password>oracle123</password>
+                    <password>${oracle.password}</password>
                     <baselineOnMigrate>true</baselineOnMigrate>
                     <schemas>
                         <schema>CORE</schema>

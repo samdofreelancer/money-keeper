@@ -6,10 +6,11 @@ WORKDIR /app
 
 COPY . .
 
-# Wait for Oracle DB to be ready
+# Wait for Oracle DB to be ready and reset Oracle password
 CMD /bin/sh -c "\
   until nc -z oracle 1521; do \
     echo 'Waiting for Oracle DB...'; \
     sleep 5; \
   done; \
-  mvn -B -ntp flyway:migrate -Pmedium-test"
+  echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD; COMMIT;\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
+  mvn -B -ntp flyway:migrate -Pmedium-test -Doracle.password=$ORACLE_PASSWORD"
