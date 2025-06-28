@@ -36,9 +36,7 @@ jobs:
 
       - name: Build backend image
         run: |
-          cd backend
-          mvn clean package -DskipTests
-          docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG .
+          docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-backend:$IMAGE_TAG
 
       - name: Build migration image

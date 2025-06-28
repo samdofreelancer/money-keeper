@@ -1,10 +1,19 @@
+FROM maven:3.8.6-openjdk-18 as build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
 FROM openjdk:18-jdk-slim
+
+RUN mvn -B -ntp clean package -DskipTests
 
 RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 COPY wait-for-oracle.sh wait-for-oracle.sh
 
 RUN chmod +x wait-for-oracle.sh
