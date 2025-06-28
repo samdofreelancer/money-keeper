@@ -82,9 +82,6 @@ jobs:
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
           --health-cmd "bash -c 'exit 0'"
-        depends_on:
-          oracle:
-            condition: service_healthy
       backend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
         ports:
@@ -96,9 +93,6 @@ jobs:
           --health-retries 5
         env:
           SPRING_PROFILES_ACTIVE: ci
-        depends_on:
-          migration:
-            condition: service_healthy
       frontend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
         ports:
