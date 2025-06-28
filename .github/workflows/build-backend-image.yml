@@ -11,7 +11,7 @@ on:
         type: string
 
 jobs:
-  build-backend:
+  build-backend-image:
     runs-on: ubuntu-latest
     env:
       REGISTRY: ${{ inputs.REGISTRY }}
