@@ -56,3 +56,15 @@ Replace `ghcr.io/your-username` and `latest` with your desired registry and tag.
 - Login to GitHub Container Registry is handled automatically using the GitHub token.
 
 If you have any questions or need assistance, please refer to the project maintainers.
+
+## Backward Compatibility Notice
+
+Previously, some test workflows may have been triggered directly on pull requests or pushes. With the current setup, these test workflows are now triggered exclusively through the **Pull Request Quality Gate** workflow (`.github/workflows/pull-request-quality-gate.yml`).
+
+### What this means for users and automation:
+
+- To run tests on pull requests or pushes, the **Pull Request Quality Gate** workflow must be triggered.
+- Direct triggers on individual test workflows (unit, e2e, integration) may no longer run automatically.
+- Update any automation or CI/CD pipelines to trigger the quality gate workflow instead of individual test workflows.
+
+If you rely on running tests directly, please adjust your workflows accordingly or contact the project maintainers for assistance.
