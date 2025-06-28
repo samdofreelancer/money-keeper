@@ -1,5 +1,7 @@
 FROM maven:3.8.6-openjdk-18 as build
 
+WORKDIR /app
+
 RUN microdnf install -y nc curl unzip libaio
 
 # Copy Oracle Instant Client zip files from deployment/images folder
@@ -17,8 +19,6 @@ RUN microdnf install -y libnsl && \
 
 ENV PATH="/opt/oracle/instantclient:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient"
-
-WORKDIR /app
 
 COPY pom.xml .
 COPY src ./src
