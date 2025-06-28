@@ -81,7 +81,7 @@ jobs:
         env:
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
-          --health-cmd "bash -c 'exit 0'"
+          --health-cmd "bash -c 'until echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD; COMMIT;\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1; do echo waiting for password reset; sleep 5; done; exit 0'"
       backend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
         ports:

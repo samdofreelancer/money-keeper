@@ -1,19 +1,6 @@
-FROM maven:3.8.6-openjdk-18
+FROM container-registry.oracle.com/database/instantclient:21.9.0.0
 
-RUN microdnf install -y nc curl unzip libaio
-
-# Install Oracle Instant Client Basic and SQL*Plus
-RUN curl -o instantclient-basic.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linux.x64-21.9.0.0.0.zip && \
-    curl -o instantclient-sqlplus.zip https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linux.x64-21.9.0.0.0.zip && \
-    unzip instantclient-basic.zip -d /opt/oracle && \
-    unzip instantclient-sqlplus.zip -d /opt/oracle && \
-    rm instantclient-basic.zip instantclient-sqlplus.zip && \
-    ln -s /opt/oracle/instantclient_21_9 /opt/oracle/instantclient && \
-    sh -c "echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
-    ldconfig
-
-ENV PATH="/opt/oracle/instantclient:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/oracle/instantclient"
+RUN microdnf install -y nc curl
 
 WORKDIR /app
 
