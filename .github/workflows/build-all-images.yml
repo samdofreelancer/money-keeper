@@ -28,3 +28,13 @@ jobs:
     with:
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
+
+  debug-notify:
+    needs:
+      - build-migration
+      - build-backend
+      - build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug Build All Images completion
+        run: echo "Build All Images workflow completed successfully"
