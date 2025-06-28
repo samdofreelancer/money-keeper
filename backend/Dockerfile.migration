@@ -29,6 +29,6 @@ CMD /bin/sh -c "\
     sleep 5; \
   done; \
   echo \"ALTER USER system IDENTIFIED BY $ORACLE_PASSWORD\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
-  cd backend && mvn -B -ntp -Pmedium-test flyway:migrate -Doracle.password=$ORACLE_PASSWORD && \
+  mvn -B -ntp -Pmedium-test flyway:migrate -Doracle.password=$ORACLE_PASSWORD && \
   echo \"set lines 200 pages 1000; select * from core.categories;\" | sqlplus system/$ORACLE_PASSWORD@oracle:1521/XEPDB1 && \
   tail -f /dev/null"
