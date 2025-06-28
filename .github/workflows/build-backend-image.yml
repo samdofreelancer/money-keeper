@@ -14,8 +14,8 @@ jobs:
   build-backend:
     runs-on: ubuntu-latest
     env:
-      REGISTRY: \${{ inputs.REGISTRY }}
-      IMAGE_TAG: \${{ inputs.IMAGE_TAG }}
+      REGISTRY: ${{ inputs.REGISTRY }}
+      IMAGE_TAG: ${{ inputs.IMAGE_TAG }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
