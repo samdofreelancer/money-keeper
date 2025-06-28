@@ -3,8 +3,8 @@ FROM maven:3.8.6-openjdk-18 as build
 RUN microdnf install -y nc curl unzip libaio
 
 # Copy Oracle Instant Client zip files from deployment/images folder
-COPY deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip /tmp/instantclient-basic.zip
-COPY deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip /tmp/instantclient-sqlplus.zip
+COPY ../deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip /tmp/instantclient-basic.zip
+COPY ../deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip /tmp/instantclient-sqlplus.zip
 
 # Install Oracle Instant Client Basic and SQL*Plus and dependencies
 RUN microdnf install -y libnsl && \
@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/list
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
-COPY backend/wait-for-oracle.sh wait-for-oracle.sh
+COPY wait-for-oracle.sh wait-for-oracle.sh
 
 RUN chmod +x wait-for-oracle.sh
 
