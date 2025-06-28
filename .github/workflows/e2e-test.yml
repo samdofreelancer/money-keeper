@@ -79,17 +79,17 @@ jobs:
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
           --health-cmd "bash -c 'exit 0'"
-      # backend:
-      #   image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
-      #   ports:
-      #     - 8080:8080
-      #   options: >-
-      #     --health-cmd "curl -f http://localhost:8080/actuator/health || exit 1"
-      #     --health-interval 10s
-      #     --health-timeout 5s
-      #     --health-retries 5
-      #   env:
-      #     SPRING_PROFILES_ACTIVE: ci
+      backend:
+        image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend:${{ github.sha }}
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/actuator/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          SPRING_PROFILES_ACTIVE: ci
       frontend:
         image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend:${{ github.sha }}
         ports:
@@ -106,7 +106,7 @@ jobs:
       - name: Install Oracle Instant Client and sqlplus
         run: |
           apt-get update
-          apt-get install -y libaio1 unzip libnsl
+          apt-get install -y libaio unzip
           cp deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip instantclient-basic.zip
           cp deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip instantclient-sqlplus.zip
           unzip instantclient-basic.zip -d $HOME/instantclient
