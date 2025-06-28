@@ -129,7 +129,7 @@ jobs:
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'e2e/reports/cucumber-html-report.html/'
+          path: 'e2e/reports'
           name: pages
 
   deploy-report:
@@ -141,6 +141,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pages
+
+      - name: List contents of publish directory for debugging
+        run: ls -la ./ || echo "Directory not found"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
