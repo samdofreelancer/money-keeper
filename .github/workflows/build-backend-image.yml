@@ -31,7 +31,5 @@ jobs:
 
       - name: Build backend image
         run: |
-          docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new -t $REGISTRY/money-keeper-backend:$IMAGE_TAG backend
+          docker build -t $REGISTRY/money-keeper-backend:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-backend:$IMAGE_TAG
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

@@ -26,7 +26,5 @@ jobs:
     steps:
       - name: Build migration image
         run: |
-          docker build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
+          docker build -f backend/Dockerfile.migration -t $REGISTRY/money-keeper-migration:$IMAGE_TAG backend
           docker push $REGISTRY/money-keeper-migration:$IMAGE_TAG
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
