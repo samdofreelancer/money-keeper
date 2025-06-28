@@ -4,9 +4,12 @@ WORKDIR /app
 
 RUN microdnf install -y nc curl unzip libaio
 
+COPY pom.xml .
+COPY src ./src
+
 # Copy Oracle Instant Client zip files from deployment/images folder
-COPY ../deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip /tmp/instantclient-basic.zip
-COPY ../deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip /tmp/instantclient-sqlplus.zip
+COPY deployment/images/instantclient-basic-linux.x64-12.2.0.1.0.zip /tmp/instantclient-basic.zip
+COPY deployment/images/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip /tmp/instantclient-sqlplus.zip
 
 # Install Oracle Instant Client Basic and SQL*Plus and dependencies
 RUN microdnf install -y libnsl && \
@@ -19,9 +22,6 @@ RUN microdnf install -y libnsl && \
 
 ENV PATH="/opt/oracle/instantclient:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient"
-
-COPY pom.xml .
-COPY src ./src
 
 RUN mvn clean package -DskipTests
 
