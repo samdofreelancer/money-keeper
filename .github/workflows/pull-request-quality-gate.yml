@@ -1,4 +1,4 @@
-name: Build All Images
+name: Pull Request Quality Gate
 
 on:
   push:
@@ -29,22 +29,15 @@ jobs:
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
 
-  debug-notify:
+  call-e2e-test:
     needs:
       - build-migration
       - build-backend
       - build-frontend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug Build All Images completion
-        run: echo "Build All Images workflow completed successfully"
-
-  call-e2e-test:
-    needs: debug-notify
     uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
 
   call-integration-test:
-    needs: debug-notify
+    needs: build-migration
     uses: ./.github/workflows/integration-test.yml
     secrets: inherit
