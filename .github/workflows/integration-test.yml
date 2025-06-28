@@ -49,6 +49,7 @@ jobs:
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
+      ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
     services:
       oracle:
         image: gvenzl/oracle-xe:latest
