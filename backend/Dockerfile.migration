@@ -26,6 +26,8 @@ WORKDIR /app
 
 COPY . .
 
+RUN chmod +x wait-for-oracle.sh
+
 ENV RETRY_INTERVAL=5
 ENV MAX_RETRIES=60
 
