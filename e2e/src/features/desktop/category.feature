@@ -80,7 +80,6 @@ Feature: Category management
       | categoryName  | icon     | categoryType | parentCategory |
       | Invalid Cat   | Grid     | EXPENSE      | None           |
 
-  @focus
   Scenario: Attempt to create a duplicate category
     Given a "Test Category" category exists
     And I open the homepage
@@ -116,7 +115,6 @@ Feature: Category management
     And I cancel the delete action
     Then I should see category "Test Category" in the list
 
-  @focus
   Scenario: Edit a category to have a duplicate name
     Given a "Test Category" category exists
     And a "Sample Category" category exists
