@@ -71,7 +71,7 @@ When("I navigate to the Categories page", async function (this: CustomWorld) {
 
 Then("I should see a list of categories", async function (this: CustomWorld) {
   const categories = await getAllCategories();
-  logger.info(`Fetched ${categories.length} categories from backend.`);
+  logger.info(`Fetched ${categories} categories from backend.`);
 
   // Wait for loading overlay to disappear
   await this.page.waitForSelector('[data-testid="loading-overlay"]', { state: 'detached', timeout: 5000 });
