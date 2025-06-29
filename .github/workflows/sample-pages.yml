@@ -3,10 +3,12 @@ name: Sample GitHub Pages Deploy
 on:
   push:
     branches:
+      - main
       - develop
       - master
   pull_request:
     branches:
+      - main
       - develop
       - master
 
