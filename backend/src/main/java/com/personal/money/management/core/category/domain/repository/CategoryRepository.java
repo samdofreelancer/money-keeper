@@ -13,4 +13,5 @@ public interface CategoryRepository {
     void deleteById(Long id);
 
     List<Category> findByParent(Category parent);
+    Optional<Category> findByName(String name);
 }

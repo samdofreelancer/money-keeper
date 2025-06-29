@@ -17,6 +17,8 @@ export class CategoryPage {
   readonly createButton: Locator;
   readonly searchInput: Locator;
   readonly confirmDeleteButton: Locator;
+  readonly cancelButton: Locator;
+  readonly cancelDeleteButton: Locator;
 
   private readonly actionTimeout: number =
     config.browser.actionTimeout || 10000;
@@ -48,6 +50,10 @@ export class CategoryPage {
     this.searchInput = this.page.locator('[data-testid="search-input"]');
     this.confirmDeleteButton = this.page.locator(
       '[data-testid="button-confirm-delete"]'
+    );
+    this.cancelButton = this.page.locator('[data-testid="button-cancel"]');
+    this.cancelDeleteButton = this.page.locator(
+      '[data-testid="button-cancel-delete"]'
     );
   }
 
@@ -90,6 +96,8 @@ export class CategoryPage {
     this.page.locator(".category-tree .tree-node-content", {
       hasText: name,
     });
+  public globalErrorMessage = (message: string) =>
+    this.page.locator('[data-testid="error-message"]', { hasText: message });
 
   async navigateToCategories() {
     await this.categoriesMenuItem.waitFor({
@@ -202,5 +210,21 @@ export class CategoryPage {
 
   async clearCategoryNameField() {
     await this.categoryNameInput.fill("");
+  }
+
+  async cancelCategoryForm() {
+    await this.cancelButton.click({ timeout: this.actionTimeout });
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "hidden",
+      timeout: this.actionTimeout,
+    });
+  }
+
+  async cancelDelete() {
+    await this.cancelDeleteButton.click({ timeout: this.actionTimeout });
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "hidden",
+      timeout: this.actionTimeout,
+    });
   }
 }

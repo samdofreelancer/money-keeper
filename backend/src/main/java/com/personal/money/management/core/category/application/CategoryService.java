@@ -44,6 +44,9 @@ public class CategoryService {
 
     @Transactional
     public Category createCategory(String name, String icon, CategoryType type, Long parentId) {
+        if (categoryRepository.findByName(name).isPresent()) {
+            throw new CategoryConflictException("Category name already exists");
+        }
         Category parent = getParentCategory(parentId);
         Category category = CategoryFactory.createCategory(name, icon, type, parent);
         return categoryRepository.save(category);
@@ -58,6 +61,12 @@ public class CategoryService {
         try {
             Category category = categoryRepository.findById(id)
                     .orElseThrow(() -> new CategoryNotFoundException(id));
+
+            categoryRepository.findByName(name).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new CategoryConflictException("Category name already exists");
+                }
+            });
 
             Category parent = getParentCategory(parentId);
             checkCyclicDependency(category, parent);
