@@ -15,8 +15,10 @@ export interface AccountCreate {
   active?: boolean
 }
 
+import { apiBaseUrl } from '@/config'
+
 const apiClient = axios.create({
-  baseURL: '/api/accounts',
+  baseURL: apiBaseUrl + '/accounts',
   headers: {
     'Content-Type': 'application/json'
   }
