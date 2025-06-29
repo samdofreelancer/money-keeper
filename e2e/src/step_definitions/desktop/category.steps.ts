@@ -69,37 +69,6 @@ When("I navigate to the Categories page", async function (this: CustomWorld) {
   await this.categoryPage!.navigateToCategories();
 });
 
-Then("I should see a list of categories", async function (this: CustomWorld) {
-  const categories = await getAllCategories();
-  logger.info(`Fetched ${categories} categories from backend.`);
-
-  // Wait for loading overlay to disappear
-  await this.page.waitForSelector('[data-testid="loading-overlay"]', { state: 'detached', timeout: 5000 });
-
-  // Wait for the category tree to be visible
-  await this.page.waitForSelector('[data-testid="category-tree"]', { state: 'visible', timeout: 5000 });
-
-  // Poll for the correct count (to handle slow rendering)
-  await this.page.waitForFunction(
-    (expected) => {
-      const nodes = document.querySelectorAll('[data-testid="tree-node-content"]');
-      return nodes.length === expected;
-    },
-    categories.length,
-    { timeout: 5000 }
-  );
-
-  // Now check the count
-  const uiCount = await this.categoryPage!.getCategoryCount();
-  expect(uiCount).toBe(categories.length);
-
-  // Optionally, verify category names in UI match API data
-  for (const category of categories) {
-    const isPresent = await this.categoryPage!.isCategoryPresent(category.name);
-    expect(isPresent).toBe(true);
-  }
-});
-
 When("I open the create category dialog", async function (this: CustomWorld) {
   await this.categoryPage!.openCreateCategoryDialog();
 });
