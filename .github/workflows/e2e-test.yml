@@ -79,7 +79,7 @@ jobs:
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'e2e/reports'
+          path: 'e2e/reports/cucumber-html-report.html'
           name: pages
 
   deploy-report:
@@ -99,8 +99,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./reports
+          publish_dir: ./cucumber-html-report.html
 
       - name: Print GitHub Pages URL
         run: |
-          echo "GitHub Pages deployed at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/cucumber-html-report/"
+          echo "GitHub Pages deployed at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/index.html"
