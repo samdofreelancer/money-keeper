@@ -103,4 +103,44 @@ class AccountControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("1000"));
     }
+
+    @Test
+    void testCreateAccount_MalformedJson() throws Exception {
+        String malformedJson = "{ \"accountName\": \"Test Account\", \"initBalance\": 100, "; // truncated JSON
+
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(malformedJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testCreateAccount_MissingRequiredFields() throws Exception {
+        String missingFieldsJson = "{ \"accountName\": \"\", \"initBalance\": null, \"type\": null, \"currency\": \"\" }";
+
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(missingFieldsJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testUpdateAccount_MalformedJson() throws Exception {
+        String malformedJson = "{ \"accountName\": \"Test Account\", \"initBalance\": 100, "; // truncated JSON
+
+        mockMvc.perform(put("/api/accounts/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(malformedJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testUpdateAccount_MissingRequiredFields() throws Exception {
+        String missingFieldsJson = "{ \"accountName\": \"\", \"initBalance\": null, \"type\": null, \"currency\": \"\" }";
+
+        mockMvc.perform(put("/api/accounts/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(missingFieldsJson))
+                .andExpect(status().isBadRequest());
+    }
 }
