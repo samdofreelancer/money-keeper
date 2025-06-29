@@ -12,12 +12,12 @@ Before(async function (this: CustomWorld, { pickle }) {
   await this.launchBrowser();
   this.categoryPage = new CategoryPage(this.page);
 
-  // Capture browser console logs and output to test logs
+  // Capture browser console logs and output to test logs with scenario name
   if (this.page) {
     this.page.on("console", (msg) => {
       const type = msg.type();
       const text = msg.text();
-      logger.info(`Browser console [${type}]: ${text}`);
+      logger.info(`Browser console [${type}] [${pickle.name}]: ${text}`);
     });
   }
 });

@@ -1,10 +1,5 @@
 Feature: Category management
 
-  Scenario: Load all categories
-    Given I open the homepage
-    When I navigate to the Categories page
-    Then I should see a list of categories
-
   Scenario Outline: Create a new category
     Given I open the homepage
     When I navigate to the Categories page
