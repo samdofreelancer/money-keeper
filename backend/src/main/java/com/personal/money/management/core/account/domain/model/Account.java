@@ -1,13 +1,26 @@
 package com.personal.money.management.core.account.domain.model;
 
 import java.math.BigDecimal;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 public class Account {
     private final Long id;
-    private BigDecimal initBalance;
+
+    @NotBlank(message = "Account name must not be blank")
     private String accountName;
+
+    @NotNull(message = "Initial balance must not be null")
+    @Positive(message = "Initial balance must be positive")
+    private BigDecimal initBalance;
+
+    @NotNull(message = "Account type must not be null")
     private AccountType type;
+
+    @NotBlank(message = "Currency must not be blank")
     private String currency;
+
     private String description;
 
     public Account(String accountName, BigDecimal initBalance, AccountType type, String currency, String description) {

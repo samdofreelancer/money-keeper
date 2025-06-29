@@ -2,11 +2,11 @@ package com.personal.money.management.core.account.application;
 
 import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.domain.repository.AccountRepository;
+import com.personal.money.management.core.account.application.exception.AccountNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
@@ -33,7 +33,7 @@ public class AccountService {
                     );
                     return accountRepository.save(existingAccount);
                 })
-                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + id));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + id));
     }
 
     public void deleteAccount(Long id) {

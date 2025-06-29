@@ -1,5 +1,6 @@
 package com.personal.money.management.core.account.application;
 
+import com.personal.money.management.core.account.application.exception.AccountNotFoundException;
 import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.domain.model.AccountType;
 import com.personal.money.management.core.account.domain.repository.AccountRepository;
@@ -78,7 +79,7 @@ class AccountServiceTest {
 
         when(accountRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> accountService.updateAccount(id, updated));
+        assertThrows(AccountNotFoundException.class, () -> accountService.updateAccount(id, updated));
         verify(accountRepository).findById(id);
         verify(accountRepository, never()).save(any());
     }

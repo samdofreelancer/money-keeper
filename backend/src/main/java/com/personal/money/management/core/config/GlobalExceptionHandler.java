@@ -5,6 +5,7 @@ import com.personal.money.management.core.category.application.exception.Categor
 import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
 import com.personal.money.management.core.category.application.exception.CategoryConflictException;
 import com.personal.money.management.core.category.interfaces.api.dto.ApiErrorResponse;
+import com.personal.money.management.core.account.application.exception.AccountNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -51,5 +52,15 @@ public class GlobalExceptionHandler {
             ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleAccountNotFoundException(AccountNotFoundException ex) {
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+            HttpStatus.NOT_FOUND.value(),
+            HttpStatus.NOT_FOUND.getReasonPhrase(),
+            ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 }
