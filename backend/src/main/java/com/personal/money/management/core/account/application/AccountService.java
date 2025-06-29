@@ -24,14 +24,15 @@ public class AccountService {
     public Account updateAccount(Long id, Account updatedAccount) {
         return accountRepository.findById(id)
                 .map(existingAccount -> {
-                    existingAccount.update(
+                    Account newAccount = Account.reconstruct(
+                            existingAccount.getId(),
                             updatedAccount.getAccountName(),
                             updatedAccount.getInitBalance(),
                             updatedAccount.getType(),
                             updatedAccount.getCurrency(),
                             updatedAccount.getDescription()
                     );
-                    return accountRepository.save(existingAccount);
+                    return accountRepository.save(newAccount);
                 })
                 .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + id));
     }

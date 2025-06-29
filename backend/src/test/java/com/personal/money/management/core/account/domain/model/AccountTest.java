@@ -24,13 +24,21 @@ class AccountTest {
     void testUpdate() {
         Account account = new Account("Old Account", BigDecimal.valueOf(50), AccountType.BANK_ACCOUNT, "USD", "old desc");
 
-        account.update("New Account", BigDecimal.valueOf(150), AccountType.CREDIT_CARD, "EUR", "new desc");
+        // Since Account is immutable, create a new instance to represent the updated account
+        Account updatedAccount = Account.reconstruct(
+                null,
+                "New Account",
+                BigDecimal.valueOf(150),
+                AccountType.CREDIT_CARD,
+                "EUR",
+                "new desc"
+        );
 
-        assertEquals("New Account", account.getAccountName());
-        assertEquals(BigDecimal.valueOf(150), account.getInitBalance());
-        assertEquals(AccountType.CREDIT_CARD, account.getType());
-        assertEquals("EUR", account.getCurrency());
-        assertEquals("new desc", account.getDescription());
+        assertEquals("New Account", updatedAccount.getAccountName());
+        assertEquals(BigDecimal.valueOf(150), updatedAccount.getInitBalance());
+        assertEquals(AccountType.CREDIT_CARD, updatedAccount.getType());
+        assertEquals("EUR", updatedAccount.getCurrency());
+        assertEquals("new desc", updatedAccount.getDescription());
     }
 
     @Test

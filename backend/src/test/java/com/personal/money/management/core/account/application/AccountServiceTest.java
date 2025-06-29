@@ -60,7 +60,7 @@ class AccountServiceTest {
         Account updated = new Account("New Account", BigDecimal.valueOf(150), AccountType.CREDIT_CARD, "USD", "new desc");
 
         when(accountRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(accountRepository.save(existing)).thenReturn(existing);
+        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Account result = accountService.updateAccount(id, updated);
 
@@ -69,7 +69,7 @@ class AccountServiceTest {
         assertEquals(AccountType.CREDIT_CARD, result.getType());
         assertEquals("new desc", result.getDescription());
         verify(accountRepository).findById(id);
-        verify(accountRepository).save(existing);
+        verify(accountRepository).save(any(Account.class));
     }
 
     @Test
