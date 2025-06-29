@@ -70,14 +70,26 @@ When("I navigate to the Categories page", async function (this: CustomWorld) {
 });
 
 Then("I should see a list of categories", async function (this: CustomWorld) {
-  // Fetch categories from backend API
   const categories = await getAllCategories();
   logger.info(`Fetched ${categories.length} categories from backend.`);
 
   // Wait for loading overlay to disappear
   await this.page.waitForSelector('[data-testid="loading-overlay"]', { state: 'detached', timeout: 5000 });
 
-  // Verify the UI shows the categories fetched from backend
+  // Wait for the category tree to be visible
+  await this.page.waitForSelector('[data-testid="category-tree"]', { state: 'visible', timeout: 5000 });
+
+  // Poll for the correct count (to handle slow rendering)
+  await this.page.waitForFunction(
+    (expected) => {
+      const nodes = document.querySelectorAll('[data-testid="tree-node-content"]');
+      return nodes.length === expected;
+    },
+    categories.length,
+    { timeout: 5000 }
+  );
+
+  // Now check the count
   const uiCount = await this.categoryPage!.getCategoryCount();
   expect(uiCount).toBe(categories.length);
 
