@@ -87,7 +87,7 @@ Feature: Category management
     When I navigate to the Categories page
     And I open the create category dialog
     And I fill in the category form with valid data "Test Category", "Grid", "EXPENSE", "None"
-    And I submit the category form
+    And I click the submit button
     Then I should see a validation error message "Category name already exists"
 
   Scenario: Cancel create category dialog
@@ -124,5 +124,5 @@ Feature: Category management
     When I navigate to the Categories page
     And I open the edit category dialog for "Sample Category"
     And I fill in the category form with valid data "Test Category", "Grid", "EXPENSE", "None"
-    And I submit the category form
+    And I click the submit button
     Then I should see a validation error message "Category name already exists"

@@ -345,7 +345,6 @@ async function handleSubmit() {
           duplicateNameError.value = errorMsg
           await nextTick()
           await formRef.value.validateField('name')
-          await nextTick() // Ensure DOM update for error message
         } else {
           ElMessage.error(errorMsg)
         }

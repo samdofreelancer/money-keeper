@@ -18,20 +18,23 @@ declare global {
 Given(
   "a {string} category exists",
   async function (this: CustomWorld, categoryName: string) {
-    const uniqueName = generateUniqueName(categoryName);
-    this.uniqueData.set(categoryName, uniqueName);
-
-    const newCategory = await createCategory({
-      name: uniqueName,
-      icon: "Grid",
-      type: "EXPENSE",
-      parentId: null,
-    });
-
-    if (!this.createdCategoryIds) {
-      this.createdCategoryIds = [];
-    }
-    this.createdCategoryIds.push(newCategory.id);
+      logger.info(`generateUniqueName category with name: ${categoryName}`);
+      const uniqueName = generateUniqueName(categoryName);
+      logger.info(`Unique category name generated: ${uniqueName}`);
+      this.uniqueData.set(categoryName, uniqueName);
+      const newCategory = await createCategory({
+        name: uniqueName,
+        icon: "Grid",
+        type: "EXPENSE",
+        parentId: null,
+      });
+      if (!this.createdCategoryIds) {
+        this.createdCategoryIds = [];
+      }
+      this.createdCategoryIds.push(newCategory.id);
+      this.createdCategoryNames = this.createdCategoryNames || [];
+      this.createdCategoryNames.push(uniqueName);
+      logger.info(`Created category with unique name: ${this.createdCategoryNames}`);
   }
 );
 
@@ -95,11 +98,14 @@ When(
     categoryType: string,
     parentCategory: string
   ) {
-    const uniqueName = generateUniqueName(categoryName);
+    // Use uniqueData if available (for duplicate scenarios), else fallback to createdCategoryNames or generate unique
+    const uniqueName = this.uniqueData.get(categoryName) ||
+      (this.createdCategoryNames
+        ? this.createdCategoryNames.find(name => name === categoryName) || categoryName
+        : generateUniqueName(categoryName));
+    logger.info(`Filling category form with test data: ${uniqueName}, ${icon}, ${categoryType}, ${parentCategory}`);
+    // Store the unique name in the context for later use
     this.uniqueData.set(categoryName, uniqueName);
-    logger.info(
-      `Filling category form with test data: ${uniqueName}, ${icon}, ${categoryType}, ${parentCategory}`
-    );
     // Convert "None" to empty string for parentCategory to satisfy string type
     const parentCat = parentCategory === "None" ? "" : parentCategory;
     await this.categoryPage!.fillCategoryForm(
@@ -109,8 +115,6 @@ When(
       parentCat
     );
     // Store created category names in World context for cleanup
-    // This global array is used to track categories created during tests
-    // so they can be cleaned up after all scenarios run, preventing test data pollution
     if (!this.createdCategoryIds) {
       this.createdCategoryIds = [];
     }
@@ -210,28 +214,14 @@ Then(
 Then(
   "I should see a validation error message {string}",
   async function (this: CustomWorld, message: string) {
-    const errorMessages = this.page.locator('.el-form-item__error');
+    // Use locator that matches exact error message text
+    const errorMessageLocator = this.page.locator('.el-form-item__error', { hasText: message });
     try {
-      await errorMessages.first().waitFor({ state: "attached", timeout: 10000 });
+      await errorMessageLocator.waitFor({ state: "visible", timeout: 5000 });
     } catch (e) {
-      // Print dialog HTML for debugging
-      const dialogHtml = await this.page.locator('.el-dialog__body').innerHTML();
-      console.log('Dialog HTML:', dialogHtml);
-      // Print the error from the browser console for further debugging
-      const browserErrors = await this.page.evaluate(() => window.__browserConsoleErrors || []);
-      console.log('Browser console errors:', browserErrors);
       throw e;
     }
-    const count = await errorMessages.count();
-    let found = false;
-    for (let i = 0; i < count; i++) {
-      const text = await errorMessages.nth(i).innerText();
-      if (text.trim() === message) {
-        found = true;
-        break;
-      }
-    }
-    expect(found).toBe(true);
+    expect(await errorMessageLocator.count()).toBeGreaterThan(0);
   }
 );
 
