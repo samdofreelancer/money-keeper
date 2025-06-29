@@ -56,8 +56,7 @@ public class AccountRepositoryImpl implements AccountRepository {
     private AccountEntity toEntity(Account account) {
         AccountEntity entity = new AccountEntity();
         if (account.getId() != null) {
-            // Assuming setter for id is added or use reflection if needed
-            // For simplicity, ignoring id setting here
+            entity.setId(account.getId());
         }
         entity.setAccountName(account.getAccountName());
         entity.setInitBalance(account.getInitBalance());
