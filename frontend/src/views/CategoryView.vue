@@ -1,7 +1,8 @@
 <template>
   <div class="page-container" data-testid="category-page">
     <error-message 
-      :error="categoryStore.error"
+      v-if="!dialogVisible"
+      :error="categoryStore.error || undefined"
       @close="categoryStore.error = null"
       data-testid="error-message"
     />
@@ -186,6 +187,7 @@ const activeTab = ref('all')
 const searchQuery = ref('')
 const isEditing = ref(false)
 const editingId = ref<string | null>(null)
+const duplicateNameError = ref('')
 
 const categoryForm = ref<CategoryCreate>({
   name: '',
@@ -194,7 +196,17 @@ const categoryForm = ref<CategoryCreate>({
 })
 
 const rules = {
-  name: [{ required: true, message: 'Please input category name', trigger: 'blur' }],
+  name: [
+    { required: true, message: 'Please input category name', trigger: ['blur', 'change'] },
+    { validator: (rule: any, value: any, callback: (error?: string) => void) => {
+        console.log('Validator called, value:', value, 'duplicateNameError:', duplicateNameError.value);
+        if (duplicateNameError.value) {
+          callback(duplicateNameError.value)
+        } else {
+          callback()
+        }
+      }, trigger: ['blur', 'change'] }
+  ],
   icon: [{ required: true, message: 'Please select an icon', trigger: 'change' }],
   type: [{ required: true, message: 'Please select a type', trigger: 'change' }]
 }
@@ -326,8 +338,16 @@ async function handleSubmit() {
         }
         dialogVisible.value = false
       } catch (error) {
-        console.error('Error in handleSubmit:', error)
-        ElMessage.error(isEditing.value ? 'Failed to update category' : 'Failed to create category')
+        console.log('handleSubmit error:', error, 'categoryStore.error:', categoryStore.error)
+        const errorMsg = categoryStore.error || (isEditing.value ? 'Failed to update category' : 'Failed to create category')
+        if (errorMsg === 'Category name already exists' && formRef.value) {
+          categoryStore.error = null; // Clear global error first
+          duplicateNameError.value = errorMsg
+          await nextTick()
+          await formRef.value.validateField('name')
+        } else {
+          ElMessage.error(errorMsg)
+        }
       }
     }
   })
@@ -339,7 +359,7 @@ async function confirmDelete() {
   try {
     await categoryStore.deleteCategory(editingId.value)
     ElMessage.success('Category deleted successfully')
-    await categoryStore.fetchCategories(true)
+    await categoryStore.fetchCategories()
     await nextTick()
     await new Promise(resolve => setTimeout(resolve, 100))
   } catch (error) {
@@ -350,7 +370,7 @@ async function confirmDelete() {
   }
 }
 
-// Watch dialogVisible to reset form when dialog closes
+// Clear duplicate error when dialog closes or name changes
 watch(dialogVisible, (newVal, oldVal) => {
   if (oldVal === true && newVal === false) {
     if (formRef.value) {
@@ -361,7 +381,11 @@ watch(dialogVisible, (newVal, oldVal) => {
       icon: '',
       type: 'EXPENSE'
     }
+    duplicateNameError.value = ''
   }
+})
+watch(() => categoryForm.value.name, () => {
+  if (duplicateNameError.value) duplicateNameError.value = ''
 })
 </script>
 

@@ -5,8 +5,6 @@ WORKDIR /app
 RUN microdnf install -y nc curl unzip libaio
 
 COPY pom.xml .
-COPY src ./src
-
 # Install dependencies including python3 and pip for gdown
 RUN microdnf install -y libnsl python3 python3-pip curl unzip && \
     pip3 install gdown
@@ -24,8 +22,12 @@ RUN gdown --id $FILE_ID_BASIC -O /tmp/instantclient-basic.zip && \
     sh -c "echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
     ldconfig
 
+COPY src ./src
+
 ENV PATH="/opt/oracle/instantclient:${PATH}"
 ENV LD_LIBRARY_PATH="/opt/oracle/instantclient"
+
+RUN mvn dependency:go-offline -B
 
 RUN mvn clean package -DskipTests
 
