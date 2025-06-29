@@ -74,6 +74,9 @@ Then("I should see a list of categories", async function (this: CustomWorld) {
   const categories = await getAllCategories();
   logger.info(`Fetched ${categories.length} categories from backend.`);
 
+  // Wait for loading overlay to disappear
+  await this.page.waitForSelector('[data-testid="loading-overlay"]', { state: 'detached', timeout: 5000 });
+
   // Verify the UI shows the categories fetched from backend
   const uiCount = await this.categoryPage!.getCategoryCount();
   expect(uiCount).toBe(categories.length);
