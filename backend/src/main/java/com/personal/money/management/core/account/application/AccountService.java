@@ -24,6 +24,7 @@ public class AccountService {
     public Account updateAccount(Long id, Account updatedAccount) {
         return accountRepository.findById(id)
                 .map(existingAccount -> {
+                    // Create a new Account instance with the existing ID and updated fields
                     Account newAccount = Account.reconstruct(
                             existingAccount.getId(),
                             updatedAccount.getAccountName(),
@@ -32,6 +33,7 @@ public class AccountService {
                             updatedAccount.getCurrency(),
                             updatedAccount.getDescription()
                     );
+                    // Save the new Account instance instead of mutating the existing one
                     return accountRepository.save(newAccount);
                 })
                 .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + id));
