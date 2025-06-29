@@ -13,8 +13,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @RestController
 @RequestMapping("/api/accounts")
+@Tag(name = "Account", description = "API for managing accounts")
 public class AccountController {
 
     private final AccountService accountService;
@@ -23,6 +31,10 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    @Operation(summary = "List all accounts", description = "Returns a list of all accounts")
+    @ApiResponse(responseCode = "200", description = "List of accounts",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = AccountResponse.class)))
     @GetMapping
     public ResponseEntity<List<AccountResponse>> listAccounts() {
         List<Account> accounts = accountService.listAccounts();
@@ -32,26 +44,48 @@ public class AccountController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Create a new account", description = "Creates a new account with the provided details")
+    @ApiResponse(responseCode = "200", description = "Created account",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = AccountResponse.class)))
     @PostMapping
-    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody AccountRequest request) {
+    public ResponseEntity<AccountResponse> createAccount(
+            @Parameter(description = "Account creation request", required = true)
+            @Valid @RequestBody AccountRequest request) {
         Account account = toDomain(request);
         Account created = accountService.createAccount(account);
         return ResponseEntity.ok(toResponse(created));
     }
 
+    @Operation(summary = "Update an existing account", description = "Updates the account identified by the given ID")
+    @ApiResponse(responseCode = "200", description = "Updated account",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = AccountResponse.class)))
     @PutMapping("/{id}")
-    public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id, @Valid @RequestBody AccountRequest request) {
+    public ResponseEntity<AccountResponse> updateAccount(
+            @Parameter(description = "ID of the account to update", required = true)
+            @PathVariable Long id,
+            @Parameter(description = "Account update request", required = true)
+            @Valid @RequestBody AccountRequest request) {
         Account account = toDomain(request);
         Account updated = accountService.updateAccount(id, account);
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    @Operation(summary = "Delete an account", description = "Deletes the account identified by the given ID")
+    @ApiResponse(responseCode = "204", description = "Account deleted successfully")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAccount(
+            @Parameter(description = "ID of the account to delete", required = true)
+            @PathVariable Long id) {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get total balance of active accounts", description = "Returns the total balance of all active accounts")
+    @ApiResponse(responseCode = "200", description = "Total balance",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = BigDecimal.class)))
     @GetMapping("/total-balance")
     public ResponseEntity<BigDecimal> getTotalBalance() {
         BigDecimal totalBalance = accountService.getTotalBalanceOfActiveAccounts();
