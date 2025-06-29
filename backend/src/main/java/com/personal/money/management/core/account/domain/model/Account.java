@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import lombok.Data;
 
+@Data
 public class Account {
     private final Long id;
 
@@ -68,6 +70,4 @@ public class Account {
     public static Account reconstruct(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description) {
         return new Account(id, accountName, initBalance, type, currency, description);
     }
-
-    // equals, hashCode, toString omitted for brevity
 }
