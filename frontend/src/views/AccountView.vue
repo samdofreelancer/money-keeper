@@ -171,8 +171,8 @@ import { Plus, Search, Edit, Delete, Wallet } from '@element-plus/icons-vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
 import type { FormInstance } from 'element-plus'
-import type { Account, AccountCreate } from '@/api/account'
-
+import type { AccountCreate } from '@/stores/account'
+import { accountTypes } from '@/constants/accountTypes'
 
 const accountStore = useAccountStore()
 const dialogVisible = ref(false)
@@ -181,6 +181,7 @@ const formRef = ref<FormInstance>()
 const searchQuery = ref('')
 const isEditing = ref(false)
 const editingId = ref<string | null>(null)
+const deleteId = ref<string | null>(null)
 
 const accountForm = ref<AccountCreate>({
   name: '',
@@ -200,11 +201,6 @@ const rules = {
     { type: 'number', required: true, message: 'Please input balance', trigger: ['blur', 'change'] }
   ]
 }
-
-const accountTypes = [
-  { label: 'Wallet', value: 'WALLET', icon: 'Wallet' },
-  { label: 'Bank', value: 'BANK', icon: 'Bank' }
-]
 
 const filteredAccounts = computed(() => {
   let accounts = accountStore.accounts
@@ -272,7 +268,7 @@ function handleEdit(account: Account) {
 }
 
 function handleDelete(account: Account) {
-  editingId.value = account.id
+  deleteId.value = account.id
   deleteDialogVisible.value = true
 }
 
@@ -284,9 +280,11 @@ async function handleSubmit() {
       try {
         if (isEditing.value && editingId.value) {
           await accountStore.updateAccount(editingId.value, accountForm.value)
+          await accountStore.fetchAccounts()
           ElMessage.success('Account updated successfully')
         } else {
           await accountStore.createAccount(accountForm.value)
+          await accountStore.fetchAccounts()
           ElMessage.success('Account created successfully')
         }
         dialogVisible.value = false
@@ -299,10 +297,10 @@ async function handleSubmit() {
 }
 
 async function confirmDelete() {
-  if (!editingId.value) return
+  if (!deleteId.value) return
 
   try {
-    await accountStore.deleteAccount(editingId.value)
+    await accountStore.deleteAccount(deleteId.value)
     ElMessage.success('Account deleted successfully')
     await accountStore.fetchAccounts()
   } catch (error) {
