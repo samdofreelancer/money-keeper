@@ -1,6 +1,7 @@
 package com.personal.money.management.core.account.interfaces.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.personal.money.management.core.account.application.AccountService;
 import com.personal.money.management.core.account.domain.model.AccountType;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,7 @@ class AccountControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private com.personal.money.management.core.account.application.AccountService accountService;
+    private AccountService accountService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,6 +53,21 @@ class AccountControllerTest {
                 .content(objectMapper.writeValueAsString(accountRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountName").value("Test Account"));
+    }
+
+    @Test
+    void testCreateAccount_Invalid() throws Exception {
+        AccountRequest invalidRequest = new AccountRequest();
+        invalidRequest.setAccountName("");
+        invalidRequest.setInitBalance(BigDecimal.valueOf(-10));
+        invalidRequest.setType(null);
+        invalidRequest.setCurrency("");
+        invalidRequest.setDescription("desc");
+
+        mockMvc.perform(post("/api/accounts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

@@ -8,6 +8,7 @@ import com.personal.money.management.core.account.interfaces.api.dto.AccountResp
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,14 +33,14 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<AccountResponse> createAccount(@RequestBody AccountRequest request) {
+    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody AccountRequest request) {
         Account account = toDomain(request);
         Account created = accountService.createAccount(account);
         return ResponseEntity.ok(toResponse(created));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id, @RequestBody AccountRequest request) {
+    public ResponseEntity<AccountResponse> updateAccount(@PathVariable Long id, @Valid @RequestBody AccountRequest request) {
         Account account = toDomain(request);
         Account updated = accountService.updateAccount(id, account);
         return ResponseEntity.ok(toResponse(updated));

@@ -7,6 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -19,11 +23,14 @@ class AccountServiceTest {
 
     private AccountRepository accountRepository;
     private AccountService accountService;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
         accountRepository = mock(AccountRepository.class);
         accountService = new AccountService(accountRepository);
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @Test
@@ -35,6 +42,14 @@ class AccountServiceTest {
 
         assertEquals(account, created);
         verify(accountRepository).save(account);
+    }
+
+    @Test
+    void testCreateAccount_Invalid() {
+        Account account = new Account("", BigDecimal.valueOf(-10), null, "", "desc");
+
+        var violations = validator.validate(account);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
