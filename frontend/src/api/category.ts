@@ -22,6 +22,20 @@ const api = axios.create({
   }
 })
 
+// Add request and response interceptors for logging
+api.interceptors.request.use(request => {
+  console.log('Starting Request', request.method, request.url);
+  return request;
+});
+
+api.interceptors.response.use(response => {
+  console.log('Response:', response.status, response.config.url);
+  return response;
+}, error => {
+  console.error('Response error:', error.response?.status, error.response?.config?.url, error.message);
+  return Promise.reject(error);
+});
+
 function convertParentId(parentId?: string | null): number | null | undefined {
   if (parentId === undefined) return undefined
   if (parentId === null || parentId === 'null') return null

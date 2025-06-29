@@ -25,9 +25,8 @@ export const useCategoryStore = defineStore('category', () => {
       loading.value = true
       error.value = null
       categories.value = await categoryApi.getAll()
-    } catch (e) {
+    } catch (e: any) {
       error.value = 'Failed to fetch categories'
-      // console.error(e)
     } finally {
       loading.value = false
     }

@@ -2,7 +2,7 @@
   <div class="app-container">
     <aside class="app-sidebar">
       <div class="logo">
-        <img src="@/assets/logo.png" alt="Money Keeper" height="32">
+        <img src="@/assets/logo.svg" alt="Money Keeper" height="32">
       </div>
       <el-menu
         default-active="categories"

@@ -1,0 +1,47 @@
+name: Unit Tests
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  unit-test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3.8.6-openjdk-18
+      options: --mount type=volume,source=maven-repo,target=/root/.m2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install xml2js package
+        run: npm install xml2js
+        working-directory: ./backend/scripts
+                
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run unit tests
+        run: mvn clean test -Psmall-test
+        working-directory: ./backend
+
+      - name: Run test report aggregation script
+        run: node aggregate-test-report.js ../target/small-test-reports
+        working-directory: ./backend/scripts
+
+      - name: Upload Surefire Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-report-small
+          path: ./backend/target/small-test-reports/
