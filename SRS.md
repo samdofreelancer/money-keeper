@@ -181,4 +181,52 @@ sequenceDiagram
 
 This diagram shows the step-by-step flow of a request, emphasizing the responsibilities and boundaries of each DDD layer.
 
+#### 8.4 Example Sequence Diagrams
+
+Below are sequence diagrams (in Mermaid format) for Category, Transaction, and Report flows:
+
+**Category Management**
+```mermaid
+sequenceDiagram
+    Client->>Interfaces Layer: POST /api/categories (CategoryRequest)
+    Interfaces Layer->>Application Layer: createCategory(name, icon, type, parentId)
+    Application Layer->>Domain Layer: Validate & create Category entity
+    Application Layer->>Infrastructure Layer: Save Category via Repository
+    Infrastructure Layer->>Database: Insert Category record
+    Database-->>Infrastructure Layer: Return saved Category
+    Infrastructure Layer-->>Application Layer: Category entity
+    Application Layer-->>Interfaces Layer: CategoryResponse
+    Interfaces Layer-->>Client: HTTP 201 Created
+```
+
+**Transaction Management**
+```mermaid
+sequenceDiagram
+    Client->>Interfaces Layer: POST /api/transactions (TransactionRequest)
+    Interfaces Layer->>Application Layer: createTransaction(accountId, categoryId, amount, date, ...)
+    Application Layer->>Domain Layer: Validate & create Transaction entity
+    Application Layer->>Domain Layer: Update Account balance
+    Application Layer->>Infrastructure Layer: Save Transaction via Repository
+    Infrastructure Layer->>Database: Insert Transaction record
+    Database-->>Infrastructure Layer: Return saved Transaction
+    Infrastructure Layer-->>Application Layer: Transaction entity
+    Application Layer-->>Interfaces Layer: TransactionResponse
+    Interfaces Layer-->>Client: HTTP 201 Created
+```
+
+**Report Generation**
+```mermaid
+sequenceDiagram
+    Client->>Interfaces Layer: GET /api/reports/summary?from=...&to=...
+    Interfaces Layer->>Application Layer: generateSummaryReport(from, to)
+    Application Layer->>Domain Layer: Aggregate transactions, categories, accounts
+    Application Layer->>Infrastructure Layer: Query transactions, categories, accounts
+    Infrastructure Layer->>Database: Fetch data
+    Database-->>Infrastructure Layer: Return data
+    Infrastructure Layer-->>Application Layer: Data set
+    Application Layer->>Domain Layer: Calculate summary, totals, groupings
+    Application Layer-->>Interfaces Layer: ReportResponse
+    Interfaces Layer-->>Client: HTTP 200 OK (Report data)
+```
+
 ---
