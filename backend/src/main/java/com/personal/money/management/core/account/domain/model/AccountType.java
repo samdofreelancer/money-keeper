@@ -5,6 +5,6 @@ public enum AccountType {
     BANK_ACCOUNT,
     CREDIT_CARD,
     INVESTMENT,
-    E_VALLET,
+    E_WALLET,
     OTHER
 }
