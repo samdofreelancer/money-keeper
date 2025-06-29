@@ -8,6 +8,13 @@ import { config } from "../../config/env.config";
 import { logger } from "../../support/logger";
 import { CustomWorld } from "../../support/world";
 
+// Extend the Window interface to include __browserConsoleErrors
+declare global {
+  interface Window {
+    __browserConsoleErrors?: any[];
+  }
+}
+
 Given(
   "a {string} category exists",
   async function (this: CustomWorld, categoryName: string) {
@@ -203,24 +210,28 @@ Then(
 Then(
   "I should see a validation error message {string}",
   async function (this: CustomWorld, message: string) {
-    // Try global error first
-    const globalError = this.categoryPage!.globalErrorMessage(message);
+    const errorMessages = this.page.locator('.el-form-item__error');
     try {
-      await globalError.waitFor({ state: "visible", timeout: 7000 });
-      // Debug log
-      console.log('Global error message found!');
-      expect(await globalError.isVisible()).toBe(true);
+      await errorMessages.first().waitFor({ state: "attached", timeout: 10000 });
     } catch (e) {
-      // Debug log
-      console.log('Global error message NOT found, trying form-level error');
-      // Print page content for debugging
-      const pageContent = await this.page.content();
-      console.log('PAGE CONTENT AT ERROR:', pageContent);
-      // If not found, try form-level error
-      const errorMessage = this.categoryPage!.validationError(message);
-      await errorMessage.waitFor({ state: "visible", timeout: 2000 });
-      expect(await errorMessage.isVisible()).toBe(true);
+      // Print dialog HTML for debugging
+      const dialogHtml = await this.page.locator('.el-dialog__body').innerHTML();
+      console.log('Dialog HTML:', dialogHtml);
+      // Print the error from the browser console for further debugging
+      const browserErrors = await this.page.evaluate(() => window.__browserConsoleErrors || []);
+      console.log('Browser console errors:', browserErrors);
+      throw e;
     }
+    const count = await errorMessages.count();
+    let found = false;
+    for (let i = 0; i < count; i++) {
+      const text = await errorMessages.nth(i).innerText();
+      if (text.trim() === message) {
+        found = true;
+        break;
+      }
+    }
+    expect(found).toBe(true);
   }
 );
 

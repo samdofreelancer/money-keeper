@@ -52,7 +52,9 @@ export class CategoryPage {
       '[data-testid="button-confirm-delete"]'
     );
     this.cancelButton = this.page.locator('[data-testid="button-cancel"]');
-    this.cancelDeleteButton = this.page.locator('[data-testid="button-cancel-delete"]');
+    this.cancelDeleteButton = this.page.locator(
+      '[data-testid="button-cancel-delete"]'
+    );
   }
 
   // Locators defined within methods for dynamic values
@@ -212,11 +214,17 @@ export class CategoryPage {
 
   async cancelCategoryForm() {
     await this.cancelButton.click({ timeout: this.actionTimeout });
-    await this.page.waitForSelector('.el-dialog__wrapper', { state: 'hidden', timeout: this.actionTimeout });
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "hidden",
+      timeout: this.actionTimeout,
+    });
   }
 
   async cancelDelete() {
     await this.cancelDeleteButton.click({ timeout: this.actionTimeout });
-    await this.page.waitForSelector('.el-dialog__wrapper', { state: 'hidden', timeout: this.actionTimeout });
+    await this.page.waitForSelector(".el-dialog__wrapper", {
+      state: "hidden",
+      timeout: this.actionTimeout,
+    });
   }
 }
