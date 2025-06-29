@@ -230,3 +230,55 @@ sequenceDiagram
 ```
 
 ---
+
+### 9. Testing Strategy
+
+The Money Keeper project uses a layered testing strategy to ensure correctness, robustness, and maintainability across all components. The approach leverages both unit and integration tests, as well as end-to-end (E2E) tests.
+
+#### 9.1 Backend Testing
+- **Unit Tests**
+  - Focus: Core business logic, domain entities, value objects, and application services.
+  - Tools: JUnit 5, Mockito.
+  - Location: `backend/src/test/java` (e.g., `CategoryServiceTest`, `AccountServiceTest`, `CategoryTest`).
+  - Run: `mvn test -Psmall-test`
+- **Integration Tests**
+  - Focus: Interactions between components, database access, API routing.
+  - Tools: Spring Boot Test, MockMvc.
+  - Location: `backend/src/test/java` (e.g., `CategoryApiIntegrationTest`, `AccountIntegrationTest`).
+  - Run: `mvn failsafe:integration-test failsafe:verify -Pmedium-test`
+- **Test Parallelization**
+  - Maven Surefire and Failsafe plugins are configured for parallel test execution.
+  - JUnit 5 parallel execution enabled via `junit-platform.properties`.
+- **Coverage**
+  - JaCoCo plugin for code coverage reports.
+- **API Testing**
+  - Postman collections for manual and automated API validation.
+
+#### 9.2 Frontend Testing
+- **Unit/Component Tests**
+  - Focus: Vue components, stores, and utility functions.
+  - Tools: (To be added, e.g., Vitest, Vue Test Utils)
+- **Manual Testing**
+  - UI is validated through manual interaction and E2E flows.
+
+#### 9.3 End-to-End (E2E) Testing
+- **Framework**: Playwright + Cucumber (TypeScript)
+- **Features**:
+  - BDD-style feature files for user scenarios (e.g., account/category CRUD, navigation).
+  - Step definitions in TypeScript.
+  - Page Object Model for maintainable test code.
+  - Reports: HTML, JSON, and screenshots for failures.
+- **Run**: `npm test` or `npm run test:parallel` in the `e2e` folder.
+- **Configuration**: Centralized in `e2e/src/config/env.config.ts`.
+
+#### 9.4 Test Environments
+- **Local**: All tests can be run locally using Docker and VS Code Dev Containers.
+- **CI/CD**: GitHub Actions workflows for automated build, test, and reporting.
+
+#### 9.5 Best Practices
+- Separate unit and integration tests for speed and clarity.
+- Use mocks for unit tests, real dependencies for integration tests.
+- Write descriptive feature files and reusable step definitions for E2E.
+- Maintain high code coverage and review test results regularly.
+
+---
