@@ -29,13 +29,11 @@ jobs:
 
   call-e2e-test:
     needs:
-      - build-migration
       - build-backend
       - build-frontend
     uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
 
   call-integration-test:
-    needs: build-migration
     uses: ./.github/workflows/integration-test.yml
     secrets: inherit
