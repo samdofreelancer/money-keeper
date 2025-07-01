@@ -9,9 +9,11 @@ export interface Account {
 }
 
 export interface AccountCreate {
-  name: string
+  accountName: string
+  initBalance: number
   type: string
-  balance?: number
+  currency: string
+  description?: string
   active?: boolean
 }
 

@@ -1,9 +1,9 @@
 export enum AccountTypeEnum {
-  WALLET = 'WALLET',
-  BANK = 'BANK'
+  E_WALLET = 'E_WALLET',
+  BANK_ACCOUNT = 'BANK_ACCOUNT'
 }
 
 export const accountTypes = [
-  { label: 'Wallet', value: AccountTypeEnum.WALLET, icon: 'Wallet' },
-  { label: 'Bank', value: AccountTypeEnum.BANK, icon: 'Bank' }
+  { label: 'E-Wallet', value: AccountTypeEnum.E_WALLET, icon: 'Wallet' },
+  { label: 'Bank Account', value: AccountTypeEnum.BANK_ACCOUNT, icon: 'Bank' }
 ]

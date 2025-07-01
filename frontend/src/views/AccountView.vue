@@ -126,8 +126,8 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Balance" prop="balance" data-testid="form-item-balance">
-          <el-input-number v-model="accountForm.balance" :min="0" data-testid="input-account-balance" />
+        <el-form-item label="Balance" prop="initBalance" data-testid="form-item-balance">
+          <el-input-number v-model="accountForm.initBalance" :min="0" data-testid="input-account-balance" />
         </el-form-item>
 
         <el-form-item label="Active" prop="active" data-testid="form-item-active">
@@ -171,7 +171,7 @@ import { Plus, Search, Edit, Delete, Wallet } from '@element-plus/icons-vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
 import type { FormInstance } from 'element-plus'
-import type { AccountCreate } from '@/stores/account'
+import type { Account, AccountCreate } from '@/stores/account'
 import { accountTypes } from '@/constants/accountTypes'
 
 const accountStore = useAccountStore()
@@ -184,9 +184,11 @@ const editingId = ref<string | null>(null)
 const deleteId = ref<string | null>(null)
 
 const accountForm = ref<AccountCreate>({
-  name: '',
+  accountName: '',
   type: '',
-  balance: 0,
+  initBalance: 0,
+  currency: 'USD',
+  description: '',
   active: true
 })
 
@@ -230,9 +232,9 @@ function getIconComponent(type: string) {
 
 function getIconColor(type: string) {
   switch (type) {
-    case 'WALLET':
+    case 'E_WALLET':
       return '#409EFF'
-    case 'BANK':
+    case 'BANK_ACCOUNT':
       return '#67C23A'
     default:
       return '#909399'
@@ -247,9 +249,11 @@ function showCreateDialog() {
   isEditing.value = false
   editingId.value = null
   accountForm.value = {
-    name: '',
+    accountName: '',
     type: '',
-    balance: 0,
+    initBalance: 0,
+    currency: 'USD',
+    description: '',
     active: true
   }
   dialogVisible.value = true
@@ -259,9 +263,11 @@ function handleEdit(account: Account) {
   isEditing.value = true
   editingId.value = account.id
   accountForm.value = {
-    name: account.name,
+    accountName: account.name,
     type: account.type,
-    balance: account.balance,
+    initBalance: account.balance,
+    currency: 'USD',
+    description: '',
     active: account.active
   }
   dialogVisible.value = true
@@ -278,12 +284,21 @@ async function handleSubmit() {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // Map frontend form fields to backend fields
+        const payload = {
+          accountName: accountForm.value.accountName || accountForm.value.name || '',
+          type: accountForm.value.type,
+          initBalance: accountForm.value.initBalance ?? accountForm.value.balance ?? 0,
+          currency: accountForm.value.currency || 'USD',
+          description: accountForm.value.description || '',
+          active: accountForm.value.active ?? true
+        }
         if (isEditing.value && editingId.value) {
-          await accountStore.updateAccount(editingId.value, accountForm.value)
+          await accountStore.updateAccount(editingId.value, payload)
           await accountStore.fetchAccounts()
           ElMessage.success('Account updated successfully')
         } else {
-          await accountStore.createAccount(accountForm.value)
+          await accountStore.createAccount(payload)
           await accountStore.fetchAccounts()
           ElMessage.success('Account created successfully')
         }
@@ -317,9 +332,11 @@ watch(dialogVisible, (newVal, oldVal) => {
       formRef.value.resetFields()
     }
     accountForm.value = {
-      name: '',
+      accountName: '',
       type: '',
-      balance: 0,
+      initBalance: 0,
+      currency: 'USD',
+      description: '',
       active: true
     }
   }
