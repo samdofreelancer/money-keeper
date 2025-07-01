@@ -5,6 +5,8 @@ import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountRequest;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountResponse;
 import com.personal.money.management.core.account.application.exception.DuplicateAccountNameException;
+import com.personal.money.management.core.account.application.CurrencyService;
+import com.personal.money.management.core.account.domain.model.Currency;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,10 @@ import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
+import java.nio.file.Files;
+import java.util.stream.Stream;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,9 +34,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class AccountController {
 
     private final AccountService accountService;
+    private final CurrencyService currencyService;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, CurrencyService currencyService) {
         this.accountService = accountService;
+        this.currencyService = currencyService;
     }
 
     @Operation(summary = "List all accounts", description = "Returns a list of all accounts")
@@ -96,6 +104,16 @@ public class AccountController {
     public ResponseEntity<BigDecimal> getTotalBalance() {
         BigDecimal totalBalance = accountService.getTotalBalanceOfActiveAccounts();
         return ResponseEntity.ok(totalBalance);
+    }
+
+    @Operation(summary = "Get supported currencies", description = "Returns a list of supported currencies")
+    @ApiResponse(responseCode = "200", description = "List of supported currencies",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Currency.class)))
+    @GetMapping("/currencies")
+    public ResponseEntity<List<Currency>> getSupportedCurrencies() {
+        List<Currency> currencies = currencyService.getAllCurrencies();
+        return ResponseEntity.ok(currencies);
     }
 
     private AccountResponse toResponse(Account account) {
