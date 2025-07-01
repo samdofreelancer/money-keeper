@@ -134,9 +134,9 @@
           <el-select v-model="accountForm.currency" placeholder="Select currency" data-testid="select-account-currency">
             <el-option
               v-for="currency in supportedCurrencies"
-              :key="currency"
-              :label="currency"
-              :value="currency"
+              :key="currency.id"
+              :label="currency.name"
+              :value="currency.code"
               data-testid="option-account-currency"
             />
           </el-select>
@@ -196,13 +196,13 @@ const isEditing = ref(false)
 const editingId = ref<string | null>(null)
 const deleteId = ref<string | null>(null)
 const duplicateNameError = ref('')
-const supportedCurrencies = ref<string[]>([])
+const supportedCurrencies = ref<any[]>([])
 
 const accountForm = ref<AccountCreate>({
   accountName: '',
   type: '',
   initBalance: 0,
-  currency: 'USD',
+  currency: '',
   description: ''
 })
 
@@ -249,9 +249,11 @@ const formattedTotalBalance = computed(() => {
   return formatCurrency(accountStore.totalBalance)
 })
 
+import { currencyApi } from '@/api/currency'
+
 onMounted(async () => {
   await accountStore.fetchAccounts()
-  supportedCurrencies.value = await accountApi.getSupportedCurrencies()
+  supportedCurrencies.value = await currencyApi.getSupportedCurrencies()
 })
 
 function getIconComponent(type: string) {
@@ -294,7 +296,7 @@ function handleEdit(account: Account) {
     accountName: account.name,
     type: account.type,
     initBalance: account.balance,
-    currency: account.currency?.code || 'USD',
+    currency: account.currency || 'USD',
     description: ''
   }
   dialogVisible.value = true
