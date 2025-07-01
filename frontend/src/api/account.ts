@@ -44,5 +44,10 @@ export const accountApi = {
 
   async delete(id: string): Promise<void> {
     await apiClient.delete(`/${id}`)
+  },
+
+  async getSupportedCurrencies(): Promise<string[]> {
+    const response = await apiClient.get('/currencies')
+    return response.data
   }
 }
