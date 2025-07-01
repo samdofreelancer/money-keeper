@@ -107,8 +107,8 @@
         class="account-form"
         data-testid="account-form"
       >
-        <el-form-item label="Name" prop="name" data-testid="form-item-name">
-          <el-input v-model="accountForm.name" placeholder="Enter account name" data-testid="input-account-name" />
+        <el-form-item label="Name" prop="accountName" data-testid="form-item-name">
+          <el-input v-model="accountForm.accountName" placeholder="Enter account name" data-testid="input-account-name" />
         </el-form-item>
 
         <el-form-item label="Type" prop="type" data-testid="form-item-type">
@@ -130,8 +130,12 @@
           <el-input-number v-model="accountForm.initBalance" :min="0" data-testid="input-account-balance" />
         </el-form-item>
 
-        <el-form-item label="Active" prop="active" data-testid="form-item-active">
-          <el-switch v-model="accountForm.active" data-testid="switch-account-active" />
+        <el-form-item label="Currency" prop="currency" data-testid="form-item-currency">
+          <el-input v-model="accountForm.currency" placeholder="Enter currency (e.g. USD)" data-testid="input-account-currency" />
+        </el-form-item>
+
+        <el-form-item label="Description" prop="description" data-testid="form-item-description">
+          <el-input v-model="accountForm.description" placeholder="Enter description (optional)" data-testid="input-account-description" />
         </el-form-item>
       </el-form>
 
@@ -182,40 +186,40 @@ const searchQuery = ref('')
 const isEditing = ref(false)
 const editingId = ref<string | null>(null)
 const deleteId = ref<string | null>(null)
+const duplicateNameError = ref('')
 
 const accountForm = ref<AccountCreate>({
   accountName: '',
   type: '',
   initBalance: 0,
   currency: 'USD',
-  description: '',
-  active: true
+  description: ''
 })
 
 const rules = {
-  name: [
+  accountName: [
     { required: true, message: 'Please input account name', trigger: ['blur', 'change'] },
-    { validator: validateUniqueName, trigger: ['blur', 'change'] }
+    { validator: (rule: any, value: any, callback: (error?: string) => void) => {
+        if (duplicateNameError.value) {
+          callback(duplicateNameError.value)
+        } else {
+          callback()
+        }
+      }, trigger: ['blur', 'change'] }
   ],
   type: [
     { required: true, message: 'Please select account type', trigger: 'change' }
   ],
-  balance: [
-    { type: 'number', required: true, message: 'Please input balance', trigger: ['blur', 'change'] }
+  initBalance: [
+    { type: 'number', required: true, message: 'Please input balance', trigger: ['blur', 'change'] },
+    { validator: (rule: any, value: any, callback: (error?: string) => void) => {
+        if (value === undefined || value === null || value <= 0) {
+          callback('Balance must be greater than 0')
+        } else {
+          callback()
+        }
+      }, trigger: ['blur', 'change'] }
   ]
-}
-
-function validateUniqueName(rule: any, value: string, callback: (error?: string) => void) {
-  if (!value) return callback()
-  const name = value.trim().toLowerCase()
-  const isDuplicate = accountStore.accounts.some(a =>
-    a.name.trim().toLowerCase() === name && (!isEditing.value || a.id !== editingId.value)
-  )
-  if (isDuplicate) {
-    callback('Account name already exists')
-  } else {
-    callback()
-  }
 }
 
 const filteredAccounts = computed(() => {
@@ -267,8 +271,7 @@ function showCreateDialog() {
     type: '',
     initBalance: 0,
     currency: 'USD',
-    description: '',
-    active: true
+    description: ''
   }
   dialogVisible.value = true
 }
@@ -281,8 +284,7 @@ function handleEdit(account: Account) {
     type: account.type,
     initBalance: account.balance,
     currency: 'USD',
-    description: '',
-    active: account.active
+    description: ''
   }
   dialogVisible.value = true
 }
@@ -304,8 +306,7 @@ async function handleSubmit() {
           type: accountForm.value.type,
           initBalance: accountForm.value.initBalance ?? 0,
           currency: accountForm.value.currency || 'USD',
-          description: accountForm.value.description || '',
-          active: accountForm.value.active ?? true
+          description: accountForm.value.description || ''
         }
         if (isEditing.value && editingId.value) {
           await accountStore.updateAccount(editingId.value, payload)
@@ -319,7 +320,14 @@ async function handleSubmit() {
         dialogVisible.value = false
       } catch (error) {
         const errorMsg = accountStore.error || (isEditing.value ? 'Failed to update account' : 'Failed to create account')
-        ElMessage.error(errorMsg)
+        if ((errorMsg === 'Account name already exists' || errorMsg.includes('409')) && formRef.value) {
+          accountStore.error = null
+          duplicateNameError.value = 'Account name already exists'
+          await nextTick()
+          await formRef.value.validateField('accountName')
+        } else {
+          ElMessage.error(errorMsg)
+        }
       }
     }
   })
@@ -350,8 +358,17 @@ watch(dialogVisible, (newVal, oldVal) => {
       type: '',
       initBalance: 0,
       currency: 'USD',
-      description: '',
-      active: true
+      description: ''
+    }
+    duplicateNameError.value = ''
+  }
+})
+
+watch(() => accountForm.value.accountName, () => {
+  if (duplicateNameError.value) {
+    duplicateNameError.value = ''
+    if (formRef.value) {
+      formRef.value.clearValidate(['accountName'])
     }
   }
 })

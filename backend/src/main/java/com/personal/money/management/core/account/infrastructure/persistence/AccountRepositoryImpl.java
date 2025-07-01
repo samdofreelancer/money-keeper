@@ -57,7 +57,8 @@ public class AccountRepositoryImpl implements AccountRepository {
                 entity.getInitBalance(),
                 entity.getType(),
                 entity.getCurrency(),
-                entity.getDescription()
+                entity.getDescription(),
+                entity.isActive()
         );
     }
 
@@ -71,6 +72,7 @@ public class AccountRepositoryImpl implements AccountRepository {
         entity.setType(account.getType());
         entity.setCurrency(account.getCurrency());
         entity.setDescription(account.getDescription());
+        entity.setActive(account.isActive()); // Always set from domain
         return entity;
     }
 }

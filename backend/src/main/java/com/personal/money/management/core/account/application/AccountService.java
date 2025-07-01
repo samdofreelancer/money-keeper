@@ -36,7 +36,8 @@ public class AccountService {
                             updatedAccount.getInitBalance(),
                             updatedAccount.getType(),
                             updatedAccount.getCurrency(),
-                            updatedAccount.getDescription()
+                            updatedAccount.getDescription(),
+                            existingAccount.isActive() // preserve active status
                     );
                     // Save the new Account instance instead of mutating the existing one
                     return accountRepository.save(newAccount);
