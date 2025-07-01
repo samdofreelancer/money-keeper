@@ -1,0 +1,36 @@
+{
+  "info": {
+    "name": "Currency API",
+    "_postman_id": "abcdef12-3456-7890-abcd-ef1234567890",
+    "description": "Postman collection for Currency API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string",
+      "description": "Base URL for the API"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Supported Currencies",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/currencies",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "currencies"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
