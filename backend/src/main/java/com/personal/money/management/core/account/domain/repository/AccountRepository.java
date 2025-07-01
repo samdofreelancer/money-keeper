@@ -9,4 +9,5 @@ public interface AccountRepository {
     Optional<Account> findById(Long id);
     List<Account> findAll();
     void deleteById(Long id);
+    Optional<Account> findByAccountName(String accountName);
 }

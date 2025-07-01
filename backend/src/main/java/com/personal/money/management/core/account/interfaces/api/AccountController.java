@@ -4,7 +4,9 @@ import com.personal.money.management.core.account.application.AccountService;
 import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountRequest;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountResponse;
+import com.personal.money.management.core.account.application.exception.DuplicateAccountNameException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,9 +54,13 @@ public class AccountController {
     public ResponseEntity<AccountResponse> createAccount(
             @Parameter(description = "Account creation request", required = true)
             @Valid @RequestBody AccountRequest request) {
-        Account account = toDomain(request);
-        Account created = accountService.createAccount(account);
-        return ResponseEntity.ok(toResponse(created));
+        try {
+            Account account = toDomain(request);
+            Account created = accountService.createAccount(account);
+            return ResponseEntity.ok(toResponse(created));
+        } catch (DuplicateAccountNameException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
     }
 
     @Operation(summary = "Update an existing account", description = "Updates the account identified by the given ID")

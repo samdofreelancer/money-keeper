@@ -42,6 +42,14 @@ public class AccountRepositoryImpl implements AccountRepository {
         jpaRepository.deleteById(id);
     }
 
+    @Override
+    public Optional<Account> findByAccountName(String accountName) {
+        return jpaRepository.findAll().stream()
+            .filter(e -> e.getAccountName().equalsIgnoreCase(accountName))
+            .findFirst()
+            .map(this::toDomain);
+    }
+
     private Account toDomain(AccountEntity entity) {
         return Account.reconstruct(
                 entity.getId(),

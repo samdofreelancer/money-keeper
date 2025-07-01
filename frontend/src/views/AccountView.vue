@@ -194,7 +194,8 @@ const accountForm = ref<AccountCreate>({
 
 const rules = {
   name: [
-    { required: true, message: 'Please input account name', trigger: ['blur', 'change'] }
+    { required: true, message: 'Please input account name', trigger: ['blur', 'change'] },
+    { validator: validateUniqueName, trigger: ['blur', 'change'] }
   ],
   type: [
     { required: true, message: 'Please select account type', trigger: 'change' }
@@ -202,6 +203,19 @@ const rules = {
   balance: [
     { type: 'number', required: true, message: 'Please input balance', trigger: ['blur', 'change'] }
   ]
+}
+
+function validateUniqueName(rule: any, value: string, callback: (error?: string) => void) {
+  if (!value) return callback()
+  const name = value.trim().toLowerCase()
+  const isDuplicate = accountStore.accounts.some(a =>
+    a.name.trim().toLowerCase() === name && (!isEditing.value || a.id !== editingId.value)
+  )
+  if (isDuplicate) {
+    callback('Account name already exists')
+  } else {
+    callback()
+  }
 }
 
 const filteredAccounts = computed(() => {
@@ -286,9 +300,9 @@ async function handleSubmit() {
       try {
         // Map frontend form fields to backend fields
         const payload = {
-          accountName: accountForm.value.accountName || accountForm.value.name || '',
+          accountName: accountForm.value.accountName || '',
           type: accountForm.value.type,
-          initBalance: accountForm.value.initBalance ?? accountForm.value.balance ?? 0,
+          initBalance: accountForm.value.initBalance ?? 0,
           currency: accountForm.value.currency || 'USD',
           description: accountForm.value.description || '',
           active: accountForm.value.active ?? true
