@@ -131,7 +131,15 @@
         </el-form-item>
 
         <el-form-item label="Currency" prop="currency" data-testid="form-item-currency">
-          <el-input v-model="accountForm.currency" placeholder="Enter currency (e.g. USD)" data-testid="input-account-currency" />
+          <el-select v-model="accountForm.currency" placeholder="Select currency" data-testid="select-account-currency">
+            <el-option
+              v-for="currency in supportedCurrencies"
+              :key="currency.id"
+              :label="currency.name"
+              :value="currency.code"
+              data-testid="option-account-currency"
+            />
+          </el-select>
         </el-form-item>
 
         <el-form-item label="Description" prop="description" data-testid="form-item-description">
@@ -174,6 +182,7 @@ import { useAccountStore } from '@/stores/account'
 import { Plus, Search, Edit, Delete, Wallet } from '@element-plus/icons-vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
+import { accountApi } from '@/api/account'
 import type { FormInstance } from 'element-plus'
 import type { Account, AccountCreate } from '@/stores/account'
 import { accountTypes } from '@/constants/accountTypes'
@@ -187,12 +196,13 @@ const isEditing = ref(false)
 const editingId = ref<string | null>(null)
 const deleteId = ref<string | null>(null)
 const duplicateNameError = ref('')
+const supportedCurrencies = ref<any[]>([])
 
 const accountForm = ref<AccountCreate>({
   accountName: '',
   type: '',
   initBalance: 0,
-  currency: 'USD',
+  currency: '',
   description: ''
 })
 
@@ -239,8 +249,11 @@ const formattedTotalBalance = computed(() => {
   return formatCurrency(accountStore.totalBalance)
 })
 
+import { currencyApi } from '@/api/currency'
+
 onMounted(async () => {
   await accountStore.fetchAccounts()
+  supportedCurrencies.value = await currencyApi.getSupportedCurrencies()
 })
 
 function getIconComponent(type: string) {
@@ -283,7 +296,7 @@ function handleEdit(account: Account) {
     accountName: account.name,
     type: account.type,
     initBalance: account.balance,
-    currency: 'USD',
+    currency: account.currency || 'USD',
     description: ''
   }
   dialogVisible.value = true

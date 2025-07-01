@@ -11,12 +11,6 @@ on:
       - master
 
 jobs:
-  build-migration:
-    uses: ./.github/workflows/build-migration-image.yml
-    with:
-      REGISTRY: ghcr.io/${{ github.repository_owner }}
-      IMAGE_TAG: ${{ github.sha }}
-
   build-backend:
     uses: ./.github/workflows/build-backend-image.yml
     with:
@@ -35,13 +29,11 @@ jobs:
 
   call-e2e-test:
     needs:
-      - build-migration
       - build-backend
       - build-frontend
     uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
 
   call-integration-test:
-    needs: build-migration
     uses: ./.github/workflows/integration-test.yml
     secrets: inherit

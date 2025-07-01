@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { currencyApi } from './currency'
 
 export interface Account {
   id: string
@@ -19,7 +20,7 @@ export interface AccountCreate {
 
 import { apiBaseUrl } from '@/config'
 
-const apiClient = axios.create({
+const accountApiClient = axios.create({
   baseURL: apiBaseUrl + '/accounts',
   headers: {
     'Content-Type': 'application/json'
@@ -28,21 +29,25 @@ const apiClient = axios.create({
 
 export const accountApi = {
   async getAll(): Promise<Account[]> {
-    const response = await apiClient.get('/')
+    const response = await accountApiClient.get('/')
     return response.data
   },
 
   async create(account: AccountCreate): Promise<Account> {
-    const response = await apiClient.post('/', account)
+    const response = await accountApiClient.post('/', account)
     return response.data
   },
 
   async update(id: string, account: AccountCreate): Promise<Account> {
-    const response = await apiClient.put(`/${id}`, account)
+    const response = await accountApiClient.put(`/${id}`, account)
     return response.data
   },
 
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/${id}`)
+    await accountApiClient.delete(`/${id}`)
+  },
+
+  async getSupportedCurrencies(): Promise<string[]> {
+    return currencyApi.getSupportedCurrencies()
   }
 }
