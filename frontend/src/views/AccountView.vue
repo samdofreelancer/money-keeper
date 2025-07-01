@@ -107,8 +107,8 @@
         class="account-form"
         data-testid="account-form"
       >
-        <el-form-item label="Name" prop="name" data-testid="form-item-name">
-          <el-input v-model="accountForm.name" placeholder="Enter account name" data-testid="input-account-name" />
+        <el-form-item label="Name" prop="accountName" data-testid="form-item-name">
+          <el-input v-model="accountForm.accountName" placeholder="Enter account name" data-testid="input-account-name" />
         </el-form-item>
 
         <el-form-item label="Type" prop="type" data-testid="form-item-type">
@@ -126,12 +126,16 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="Balance" prop="balance" data-testid="form-item-balance">
-          <el-input-number v-model="accountForm.balance" :min="0" data-testid="input-account-balance" />
+        <el-form-item label="Balance" prop="initBalance" data-testid="form-item-balance">
+          <el-input-number v-model="accountForm.initBalance" :min="0" data-testid="input-account-balance" />
         </el-form-item>
 
-        <el-form-item label="Active" prop="active" data-testid="form-item-active">
-          <el-switch v-model="accountForm.active" data-testid="switch-account-active" />
+        <el-form-item label="Currency" prop="currency" data-testid="form-item-currency">
+          <el-input v-model="accountForm.currency" placeholder="Enter currency (e.g. USD)" data-testid="input-account-currency" />
+        </el-form-item>
+
+        <el-form-item label="Description" prop="description" data-testid="form-item-description">
+          <el-input v-model="accountForm.description" placeholder="Enter description (optional)" data-testid="input-account-description" />
         </el-form-item>
       </el-form>
 
@@ -171,7 +175,7 @@ import { Plus, Search, Edit, Delete, Wallet } from '@element-plus/icons-vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
 import type { FormInstance } from 'element-plus'
-import type { AccountCreate } from '@/stores/account'
+import type { Account, AccountCreate } from '@/stores/account'
 import { accountTypes } from '@/constants/accountTypes'
 
 const accountStore = useAccountStore()
@@ -182,23 +186,39 @@ const searchQuery = ref('')
 const isEditing = ref(false)
 const editingId = ref<string | null>(null)
 const deleteId = ref<string | null>(null)
+const duplicateNameError = ref('')
 
 const accountForm = ref<AccountCreate>({
-  name: '',
+  accountName: '',
   type: '',
-  balance: 0,
-  active: true
+  initBalance: 0,
+  currency: 'USD',
+  description: ''
 })
 
 const rules = {
-  name: [
-    { required: true, message: 'Please input account name', trigger: ['blur', 'change'] }
+  accountName: [
+    { required: true, message: 'Please input account name', trigger: ['blur', 'change'] },
+    { validator: (rule: any, value: any, callback: (error?: string) => void) => {
+        if (duplicateNameError.value) {
+          callback(duplicateNameError.value)
+        } else {
+          callback()
+        }
+      }, trigger: ['blur', 'change'] }
   ],
   type: [
     { required: true, message: 'Please select account type', trigger: 'change' }
   ],
-  balance: [
-    { type: 'number', required: true, message: 'Please input balance', trigger: ['blur', 'change'] }
+  initBalance: [
+    { type: 'number', required: true, message: 'Please input balance', trigger: ['blur', 'change'] },
+    { validator: (rule: any, value: any, callback: (error?: string) => void) => {
+        if (value === undefined || value === null || value <= 0) {
+          callback('Balance must be greater than 0')
+        } else {
+          callback()
+        }
+      }, trigger: ['blur', 'change'] }
   ]
 }
 
@@ -230,9 +250,9 @@ function getIconComponent(type: string) {
 
 function getIconColor(type: string) {
   switch (type) {
-    case 'WALLET':
+    case 'E_WALLET':
       return '#409EFF'
-    case 'BANK':
+    case 'BANK_ACCOUNT':
       return '#67C23A'
     default:
       return '#909399'
@@ -247,10 +267,11 @@ function showCreateDialog() {
   isEditing.value = false
   editingId.value = null
   accountForm.value = {
-    name: '',
+    accountName: '',
     type: '',
-    balance: 0,
-    active: true
+    initBalance: 0,
+    currency: 'USD',
+    description: ''
   }
   dialogVisible.value = true
 }
@@ -259,10 +280,11 @@ function handleEdit(account: Account) {
   isEditing.value = true
   editingId.value = account.id
   accountForm.value = {
-    name: account.name,
+    accountName: account.name,
     type: account.type,
-    balance: account.balance,
-    active: account.active
+    initBalance: account.balance,
+    currency: 'USD',
+    description: ''
   }
   dialogVisible.value = true
 }
@@ -278,19 +300,34 @@ async function handleSubmit() {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // Map frontend form fields to backend fields
+        const payload = {
+          accountName: accountForm.value.accountName || '',
+          type: accountForm.value.type,
+          initBalance: accountForm.value.initBalance ?? 0,
+          currency: accountForm.value.currency || 'USD',
+          description: accountForm.value.description || ''
+        }
         if (isEditing.value && editingId.value) {
-          await accountStore.updateAccount(editingId.value, accountForm.value)
+          await accountStore.updateAccount(editingId.value, payload)
           await accountStore.fetchAccounts()
           ElMessage.success('Account updated successfully')
         } else {
-          await accountStore.createAccount(accountForm.value)
+          await accountStore.createAccount(payload)
           await accountStore.fetchAccounts()
           ElMessage.success('Account created successfully')
         }
         dialogVisible.value = false
       } catch (error) {
         const errorMsg = accountStore.error || (isEditing.value ? 'Failed to update account' : 'Failed to create account')
-        ElMessage.error(errorMsg)
+        if ((errorMsg === 'Account name already exists' || errorMsg.includes('409')) && formRef.value) {
+          accountStore.error = null
+          duplicateNameError.value = 'Account name already exists'
+          await nextTick()
+          await formRef.value.validateField('accountName')
+        } else {
+          ElMessage.error(errorMsg)
+        }
       }
     }
   })
@@ -317,10 +354,21 @@ watch(dialogVisible, (newVal, oldVal) => {
       formRef.value.resetFields()
     }
     accountForm.value = {
-      name: '',
+      accountName: '',
       type: '',
-      balance: 0,
-      active: true
+      initBalance: 0,
+      currency: 'USD',
+      description: ''
+    }
+    duplicateNameError.value = ''
+  }
+})
+
+watch(() => accountForm.value.accountName, () => {
+  if (duplicateNameError.value) {
+    duplicateNameError.value = ''
+    if (formRef.value) {
+      formRef.value.clearValidate(['accountName'])
     }
   }
 })

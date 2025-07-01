@@ -3,6 +3,7 @@ package com.personal.money.management.core.account.application;
 import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.domain.repository.AccountRepository;
 import com.personal.money.management.core.account.application.exception.AccountNotFoundException;
+import com.personal.money.management.core.account.application.exception.DuplicateAccountNameException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,6 +19,10 @@ public class AccountService {
     }
 
     public Account createAccount(Account account) {
+        accountRepository.findByAccountName(account.getAccountName())
+            .ifPresent(existing -> {
+                throw new DuplicateAccountNameException("Account name already exists: " + account.getAccountName());
+            });
         return accountRepository.save(account);
     }
 
@@ -31,7 +36,8 @@ public class AccountService {
                             updatedAccount.getInitBalance(),
                             updatedAccount.getType(),
                             updatedAccount.getCurrency(),
-                            updatedAccount.getDescription()
+                            updatedAccount.getDescription(),
+                            existingAccount.isActive() // preserve active status
                     );
                     // Save the new Account instance instead of mutating the existing one
                     return accountRepository.save(newAccount);

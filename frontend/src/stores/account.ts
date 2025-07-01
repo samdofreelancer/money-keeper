@@ -23,7 +23,15 @@ export const useAccountStore = defineStore('account', () => {
     try {
       loading.value = true
       error.value = null
-      accounts.value = await accountApi.getAll()
+      const backendAccounts = await accountApi.getAll()
+      // Map backend fields to frontend fields
+      accounts.value = backendAccounts.map((a: any) => ({
+        id: a.id,
+        name: a.accountName,
+        type: a.type,
+        balance: a.initBalance,
+        active: a.active ?? true
+      }))
     } catch (e: any) {
       error.value = 'Failed to fetch accounts'
     } finally {
@@ -35,9 +43,9 @@ export const useAccountStore = defineStore('account', () => {
     const tempId = generateTempId()
     const tempAccount: Account = {
       id: tempId,
-      name: account.name,
+      name: account.accountName,
       type: account.type,
-      balance: account.balance ?? 0,
+      balance: account.initBalance ?? 0,
       active: account.active ?? true
     }
     accounts.value.push(tempAccount)
@@ -69,9 +77,9 @@ export const useAccountStore = defineStore('account', () => {
     const oldAccount = { ...accounts.value[index] }
     accounts.value[index] = {
       ...oldAccount,
-      name: account.name,
+      name: account.accountName,
       type: account.type,
-      balance: account.balance ?? 0,
+      balance: account.initBalance ?? 0,
       active: account.active ?? true
     }
     try {
@@ -128,3 +136,5 @@ export const useAccountStore = defineStore('account', () => {
     deleteAccount
   }
 })
+
+export type { Account, AccountCreate } from '@/api/account'

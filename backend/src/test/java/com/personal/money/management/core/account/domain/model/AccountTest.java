@@ -31,7 +31,8 @@ class AccountTest {
                 BigDecimal.valueOf(150),
                 AccountType.CREDIT_CARD,
                 "EUR",
-                "new desc"
+                "new desc",
+                true
         );
 
         assertEquals("New Account", updatedAccount.getAccountName());
@@ -43,7 +44,7 @@ class AccountTest {
 
     @Test
     void testReconstruct() {
-        Account account = Account.reconstruct(1L, "Reconstructed Account", BigDecimal.valueOf(200), AccountType.INVESTMENT, "USD", "desc");
+        Account account = Account.reconstruct(1L, "Reconstructed Account", BigDecimal.valueOf(200), AccountType.INVESTMENT, "USD", "desc", true);
 
         assertEquals(1L, account.getId());
         assertEquals("Reconstructed Account", account.getAccountName());

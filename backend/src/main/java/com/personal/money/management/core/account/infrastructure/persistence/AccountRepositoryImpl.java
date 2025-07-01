@@ -42,6 +42,14 @@ public class AccountRepositoryImpl implements AccountRepository {
         jpaRepository.deleteById(id);
     }
 
+    @Override
+    public Optional<Account> findByAccountName(String accountName) {
+        return jpaRepository.findAll().stream()
+            .filter(e -> e.getAccountName().equalsIgnoreCase(accountName))
+            .findFirst()
+            .map(this::toDomain);
+    }
+
     private Account toDomain(AccountEntity entity) {
         return Account.reconstruct(
                 entity.getId(),
@@ -49,7 +57,8 @@ public class AccountRepositoryImpl implements AccountRepository {
                 entity.getInitBalance(),
                 entity.getType(),
                 entity.getCurrency(),
-                entity.getDescription()
+                entity.getDescription(),
+                entity.isActive()
         );
     }
 
@@ -63,6 +72,7 @@ public class AccountRepositoryImpl implements AccountRepository {
         entity.setType(account.getType());
         entity.setCurrency(account.getCurrency());
         entity.setDescription(account.getDescription());
+        entity.setActive(account.isActive()); // Always set from domain
         return entity;
     }
 }
