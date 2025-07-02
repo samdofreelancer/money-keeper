@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS build
+FROM node:20.12.2-alpine AS build
 
 RUN apk add --no-cache curl netcat-openbsd
 
@@ -17,9 +17,11 @@ RUN npx vite build --mode ci
 # Production stage
 FROM nginx:alpine AS production
 
+WORKDIR /usr/share/nginx/html
+
 # Remove unnecessary packages and use nginx to serve static files
 
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist .
 
 EXPOSE 80
 
