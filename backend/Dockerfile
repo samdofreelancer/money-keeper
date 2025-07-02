@@ -1,4 +1,4 @@
-FROM maven:3.9.3-openjdk-20 as build
+FROM maven:3.9.3-openjdk-20-slim AS build
 
 WORKDIR /app
 
