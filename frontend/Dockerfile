@@ -1,27 +1,19 @@
 # Build stage
 FROM node:20.12.2-alpine AS build
 
-RUN apk add --no-cache curl netcat-openbsd
-
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm ci
 
 COPY . .
-
-# Build frontend with CI profile (skip vue-tsc to avoid js emit error)
 RUN npx vite build --mode ci
 
 # Production stage
 FROM nginx:alpine AS production
 
-WORKDIR /usr/share/nginx/html
-
-# Remove unnecessary packages and use nginx to serve static files
-
-COPY --from=build /app/dist .
+# Copy build output to nginx html directory
+COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
