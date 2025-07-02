@@ -1,0 +1,26 @@
+# Ignore Maven target directory
+target/
+
+# Ignore node_modules if any
+node_modules/
+
+# Ignore test sources and resources
+src/test/
+src/test/java/
+
+# Ignore Allure results
+allure-results/
+
+# Ignore Postman collections
+postman_collection/
+
+# Ignore IDE and system files
+.git/
+.github/
+.vscode/
+.idea/
+*.iml
+
+# Ignore markdown and log files
+*.md
+*.log

@@ -1,4 +1,5 @@
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS build
 
 RUN apk add --no-cache curl netcat-openbsd
 
@@ -13,8 +14,18 @@ COPY . .
 # Build frontend with CI profile (skip vue-tsc to avoid js emit error)
 RUN npx vite build --mode ci
 
+# Production stage
+FROM node:18-alpine AS production
+
+RUN apk add --no-cache curl netcat-openbsd
+
+WORKDIR /app
+
 # Install serve to serve static files
 RUN npm install -g serve
+
+# Copy built files from build stage
+COPY --from=build /app/dist ./dist
 
 EXPOSE 5173
 
