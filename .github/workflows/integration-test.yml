@@ -17,7 +17,8 @@ jobs:
       ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
     services:
       oracle:
-        image: gvenzl/oracle-xe:latest
+        #image: gvenzl/oracle-xe:latest
+        image: ghcr.io/oracle/oraclelinux8-instantclient:23
         ports:
           - 1521:1521
         env:
