@@ -1,5 +1,4 @@
-FROM maven:3.9.3-openjdk-17 AS build
-
+FROM maven:3.8.6-openjdk-18 as build
 WORKDIR /app
 
 RUN microdnf install -y nc curl unzip libaio
