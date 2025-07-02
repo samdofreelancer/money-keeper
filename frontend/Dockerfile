@@ -1,22 +1,24 @@
-# Build stage
-FROM node:20.12.2-alpine AS build
+FROM node:18-alpine
+
+RUN apk add --no-cache curl netcat-openbsd
 
 WORKDIR /app
 
 COPY package*.json ./
+
 RUN npm ci
 
 COPY . .
+
+# Build frontend with CI profile (skip vue-tsc to avoid js emit error)
 RUN npx vite build --mode ci
 
-# Production stage
-FROM nginx:alpine AS production
+# Install serve to serve static files
+RUN npm install -g serve
 
-# Copy build output to nginx html directory
-COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 5173
 
-EXPOSE 80
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD nc -z localhost 5173 || exit 1
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD wget -q --spider http://localhost || exit 1
-
-CMD ["nginx", "-g", "daemon off;"]
+# Serve the built static files
+CMD ["serve", "-s", "dist", "-l", "5173"]

@@ -1,4 +1,5 @@
 FROM maven:3.8.6-openjdk-18 as build
+
 WORKDIR /app
 
 RUN microdnf install -y nc curl unzip libaio
@@ -30,9 +31,9 @@ RUN mvn dependency:go-offline -B
 
 RUN mvn clean package -DskipTests
 
-FROM openjdk:20-jdk-slim
+FROM openjdk:18-jdk-slim
 
-RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
