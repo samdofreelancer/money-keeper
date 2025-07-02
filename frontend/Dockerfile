@@ -15,21 +15,14 @@ COPY . .
 RUN npx vite build --mode ci
 
 # Production stage
-FROM node:18-alpine AS production
+FROM nginx:alpine AS production
 
-RUN apk add --no-cache curl netcat-openbsd
+# Remove unnecessary packages and use nginx to serve static files
 
-WORKDIR /app
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Install serve to serve static files
-RUN npm install -g serve
+EXPOSE 80
 
-# Copy built files from build stage
-COPY --from=build /app/dist ./dist
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD wget -q --spider http://localhost || exit 1
 
-EXPOSE 5173
-
-HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 CMD nc -z localhost 5173 || exit 1
-
-# Serve the built static files
-CMD ["serve", "-s", "dist", "-l", "5173"]
+CMD ["nginx", "-g", "daemon off;"]
