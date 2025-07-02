@@ -69,7 +69,7 @@
           data-testid="column-balance"
         >
           <template #default="{ row }">
-            {{ formatCurrency(row.balance) }}
+            {{ formatCurrency(row.balance, row.currency) }}
           </template>
         </el-table-column>
 
@@ -131,15 +131,10 @@
         </el-form-item>
 
         <el-form-item label="Currency" prop="currency" data-testid="form-item-currency">
-          <el-select v-model="accountForm.currency" placeholder="Select currency" data-testid="select-account-currency">
-            <el-option
-              v-for="currency in supportedCurrencies"
-              :key="currency.id"
-              :label="currency.name"
-              :value="currency.code"
-              data-testid="option-account-currency"
-            />
-          </el-select>
+          <CurrencySelector
+            v-model="accountForm.currency"
+            :currencies="supportedCurrencies"
+          />
         </el-form-item>
 
         <el-form-item label="Description" prop="description" data-testid="form-item-description">
@@ -186,6 +181,7 @@ import { accountApi } from '@/api/account'
 import type { FormInstance } from 'element-plus'
 import type { Account, AccountCreate } from '@/stores/account'
 import { accountTypes } from '@/constants/accountTypes'
+import CurrencySelector from '@/components/CurrencySelector.vue'
 
 const accountStore = useAccountStore()
 const dialogVisible = ref(false)
@@ -272,8 +268,16 @@ function getIconColor(type: string) {
   }
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+function formatCurrency(amount: number, currencyCode: string = 'USD') {
+  if (!currencyCode || typeof currencyCode !== 'string') {
+    currencyCode = 'USD'
+  }
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(amount)
+  } catch (e) {
+    console.warn(`Invalid currency code: ${currencyCode}, falling back to USD`)
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+  }
 }
 
 function showCreateDialog() {

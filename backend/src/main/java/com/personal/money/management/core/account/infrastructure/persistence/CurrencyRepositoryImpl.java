@@ -41,6 +41,6 @@ public class CurrencyRepositoryImpl implements CurrencyRepository {
     }
 
     private Currency toDomain(CurrencyEntity entity) {
-        return new Currency(entity.getId(), entity.getCode(), entity.getName());
+        return new Currency(entity.getId(), entity.getCode(), entity.getName(), entity.getSymbol(), entity.getFlag());
     }
 }
