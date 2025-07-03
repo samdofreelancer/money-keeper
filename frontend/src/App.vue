@@ -28,6 +28,10 @@
           <el-icon><TrendCharts /></el-icon>
           <span>Reports</span>
         </el-menu-item>
+        <el-menu-item index="video-text-recognition">
+          <el-icon><TrendCharts /></el-icon>
+          <span>Text Recognition</span>
+        </el-menu-item>
       </el-menu>
     </aside>
     
@@ -78,6 +82,9 @@ function updateActiveMenu() {
   } else if (path.startsWith('/reports')) {
     activeMenu.value = 'reports'
     activeMenuLabel.value = 'Reports'
+  } else if (path.startsWith('/video-text-recognition')) {
+    activeMenu.value = 'video-text-recognition'
+    activeMenuLabel.value = 'Video Text Recognition'
   } else {
     activeMenu.value = 'categories'
     activeMenuLabel.value = 'Categories'
