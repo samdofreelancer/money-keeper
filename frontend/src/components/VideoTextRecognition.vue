@@ -1,121 +1,106 @@
 <template>
   <div class="video-text-recognition">
-    <h3>Real-time Video Text Recognition</h3>
-    <video ref="video" autoplay muted playsinline width="400" height="300" class="video-element"></video>
-    <canvas ref="canvas" width="400" height="300" style="display:none;"></canvas>
-    <div class="recognized-text">
-      <h4>Recognized Text:</h4>
-      <pre>{{ recognizedText }}</pre>
-    </div>
-    <div class="processed-text">
-      <h4>Processed Text from Backend:</h4>
-      <pre>{{ processedText }}</pre>
+    <div class="chat-container" ref="chatContainer">
+      <div v-for="(message, index) in messages" :key="index" class="chat-message">
+        <div class="timestamp">{{ message.timestamp }}</div>
+        <div class="text">{{ message.text }}</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import Tesseract from 'tesseract.js'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
-const video = ref<HTMLVideoElement | null>(null)
-const canvas = ref<HTMLCanvasElement | null>(null)
-const recognizedText = ref('')
-const processedText = ref('')
-
-let ws: WebSocket | null = null
-let stream: MediaStream | null = null
-let ocrInterval: number | null = null
-
-function startWebSocket() {
-  ws = new WebSocket('ws://localhost:8080/ws/recognition')
-  ws.onopen = () => {
-    console.log('WebSocket connected')
-  }
-  ws.onmessage = (event) => {
-    processedText.value = event.data
-  }
-  ws.onclose = () => {
-    console.log('WebSocket disconnected')
-  }
-  ws.onerror = (error) => {
-    console.error('WebSocket error:', error)
-  }
+interface Message {
+  timestamp: string
+  text: string
 }
 
-async function startVideo() {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true })
-    if (video.value) {
-      video.value.srcObject = stream
+const messages = ref<Message[]>([])
+
+let eventSource: EventSource | null = null
+const chatContainer = ref<HTMLElement | null>(null)
+
+function startSSE() {
+  eventSource = new EventSource('http://localhost:8080/api/stream/processed-text')
+  eventSource.addEventListener('processed-text', async (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      messages.value.push({
+        timestamp: data.timestamp || new Date().toLocaleTimeString(),
+        text: data.text || event.data
+      })
+    } catch {
+      messages.value.push({
+        timestamp: new Date().toLocaleTimeString(),
+        text: event.data
+      })
     }
-  } catch (err) {
-    console.error('Error accessing webcam:', err)
-  }
-}
-
-async function performOCR() {
-  if (!video.value || !canvas.value) return
-  const ctx = canvas.value.getContext('2d')
-  if (!ctx) return
-
-  ctx.drawImage(video.value, 0, 0, canvas.value.width, canvas.value.height)
-  const imageData = canvas.value.toDataURL('image/png')
-
-  try {
-    const result = await Tesseract.recognize(imageData, 'eng', { logger: m => {} })
-    const text = result.data.text.trim()
-    if (text && text !== recognizedText.value) {
-      recognizedText.value = text
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(text)
-      }
+    await nextTick()
+    if (chatContainer.value) {
+      chatContainer.value.scrollTop = chatContainer.value.scrollHeight
     }
-  } catch (err) {
-    console.error('OCR error:', err)
+  })
+  eventSource.onerror = (error) => {
+    console.error('SSE error:', error)
+    if (eventSource) {
+      eventSource.close()
+    }
   }
 }
 
-onMounted(async () => {
-  startWebSocket()
-  await startVideo()
-  ocrInterval = window.setInterval(performOCR, 3000) // OCR every 3 seconds
+onMounted(() => {
+  startSSE()
 })
 
 onBeforeUnmount(() => {
-  if (ws) {
-    ws.close()
-  }
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop())
-  }
-  if (ocrInterval) {
-    clearInterval(ocrInterval)
+  if (eventSource) {
+    eventSource.close()
   }
 })
 </script>
 
 <style scoped>
 .video-text-recognition {
-  max-width: 420px;
-  margin: 20px auto;
-  text-align: center;
+  height: 100vh;
+  max-width: 100vw;
+  margin: 0;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-.video-element {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.recognized-text, .processed-text {
-  margin-top: 10px;
+.chat-container {
+  flex: 1;
   background: #f5f5f5;
   padding: 10px;
   border-radius: 4px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  min-height: 50px;
+  overflow-y: auto;
   font-family: monospace;
   font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.text {
+  font-size: 14px;
+  color: #333;
 }
 </style>

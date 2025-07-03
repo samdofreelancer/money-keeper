@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
 
+/* WebSocketConfig disabled for SSE migration
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -16,6 +17,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/recognition").setAllowedOriginPatterns("*").withSockJS();
+        // Added CORS allowed origins for localhost and all origins for testing
+        registry.addEndpoint("/ws/recognition")
+                .setAllowedOriginPatterns("http://localhost:3000", "http://localhost:5173", "*")
+                .withSockJS();
     }
 }
+*/

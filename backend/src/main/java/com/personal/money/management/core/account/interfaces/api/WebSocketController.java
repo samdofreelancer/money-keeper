@@ -1,3 +1,4 @@
+/* WebSocketController disabled for SSE migration
 package com.personal.money.management.core.account.interfaces.api;
 
 import com.personal.money.management.core.account.application.KafkaProducerService;
@@ -19,3 +20,4 @@ public class WebSocketController {
         kafkaProducerService.sendRecognizedText(text);
     }
 }
+*/
