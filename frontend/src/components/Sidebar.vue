@@ -13,6 +13,9 @@
       <li>
         <router-link to="/accounts" active-class="active-link">Accounts</router-link>
       </li>
+      <li>
+        <router-link to="/video-text-recognition" active-class="active-link" exact-active-class="active-link">Video Text Recognition</router-link>
+      </li>
     </ul>
   </div>
 </template>
