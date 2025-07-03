@@ -1,10 +1,7 @@
 <template>
   <div class="video-text-recognition">
     <div class="chat-container" ref="chatContainer">
-      <div v-for="(message, index) in messages" :key="index" class="chat-message">
-        <div class="timestamp">{{ message.timestamp }}</div>
-        <div class="text">{{ message.text }}</div>
-      </div>
+      <p class="text">{{ recognizedText }}</p>
     </div>
   </div>
 </template>
@@ -12,12 +9,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
-interface Message {
-  timestamp: string
-  text: string
-}
-
-const messages = ref<Message[]>([])
+const recognizedText = ref('')
 
 let eventSource: EventSource | null = null
 const chatContainer = ref<HTMLElement | null>(null)
@@ -27,15 +19,9 @@ function startSSE() {
   eventSource.addEventListener('processed-text', async (event) => {
     try {
       const data = JSON.parse(event.data)
-      messages.value.push({
-        timestamp: data.timestamp || new Date().toLocaleTimeString(),
-        text: data.text || event.data
-      })
+      recognizedText.value += (data.text || event.data) + ' '
     } catch {
-      messages.value.push({
-        timestamp: new Date().toLocaleTimeString(),
-        text: event.data
-      })
+      recognizedText.value += event.data + ' '
     }
     await nextTick()
     if (chatContainer.value) {
@@ -91,12 +77,6 @@ onBeforeUnmount(() => {
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
   text-align: left;
-}
-
-.timestamp {
-  font-size: 10px;
-  color: #888;
-  margin-bottom: 2px;
 }
 
 .text {
