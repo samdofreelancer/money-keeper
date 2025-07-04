@@ -70,6 +70,7 @@ jobs:
 
       - name: Verify Oracle migration success
         run: |
+          docker network create money-keeper-net || true
           docker run --rm --network money-keeper-net gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF | grep -q '[0-9]'
           SET HEADING OFF;
           SET FEEDBACK OFF;
