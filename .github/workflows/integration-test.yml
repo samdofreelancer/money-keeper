@@ -73,6 +73,16 @@ jobs:
           if ! docker network inspect money-keeper-net > /dev/null 2>&1; then
             docker network create money-keeper-net
           fi
+          echo "Waiting for Oracle container to be running..."
+          for i in {1..30}; do
+            CONTAINER_ID=$(docker ps -qf "name=oracle")
+            if [ ! -z "$CONTAINER_ID" ]; then
+              echo "Oracle container is running: $CONTAINER_ID"
+              break
+            fi
+            echo "Waiting for Oracle container to start... ($i/30)"
+            sleep 10
+          done
           echo "Testing connectivity to Oracle..."
           docker exec oracle bash -c "echo exit | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1"
           echo "Running migration verification query..."
