@@ -4,6 +4,7 @@ services:
     ports:
       - "1522:1521"
     environment:
+      ORACLE_USER: system
       ORACLE_PASSWORD: "${ORACLE_PASSWORD}"
     restart: unless-stopped
     command: bash -c "rm -f /opt/oracle/diag/tnslsnr/*/listener/alert/log.xml && /bin/sh /opt/oracle/scripts/startup/startup.sh"
