@@ -64,7 +64,13 @@ jobs:
           done
           echo "Waiting for Oracle database to be open..."
           for i in {1..30}; do
-            STATUS=$(docker exec oracle bash -c "echo 'set heading off; set feedback off; select status from v\\$instance;' | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1")
+            CONTAINER_ID=$(docker ps -qf "name=oracle")
+            if [ -z "$CONTAINER_ID" ]; then
+              echo "Oracle container not found. Waiting... ($i/30)"
+              sleep 10
+              continue
+            fi
+            STATUS=$(docker exec $CONTAINER_ID bash -c "echo 'set heading off; set feedback off; select status from v\\$instance;' | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1")
             if echo "$STATUS" | grep -q "OPEN"; then
               echo "Oracle database is open."
               break
