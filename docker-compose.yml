@@ -21,6 +21,7 @@ services:
       oracle:
         condition: service_healthy
     command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -locations=filesystem:/flyway/common,filesystem:/flyway/sql -baselineOnMigrate=true migrate
+    restart: on-failure
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
     volumes:
