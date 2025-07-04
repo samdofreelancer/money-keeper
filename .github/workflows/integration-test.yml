@@ -27,7 +27,12 @@ jobs:
 
       - name: Verify Oracle migration success
         run: |
-          echo "SELECT COUNT(*) FROM CORE.currency;" | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 | grep -q '[0-9]'
+          docker run --rm --network host gvenzl/oracle-xe sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@//localhost:1521/XEPDB1 <<EOF | grep -q '[0-9]'
+          SET HEADING OFF;
+          SET FEEDBACK OFF;
+          SELECT COUNT(*) FROM CORE.currency;
+          EXIT;
+          EOF
         shell: bash
 
       - name: Set up Node.js
