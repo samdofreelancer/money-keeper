@@ -20,3 +20,5 @@ INSERT INTO CORE.currency (code, name, symbol, flag) VALUES
 ('GBP', 'British Pound', '£', 'https://flagcdn.com/w40/gb.png');
 INSERT INTO CORE.currency (code, name, symbol, flag) VALUES
 ('AUD', 'Australian Dollar', '$', 'https://flagcdn.com/w40/au.png');
+
+SELECT * FROM CORE.currency;
