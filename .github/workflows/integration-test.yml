@@ -20,6 +20,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Remove any container using port 1521
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "publish=1521")
+          if [ ! -z "$CONTAINER_ID" ]; then
+            docker rm -f $CONTAINER_ID
+          fi
+
       - name: Remove existing Oracle container if any
         run: docker rm -f oracle || true
 
