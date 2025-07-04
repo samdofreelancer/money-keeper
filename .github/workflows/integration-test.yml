@@ -65,7 +65,7 @@ jobs:
             exit 1
           fi
           echo "Querying CORE.currency table for data count..."
-          docker exec $CONTAINER_ID sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 <<EOF > result.txt
+          docker exec $CONTAINER_ID sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 <<EOF > currency_count.txt
           SET HEADING OFF;
           SET FEEDBACK OFF;
           SET PAGESIZE 0;
@@ -74,13 +74,24 @@ jobs:
           EXIT;
           EOF
           echo "Data count in CORE.currency table:"
-          cat result.txt
-          if grep -q '[0-9]' result.txt; then
+          cat currency_count.txt
+          if grep -q '[0-9]' currency_count.txt; then
             echo "Data check succeeded."
           else
             echo "Data check failed."
             exit 1
           fi
+          echo "Querying Flyway schema history for applied migrations..."
+          docker exec $CONTAINER_ID sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 <<EOF > flyway_history.txt
+          SET HEADING ON;
+          SET FEEDBACK OFF;
+          SET PAGESIZE 100;
+          SET LINESIZE 100;
+          SELECT version, description, success FROM CORE.flyway_schema_history ORDER BY installed_rank;
+          EXIT;
+          EOF
+          echo "Flyway schema history:"
+          cat flyway_history.txt
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
