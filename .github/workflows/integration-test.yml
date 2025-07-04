@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPRING_PROFILES_ACTIVE: ci
-      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1521/XEPDB1
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
@@ -55,23 +55,25 @@ jobs:
         run: |
           echo "Waiting for Oracle to be ready..."
           for i in {1..30}; do
-            docker run --rm --network host -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${ORACLE_PASSWORD}@oracle:1521/XEPDB1" && break
+            docker run --rm --network host -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${ORACLE_PASSWORD}@oracle:1522/XEPDB1" && break
             echo "Waiting for Oracle to start... ($i/30)"
             sleep 10
           done
 
       - name: Start Flyway service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d flyway
+        env:
+          SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
 
       - name: Verify Oracle migration success
         run: |
           echo "Waiting for Oracle to be ready..."
           for i in {1..30}; do
-            docker run --rm --network host gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1" && break
+            docker run --rm --network host -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1522/XEPDB1" && break
             echo "Waiting for Oracle to start... ($i/30)"
             sleep 10
           done
-          docker run --rm --network host gvenzl/oracle-xe sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF | grep -q '[0-9]'
+          docker run --rm --network host gvenzl/oracle-xe sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1522/XEPDB1 <<EOF | grep -q '[0-9]'
           SET HEADING OFF;
           SET FEEDBACK OFF;
           SELECT COUNT(*) FROM CORE.currency;
