@@ -53,13 +53,13 @@ jobs:
 
       - name: Wait for Oracle to be ready
         run: |
-          echo "Waiting for Oracle to be ready..."
+          echo "Waiting for Oracle port 1522 to be open..."
           for i in {1..30}; do
-            docker run --rm --network host -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${ORACLE_PASSWORD}@oracle:1522/XEPDB1"
-            if [ $? -eq 0 ]; then
+            if nc -z oracle 1522; then
+              echo "Port 1522 is open."
               break
             fi
-            echo "Waiting for Oracle to start... ($i/30)"
+            echo "Port 1522 is not open yet. Waiting... ($i/30)"
             sleep 10
           done
 
