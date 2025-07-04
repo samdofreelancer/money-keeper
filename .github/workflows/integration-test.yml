@@ -20,10 +20,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Start services with docker-compose
-        run: docker compose up -d
-        env:
-          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+      - name: Start Oracle service
+        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
+
+      - name: Wait for Oracle to be ready
+        run: |
+          echo "Waiting for Oracle to be ready..."
+          for i in {1..30}; do
+            docker run --rm --network host gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1" && break
+            echo "Waiting for Oracle to start... ($i/30)"
+            sleep 10
+          done
+
+      - name: Start Flyway service
+        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d flyway
 
       - name: Verify Oracle migration success
         run: |
