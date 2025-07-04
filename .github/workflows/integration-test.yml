@@ -64,7 +64,8 @@ jobs:
           done
 
       - name: Run Flyway repair
-        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker run --rm --network money-keeper-net -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} flyway/flyway:latest repair -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${{ secrets.ORACLE_PASSWORD_SECRET }}
+        run: |
+          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose run --rm flyway repair -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${{ secrets.ORACLE_PASSWORD_SECRET }}
 
       - name: Start Flyway service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d flyway
