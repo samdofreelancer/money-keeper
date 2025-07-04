@@ -25,6 +25,11 @@ jobs:
         env:
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
 
+      - name: Verify Oracle migration success
+        run: |
+          echo "SELECT COUNT(*) FROM CORE.categories;" | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 | grep -q '[0-9]'
+        shell: bash
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

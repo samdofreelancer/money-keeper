@@ -18,6 +18,9 @@ services:
     depends_on:
       oracle:
         condition: service_healthy
-    command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} migrate
+    command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -locations=filesystem:/flyway/common,filesystem:/flyway/sql migrate
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+    volumes:
+      - ./backend/src/main/resources/db/migration/oracle:/flyway/sql
+      - ./backend/src/main/resources/db/migration/common:/flyway/common
