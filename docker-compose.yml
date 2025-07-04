@@ -12,15 +12,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+    networks:
+      - money-keeper-net
 
   flyway:
     image: flyway/flyway:latest
     depends_on:
       oracle:
         condition: service_healthy
-    command: -url=jdbc:oracle:thin:@oracle:1522/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -locations=filesystem:/flyway/common,filesystem:/flyway/sql -baselineOnMigrate=true migrate
+    command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -locations=filesystem:/flyway/common,filesystem:/flyway/sql -baselineOnMigrate=true migrate
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
     volumes:
       - ./backend/src/main/resources/db/migration/oracle:/flyway/sql
       - ./backend/src/main/resources/db/migration/common:/flyway/common
+    networks:
+      - money-keeper-net
+
+networks:
+  money-keeper-net:
+    driver: bridge
