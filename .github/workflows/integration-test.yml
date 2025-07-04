@@ -85,24 +85,14 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
 
-      - name: Verify Oracle migration success
+      - name: Check data in Oracle after migration
         run: |
-          if ! docker network inspect money-keeper-net > /dev/null 2>&1; then
-            docker network create money-keeper-net
+          CONTAINER_ID=$(docker ps -qf "name=oracle")
+          if [ -z "$CONTAINER_ID" ]; then
+            echo "Oracle container not found. Exiting."
+            exit 1
           fi
-          echo "Waiting for Oracle container to be running..."
-          for i in {1..30}; do
-            CONTAINER_ID=$(docker ps -qf "name=oracle")
-            if [ ! -z "$CONTAINER_ID" ]; then
-              echo "Oracle container is running: $CONTAINER_ID"
-              break
-            fi
-            echo "Waiting for Oracle container to start... ($i/30)"
-            sleep 10
-          done
-          echo "Testing connectivity to Oracle..."
-          docker exec $CONTAINER_ID bash -c "echo exit | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1"
-          echo "Running migration verification query..."
+          echo "Querying CORE.currency table for data count..."
           docker exec $CONTAINER_ID sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 <<EOF > result.txt
           SET HEADING OFF;
           SET FEEDBACK OFF;
@@ -111,12 +101,12 @@ jobs:
           SELECT COUNT(*) FROM CORE.currency;
           EXIT;
           EOF
-          echo "Oracle migration verification completed. Row count in CORE.currency table:"
+          echo "Data count in CORE.currency table:"
           cat result.txt
           if grep -q '[0-9]' result.txt; then
-            echo "Migration verification succeeded."
+            echo "Data check succeeded."
           else
-            echo "Migration verification failed."
+            echo "Data check failed."
             exit 1
           fi
 
