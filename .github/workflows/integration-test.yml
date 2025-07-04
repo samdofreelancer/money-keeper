@@ -22,13 +22,31 @@ jobs:
 
       - name: Remove any container using port 1521
         run: |
+          echo "Checking for containers using port 1521..."
           CONTAINER_ID=$(docker ps -q --filter "publish=1521")
           if [ ! -z "$CONTAINER_ID" ]; then
+            echo "Stopping and removing container $CONTAINER_ID"
             docker rm -f $CONTAINER_ID
+          else
+            echo "No container using port 1521 found."
           fi
 
       - name: Remove existing Oracle container if any
-        run: docker rm -f oracle || true
+        run: |
+          echo "Removing existing Oracle container if any..."
+          docker rm -f oracle || true
+
+      - name: Wait for port 1521 to be free
+        run: |
+          echo "Waiting for port 1521 to be free..."
+          for i in {1..10}; do
+            if ! ss -ltn | grep -q ':1521'; then
+              echo "Port 1521 is free."
+              break
+            fi
+            echo "Port 1521 is still in use. Waiting... ($i/10)"
+            sleep 5
+          done
 
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
