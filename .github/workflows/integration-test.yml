@@ -20,8 +20,58 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Remove any container using port 1521
+        run: |
+          echo "Checking for containers using port 1521..."
+          CONTAINER_ID=$(docker ps -q --filter "publish=1521")
+          if [ ! -z "$CONTAINER_ID" ]; then
+            echo "Stopping and removing container $CONTAINER_ID"
+            docker rm -f $CONTAINER_ID
+          else
+            echo "No container using port 1521 found."
+          fi
+
+      - name: Remove existing Oracle container if any
+        run: |
+          echo "Removing existing Oracle container if any..."
+          docker rm -f oracle || true
+
+      - name: Wait for port 1521 to be free
+        run: |
+          echo "Waiting for port 1521 to be free..."
+          for i in {1..10}; do
+            if ! ss -ltn | grep -q ':1521'; then
+              echo "Port 1521 is free."
+              break
+            fi
+            echo "Port 1521 is still in use. Waiting... ($i/10)"
+            sleep 5
+          done
+
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
+
+      - name: Wait for Oracle to be ready
+        run: |
+          echo "Waiting for Oracle port 1522 to be open..."
+          for i in {1..30}; do
+            if nc -z localhost 1522; then
+              echo "Port 1522 is open."
+              break
+            fi
+            echo "Port 1522 is not open yet. Waiting... ($i/30)"
+            sleep 10
+          done
+          echo "Waiting for Oracle database to be open..."
+          for i in {1..30}; do
+            STATUS=$(docker exec oracle bash -c "echo 'set heading off; set feedback off; select status from v\\$instance;' | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1")
+            if echo "$STATUS" | grep -q "OPEN"; then
+              echo "Oracle database is open."
+              break
+            fi
+            echo "Oracle database is not open yet. Waiting... ($i/30)"
+            sleep 10
+          done
 
       - name: Run Flyway migration
         run: |
