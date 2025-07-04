@@ -63,20 +63,10 @@ jobs:
             sleep 10
           done
 
-      - name: Start Flyway service
-        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway
+      - name: Run Flyway migration
+        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose run --rm flyway
         env:
           SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
-
-      - name: Output Flyway logs
-        run: |
-          CONTAINER_ID=$(docker ps -qf "name=flyway")
-          if [ ! -z "$CONTAINER_ID" ]; then
-            echo "Flyway container logs:"
-            docker logs $CONTAINER_ID
-          else
-            echo "Flyway container not found."
-          fi
 
       - name: Verify Oracle migration success
         run: |
