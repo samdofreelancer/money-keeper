@@ -51,34 +51,6 @@ jobs:
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
-      - name: Wait for Oracle to be ready
-        run: |
-          echo "Waiting for Oracle port 1522 to be open..."
-          for i in {1..30}; do
-            if nc -z localhost 1522; then
-              echo "Port 1522 is open."
-              break
-            fi
-            echo "Port 1522 is not open yet. Waiting... ($i/30)"
-            sleep 10
-          done
-          echo "Waiting for Oracle database to be open..."
-          for i in {1..30}; do
-            CONTAINER_ID=$(docker ps -qf "name=oracle")
-            if [ -z "$CONTAINER_ID" ]; then
-              echo "Oracle container not found. Waiting... ($i/30)"
-              sleep 10
-              continue
-            fi
-            STATUS=$(docker exec $CONTAINER_ID bash -c "echo 'set heading off; set feedback off; select status from v\\$instance;' | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1")
-            if echo "$STATUS" | grep -q "OPEN"; then
-              echo "Oracle database is open."
-              break
-            fi
-            echo "Oracle database is not open yet. Waiting... ($i/30)"
-            sleep 10
-          done
-
       - name: Run Flyway migration
         run: |
           ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose run --rm flyway
