@@ -63,10 +63,6 @@ jobs:
             sleep 10
           done
 
-      - name: Run Flyway repair
-        run: |
-          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose run --rm flyway repair -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${{ secrets.ORACLE_PASSWORD_SECRET }}
-
       - name: Start Flyway service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d flyway
         env:
