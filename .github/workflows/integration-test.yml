@@ -73,8 +73,10 @@ jobs:
           if ! docker network inspect money-keeper-net > /dev/null 2>&1; then
             docker network create money-keeper-net
           fi
-          set -o pipefail
-          docker run --rm --network money-keeper-net gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF | tee result.txt | grep -q '[0-9]'
+          echo "Testing connectivity to Oracle..."
+          docker run --rm --network money-keeper-net gvenzl/oracle-xe:21-slim bash -c "echo exit | sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1"
+          echo "Running migration verification query..."
+          docker run --rm --network money-keeper-net gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF > result.txt
           SET HEADING OFF;
           SET FEEDBACK OFF;
           SET PAGESIZE 0;
@@ -84,6 +86,12 @@ jobs:
           EOF
           echo "Oracle migration verification completed. Row count in CORE.currency table:"
           cat result.txt
+          if grep -q '[0-9]' result.txt; then
+            echo "Migration verification succeeded."
+          else
+            echo "Migration verification failed."
+            exit 1
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
