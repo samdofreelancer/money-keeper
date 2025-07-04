@@ -51,9 +51,24 @@ jobs:
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
-      - name: Run Flyway migration
+      - name: Run Flyway migration with retries
         run: |
-          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose run --rm flyway
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          until [ $RETRY_COUNT -ge $MAX_RETRIES ]
+          do
+            ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose run --rm flyway && break
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            echo "Flyway migration failed. Retry #$RETRY_COUNT..."
+            echo "Restarting Oracle container..."
+            docker restart $(docker ps -qf "name=oracle")
+            echo "Waiting 30 seconds for Oracle to stabilize..."
+            sleep 30
+          done
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Flyway migration failed after $MAX_RETRIES attempts."
+            exit 1
+          fi
         env:
           SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
 
