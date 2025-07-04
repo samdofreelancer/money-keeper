@@ -70,9 +70,11 @@ jobs:
 
       - name: Verify Oracle migration success
         run: |
-          docker run --rm --network host gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF | grep -q '[0-9]'
+          docker run --rm --network money-keeper-net gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF | grep -q '[0-9]'
           SET HEADING OFF;
           SET FEEDBACK OFF;
+          SET PAGESIZE 0;
+          SET LINESIZE 100;
           SELECT COUNT(*) FROM CORE.currency;
           EXIT;
           EOF
