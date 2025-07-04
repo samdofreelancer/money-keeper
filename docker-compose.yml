@@ -6,6 +6,7 @@ services:
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
     restart: unless-stopped
+    command: bash -c "rm -f /opt/oracle/diag/tnslsnr/*/listener/alert/log.xml && /bin/sh /opt/oracle/scripts/startup/startup.sh"
     healthcheck:
       test: ["CMD", "bash", "-c", "echo select 1 from dual | sqlplus -s system/${ORACLE_PASSWORD}@localhost:1521/XEPDB1 | grep -q 1"]
       interval: 10s
