@@ -55,7 +55,7 @@ jobs:
         run: |
           echo "Waiting for Oracle port 1522 to be open..."
           for i in {1..30}; do
-            if nc -z oracle 1522; then
+            if nc -z localhost 1522; then
               echo "Port 1522 is open."
               break
             fi
