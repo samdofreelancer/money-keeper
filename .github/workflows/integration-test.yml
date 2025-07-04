@@ -55,7 +55,10 @@ jobs:
         run: |
           echo "Waiting for Oracle to be ready..."
           for i in {1..30}; do
-            docker run --rm --network host -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${ORACLE_PASSWORD}@oracle:1522/XEPDB1" > /dev/null 2>&1 && break
+            docker run --rm --network host -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe bash -c "echo exit | sqlplus -s system/${ORACLE_PASSWORD}@oracle:1522/XEPDB1"
+            if [ $? -eq 0 ]; then
+              break
+            fi
             echo "Waiting for Oracle to start... ($i/30)"
             sleep 10
           done
