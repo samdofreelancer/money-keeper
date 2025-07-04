@@ -1,6 +1,6 @@
 services:
   oracle:
-    image: gvenzl/oracle-xe:latest
+    image: gvenzl/oracle-xe:21-slim
     ports:
       - "1521:1521"
     environment:
