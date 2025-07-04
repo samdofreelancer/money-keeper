@@ -64,13 +64,13 @@ jobs:
           done
 
       - name: Start Flyway service
-        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d flyway
+        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway
         env:
           SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
 
       - name: Verify Oracle migration success
         run: |
-          docker run --rm --network host gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1522/XEPDB1 <<EOF | grep -q '[0-9]'
+          docker run --rm --network host gvenzl/oracle-xe:21-slim sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@oracle:1521/XEPDB1 <<EOF | grep -q '[0-9]'
           SET HEADING OFF;
           SET FEEDBACK OFF;
           SELECT COUNT(*) FROM CORE.currency;
