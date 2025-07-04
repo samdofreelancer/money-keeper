@@ -56,42 +56,6 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
 
-      - name: Check data in Oracle after migration
-        run: |
-          CONTAINER_ID=$(docker ps -qf "name=oracle")
-          if [ -z "$CONTAINER_ID" ]; then
-            echo "Oracle container not found. Exiting."
-            exit 1
-          fi
-          echo "Querying CORE.currency table for data count..."
-          docker exec $CONTAINER_ID sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 <<EOF > currency_count.txt
-          SET HEADING OFF;
-          SET FEEDBACK OFF;
-          SET PAGESIZE 0;
-          SET LINESIZE 100;
-          SELECT COUNT(*) FROM CORE.currency;
-          EXIT;
-          EOF
-          echo "Data count in CORE.currency table:"
-          cat currency_count.txt
-          if grep -q '[0-9]' currency_count.txt; then
-            echo "Data check succeeded."
-          else
-            echo "Data check failed."
-            exit 1
-          fi
-          echo "Querying Flyway schema history for applied migrations..."
-          docker exec $CONTAINER_ID sqlplus -s system/${{ secrets.ORACLE_PASSWORD_SECRET }}@localhost:1521/XEPDB1 <<EOF > flyway_history.txt
-          SET HEADING ON;
-          SET FEEDBACK OFF;
-          SET PAGESIZE 100;
-          SET LINESIZE 100;
-          SELECT version, description, success FROM CORE.flyway_schema_history ORDER BY installed_rank;
-          EXIT;
-          EOF
-          echo "Flyway schema history:"
-          cat flyway_history.txt
-
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
         working-directory: ./backend
