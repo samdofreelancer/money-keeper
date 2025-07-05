@@ -86,9 +86,13 @@ function generateReport() {
       try {
         // First try to get git info from GitHub Actions environment variables
         if (process.env.GITHUB_REF && process.env.GITHUB_SHA) {
-          // GITHUB_REF is like "refs/heads/main", extract branch name
-          const refParts = process.env.GITHUB_REF.split("/");
-          gitBranch = refParts[refParts.length - 1];
+          // GITHUB_REF is like "refs/heads/main" or "refs/heads/features/report/branch-name"
+          const prefix = "refs/heads/";
+          if (process.env.GITHUB_REF.startsWith(prefix)) {
+            gitBranch = process.env.GITHUB_REF.substring(prefix.length);
+          } else {
+            gitBranch = process.env.GITHUB_REF;
+          }
           gitCommitId = process.env.GITHUB_SHA;
         } else {
           gitBranch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
