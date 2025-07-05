@@ -66,6 +66,19 @@ services:
     networks:
       - money-keeper-net
 
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.53.0-noble
+    volumes:
+      - ./e2e:/e2e
+    working_dir: /e2e
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - money-keeper-net
+
 networks:
   money-keeper-net:
     driver: bridge

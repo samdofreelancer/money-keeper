@@ -68,13 +68,11 @@ jobs:
           done
 
       - name: Run e2e tests
-        run: npm run test:parallel
-        working-directory: ./e2e
+        run: docker compose run --rm e2e npm run test:parallel
 
       - name: Generate report
         if: always()
-        run: npm run report
-        working-directory: ./e2e
+        run: docker compose run --rm e2e npm run report
 
       - name: Upload report for Github Pages
         if: always()
