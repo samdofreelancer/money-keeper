@@ -154,13 +154,35 @@ When('I confirm the account delete action', async function () {
 });
 
 Given('there are accounts:', async function (this: CustomWorld, dataTable: any) {
-    const accountsPage = new AccountsPage(this.page);
-    await accountsPage.goto();
+    // Prepare accounts directly via backend API for reliability
     for (const { Name, Type, Balance } of dataTable.hashes()) {
-        if (!(await accountsPage.isAccountVisible(Name))) {
-            await accountsPage.addAccount({ name: Name, type: Type, balance: Balance });
+        // Use a unique name for each account to avoid collisions
+        const uniqueName = `${Name}-${uuidv4().slice(0, 8)}`;
+        if (!this.cleanupAccountNames) this.cleanupAccountNames = new Set<string>();
+        this.cleanupAccountNames.add(uniqueName);
+        // Check if account exists (by accountName)
+        const existing = await getAccountByName(uniqueName);
+        if (!existing) {
+            // Map human-friendly type to backend enum
+            let backendType = Type;
+            if (/e-?wallet/i.test(Type)) backendType = 'E_WALLET';
+            else if (/cash/i.test(Type)) backendType = 'CASH';
+            else if (/bank/i.test(Type)) backendType = 'BANK_ACCOUNT';
+            else if (/credit.?card/i.test(Type)) backendType = 'CREDIT_CARD';
+            else if (/investment/i.test(Type)) backendType = 'INVESTMENT';
+            else if (/other/i.test(Type)) backendType = 'OTHER';
+            await createAccount({
+                name: uniqueName,
+                type: backendType,
+                balance: Number(Balance),
+                currency: 'USD',
+                description: 'Test account created via API',
+            });
         }
     }
+    // Optionally refresh the UI
+    const accountsPage = new AccountsPage(this.page);
+    await accountsPage.goto();
 });
 
 When('I search accounts with query {string}', async function (query: string) {
