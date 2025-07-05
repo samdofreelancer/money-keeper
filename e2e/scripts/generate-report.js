@@ -72,10 +72,20 @@ function generateReport() {
       let gitBranch = "unknown";
       let gitCommitId = "unknown";
       try {
-        gitBranch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
-        gitCommitId = execSync("git rev-parse HEAD").toString().trim();
+        // First try to get git info from GitHub Actions environment variables
+        if (process.env.GITHUB_REF && process.env.GITHUB_SHA) {
+          // GITHUB_REF is like "refs/heads/main", extract branch name
+          const refParts = process.env.GITHUB_REF.split("/");
+          gitBranch = refParts[refParts.length - 1];
+          gitCommitId = process.env.GITHUB_SHA;
+        } else {
+          gitBranch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+          gitCommitId = execSync("git rev-parse HEAD").toString().trim();
+        }
       } catch (error) {
         console.warn("Failed to get git info:", error);
+        gitBranch = "unknown";
+        gitCommitId = "unknown";
       }
 
       // Add git info to metadata
@@ -95,33 +105,38 @@ function generateReport() {
         // Calculate total execution time by summing durations in JSON report files
         const reportsDir = path.join(__dirname, "..", "reports");
         let totalDurationNs = 0;
-        const files = fs.readdirSync(reportsDir);
-        for (const file of files) {
-          if (file.endsWith(".json")) {
-            try {
-              const content = fs.readFileSync(path.join(reportsDir, file), "utf-8");
-              const json = JSON.parse(content);
-              if (Array.isArray(json)) {
-                for (const feature of json) {
-                  if (feature.elements) {
-                    for (const element of feature.elements) {
-                      if (element.steps) {
-                        for (const step of element.steps) {
-                          if (step.result && step.result.duration) {
-                            totalDurationNs += step.result.duration;
+        if (fs.existsSync(reportsDir)) {
+          const files = fs.readdirSync(reportsDir);
+          for (const file of files) {
+            if (file.endsWith(".json")) {
+              try {
+                const content = fs.readFileSync(path.join(reportsDir, file), "utf-8");
+                const json = JSON.parse(content);
+                if (Array.isArray(json)) {
+                  for (const feature of json) {
+                    if (feature.elements) {
+                      for (const element of feature.elements) {
+                        if (element.steps) {
+                          for (const step of element.steps) {
+                            if (step.result && step.result.duration) {
+                              totalDurationNs += step.result.duration;
+                            }
                           }
                         }
                       }
                     }
                   }
                 }
+              } catch (error) {
+                console.warn(`Failed to parse report file ${file}:`, error);
               }
-            } catch (error) {
-              console.warn(`Failed to parse report file ${file}:`, error);
             }
           }
+          totalExecutionTime = formatDuration(totalDurationNs);
+        } else {
+          console.warn(`Reports directory does not exist at ${reportsDir}`);
+          totalExecutionTime = "unknown";
         }
-        totalExecutionTime = formatDuration(totalDurationNs);
       }
 
       reporter.generate({
