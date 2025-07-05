@@ -33,25 +33,31 @@ jobs:
       - name: Create .env file
         run: cp .env.example .env
         working-directory: ./e2e
-        
-      - name: Wait for Oracle to be fully ready
+
+      - name: Wait for Backend to be healthy
         run: |
-          echo "Waiting for Oracle to be fully ready..."
+          echo "Waiting for Backend to be healthy..."
           for i in {1..30}; do
-            docker exec oracle bash -c "echo select 1 from dual | sqlplus -s system/${ORACLE_PASSWORD}@localhost:1521/XEPDB1 | grep -q 1" && break
-            echo "Oracle not ready yet, waiting..."
+            if curl -f http://localhost:8080/actuator/health; then
+              echo "Backend is healthy"
+              break
+            fi
+            echo "Waiting for Backend..."
             sleep 10
           done
 
-      - name: Run Flyway migration with retries
+      - name: Wait for Frontend to be healthy
         run: |
-          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway
-        env:
-          SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
+          echo "Waiting for Frontend to be healthy..."
+          for i in {1..30}; do
+            if curl -f http://localhost:5173; then
+              echo "Frontend is healthy"
+              break
+            fi
+            echo "Waiting for Frontend..."
+            sleep 10
+          done
 
-      - name: Start Backend and Frontend containers
-        run: docker compose up -d backend frontend
-        
       - name: Run e2e tests
         run: npm run test:parallel
         working-directory: ./e2e
