@@ -26,11 +26,15 @@ function runTests() {
 
 async function main() {
   const startTime = Date.now();
+  let totalExecutionTimeMs = 0;
   try {
     await runTests();
+  } catch (error) {
+    console.error("Test run failed:", error);
+  } finally {
     const endTime = Date.now();
-    const totalExecutionTimeMs = endTime - startTime;
-    console.log(`totalExecutionTimeMs: `, totalExecutionTimeMs)
+    totalExecutionTimeMs = endTime - startTime;
+    console.log(`totalExecutionTimeMs: `, totalExecutionTimeMs);
 
     // Pass totalExecutionTimeMs to generate-report.js
     // We will modify generate-report.js to accept this as an environment variable
@@ -46,9 +50,6 @@ async function main() {
       console.error("generate-report.js does not export a callable function");
       process.exit(1);
     }
-  } catch (error) {
-    console.error("Error running tests or generating report:", error);
-    process.exit(1);
   }
 }
 
