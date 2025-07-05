@@ -9,50 +9,58 @@ import {
 import { logger } from "../support/logger";
 import { getAccountByName, deleteAccountById } from "../api/accountApiHelper";
 
-After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
-  try {
-    // Cleanup by ID for categories created via API
-    if (this.createdCategoryIds && this.createdCategoryIds.length > 0) {
-      logger.info(
-        `Cleaning up ${this.createdCategoryIds.length} categories by ID.`
-      );
-      const deletePromises = this.createdCategoryIds.map((id) =>
-        deleteCategory(id)
+// --- Category cleanup logic ---
+async function cleanupCategories(world: CustomWorld) {
+  // Cleanup by ID for categories created via API
+  if (world.createdCategoryIds && world.createdCategoryIds.length > 0) {
+    logger.info(
+      `Cleaning up ${world.createdCategoryIds.length} categories by ID.`
+    );
+    const deletePromises = world.createdCategoryIds.map((id) =>
+      deleteCategory(id)
+    );
+    await Promise.all(deletePromises);
+    world.createdCategoryIds = []; // Reset after cleanup
+  }
+
+  // Fallback cleanup by name for categories created via UI
+  if (world.createdCategoryNames && world.createdCategoryNames.length > 0) {
+    logger.info(
+      `Cleaning up ${world.createdCategoryNames.length} categories by name.`
+    );
+    const allCategories: Category[] = await getAllCategories();
+    const categoriesToDelete = allCategories.filter((category) =>
+      world.createdCategoryNames.includes(category.name)
+    );
+
+    if (categoriesToDelete.length > 0) {
+      const deletePromises = categoriesToDelete.map((category) =>
+        deleteCategory(category.id)
       );
       await Promise.all(deletePromises);
-      this.createdCategoryIds = []; // Reset after cleanup
     }
+    world.createdCategoryNames = []; // Reset after cleanup
+  }
+}
 
-    // Fallback cleanup by name for categories created via UI
-    if (this.createdCategoryNames && this.createdCategoryNames.length > 0) {
-      logger.info(
-        `Cleaning up ${this.createdCategoryNames.length} categories by name.`
-      );
-      const allCategories: Category[] = await getAllCategories();
-      const categoriesToDelete = allCategories.filter((category) =>
-        this.createdCategoryNames.includes(category.name)
-      );
-
-      if (categoriesToDelete.length > 0) {
-        const deletePromises = categoriesToDelete.map((category) =>
-          deleteCategory(category.id)
-        );
-        await Promise.all(deletePromises);
+// --- Account cleanup logic ---
+async function cleanupAccounts(world: CustomWorld) {
+  if (world.cleanupAccountNames && world.cleanupAccountNames.size > 0) {
+    for (const name of world.cleanupAccountNames) {
+      const account = await getAccountByName(name);
+      if (account) {
+        await deleteAccountById(account.id);
+        logger.info(`Deleted account: ${name} (id: ${account.id})`);
       }
-      this.createdCategoryNames = []; // Reset after cleanup
     }
+    world.cleanupAccountNames.clear();
+  }
+}
 
-    // --- Account cleanup ---
-    if (this.cleanupAccountNames && this.cleanupAccountNames.size > 0) {
-      for (const name of this.cleanupAccountNames) {
-        const account = await getAccountByName(name);
-        if (account) {
-          await deleteAccountById(account.id);
-          logger.info(`Deleted account: ${name} (id: ${account.id})`);
-        }
-      }
-      this.cleanupAccountNames.clear();
-    }
+After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
+  try {
+    await cleanupCategories(this);
+    await cleanupAccounts(this);
   } catch (error) {
     logger.error("Error during cleanup:", error);
     // We log the error but do not rethrow, to avoid masking other test failures

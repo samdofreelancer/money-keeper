@@ -19,19 +19,19 @@ Feature: Accounts Management
   Scenario: Add a new account
     When I click the button "Add Account"
     And I fill in the account form with:
-      | Name   | Test Account |
+      | Name   | Create Test Account |
       | Type   | E-Wallet         |
       | Balance| 1000         |
     And I submit the account form
-    Then I should see "Test Account" in the accounts table
+    Then I should see "Create Test Account" in the accounts table
 
   Scenario: Update an existing account
-    Given there is an account named "Test Account"
-    When I click the edit button for account "Test Account"
-    And I update the account name to "Updated Account"
+    Given there is an account named "Update Test Account"
+    When I click the edit button for account "Update Test Account"
+    And I update the account name to "Updated Test Account"
     And I submit the account form
-    Then I should see "Updated Account" in the accounts table
-    And I should not see "Test Account" in the accounts table
+    Then I should see "Updated Test Account" in the accounts table
+    And I should not see "Update Test Account" in the accounts table
 
   Scenario: Delete an account
     Given there is an account named "Updated Account"
