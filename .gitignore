@@ -3,3 +3,4 @@
 /e2e/logs
 /frontend/node_modules
 backend/.factorypath
+/e2e/metadata

@@ -22,12 +22,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: e2e/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('e2e/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install e2e dependencies
         run: npm install
+        working-directory: ./e2e
+
+      - name: Run lint check and stop on error
+        run: npm run lint
         working-directory: ./e2e
 
       - name: Create .env file
@@ -68,11 +83,7 @@ jobs:
           done
 
       - name: Run e2e tests
-        run: docker compose run --rm e2e npm run test:parallel
-
-      - name: Generate report
-        if: always()
-        run: docker compose run --rm e2e npm run report
+        run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} e2e npm run test:run-and-report
 
       - name: Upload report for Github Pages
         if: always()

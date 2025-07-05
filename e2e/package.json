@@ -11,7 +11,8 @@
     "lint:fix": "eslint . --fix",
     "test:parallel": "cucumber-js --parallel 4",
     "validate-env": "ts-node src/utils/validate-env.ts",
-    "cleanup-reports": "ts-node scripts/cleanup-reports.ts"
+    "cleanup-reports": "ts-node scripts/cleanup-reports.ts",
+    "test:run-and-report": "node ./scripts/run-tests-and-generate-report.js"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^8.11.1",
