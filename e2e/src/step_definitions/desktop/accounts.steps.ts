@@ -190,14 +190,21 @@ When('I search accounts with query {string}', async function (query: string) {
     await accountsPage.searchAccount(query);
 });
 
-Then('I should see {string} in the accounts table', async function (name: string) {
+Then('I should see {string} in the accounts table', async function (this: CustomWorld, name: string) {
     const accountsPage = new AccountsPage(this.page);
+    // Track for cleanup if not already tracked
+    if (!this.cleanupAccountNames) this.cleanupAccountNames = new Set<string>();
+    this.cleanupAccountNames.add(name);
     expect(await accountsPage.isAccountVisible(name)).toBeTruthy();
 });
 
 Then('I should not see {string} in the accounts table', async function (this: CustomWorld, name: string) {
     const accountsPage = new AccountsPage(this.page);
-    expect(await accountsPage.isAccountVisible(name)).toBeFalsy();
+    // Try both the original and unique name for negative assertion
+    const uniqueName = this.uniqueData?.get(name);
+    const visibleOriginal = await accountsPage.isAccountVisible(name);
+    const visibleUnique = uniqueName ? await accountsPage.isAccountVisible(uniqueName) : false;
+    expect(visibleOriginal || visibleUnique).toBeFalsy();
 });
 
 After({ tags: "@accounts and not @no-cleanup" }, async function (this: CustomWorld) {

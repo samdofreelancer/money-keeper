@@ -42,19 +42,13 @@ After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
       this.createdCategoryNames = []; // Reset after cleanup
     }
 
-    logger.info("Cleanup accounts");
     // --- Account cleanup ---
     if (this.cleanupAccountNames && this.cleanupAccountNames.size > 0) {
-      logger.info(`Cleaning up ${this.cleanupAccountNames.size} accounts by name.`);
       for (const name of this.cleanupAccountNames) {
         const account = await getAccountByName(name);
-        logger.info(`Checking account for cleanup: ${account}`);
         if (account) {
-          logger.info(`Cleaning up account: ${name} (id: ${account.id})`);
           await deleteAccountById(account.id);
           logger.info(`Deleted account: ${name} (id: ${account.id})`);
-        } else {
-          logger.warn(`Account not found for cleanup: ${name}`);
         }
       }
       this.cleanupAccountNames.clear();
