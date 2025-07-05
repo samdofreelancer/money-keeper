@@ -30,6 +30,38 @@ services:
     networks:
       - money-keeper-net
 
+  backend:
+    image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend-image:${{ github.sha }}
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ci
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+    restart: unless-stopped
+    depends_on:
+      oracle:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - money-keeper-net
+
+  frontend:
+    image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend-image:${{ github.sha }}
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - money-keeper-net
+
 networks:
   money-keeper-net:
     driver: bridge

@@ -13,49 +13,18 @@ jobs:
   e2e-test:
     name: Run E2E Tests
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.53.0-noble
     env:
       SPRING_PROFILES_ACTIVE: ci
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
-    services:
-      oracle:
-        image: gvenzl/oracle-xe:latest
-        ports:
-          - 1521:1521
-        env:
-          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-        options: >-
-          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/$ORACLE_PASSWORD@localhost:1521/XEPDB1 | grep -q 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 30
-      backend:
-        image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend-image:${{ github.sha }}
-        ports:
-          - 8080:8080
-        options: >-
-          --health-cmd "curl -f http://localhost:8080/actuator/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        env:
-          SPRING_PROFILES_ACTIVE: ci
-          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-      frontend:
-        image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend-image:${{ github.sha }}
-        ports:
-          - 5173:5173
-        options: >-
-          --health-cmd "curl -f http://localhost:5173 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+      ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Start Oracle service
+        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
       - name: Install e2e dependencies
         run: npm install
@@ -64,6 +33,24 @@ jobs:
       - name: Create .env file
         run: cp .env.example .env
         working-directory: ./e2e
+        
+      - name: Wait for Oracle to be fully ready
+        run: |
+          echo "Waiting for Oracle to be fully ready..."
+          for i in {1..30}; do
+            docker exec oracle bash -c "echo select 1 from dual | sqlplus -s system/${ORACLE_PASSWORD}@localhost:1521/XEPDB1 | grep -q 1" && break
+            echo "Oracle not ready yet, waiting..."
+            sleep 10
+          done
+
+      - name: Run Flyway migration with retries
+        run: |
+          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway
+        env:
+          SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
+
+      - name: Start Backend and Frontend containers
+        run: docker compose up -d backend frontend
         
       - name: Run e2e tests
         run: npm run test:parallel
@@ -89,3 +76,7 @@ jobs:
         run: |
           echo "Files in e2e/reports/cucumber-html-report.html:"
           ls -l e2e/reports/cucumber-html-report.html
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
