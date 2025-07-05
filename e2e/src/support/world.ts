@@ -72,9 +72,9 @@ export class CustomWorld extends World {
     const userAgent = this.page ? await this.page.evaluate(() => navigator.userAgent) : "unknown";
 
     // Simple parsing of userAgent to get platform and device type
-    let deviceType = "desktop";
+    let deviceType = "Desktop";
     if (/Mobi|Android/i.test(userAgent)) {
-      deviceType = "smart device";
+      deviceType = "Smart Device";
     }
 
     // Extract platform name and version from userAgent (basic)

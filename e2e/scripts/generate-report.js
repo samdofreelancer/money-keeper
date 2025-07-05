@@ -19,6 +19,7 @@ function getMetadata() {
       browser: {
         name: envInfo.browser.name || "unknown",
         version: envInfo.browser.version || "unknown",
+        full: `${envInfo.browser.name || "unknown"} ${envInfo.browser.version || "unknown"}`,
       },
       device: envInfo.device || "unknown",
       platform: {
@@ -38,6 +39,7 @@ function getMetadata() {
       browser: {
         name: browserName,
         version: browserVersion,
+        full: `${browserName} ${browserVersion}`,
       },
       device: device,
       platform: {
@@ -50,6 +52,11 @@ function getMetadata() {
 
 async function generateReport() {
   try {
+    const metadata = getMetadata();
+
+    // Override browser.version to combined name and version string for main metadata display
+    metadata.browser.version = `${metadata.browser.name} ${metadata.browser.version}`;
+
     reporter.generate({
       jsonDir: path.join(__dirname, "..", "reports"),
       reportPath: path.join(
@@ -59,7 +66,7 @@ async function generateReport() {
         "cucumber-html-report.html"
       ),
       openReportInBrowser: process.env.OPEN_REPORT === "true",
-      metadata: getMetadata(),
+      metadata: metadata,
     });
     console.log("Report generated successfully.");
   } catch (error) {
