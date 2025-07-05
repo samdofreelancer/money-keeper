@@ -22,7 +22,6 @@ export async function deleteAccountById(id: string): Promise<void> {
 
 export async function getAccountByName(name: string): Promise<Account | undefined> {
   const accounts = await getAllAccounts();
-  // Support both 'name' and 'accountName' for compatibility
   return accounts.find((acc: any) => acc.accountName === name);
 }
 

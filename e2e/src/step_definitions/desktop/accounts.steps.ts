@@ -134,9 +134,18 @@ When('I update the account name to {string}', async function (this: CustomWorld,
     }
 });
 
-When('I click the delete button for account {string}', async function (name: string) {
+When('I click the delete button for account {string}', async function (this: CustomWorld, name: string) {
     const accountsPage = new AccountsPage(this.page);
-    await accountsPage.deleteAccount(name);
+    const uniqueName = this.uniqueData?.get(name) || name;
+    const row = accountsPage.page.getByRole('row', { name: new RegExp(uniqueName, 'i') });
+    await row.waitFor({ state: 'visible', timeout: 10000 });
+    // Use robust selector for delete button
+    const deleteBtn = row.locator('[data-testid="delete-account-button"]');
+    if (await deleteBtn.count()) {
+        await deleteBtn.click({ timeout: 5000 });
+    } else {
+        await row.getByRole('button', { name: /Delete|Remove|delete/i }).click({ timeout: 5000 });
+    }
 });
 
 When('I confirm the account delete action', async function () {

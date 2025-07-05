@@ -25,7 +25,6 @@ Feature: Accounts Management
     And I submit the account form
     Then I should see "Test Account" in the accounts table
 
-  @focus 
   Scenario: Update an existing account
     Given there is an account named "Test Account"
     When I click the edit button for account "Test Account"
