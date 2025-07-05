@@ -1,6 +1,7 @@
 const reporter = require("multiple-cucumber-html-reporter");
 const path = require("path");
 const fs = require("fs");
+const { execSync } = require("child_process");
 
 function getMetadata() {
   const envInfoPath = path.join(__dirname, "..", "metadata", "environment-info.metadata.json");
@@ -54,8 +55,24 @@ async function generateReport() {
   try {
     const metadata = getMetadata();
 
-    // Override browser.version to combined name and version string for main metadata display
-    metadata.browser.version = `${metadata.browser.name} ${metadata.browser.version}`;
+    // Get git branch and commit ID
+    let gitBranch = "unknown";
+    let gitCommitId = "unknown";
+    try {
+      gitBranch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+      gitCommitId = execSync("git rev-parse HEAD").toString().trim();
+    } catch (error) {
+      console.warn("Failed to get git info:", error);
+    }
+
+    // Add git info to metadata
+    metadata.git = {
+      branch: gitBranch,
+      commitId: gitCommitId,
+    };
+
+    // Remove override of metadata.browser.version to avoid duplication
+    // metadata.browser.version = `${metadata.browser.name} ${metadata.browser.version}`;
 
     reporter.generate({
       jsonDir: path.join(__dirname, "..", "reports"),
@@ -67,6 +84,14 @@ async function generateReport() {
       ),
       openReportInBrowser: process.env.OPEN_REPORT === "true",
       metadata: metadata,
+      customData: {
+        title: "Additional Info",
+        data: [
+          { label: "Git Branch", value: metadata.git.branch },
+          { label: "Git Commit ID", value: metadata.git.commitId },
+          { label: "Browser", value: `${metadata.browser.name} ${metadata.browser.version}` },
+        ],
+      },
     });
     console.log("Report generated successfully.");
   } catch (error) {
