@@ -3,6 +3,7 @@ name: E2E Tests
 on:
   workflow_call:
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read
@@ -22,6 +23,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
