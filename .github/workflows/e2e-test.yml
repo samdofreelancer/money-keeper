@@ -29,6 +29,14 @@ jobs:
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: e2e/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('e2e/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install e2e dependencies
         run: npm install
         working-directory: ./e2e
