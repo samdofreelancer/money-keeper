@@ -31,7 +31,9 @@ services:
       - money-keeper-net
 
   backend:
-    image: ghcr.io/${{ github.repository_owner }}/money-keeper-backend-image:${{ github.sha }}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
@@ -50,7 +52,9 @@ services:
       - money-keeper-net
 
   frontend:
-    image: ghcr.io/${{ github.repository_owner }}/money-keeper-frontend-image:${{ github.sha }}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "5173:5173"
     restart: unless-stopped
