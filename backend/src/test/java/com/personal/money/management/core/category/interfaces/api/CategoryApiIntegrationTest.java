@@ -1,8 +1,10 @@
 package com.personal.money.management.core.category.interfaces.api;
 
 import com.personal.money.management.core.category.domain.model.CategoryType;
+import com.personal.money.management.core.category.domain.repository.CategoryRepository;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +33,16 @@ class CategoryApiIntegrationTest {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @BeforeEach
+    void cleanDatabase() {
+        categoryRepository.findAllSortedByName().forEach(category -> {
+            categoryRepository.deleteById(category.getId());
+        });
+    }
 
     @Test
     void createCategory_shouldPersistAndReturnCategory() throws Exception {

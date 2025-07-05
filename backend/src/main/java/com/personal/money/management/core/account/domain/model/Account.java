@@ -25,6 +25,8 @@ public class Account {
 
     private final String description;
 
+    private final boolean active;
+
     public Account(String accountName, BigDecimal initBalance, AccountType type, String currency, String description) {
         this.id = null; // New entity
         this.accountName = accountName;
@@ -32,15 +34,17 @@ public class Account {
         this.type = type;
         this.currency = currency;
         this.description = description;
+        this.active = true; // Always active on creation
     }
 
-    private Account(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description) {
+    private Account(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description, boolean active) {
         this.id = id;
         this.accountName = accountName;
         this.initBalance = initBalance;
         this.type = type;
         this.currency = currency;
         this.description = description;
+        this.active = active;
     }
 
     public Long getId() {
@@ -67,7 +71,11 @@ public class Account {
         return description;
     }
 
-    public static Account reconstruct(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description) {
-        return new Account(id, accountName, initBalance, type, currency, description);
+    public boolean isActive() {
+        return active;
+    }
+
+    public static Account reconstruct(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description, boolean active) {
+        return new Account(id, accountName, initBalance, type, currency, description, active);
     }
 }

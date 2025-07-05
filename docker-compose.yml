@@ -1,0 +1,84 @@
+services:
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    ports:
+      - "1522:1521"
+    environment:
+      ORACLE_USER: system
+      ORACLE_PASSWORD: "${ORACLE_PASSWORD}"
+    restart: unless-stopped
+    command: bash -c "rm -f /opt/oracle/diag/tnslsnr/*/listener/alert/log.xml && /bin/sh /opt/oracle/scripts/startup/startup.sh"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo select 1 from dual | sqlplus -s system/${ORACLE_PASSWORD}@localhost:1521/XEPDB1 | grep -q 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - money-keeper-net
+
+  flyway:
+    image: flyway/flyway:latest
+    depends_on:
+      oracle:
+        condition: service_healthy
+    command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -schemas=CORE -locations=filesystem:/flyway/sql -baselineOnMigrate=false migrate
+    restart: on-failure
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+    volumes:
+      - ./backend/src/main/resources/db/migration/oracle:/flyway/sql
+    networks:
+      - money-keeper-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ci
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+    restart: unless-stopped
+    depends_on:
+      oracle:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - money-keeper-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - money-keeper-net
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.53.0-noble
+    volumes:
+      - ./e2e:/e2e
+    working_dir: /e2e
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks:
+      - money-keeper-net
+
+networks:
+  money-keeper-net:
+    driver: bridge

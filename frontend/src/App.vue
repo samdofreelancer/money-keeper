@@ -5,20 +5,24 @@
         <img src="@/assets/logo.svg" alt="Money Keeper" height="32">
       </div>
       <el-menu
-        default-active="categories"
+        :default-active="activeMenu"
         class="el-menu-vertical"
         router
         background-color="#304156"
         text-color="#bfcbd9"
         active-text-color="#409EFF"
       >
-        <el-menu-item index="categories">
-          <el-icon><Grid /></el-icon>
-          <span>Categories</span>
+        <el-menu-item index="accounts">
+          <el-icon><Wallet /></el-icon>
+          <span>Accounts</span>
         </el-menu-item>
         <el-menu-item index="transactions">
           <el-icon><Money /></el-icon>
           <span>Transactions</span>
+        </el-menu-item>
+        <el-menu-item index="categories">
+          <el-icon><Grid /></el-icon>
+          <span>Categories</span>
         </el-menu-item>
         <el-menu-item index="reports">
           <el-icon><TrendCharts /></el-icon>
@@ -31,7 +35,7 @@
       <div class="header-content">
         <el-breadcrumb>
           <el-breadcrumb-item>Home</el-breadcrumb-item>
-          <el-breadcrumb-item>Categories</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ activeMenuLabel }}</el-breadcrumb-item>
         </el-breadcrumb>
         <div class="header-right">
           <el-dropdown>
@@ -56,6 +60,33 @@
 
 <script setup lang="ts">
 import { Grid, Money, TrendCharts } from '@element-plus/icons-vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const activeMenu = ref('categories')
+const activeMenuLabel = ref('Categories')
+
+function updateActiveMenu() {
+  const path = route.path
+  if (path.startsWith('/accounts')) {
+    activeMenu.value = 'accounts'
+    activeMenuLabel.value = 'Accounts'
+  } else if (path.startsWith('/transactions')) {
+    activeMenu.value = 'transactions'
+    activeMenuLabel.value = 'Transactions'
+  } else if (path.startsWith('/reports')) {
+    activeMenu.value = 'reports'
+    activeMenuLabel.value = 'Reports'
+  } else {
+    activeMenu.value = 'categories'
+    activeMenuLabel.value = 'Categories'
+  }
+}
+
+watch(() => route.path, () => {
+  updateActiveMenu()
+}, { immediate: true })
 </script>
 
 <style scoped>
