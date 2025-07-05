@@ -23,26 +23,77 @@ A VSCode Dev Container has been configured to provide a consistent development e
 
 - **5173**: Frontend Vite development server
 - **8080**: Backend Spring Boot server
+- **1522**: Oracle DB host port mapped to container port 1521 (used for local development)
 
-### Running the Project
+## Running the Database and Migrations
 
-- **Backend**: Run `mvn spring-boot:run` inside the `backend` folder.
-- **Frontend**: Run `npm run dev` inside the `frontend` folder.
-- **E2E Tests**: Run `npm test` inside the `e2e` folder.
+### Using Docker Compose
 
-### Benefits
+The project uses Docker Compose to run the Oracle database and Flyway for database migrations.
 
-- Consistent environment across all developers
-- No need to install Java, Node.js, Maven, or other dependencies locally
-- Easy to start working on any part of the project
+1. Start the Oracle database and Flyway migration service:
+
+```bash
+docker-compose up -d oracle flyway
+```
+
+2. The Oracle database listens on port 1521 inside the container, mapped to port 1522 on the host.
+
+3. Flyway will run migrations located in `backend/src/main/resources/db/migration/oracle` against the Oracle database.
+
+4. The Oracle user `CORE` is created with a default password `core_password` for local and CI environments only. **Do not use this password in production.**
+
+### Running Locally with H2 Database
+
+For local development without Oracle, the application uses an in-memory H2 database.
+
+- The H2 database is configured in `backend/src/main/resources/application-local.properties`.
+- Flyway migrations for H2 are located in `backend/src/main/resources/db/migration/h2`.
+- To run the application with H2, use the `local` Spring profile.
+
+### Running in CI
+
+- The CI environment uses Oracle with connection details configured in `backend/src/main/resources/application-ci.properties`.
+- The Oracle password is injected via the `ORACLE_PASSWORD` environment variable.
+- Flyway migrations are disabled in CI by default (`spring.flyway.enabled=false`), assuming migrations are run separately via Flyway container in Docker Compose.
+
+## Consistency Notes
+
+- Ports:
+  - Oracle container listens on 1521 internally.
+  - Host port 1522 is mapped to Oracle container port 1521 in Docker Compose.
+  - Application connection strings use port 1521 to connect inside the Docker network.
+- Schema names:
+  - The default schema used is `CORE` for both H2 and Oracle.
+- Migration versioning:
+  - Migration version numbers are consistent and monotonic between H2 and Oracle.
+  - Oracle has an additional `V0__create_core_user.sql` migration for user creation.
+  - No migration version 3 exists in either H2 or Oracle migrations.
+
+## Testing Both Setups Locally
+
+- To test with H2:
+  - Use the `local` Spring profile.
+  - Run the application normally; it will use the in-memory H2 database.
+- To test with Oracle:
+  - Ensure Docker Compose is running Oracle on port 1522.
+  - Set the `ORACLE_PASSWORD` environment variable.
+  - Use the `ci` Spring profile or configure accordingly.
+  - Run the application; it will connect to Oracle and run migrations.
+
+## Important Security Note
+
+- The Oracle user creation script uses a hardcoded password `core_password` for local and CI environments only.
+- **Do not use this password in production environments.**
+- For production, use secure password management and secrets handling.
+
+## Additional Recommendations
+
+- Double-check all ports and connection strings in your environment to ensure consistency, especially if you modify Docker Compose or application properties.
+- Verify migration version numbers remain consistent and monotonic between H2 and Oracle to avoid migration conflicts.
+- Always test both H2 and Oracle setups locally after changes to migrations or configuration.
+- Avoid using hardcoded passwords in production; use environment variables or secret management solutions.
 
 ---
 
-For more details, refer to the `.devcontainer` folder which contains the Dockerfile and devcontainer.json configuration.
-
-## Troubleshooting
-
-- Ensure Docker daemon is running before starting the dev container.
-- If you encounter issues with file syncing or performance, check your OS-specific Docker and VSCode Remote Containers settings.
-- For more help, see the [VSCode Remote Containers troubleshooting documentation](https://code.visualstudio.com/docs/remote/troubleshooting).
-
+For more details, refer to the `backend/README.md` and the Docker Compose configuration.
