@@ -2,8 +2,7 @@ import { Given, When, Then } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 
 import { generateUniqueName } from "../../utils/testDataHelper";
-import { getAllCategories, createCategory } from "../../api/categoryApiHelper";
-import { CategoryPage } from "../../pages/category.page";
+import { createCategory } from "../../api/categoryApiHelper";
 import { config } from "../../config/env.config";
 import { logger } from "../../support/logger";
 import { CustomWorld } from "../../support/world";
@@ -11,30 +10,32 @@ import { CustomWorld } from "../../support/world";
 // Extend the Window interface to include __browserConsoleErrors
 declare global {
   interface Window {
-    __browserConsoleErrors?: any[];
+    __browserConsoleErrors?: unknown[];
   }
 }
 
 Given(
   "a {string} category exists",
   async function (this: CustomWorld, categoryName: string) {
-      logger.info(`generateUniqueName category with name: ${categoryName}`);
-      const uniqueName = generateUniqueName(categoryName);
-      logger.info(`Unique category name generated: ${uniqueName}`);
-      this.uniqueData.set(categoryName, uniqueName);
-      const newCategory = await createCategory({
-        name: uniqueName,
-        icon: "Grid",
-        type: "EXPENSE",
-        parentId: null,
-      });
-      if (!this.createdCategoryIds) {
-        this.createdCategoryIds = [];
-      }
-      this.createdCategoryIds.push(newCategory.id);
-      this.createdCategoryNames = this.createdCategoryNames || [];
-      this.createdCategoryNames.push(uniqueName);
-      logger.info(`Created category with unique name: ${this.createdCategoryNames}`);
+    logger.info(`generateUniqueName category with name: ${categoryName}`);
+    const uniqueName = generateUniqueName(categoryName);
+    logger.info(`Unique category name generated: ${uniqueName}`);
+    this.uniqueData.set(categoryName, uniqueName);
+    const newCategory = await createCategory({
+      name: uniqueName,
+      icon: "Grid",
+      type: "EXPENSE",
+      parentId: null,
+    });
+    if (!this.createdCategoryIds) {
+      this.createdCategoryIds = [];
+    }
+    this.createdCategoryIds.push(newCategory.id);
+    this.createdCategoryNames = this.createdCategoryNames || [];
+    this.createdCategoryNames.push(uniqueName);
+    logger.info(
+      `Created category with unique name: ${this.createdCategoryNames}`
+    );
   }
 );
 
@@ -66,11 +67,19 @@ Given("I open the homepage", async function (this: CustomWorld) {
 });
 
 When("I navigate to the Categories page", async function (this: CustomWorld) {
-  await this.categoryPage!.navigateToCategories();
+  if (this.categoryPage) {
+    await this.categoryPage.navigateToCategories();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 When("I open the create category dialog", async function (this: CustomWorld) {
-  await this.categoryPage!.openCreateCategoryDialog();
+  if (this.categoryPage) {
+    await this.categoryPage.openCreateCategoryDialog();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 When(
@@ -83,21 +92,27 @@ When(
     parentCategory: string
   ) {
     // Use uniqueData if available (for duplicate scenarios), else fallback to createdCategoryNames or generate unique
-    const uniqueName = this.uniqueData.get(categoryName) ||
+    const uniqueName =
+      this.uniqueData.get(categoryName) ||
       (this.createdCategoryNames
-        ? this.createdCategoryNames.find(name => name === categoryName) || categoryName
+        ? this.createdCategoryNames.find((name) => name === categoryName) ||
+          categoryName
         : generateUniqueName(categoryName));
-    logger.info(`Filling category form with test data: ${uniqueName}, ${icon}, ${categoryType}, ${parentCategory}`);
+    logger.info(
+      `Filling category form with test data: ${uniqueName}, ${icon}, ${categoryType}, ${parentCategory}`
+    );
     // Store the unique name in the context for later use
     this.uniqueData.set(categoryName, uniqueName);
     // Convert "None" to empty string for parentCategory to satisfy string type
     const parentCat = parentCategory === "None" ? "" : parentCategory;
-    await this.categoryPage!.fillCategoryForm(
-      uniqueName,
-      icon,
-      categoryType,
-      parentCat
-    );
+    await (this.categoryPage
+      ? this.categoryPage.fillCategoryForm(
+          uniqueName,
+          icon,
+          categoryType,
+          parentCat
+        )
+      : Promise.reject(new Error("Category page is not initialized.")));
     // Store created category names in World context for cleanup
     if (!this.createdCategoryIds) {
       this.createdCategoryIds = [];
@@ -112,19 +127,31 @@ When(
 );
 
 When("I submit the category form", async function (this: CustomWorld) {
-  await this.categoryPage!.submitForm();
+  if (this.categoryPage) {
+    await this.categoryPage.submitForm();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 When("I click the submit button", async function (this: CustomWorld) {
-  await this.categoryPage!.clickSubmit();
+  if (this.categoryPage) {
+    await this.categoryPage.clickSubmit();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 Then(
   "I should see the new category in the list {string}",
   async function (this: CustomWorld, categoryName: string) {
     const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
-    const isPresent = await this.categoryPage!.isCategoryPresent(uniqueName);
-    expect(isPresent).toBe(true);
+    if (this.categoryPage) {
+      const isPresent = await this.categoryPage.isCategoryPresent(uniqueName);
+      expect(isPresent).toBe(true);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
@@ -134,7 +161,11 @@ When(
   "I open the edit category dialog for {string}",
   async function (this: CustomWorld, categoryName: string) {
     const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
-    await this.categoryPage!.openEditCategoryDialog(uniqueName);
+    if (this.categoryPage) {
+      await this.categoryPage.openEditCategoryDialog(uniqueName);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
@@ -142,25 +173,41 @@ When(
   "I open the delete category dialog for {string}",
   async function (this: CustomWorld, categoryName: string) {
     const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
-    await this.categoryPage!.openDeleteCategoryDialog(uniqueName);
+    if (this.categoryPage) {
+      await this.categoryPage.openDeleteCategoryDialog(uniqueName);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
 When("I confirm the delete action", async function (this: CustomWorld) {
-  await this.categoryPage!.confirmDelete();
+  if (this.categoryPage) {
+    await this.categoryPage.confirmDelete();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 When(
   "I search categories with query {string}",
   async function (this: CustomWorld, query: string) {
-    await this.categoryPage!.searchCategories(query);
+    if (this.categoryPage) {
+      await this.categoryPage.searchCategories(query);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
 When(
   "I filter categories by tab {string}",
   async function (this: CustomWorld, tabName: string) {
-    await this.categoryPage!.filterByTab(tabName);
+    if (this.categoryPage) {
+      await this.categoryPage.filterByTab(tabName);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
@@ -168,8 +215,12 @@ Then(
   "I should not see category {string} in the list",
   async function (this: CustomWorld, categoryName: string) {
     const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
-    const isPresent = await this.categoryPage!.isCategoryPresent(uniqueName);
-    expect(isPresent).toBe(false);
+    if (this.categoryPage) {
+      const isPresent = await this.categoryPage.isCategoryPresent(uniqueName);
+      expect(isPresent).toBe(false);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
@@ -177,42 +228,59 @@ Then(
   "I should see category {string} in the list",
   async function (this: CustomWorld, categoryName: string) {
     const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
-    const isPresent = await this.categoryPage!.isCategoryPresent(uniqueName);
-    expect(isPresent).toBe(true);
+    if (this.categoryPage) {
+      const isPresent = await this.categoryPage.isCategoryPresent(uniqueName);
+      expect(isPresent).toBe(true);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
 When("I clear the category name field", async function (this: CustomWorld) {
-  await this.categoryPage!.clearCategoryNameField();
+  if (this.categoryPage) {
+    await this.categoryPage.clearCategoryNameField();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 Then(
   "I should see the updated category in the list {string}",
   async function (this: CustomWorld, categoryName: string) {
     const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
-    const isPresent = await this.categoryPage!.isCategoryPresent(uniqueName);
-    expect(isPresent).toBe(true);
+    if (this.categoryPage) {
+      const isPresent = await this.categoryPage.isCategoryPresent(uniqueName);
+      expect(isPresent).toBe(true);
+    } else {
+      throw new Error("Category page is not initialized.");
+    }
   }
 );
 
 Then(
   "I should see a validation error message {string}",
   async function (this: CustomWorld, message: string) {
-    // Use locator that matches exact error message text
-    const errorMessageLocator = this.page.locator('.el-form-item__error', { hasText: message });
-    try {
-      await errorMessageLocator.waitFor({ state: "visible", timeout: 5000 });
-    } catch (e) {
-      throw e;
-    }
+    const errorMessageLocator = this.page.locator(".el-form-item__error", {
+      hasText: message,
+    });
+    await errorMessageLocator.waitFor({ state: "visible", timeout: 5000 });
     expect(await errorMessageLocator.count()).toBeGreaterThan(0);
   }
 );
 
 When("I cancel the category form", async function (this: CustomWorld) {
-  await this.categoryPage!.cancelCategoryForm();
+  if (this.categoryPage) {
+    await this.categoryPage.cancelCategoryForm();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });
 
 When("I cancel the delete action", async function (this: CustomWorld) {
-  await this.categoryPage!.cancelDelete();
+  if (this.categoryPage) {
+    await this.categoryPage.cancelDelete();
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
 });

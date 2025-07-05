@@ -3,14 +3,22 @@ import * as fs from "fs";
 import * as path from "path";
 
 async function getMetadata() {
-  const envInfoPath = path.join(__dirname, "..", "..", "metadata", "environment-info.metadata.json");
+  const envInfoPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    "metadata",
+    "environment-info.metadata.json"
+  );
   let envInfo = null;
 
   if (fs.existsSync(envInfoPath)) {
     try {
       envInfo = JSON.parse(fs.readFileSync(envInfoPath, "utf-8"));
     } catch (error) {
-      console.warn("Failed to parse environment-info.metadata.json, falling back to defaults.");
+      console.warn(
+        "Failed to parse environment-info.metadata.json, falling back to defaults."
+      );
     }
   }
 

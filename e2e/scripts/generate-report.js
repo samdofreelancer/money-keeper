@@ -3,15 +3,34 @@ const path = require("path");
 const fs = require("fs");
 const { execSync } = require("child_process");
 
+const formatDateTime = (timestamp) => {
+  const date = new Date(timestamp);
+  // Use local timezone for formatting
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 function getMetadata() {
-  const envInfoPath = path.join(__dirname, "..", "metadata", "environment-info.metadata.json");
+  const envInfoPath = path.join(
+    __dirname,
+    "..",
+    "metadata",
+    "environment-info.metadata.json"
+  );
   let envInfo = null;
 
   if (fs.existsSync(envInfoPath)) {
     try {
       envInfo = JSON.parse(fs.readFileSync(envInfoPath, "utf-8"));
     } catch (error) {
-      console.warn("Failed to parse environment-info.json, falling back to env vars.");
+      console.warn(
+        "Failed to parse environment-info.json, falling back to env vars."
+      );
     }
   }
 
@@ -20,7 +39,9 @@ function getMetadata() {
       browser: {
         name: envInfo.browser.name || "unknown",
         version: envInfo.browser.version || "unknown",
-        full: `${envInfo.browser.name || "unknown"} ${envInfo.browser.version || "unknown"}`,
+        full: `${envInfo.browser.name || "unknown"} ${
+          envInfo.browser.version || "unknown"
+        }`,
       },
       device: envInfo.device || "unknown",
       platform: {
@@ -65,21 +86,8 @@ function formatDuration(durationNs) {
 
 function generateReport() {
   return new Promise((resolve, reject) => {
-    const startTime = Date.now();
     try {
       const metadata = getMetadata();
-
-      function formatDateTime(timestamp) {
-        const date = new Date(timestamp);
-        // Use local timezone for formatting
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        const seconds = String(date.getSeconds()).padStart(2, "0");
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      }
 
       // Get git branch and commit ID
       let gitBranch = "unknown";
@@ -96,7 +104,9 @@ function generateReport() {
           }
           gitCommitId = process.env.GITHUB_SHA;
         } else {
-          gitBranch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
+          gitBranch = execSync("git rev-parse --abbrev-ref HEAD")
+            .toString()
+            .trim();
           gitCommitId = execSync("git rev-parse HEAD").toString().trim();
         }
       } catch (error) {
@@ -112,16 +122,23 @@ function generateReport() {
         gitBranchUrl = `https://github.com/${owner}/${repo}/tree/${gitBranch}`;
       } else if (gitBranch !== "unknown") {
         try {
-          const remoteUrl = execSync("git config --get remote.origin.url").toString().trim();
+          const remoteUrl = execSync("git config --get remote.origin.url")
+            .toString()
+            .trim();
           // remoteUrl can be in formats like:
           // git@github.com:owner/repo.git or https://github.com/owner/repo.git
           let ownerRepoMatch = null;
           if (remoteUrl.startsWith("git@")) {
             // git@github.com:owner/repo.git
             ownerRepoMatch = remoteUrl.match(/git@[^:]+:([^/]+)\/(.+)\.git/);
-          } else if (remoteUrl.startsWith("https://") || remoteUrl.startsWith("http://")) {
+          } else if (
+            remoteUrl.startsWith("https://") ||
+            remoteUrl.startsWith("http://")
+          ) {
             // https://github.com/owner/repo.git
-            ownerRepoMatch = remoteUrl.match(/https?:\/\/[^/]+\/([^/]+)\/(.+)\.git/);
+            ownerRepoMatch = remoteUrl.match(
+              /https?:\/\/[^/]+\/([^/]+)\/(.+)\.git/
+            );
           }
           if (ownerRepoMatch && ownerRepoMatch.length === 3) {
             const owner = ownerRepoMatch[1];
@@ -136,7 +153,10 @@ function generateReport() {
       // Construct GitHub commit URL if owner and repo are available
       let gitCommitUrl = null;
       if (gitBranchUrl) {
-        gitCommitUrl = gitBranchUrl.replace(/\/tree\/.+$/, `/commit/${gitCommitId}`);
+        gitCommitUrl = gitBranchUrl.replace(
+          /\/tree\/.+$/,
+          `/commit/${gitCommitId}`
+        );
       }
 
       // Add git info to metadata with branch and commitId as hyperlinks if URLs available
@@ -165,7 +185,10 @@ function generateReport() {
           for (const file of files) {
             if (file.endsWith(".json")) {
               try {
-                const content = fs.readFileSync(path.join(reportsDir, file), "utf-8");
+                const content = fs.readFileSync(
+                  path.join(reportsDir, file),
+                  "utf-8"
+                );
                 const json = JSON.parse(content);
                 if (Array.isArray(json)) {
                   for (const feature of json) {
@@ -195,7 +218,6 @@ function generateReport() {
       }
 
       const endTime = Date.now();
-      const reportGenerationTimeMs = endTime - startTime;
       const reportGenerationDateTime = formatDateTime(endTime);
 
       reporter.generate({
@@ -213,9 +235,15 @@ function generateReport() {
           data: [
             { label: "Git Branch", value: metadata.git.branch },
             { label: "Git Commit ID", value: metadata.git.commitId },
-            { label: "Browser", value: `${metadata.browser.name} with version ${metadata.browser.version}` },
+            {
+              label: "Browser",
+              value: `${metadata.browser.name} with version ${metadata.browser.version}`,
+            },
             { label: "Total Execution Time", value: totalExecutionTime },
-            { label: "Report Generation Time", value: reportGenerationDateTime },
+            {
+              label: "Report Generation Time",
+              value: reportGenerationDateTime,
+            },
           ],
         },
       });
@@ -226,6 +254,7 @@ function generateReport() {
     }
   });
 }
+
 module.exports = generateReport;
 
 generateReport();

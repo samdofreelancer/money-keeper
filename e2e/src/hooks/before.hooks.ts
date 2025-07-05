@@ -1,11 +1,10 @@
 import { Before } from "@cucumber/cucumber";
+import * as fs from "fs";
+import * as path from "path";
 
 import { CustomWorld } from "../support/world";
 import { logger } from "../support/logger";
 import { CategoryPage } from "../pages/category.page";
-
-import * as fs from "fs";
-import * as path from "path";
 
 Before(async function (this: CustomWorld, { pickle }) {
   logger.info(

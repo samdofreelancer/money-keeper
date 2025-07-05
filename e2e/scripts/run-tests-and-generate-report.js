@@ -1,10 +1,11 @@
 const { exec } = require("child_process");
 const path = require("path");
-const reporter = require("./generate-report");
 
 function runTests() {
   return new Promise((resolve, reject) => {
-    const testProcess = exec("npm run test:parallel", { cwd: path.join(__dirname, "..") });
+    const testProcess = exec("npm run test:parallel", {
+      cwd: path.join(__dirname, ".."),
+    });
 
     testProcess.stdout.on("data", (data) => {
       process.stdout.write(data);

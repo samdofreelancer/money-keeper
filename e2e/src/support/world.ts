@@ -68,8 +68,12 @@ export class CustomWorld extends World {
   }
 
   async getEnvironmentInfo() {
-    const browserVersion = this.browser ? await this.browser.version() : "unknown";
-    const userAgent = this.page ? await this.page.evaluate(() => navigator.userAgent) : "unknown";
+    const browserVersion = this.browser
+      ? await this.browser.version()
+      : "unknown";
+    const userAgent = this.page
+      ? await this.page.evaluate(() => navigator.userAgent)
+      : "unknown";
 
     // Simple parsing of userAgent to get platform and device type
     let deviceType = "Desktop";
