@@ -24,9 +24,15 @@ export class CustomWorld extends World {
   createdCategoryIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
   playwrightOptions?: PlaywrightTestOptions;
+  cleanupAccountNames: Set<string> = new Set();
 
   constructor(options: IWorldOptions) {
-    super(options);
+    // Only pass the expected properties to the base World constructor
+    super({
+      attach: options.attach,
+      log: options.log,
+      parameters: options.parameters,
+    });
   }
 
   async launchBrowser(browserName = config.browser.name) {
