@@ -11,29 +11,14 @@ on:
       - master
 
 jobs:
-  build-backend:
-    uses: ./.github/workflows/build-backend-image.yml
-    with:
-      REGISTRY: ghcr.io/${{ github.repository_owner }}
-      IMAGE_TAG: ${{ github.sha }}
-
-  build-frontend:
-    uses: ./.github/workflows/build-frontend-image.yml
-    with:
-      REGISTRY: ghcr.io/${{ github.repository_owner }}
-      IMAGE_TAG: ${{ github.sha }}
-
-  call-unit-test:
+  execute-unit-test:
     uses: ./.github/workflows/unit-test.yml
     secrets: inherit
 
-  call-e2e-test:
-    needs:
-      - build-backend
-      - build-frontend
+  execute-e2e-test:
     uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
 
-  call-integration-test:
+  execute-integration-test:
     uses: ./.github/workflows/integration-test.yml
     secrets: inherit

@@ -10,26 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SPRING_PROFILES_ACTIVE: ci
-      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1521/XEPDB1
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
       REGISTRY: ghcr.io/${{ github.repository_owner }}
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
       ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-    services:
-      oracle:
-        image: gvenzl/oracle-xe:latest
-        ports:
-          - 1521:1521
-        env:
-          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-        options: >-
-          --health-cmd "bash -c 'echo select 1 from dual | sqlplus -s system/$ORACLE_PASSWORD@localhost:1521/XEPDB1 | grep -q 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 30
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Start Oracle service
+        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -58,6 +50,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Run Flyway migration with retries
+        run: |
+          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway
+        env:
+          SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
+
       - name: Run integration tests
         run: mvn clean verify -Pmedium-test -DskipUnitTests=true
         working-directory: ./backend
@@ -65,9 +63,15 @@ jobs:
       - name: Run test report aggregation script
         run: node aggregate-test-report.js ../target/medium-test-reports
         working-directory: ./backend/scripts
-                
+
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
         with:
           name: surefire-report-medium
           path: ./backend/target/medium-test-reports/
+
+      - name: Stop services with docker-compose
+        if: always()
+        run: docker compose down
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
