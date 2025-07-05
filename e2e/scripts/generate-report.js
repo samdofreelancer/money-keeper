@@ -65,8 +65,20 @@ function formatDuration(durationNs) {
 
 function generateReport() {
   return new Promise((resolve, reject) => {
+    const startTime = Date.now();
     try {
       const metadata = getMetadata();
+
+      function formatDateTime(timestamp) {
+        const date = new Date(timestamp);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      }
 
       // Get git branch and commit ID
       let gitBranch = "unknown";
@@ -98,9 +110,9 @@ function generateReport() {
       let totalExecutionTime = "unknown";
       if (process.env.TOTAL_EXECUTION_TIME_MS) {
         const durationMs = parseInt(process.env.TOTAL_EXECUTION_TIME_MS, 10);
-      if (!isNaN(durationMs)) {
-        totalExecutionTime = formatDuration(durationMs * 1e6);
-      }
+        if (!isNaN(durationMs)) {
+          totalExecutionTime = formatDuration(durationMs * 1e6);
+        }
       } else {
         // Calculate total execution time by summing durations in JSON report files
         const reportsDir = path.join(__dirname, "..", "reports");
@@ -139,6 +151,10 @@ function generateReport() {
         }
       }
 
+      const endTime = Date.now();
+      const reportGenerationTimeMs = endTime - startTime;
+      const reportGenerationDateTime = formatDateTime(endTime);
+
       reporter.generate({
         jsonDir: path.join(__dirname, "..", "reports"),
         reportPath: path.join(
@@ -156,10 +172,10 @@ function generateReport() {
             { label: "Git Commit ID", value: metadata.git.commitId },
             { label: "Browser", value: `${metadata.browser.name} ${metadata.browser.version}` },
             { label: "Total Execution Time", value: totalExecutionTime },
+            { label: "Report Generation Time", value: reportGenerationDateTime },
           ],
         },
       });
-      console.log("Report generated successfully.");
       resolve();
     } catch (error) {
       console.error("Error generating report:", error);
