@@ -1,24 +1,51 @@
 const reporter = require("multiple-cucumber-html-reporter");
 const path = require("path");
+const fs = require("fs");
 
 function getMetadata() {
-  const browserName = process.env.BROWSER_NAME || "chrome";
-  const browserVersion = process.env.BROWSER_VERSION || "latest";
-  const device = process.env.DEVICE_NAME || "Local test machine";
-  const platformName = process.platform || "unknown";
-  const platformVersion = process.env.PLATFORM_VERSION || "unknown";
+  const envInfoPath = path.join(__dirname, "..", "metadata", "environment-info.metadata.json");
+  let envInfo = null;
 
-  return {
-    browser: {
-      name: browserName,
-      version: browserVersion,
-    },
-    device: device,
-    platform: {
-      name: platformName,
-      version: platformVersion,
-    },
-  };
+  if (fs.existsSync(envInfoPath)) {
+    try {
+      envInfo = JSON.parse(fs.readFileSync(envInfoPath, "utf-8"));
+    } catch (error) {
+      console.warn("Failed to parse environment-info.json, falling back to env vars.");
+    }
+  }
+
+  if (envInfo) {
+    return {
+      browser: {
+        name: envInfo.browser.name || "unknown",
+        version: envInfo.browser.version || "unknown",
+      },
+      device: envInfo.device || "unknown",
+      platform: {
+        name: envInfo.platform.name || "unknown",
+        version: envInfo.platform.version || "unknown",
+      },
+    };
+  } else {
+    // Fallback to environment variables
+    const browserName = process.env.BROWSER_NAME || "chrome";
+    const browserVersion = process.env.BROWSER_VERSION || "latest";
+    const device = process.env.DEVICE_NAME || "Local test machine";
+    const platformName = process.platform || "unknown";
+    const platformVersion = process.env.PLATFORM_VERSION || "unknown";
+
+    return {
+      browser: {
+        name: browserName,
+        version: browserVersion,
+      },
+      device: device,
+      platform: {
+        name: platformName,
+        version: platformVersion,
+      },
+    };
+  }
 }
 
 async function generateReport() {

@@ -66,6 +66,46 @@ export class CustomWorld extends World {
       throw error;
     }
   }
+
+  async getEnvironmentInfo() {
+    const browserVersion = this.browser ? await this.browser.version() : "unknown";
+    const userAgent = this.page ? await this.page.evaluate(() => navigator.userAgent) : "unknown";
+
+    // Simple parsing of userAgent to get platform and device type
+    let deviceType = "desktop";
+    if (/Mobi|Android/i.test(userAgent)) {
+      deviceType = "smart device";
+    }
+
+    // Extract platform name and version from userAgent (basic)
+    let platformName = "unknown";
+    let platformVersion = "unknown";
+    const platformMatch = userAgent.match(/\(([^)]+)\)/);
+    if (platformMatch && platformMatch[1]) {
+      const platformInfo = platformMatch[1].split(";");
+      if (platformInfo.length > 0) {
+        platformName = platformInfo[0].trim();
+        if (platformInfo.length > 1) {
+          platformVersion = platformInfo[1].trim();
+        }
+      }
+    }
+
+    // Browser name from config or fallback
+    const browserName = config.browser.name || "unknown";
+
+    return {
+      browser: {
+        name: browserName,
+        version: browserVersion,
+      },
+      device: deviceType,
+      platform: {
+        name: platformName,
+        version: platformVersion,
+      },
+    };
+  }
 }
 
 setWorldConstructor(CustomWorld);
