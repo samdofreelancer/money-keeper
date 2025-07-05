@@ -71,6 +71,7 @@ function generateReport() {
 
       function formatDateTime(timestamp) {
         const date = new Date(timestamp);
+        // Use local timezone for formatting
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
         const day = String(date.getDate()).padStart(2, "0");
@@ -212,7 +213,7 @@ function generateReport() {
           data: [
             { label: "Git Branch", value: metadata.git.branch },
             { label: "Git Commit ID", value: metadata.git.commitId },
-            { label: "Browser", value: `${metadata.browser.name} ${metadata.browser.version}` },
+            { label: "Browser", value: `${metadata.browser.name} with version ${metadata.browser.version}` },
             { label: "Total Execution Time", value: totalExecutionTime },
             { label: "Report Generation Time", value: reportGenerationDateTime },
           ],
