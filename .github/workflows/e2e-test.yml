@@ -71,7 +71,7 @@ jobs:
           done
 
       - name: Run e2e tests
-        run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} e2e npm run test:run-and-report
+        run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} e2e npm run test:run-and-report
 
       - name: Upload report for Github Pages
         if: always()

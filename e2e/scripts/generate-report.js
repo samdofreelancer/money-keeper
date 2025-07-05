@@ -104,10 +104,48 @@ function generateReport() {
         gitCommitId = "unknown";
       }
 
-      // Add git info to metadata
+      // Construct GitHub branch URL if GITHUB_REPOSITORY is available or fallback to local git remote URL
+      let gitBranchUrl = null;
+      if (process.env.GITHUB_REPOSITORY && gitBranch !== "unknown") {
+        const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+        gitBranchUrl = `https://github.com/${owner}/${repo}/tree/${gitBranch}`;
+      } else if (gitBranch !== "unknown") {
+        try {
+          const remoteUrl = execSync("git config --get remote.origin.url").toString().trim();
+          // remoteUrl can be in formats like:
+          // git@github.com:owner/repo.git or https://github.com/owner/repo.git
+          let ownerRepoMatch = null;
+          if (remoteUrl.startsWith("git@")) {
+            // git@github.com:owner/repo.git
+            ownerRepoMatch = remoteUrl.match(/git@[^:]+:([^/]+)\/(.+)\.git/);
+          } else if (remoteUrl.startsWith("https://") || remoteUrl.startsWith("http://")) {
+            // https://github.com/owner/repo.git
+            ownerRepoMatch = remoteUrl.match(/https?:\/\/[^/]+\/([^/]+)\/(.+)\.git/);
+          }
+          if (ownerRepoMatch && ownerRepoMatch.length === 3) {
+            const owner = ownerRepoMatch[1];
+            const repo = ownerRepoMatch[2];
+            gitBranchUrl = `https://github.com/${owner}/${repo}/tree/${gitBranch}`;
+          }
+        } catch (error) {
+          // ignore errors and fallback to no hyperlink
+        }
+      }
+
+      // Construct GitHub commit URL if owner and repo are available
+      let gitCommitUrl = null;
+      if (gitBranchUrl) {
+        gitCommitUrl = gitBranchUrl.replace(/\/tree\/.+$/, `/commit/${gitCommitId}`);
+      }
+
+      // Add git info to metadata with branch and commitId as hyperlinks if URLs available
       metadata.git = {
-        branch: gitBranch,
-        commitId: gitCommitId,
+        branch: gitBranchUrl
+          ? `<a href="${gitBranchUrl}" target="_blank" rel="noopener noreferrer">${gitBranch}</a>`
+          : gitBranch,
+        commitId: gitCommitUrl
+          ? `<a href="${gitCommitUrl}" target="_blank" rel="noopener noreferrer">${gitCommitId}</a>`
+          : gitCommitId,
       };
 
       // Use total execution time from environment variable if provided
