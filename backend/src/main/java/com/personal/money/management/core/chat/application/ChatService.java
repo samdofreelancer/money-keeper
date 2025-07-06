@@ -4,13 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.personal.money.management.core.history.application.HistoryService;
+import com.personal.money.management.core.history.domain.Message;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
 
 @Service
 public class ChatService {
 
     private final WebClient webClient;
+
+    private final HistoryService historyService;
 
     @Value("${google.gemini.api.url}")
     private String geminiApiUrl;
@@ -18,11 +24,16 @@ public class ChatService {
     @Value("${google.gemini.api.key}")
     private String geminiApiKey;
 
-    public ChatService(WebClient.Builder webClientBuilder) {
+    public ChatService(WebClient.Builder webClientBuilder, HistoryService historyService) {
         this.webClient = webClientBuilder.build();
+        this.historyService = historyService;
     }
 
-    public String chatWithGemini(String userMessage) {
+    public String chatWithGemini(Long conversationId, String userId, String userMessage) {
+        // Save user message
+        Message userMsg = new Message(null, conversationId, "user", userMessage, LocalDateTime.now());
+        historyService.saveMessage(userMsg);
+
         // Construct request payload according to Google Gemini API spec
         String requestBody = "{ \"contents\": [ { \"parts\": [ { \"text\": \"" + userMessage + "\" } ] } ] }";
 
@@ -58,6 +69,10 @@ public class ChatService {
         } catch (Exception e) {
             content = "Error parsing response";
         }
+
+        // Save AI message
+        Message aiMsg = new Message(null, conversationId, "ai", content, LocalDateTime.now());
+        historyService.saveMessage(aiMsg);
 
         return content;
     }

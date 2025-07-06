@@ -1,25 +1,35 @@
 <template>
-  <div class="chat-container">
-    <div class="messages" ref="messagesContainer">
-      <div v-for="(msg, index) in messages" :key="index" :id="`message-${index}`" :class="['message-wrapper', msg.sender]">
-        <div class="message-content" v-html="formatMessage(msg.text)"></div>
-      </div>
-      <div v-if="isTyping" class="typing-indicator">
-        Processing
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+  <div class="chat-history-container">
+    <div class="conversations">
+      <button @click="startNewConversation">New Conversation</button>
+      <ul>
+        <li v-for="conversation in conversations" :key="conversation.id" @click="loadConversation(conversation.id)">
+          {{ conversation.title }}
+        </li>
+      </ul>
     </div>
-    <form @submit.prevent="sendMessage" class="input-form">
-      <input v-model="inputMessage" type="text" placeholder="Type your message..." required />
-      <button type="submit">Send</button>
-    </form>
+    <div class="chat-container">
+      <div class="messages" ref="messagesContainer">
+        <div v-for="(msg, index) in messages" :key="index" :id="`message-${index}`" :class="['message-wrapper', msg.sender]">
+          <div class="message-content" v-html="formatMessage(msg.text)"></div>
+        </div>
+        <div v-if="isTyping" class="typing-indicator">
+          Processing
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <form @submit.prevent="sendMessage" class="input-form">
+        <input v-model="inputMessage" type="text" placeholder="Type your message..." required />
+        <button type="submit">Send</button>
+      </form>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, nextTick, watch } from 'vue';
+import { defineComponent, ref, nextTick, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { marked } from 'marked';
 
@@ -28,16 +38,56 @@ interface Message {
   sender: 'user' | 'ai';
 }
 
+interface Conversation {
+  id: number;
+  title: string;
+}
+
 export default defineComponent({
   name: 'ChatComponent',
   setup() {
     const messages = ref<Message[]>([]);
+    const conversations = ref<Conversation[]>([]);
+    const currentConversationId = ref<number | null>(null);
     const inputMessage = ref('');
     const messagesContainer = ref<HTMLElement | null>(null);
     const isTyping = ref(false);
+    const userId = ref('123'); // Replace with actual user ID
+
+    const fetchConversations = async () => {
+      try {
+        const response = await axios.get(`/api/history/conversations?userId=${userId.value}`);
+        conversations.value = response.data;
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
+      }
+    };
+
+    const startNewConversation = async () => {
+      try {
+        const response = await axios.post('/api/history/conversations', { userId: userId.value, title: 'New Conversation' });
+        currentConversationId.value = response.data.id;
+        messages.value = [];
+        fetchConversations();
+      } catch (error) {
+        console.error('Error starting new conversation:', error);
+      }
+    };
+
+    const loadConversation = async (conversationId: number) => {
+      try {
+        const response = await axios.get(`/api/history/conversations/${conversationId}/messages`);
+        messages.value = response.data.map((msg: any) => ({ text: msg.content, sender: msg.sender }));
+        currentConversationId.value = conversationId;
+      } catch (error) {
+        console.error('Error loading conversation:', error);
+      }
+    };
 
     const sendMessage = async () => {
-      if (!inputMessage.value.trim()) return;
+      if (!inputMessage.value.trim() || !currentConversationId.value) return;
+
+      const isNewConversation = messages.value.length === 0;
 
       // Add user message
       messages.value.push({ text: inputMessage.value, sender: 'user' });
@@ -46,7 +96,12 @@ export default defineComponent({
       isTyping.value = true;
 
       try {
-        const response = await axios.post('/api/chat', { message: currentMessage });
+        if (isNewConversation) {
+          await axios.put(`/api/history/conversations/${currentConversationId.value}/title`, { title: currentMessage });
+          fetchConversations();
+        }
+
+        const response = await axios.post('/api/chat', { conversationId: currentConversationId.value, userId: userId.value, message: currentMessage });
         const aiReply = response.data;
 
         // Add AI response
@@ -69,6 +124,10 @@ export default defineComponent({
       }
     }, { deep: true });
 
+    onMounted(() => {
+      fetchConversations();
+    });
+
     // Format message text to support line breaks and basic markdown if needed
     const formatMessage = (text: string) => {
       if (!text) return '';
@@ -77,18 +136,47 @@ export default defineComponent({
 
     return {
       messages,
+      conversations,
       inputMessage,
       sendMessage,
       messagesContainer,
       formatMessage,
       isTyping,
+      startNewConversation,
+      loadConversation,
     };
   },
 });
 </script>
 
 <style scoped>
+.chat-history-container {
+  display: flex;
+  height: 100%;
+}
+
+.conversations {
+  width: 200px;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+}
+
+.conversations ul {
+  list-style: none;
+  padding: 0;
+}
+
+.conversations li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.conversations li:hover {
+  background-color: #f0f0f0;
+}
+
 .chat-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
   height: 100%;
