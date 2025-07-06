@@ -20,12 +20,30 @@ export async function deleteAccountById(id: string): Promise<void> {
   await axios.delete(`${API_BASE_URL}/accounts/${id}`);
 }
 
-export async function getAccountByName(name: string): Promise<Account | undefined> {
+export async function getAccountByName(
+  name: string
+): Promise<Account | undefined> {
   const accounts = await getAllAccounts();
-  return accounts.find((acc: any) => acc.accountName === name);
+  // Support both 'name' and 'accountName' for compatibility
+  return accounts.find(
+    (acc: Account & { accountName?: string }) =>
+      acc.name === name || acc.accountName === name
+  );
 }
 
-export async function createAccount({ name, type, balance, currency = "USD", description }: { name: string; type: string; balance: number; currency?: string; description?: string; }) {
+export async function createAccount({
+  name,
+  type,
+  balance,
+  currency = "USD",
+  description,
+}: {
+  name: string;
+  type: string;
+  balance: number;
+  currency?: string;
+  description?: string;
+}) {
   // The backend expects 'accountName' and 'initBalance' fields
   await axios.post(`${API_BASE_URL}/accounts`, {
     accountName: name,
