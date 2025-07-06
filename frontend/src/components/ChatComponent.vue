@@ -35,10 +35,12 @@ export default defineComponent({
 
       // Add user message
       messages.value.push({ text: inputMessage.value, sender: 'user' });
+      const currentMessage = inputMessage.value;
+      inputMessage.value = '';
       isTyping.value = true;
 
       try {
-        const response = await axios.post('/api/chat', { message: inputMessage.value });
+        const response = await axios.post('/api/chat', { message: currentMessage });
         const aiReply = response.data;
 
         // Add AI response
@@ -48,8 +50,6 @@ export default defineComponent({
       } finally {
         isTyping.value = false;
       }
-
-      inputMessage.value = '';
 
       // Scroll to bottom after message added
       await nextTick();
@@ -72,6 +72,7 @@ export default defineComponent({
       sendMessage,
       messagesContainer,
       formatMessage,
+      isTyping,
     };
   },
 });
