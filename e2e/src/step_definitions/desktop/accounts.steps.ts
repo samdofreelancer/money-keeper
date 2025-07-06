@@ -238,7 +238,7 @@ When("I confirm the account delete action", async function () {
   const accountsPage = new AccountsPage(this.page);
   await accountsPage.page
     .getByRole("button", { name: /Confirm|Yes|Delete/i })
-    .click();
+    .click({ timeout: 5000 });
 });
 
 Given(
