@@ -4,7 +4,12 @@
       <div v-for="(msg, index) in messages" :key="index" :id="`message-${index}`" :class="['message-wrapper', msg.sender]">
         <div class="message-content" v-html="formatMessage(msg.text)"></div>
       </div>
-      <div v-if="isTyping" class="typing-indicator">Typing...</div>
+      <div v-if="isTyping" class="typing-indicator">
+        Processing
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
     <form @submit.prevent="sendMessage" class="input-form">
       <input v-model="inputMessage" type="text" placeholder="Type your message..." required />
@@ -144,8 +149,35 @@ button {
   border-radius: 4px;
 }
 .typing-indicator {
-  font-style: italic;
-  color: #666;
+  display: flex;
+  align-items: center;
   margin: 5px 0;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  margin: 0 2px;
+  background-color: #666;
+  border-radius: 50%;
+  display: inline-block;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1.0);
+  }
 }
 </style>
