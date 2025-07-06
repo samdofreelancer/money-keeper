@@ -1,7 +1,7 @@
 <template>
   <div class="chat-container">
     <div class="messages" ref="messagesContainer">
-      <div v-for="(msg, index) in messages" :key="index" :class="['message-wrapper', msg.sender]">
+      <div v-for="(msg, index) in messages" :key="index" :id="`message-${index}`" :class="['message-wrapper', msg.sender]">
         <div class="message-content" v-html="formatMessage(msg.text)"></div>
       </div>
       <div v-if="isTyping" class="typing-indicator">Typing...</div>
@@ -55,12 +55,12 @@ export default defineComponent({
       };
 
     watch(messages, async () => {
+      if (messages.value.length === 0) return;
       await nextTick();
-      if (messagesContainer.value) {
-        const lastMessage = messagesContainer.value.querySelector('.message-wrapper:last-child');
-        if (lastMessage) {
-          lastMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+      const lastMessageIndex = messages.value.length - 1;
+      const lastMessageElement = document.getElementById(`message-${lastMessageIndex}`);
+      if (lastMessageElement) {
+        lastMessageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, { deep: true });
 
