@@ -2,16 +2,19 @@
   <div class="sidebar">
     <ul>
       <li>
-        <router-link to="/categories" active-class="active-link">Categories</router-link>
+        <router-link to="/accounts" active-class="active-link">Accounts</router-link>
       </li>
       <li>
         <router-link to="/transactions" active-class="active-link">Transactions</router-link>
       </li>
       <li>
+        <router-link to="/categories" active-class="active-link">Categories</router-link>
+      </li>
+      <li>
         <router-link to="/reports" active-class="active-link">Reports</router-link>
       </li>
       <li>
-        <router-link to="/accounts" active-class="active-link">Accounts</router-link>
+        <router-link to="/chat" active-class="active-link">Chat</router-link>
       </li>
     </ul>
   </div>

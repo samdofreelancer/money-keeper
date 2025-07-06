@@ -28,6 +28,10 @@
           <el-icon><TrendCharts /></el-icon>
           <span>Reports</span>
         </el-menu-item>
+        <el-menu-item index="chat">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>Chat</span>
+        </el-menu-item>
       </el-menu>
     </aside>
     
