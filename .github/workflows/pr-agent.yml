@@ -1,4 +1,4 @@
-name: Qodo Merge Documentation
+name: PR Agent for Code Review
 
 on:
   push:
