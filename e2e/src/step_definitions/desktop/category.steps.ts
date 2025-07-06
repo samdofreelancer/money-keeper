@@ -3,7 +3,6 @@ import { expect } from "@playwright/test";
 
 import { generateUniqueName } from "../../utils/testDataHelper";
 import { createCategory } from "../../api/categoryApiHelper";
-import { config } from "../../config/env.config";
 import { logger } from "../../support/logger";
 import { CustomWorld } from "../../support/world";
 
