@@ -52,17 +52,15 @@ export default defineComponent({
         isTyping.value = false;
       }
 
-      // Scroll to bottom after message added
-      await nextTick();
-      if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-      }
-    };
+      };
 
     watch(messages, async () => {
       await nextTick();
       if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        const lastMessage = messagesContainer.value.querySelector('.message-wrapper:last-child');
+        if (lastMessage) {
+          lastMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
     }, { deep: true });
 
