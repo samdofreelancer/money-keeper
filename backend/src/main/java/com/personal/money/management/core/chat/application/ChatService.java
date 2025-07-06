@@ -26,7 +26,7 @@ public class ChatService {
         String requestBody = "{ \"contents\": [ { \"parts\": [ { \"text\": \"" + userMessage + "\" } ] } ] }";
 
         return webClient.post()
-                .uri(geminiApiUrl.replace(":generateContent", ":streamGenerateContent"))
+                .uri(geminiApiUrl + ":streamGenerateContent")
                 .header("X-goog-api-key", geminiApiKey)
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBody)
