@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class ChatService {
@@ -22,20 +22,27 @@ public class ChatService {
         this.webClient = webClientBuilder.build();
     }
 
-    public Flux<String> chatWithGemini(String userMessage) {
+    public String chatWithGemini(String userMessage) {
+        // Construct request payload according to Google Gemini API spec
         String requestBody = "{ \"contents\": [ { \"parts\": [ { \"text\": \"" + userMessage + "\" } ] } ] }";
 
-        return webClient.post()
-                .uri(geminiApiUrl + ":streamGenerateContent")
+        // Call Google Gemini LLM API
+        Mono<String> responseMono = webClient.post()
+                .uri(geminiApiUrl)
                 .header("X-goog-api-key", geminiApiKey)
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBody)
                 .retrieve()
-                .bodyToFlux(String.class)
-                .map(this::extractTextFromResponse);
-    }
+                .bodyToMono(String.class);
 
-    private String extractTextFromResponse(String response) {
+        // Blocking for simplicity; consider reactive approach in real app
+        String response = responseMono.block();
+
+        // Extract and return the generated text from response JSON (simplified)
+        // In real implementation, parse JSON properly
+
+        // Simple parsing to extract the first candidate's text part
+        String content = "";
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
@@ -45,12 +52,13 @@ public class ChatService {
                 JsonNode contentNode = firstCandidate.path("content");
                 JsonNode parts = contentNode.path("parts");
                 if (parts.isArray() && parts.size() > 0) {
-                    return parts.get(0).path("text").asText();
+                    content = parts.get(0).path("text").asText();
                 }
             }
         } catch (Exception e) {
-            return "Error parsing response";
+            content = "Error parsing response";
         }
-        return "";
+
+        return content;
     }
 }
