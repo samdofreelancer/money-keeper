@@ -82,6 +82,9 @@ function updateActiveMenu() {
   } else if (path.startsWith('/reports')) {
     activeMenu.value = 'reports'
     activeMenuLabel.value = 'Reports'
+  } else if (path.startsWith('/chat')) {
+    activeMenu.value = 'chat'
+    activeMenuLabel.value = 'Chat'
   } else {
     activeMenu.value = 'categories'
     activeMenuLabel.value = 'Categories'

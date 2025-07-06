@@ -4,6 +4,7 @@
       <div v-for="(msg, index) in messages" :key="index" :class="['message-wrapper', msg.sender]">
         <div class="message-content" v-html="formatMessage(msg.text)"></div>
       </div>
+      <div v-if="isTyping" class="typing-indicator">Typing...</div>
     </div>
     <form @submit.prevent="sendMessage" class="input-form">
       <input v-model="inputMessage" type="text" placeholder="Type your message..." required />
@@ -27,12 +28,14 @@ export default defineComponent({
     const messages = ref<Message[]>([]);
     const inputMessage = ref('');
     const messagesContainer = ref<HTMLElement | null>(null);
+    const isTyping = ref(false);
 
     const sendMessage = async () => {
       if (!inputMessage.value.trim()) return;
 
       // Add user message
       messages.value.push({ text: inputMessage.value, sender: 'user' });
+      isTyping.value = true;
 
       try {
         const response = await axios.post('/api/chat', { message: inputMessage.value });
@@ -42,6 +45,8 @@ export default defineComponent({
         messages.value.push({ text: aiReply, sender: 'ai' });
       } catch (error) {
         messages.value.push({ text: 'Error: Unable to get response from AI.', sender: 'ai' });
+      } finally {
+        isTyping.value = false;
       }
 
       inputMessage.value = '';
@@ -132,5 +137,10 @@ button {
   cursor: pointer;
   margin-left: 8px;
   border-radius: 4px;
+}
+.typing-indicator {
+  font-style: italic;
+  color: #666;
+  margin: 5px 0;
 }
 </style>
