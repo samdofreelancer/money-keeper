@@ -15,6 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, nextTick, watch } from 'vue';
+import axios from 'axios';
 import { marked } from 'marked';
 
 interface Message {
@@ -40,29 +41,11 @@ export default defineComponent({
       isTyping.value = true;
 
       try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ message: currentMessage }),
-        });
+        const response = await axios.post('/api/chat', { message: currentMessage });
+        const aiReply = response.data;
 
-        if (!response.body) {
-          throw new Error('Response body is null');
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let aiReply = '';
+        // Add AI response
         messages.value.push({ text: aiReply, sender: 'ai' });
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          aiReply += decoder.decode(value, { stream: true });
-          messages.value[messages.value.length - 1].text = aiReply;
-        }
       } catch (error) {
         messages.value.push({ text: 'Error: Unable to get response from AI.', sender: 'ai' });
       } finally {
