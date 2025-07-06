@@ -16,6 +16,7 @@
 <script lang="ts">
 import { defineComponent, ref, nextTick } from 'vue';
 import axios from 'axios';
+import { marked } from 'marked';
 
 interface Message {
   text: string;
@@ -61,9 +62,7 @@ export default defineComponent({
     // Format message text to support line breaks and basic markdown if needed
     const formatMessage = (text: string) => {
       if (!text) return '';
-      // Escape HTML and replace newlines with <br>
-      const escaped = text.replace(/&/g, "&amp;").replace(/</g, "<").replace(/>/g, ">");
-      return escaped.replace(/\n/g, "<br>");
+      return marked(text);
     };
 
     return {
