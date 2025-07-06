@@ -4,7 +4,8 @@ Feature: Accounts Management
   So that I can add, update, delete, filter, and view accounts
 
   Background:
-    Given I am on the Accounts page
+    Given I open the homepage
+    When I navigate to the Accounts page
 
   Scenario: Accounts page loads and displays UI elements
     Then I should see the heading "Accounts"

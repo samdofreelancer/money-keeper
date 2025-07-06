@@ -1,11 +1,10 @@
-// This file is now merged into accounts.feature and accounts-full.steps.ts. Please use those for all account scenarios.
-
 import { After, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import axios from "axios";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 
+import { config } from "../../config/env.config";
 import { CustomWorld } from "../../support/world";
 import { AccountsPage } from "../../pages/accounts.page";
 import {
@@ -17,8 +16,9 @@ import { logger } from "../../support/logger";
 
 dotenv.config();
 
-Given("I am on the Accounts page", async function (this: CustomWorld) {
-  await this.page.goto("http://localhost:5173/accounts");
+When("I navigate to the Accounts page", async function (this: CustomWorld) {
+  logger.info("Navigating to the Accounts page");
+  await this.page.goto(`${config.browser.baseUrl}/accounts`);
 });
 
 Then(
