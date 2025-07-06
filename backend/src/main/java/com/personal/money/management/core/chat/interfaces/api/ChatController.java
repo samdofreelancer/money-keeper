@@ -1,8 +1,9 @@
 package com.personal.money.management.core.chat.interfaces.api;
 
 import com.personal.money.management.core.chat.application.ChatService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -14,11 +15,10 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    @PostMapping
-    public ResponseEntity<String> chat(@RequestBody ChatRequest chatRequest) {
+    @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chat(@RequestBody ChatRequest chatRequest) {
         String userMessage = chatRequest.getMessage();
-        String response = chatService.chatWithGemini(userMessage);
-        return ResponseEntity.ok(response);
+        return chatService.chatWithGemini(userMessage);
     }
 
     public static class ChatRequest {
