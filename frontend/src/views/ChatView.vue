@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-view full-height">
+  <div class="chat-view">
     <ChatComponent />
   </div>
 </template>
@@ -18,17 +18,9 @@ export default defineComponent({
 
 <style scoped>
 .chat-view {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 10px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-.full-height {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  min-height: 0;
 }
 </style>

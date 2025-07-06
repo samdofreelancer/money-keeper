@@ -35,30 +35,32 @@
       </el-menu>
     </aside>
     
-    <header class="app-header">
-      <div class="header-content">
-        <el-breadcrumb>
-          <el-breadcrumb-item>Home</el-breadcrumb-item>
-          <el-breadcrumb-item>{{ activeMenuLabel }}</el-breadcrumb-item>
-        </el-breadcrumb>
-        <div class="header-right">
-          <el-dropdown>
-            <el-avatar size="small">U</el-avatar>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>Profile</el-dropdown-item>
-                <el-dropdown-item>Settings</el-dropdown-item>
-                <el-dropdown-item divided>Logout</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+    <div class="main-container">
+      <header class="app-header">
+        <div class="header-content">
+          <el-breadcrumb>
+            <el-breadcrumb-item>Home</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ activeMenuLabel }}</el-breadcrumb-item>
+          </el-breadcrumb>
+          <div class="header-right">
+            <el-dropdown>
+              <el-avatar size="small">U</el-avatar>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item>Profile</el-dropdown-item>
+                  <el-dropdown-item>Settings</el-dropdown-item>
+                  <el-dropdown-item divided>Logout</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
       
-    <main class="main-content">
-      <router-view />
-    </main>
+      <main class="main-content">
+        <router-view />
+      </main>
+    </div>
   </div>
 </template>
 
@@ -103,6 +105,13 @@ watch(() => route.path, () => {
   align-items: center;
   justify-content: center;
   background: #2b2f3a;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .header-content {

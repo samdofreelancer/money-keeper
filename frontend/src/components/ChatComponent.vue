@@ -81,7 +81,7 @@ export default defineComponent({
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: 100%;
   border: 1px solid #ccc;
   padding: 10px;
   background-color: #f9f9f9;
