@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, nextTick } from 'vue';
+import { defineComponent, ref, nextTick, watch } from 'vue';
 import axios from 'axios';
 import { marked } from 'marked';
 
@@ -58,6 +58,13 @@ export default defineComponent({
         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
       }
     };
+
+    watch(messages, async () => {
+      await nextTick();
+      if (messagesContainer.value) {
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+      }
+    }, { deep: true });
 
     // Format message text to support line breaks and basic markdown if needed
     const formatMessage = (text: string) => {
