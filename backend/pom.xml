@@ -192,6 +192,7 @@
                             <version>1.18.26</version>
                         </path>
                     </annotationProcessorPaths>
+                    <generatedSourcesDirectory>${project.build.directory}/generated-sources/annotations</generatedSourcesDirectory>
                 </configuration>
             </plugin>
         </plugins>
