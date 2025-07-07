@@ -10,13 +10,6 @@ public interface AccountMapper {
 
     AccountMapper INSTANCE = Mappers.getMapper(AccountMapper.class);
 
-    @Mapping(target = "id", source = "entity.id")
-    @Mapping(target = "accountName", source = "entity.accountName")
-    @Mapping(target = "initBalance", source = "entity.initBalance")
-    @Mapping(target = "type", source = "entity.type")
-    @Mapping(target = "currency", source = "entity.currency")
-    @Mapping(target = "description", source = "entity.description")
-    @Mapping(target = "active", source = "entity.active")
     default Account toDomain(AccountEntity entity) {
         if (entity == null) {
             return null;
