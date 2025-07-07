@@ -2,7 +2,6 @@ package com.personal.money.management.core.account.infrastructure.persistence;
 
 import com.personal.money.management.core.account.domain.model.Account;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
@@ -22,6 +21,5 @@ public interface AccountMapper {
         );
     }
 
-    @Mapping(target = "id", source = "account.id")
     AccountEntity toEntity(Account account);
 }

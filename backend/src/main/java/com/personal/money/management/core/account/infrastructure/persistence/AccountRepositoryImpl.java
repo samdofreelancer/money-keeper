@@ -46,6 +46,9 @@ public class AccountRepositoryImpl implements AccountRepository {
 
     @Override
     public Optional<Account> findByAccountName(String accountName) {
+        if (accountName == null) {
+            return Optional.empty();
+        }
         return jpaRepository.findByAccountNameIgnoreCase(accountName)
                 .map(mapper::toDomain);
     }
