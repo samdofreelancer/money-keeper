@@ -8,6 +8,7 @@ import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
+import com.personal.money.management.core.category.infrastructure.persistence.IconRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,12 +27,14 @@ import static org.mockito.Mockito.*;
  */
 class CategoryServiceTest {
     private CategoryRepository categoryRepository;
+
     private CategoryService categoryService;
 
     @BeforeEach
     void setUp() {
         categoryRepository = mock(CategoryRepository.class);
-        categoryService = new CategoryService(categoryRepository);
+        IconRepository iconRepository = mock(IconRepository.class);
+        categoryService = new CategoryService(categoryRepository, iconRepository);
     }
 
     @Test
