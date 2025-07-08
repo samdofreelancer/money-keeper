@@ -2,6 +2,7 @@ package com.personal.money.management.core.category.interfaces.api;
 
 import com.personal.money.management.core.category.application.CategoryService;
 import com.personal.money.management.core.category.domain.model.Category;
+import com.personal.money.management.core.category.domain.model.Icon;
 import com.personal.money.management.core.category.interfaces.api.CategoryMapper;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryRequest;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryResponse;
@@ -41,6 +42,11 @@ public class CategoryController {
         return categories.stream()
                 .map(CategoryMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/icons")
+    public List<Icon> getAvailableIcons() {
+        return categoryService.getAllIcons();
     }
 
     @PutMapping("/{id}")

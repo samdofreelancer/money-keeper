@@ -97,18 +97,18 @@
         </el-form-item>
         
         <el-form-item label="Icon" prop="icon" data-testid="form-item-icon">
-          <el-select v-model="categoryForm.icon" class="icon-select" data-testid="select-icon">
-            <el-option
-              v-for="icon in availableIcons"
-              :key="icon.value"
-              :label="icon.label"
-              :value="icon.value"
-              data-testid="option-icon"
-            >
-              <el-icon><component :is="icon.value" /></el-icon>
-              <span class="ml-2">{{ icon.label }}</span>
-            </el-option>
-          </el-select>
+        <el-select v-model="categoryForm.icon" class="icon-select" data-testid="select-icon">
+          <el-option
+            v-for="icon in icons"
+            :key="icon.value"
+            :label="icon.label"
+            :value="icon.value"
+            data-testid="option-icon"
+          >
+            <el-icon><component :is="icon.value" /></el-icon>
+            <span class="ml-2">{{ icon.label }}</span>
+          </el-option>
+        </el-select>
         </el-form-item>
 
         <el-form-item label="Type" prop="type" data-testid="form-item-type">
@@ -178,6 +178,7 @@ import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
 import type { FormInstance } from 'element-plus'
 import type { Category, CategoryCreate } from '@/api/category'
+import axios from 'axios'
 
 const categoryStore = useCategoryStore()
 const dialogVisible = ref(false)
@@ -195,6 +196,8 @@ const categoryForm = ref<CategoryCreate>({
   type: 'EXPENSE'
 })
 
+const icons = ref<{ label: string; value: string }[]>([])
+
 const rules = {
   name: [
     { required: true, message: 'Please input category name', trigger: ['blur', 'change'] },
@@ -210,20 +213,6 @@ const rules = {
   icon: [{ required: true, message: 'Please select an icon', trigger: 'change' }],
   type: [{ required: true, message: 'Please select a type', trigger: 'change' }]
 }
-
-const availableIcons = [
-  { label: 'Grid', value: 'Grid' },
-  { label: 'Shopping', value: 'ShoppingCart' },
-  { label: 'Food', value: 'Food' },
-  { label: 'Transport', value: 'Van' },
-  { label: 'House', value: 'House' },
-  { label: 'Bills', value: 'Document' },
-  { label: 'Entertainment', value: 'Film' },
-  { label: 'Health', value: 'FirstAidKit' },
-  { label: 'Education', value: 'Reading' },
-  { label: 'Salary', value: 'Money' },
-  { label: 'Investment', value: 'TrendCharts' }
-]
 
 const filteredCategories = computed(() => {
   let categories = categoryStore.categories
@@ -274,8 +263,25 @@ const availableParents = computed(() => {
   return categoryStore.categories.filter(c => c.id !== editingId.value)
 })
 
+async function fetchIcons() {
+  try {
+    const response = await axios.get('/api/categories/icons')
+    // Map backend Icon objects to frontend expected format
+    icons.value = response.data.map((icon: any) => ({
+      label: icon.label,
+      value: icon.iconValue
+    }))
+  } catch (error) {
+    console.error('Failed to fetch icons:', error)
+    ElMessage.error('Failed to load category icons. Please try again later.')
+    // Provide fallback icons or show error to user
+    icons.value = [{ label: 'Default', value: 'Grid' }]
+  }
+}
+
 onMounted(async () => {
   await categoryStore.fetchCategories()
+  await fetchIcons()
 })
 
 function getIconColor(type: string) {
