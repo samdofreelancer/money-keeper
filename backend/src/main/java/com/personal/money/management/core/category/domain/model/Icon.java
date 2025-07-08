@@ -37,14 +37,20 @@ public class Icon {
     }
 
     public void setLabel(String label) {
+        if (label == null) {
+            throw new IllegalArgumentException("Label cannot be null");
+        }
         this.label = label;
     }
-
+    
     public String getIconValue() {
         return iconValue;
     }
-
+    
     public void setIconValue(String iconValue) {
+        if (iconValue == null) {
+            throw new IllegalArgumentException("Icon value cannot be null");
+        }
         this.iconValue = iconValue;
     }
 }
