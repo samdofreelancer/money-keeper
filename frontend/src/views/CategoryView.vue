@@ -273,6 +273,8 @@ async function fetchIcons() {
     }))
   } catch (error) {
     console.error('Failed to fetch icons:', error)
+    // Provide fallback icons or show error to user
+    icons.value = [{ label: 'Default', value: 'Grid' }]
   }
 }
 
