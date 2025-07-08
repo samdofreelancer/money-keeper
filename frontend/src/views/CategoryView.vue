@@ -273,6 +273,7 @@ async function fetchIcons() {
     }))
   } catch (error) {
     console.error('Failed to fetch icons:', error)
+    ElMessage.error('Failed to load category icons. Please try again later.')
     // Provide fallback icons or show error to user
     icons.value = [{ label: 'Default', value: 'Grid' }]
   }

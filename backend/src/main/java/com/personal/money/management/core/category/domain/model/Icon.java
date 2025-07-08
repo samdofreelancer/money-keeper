@@ -6,6 +6,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Column;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "icons")
@@ -15,9 +17,13 @@ public class Icon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Label cannot be blank")
+    @NotNull(message = "Label cannot be null")
     private String label;
 
     @Column(name = "icon_value")
+    @NotBlank(message = "Icon value cannot be blank")
+    @NotNull(message = "Icon value cannot be null")
     private String iconValue;
 
     public Icon() {
