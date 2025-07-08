@@ -1,7 +1,11 @@
 package com.personal.money.management.core.account.infrastructure.persistence;
 
-import com.personal.money.management.core.account.domain.model.Currency;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "currency")
