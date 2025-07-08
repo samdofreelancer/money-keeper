@@ -21,17 +21,6 @@ public class CurrencyRepositoryImpl implements CurrencyRepository {
     }
 
     @Override
-    public Optional<Currency> findByCode(String code) {
-        CurrencyEntity entity = jpaRepository.findByCode(code);
-        return entity != null ? Optional.of(toDomain(entity)) : Optional.empty();
-    }
-
-    @Override
-    public boolean existsByCode(String code) {
-        return jpaRepository.existsByCode(code);
-    }
-
-    @Override
     public Currency save(Currency currency) {
         CurrencyEntity entity = new CurrencyEntity();
         entity.setCode(currency.getCode());

@@ -4,9 +4,9 @@ import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.domain.model.AccountType;
 import com.personal.money.management.core.account.infrastructure.persistence.AccountEntity;
 import com.personal.money.management.core.account.infrastructure.persistence.AccountMapper;
-import com.personal.money.management.core.account.infrastructure.persistence.AccountMapperImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
@@ -19,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AccountMapperTest {
-    private final AccountMapper mapper = new AccountMapperImpl();
+    @Autowired
+    private AccountMapper mapper;
 
     @Test
     void testMapperFunctionality() {
