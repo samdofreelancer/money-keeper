@@ -7,7 +7,9 @@ import com.personal.money.management.core.category.application.exception.Categor
 import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
+import com.personal.money.management.core.category.domain.model.Icon;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
+import com.personal.money.management.core.category.infrastructure.persistence.IconRepository;
 
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -18,9 +20,11 @@ import java.util.List;
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final IconRepository iconRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, IconRepository iconRepository) {
         this.categoryRepository = categoryRepository;
+        this.iconRepository = iconRepository;
     }
 
     private Category getParentCategory(Long parentId) {
@@ -92,5 +96,9 @@ public class CategoryService {
         } catch (OptimisticLockingFailureException e) {
             throw new CategoryConflictException("Category delete failed due to concurrent modification. Please retry.", e);
         }
+    }
+
+    public List<Icon> getAllIcons() {
+        return iconRepository.findAll();
     }
 }
