@@ -14,11 +14,4 @@ public interface AccountJpaRepository extends JpaRepository<AccountEntity, Long>
 
     Optional<AccountEntity> findByAccountNameIgnoreCase(String accountName);
 
-    // Additional useful queries
-    List<AccountEntity> findByActiveTrue();
-    List<AccountEntity> findByType(AccountType type);
-    List<AccountEntity> findByCurrency(String currency);
-
-    @Query("SELECT a FROM AccountEntity a WHERE a.accountName LIKE %:name%")
-    List<AccountEntity> findByAccountNameContaining(@Param("name") String name);
 }
