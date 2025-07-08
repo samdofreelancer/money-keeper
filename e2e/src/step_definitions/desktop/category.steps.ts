@@ -1,9 +1,8 @@
-import { Given, When, Then } from "@cucumber/cucumber";
+import { When, Then, Given } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 
 import { generateUniqueName } from "../../utils/testDataHelper";
 import { createCategory } from "../../api/categoryApiHelper";
-import { config } from "../../config/env.config";
 import { logger } from "../../support/logger";
 import { CustomWorld } from "../../support/world";
 
@@ -61,10 +60,6 @@ Given(
     this.createdCategoryIds.push(newCategory.id);
   }
 );
-
-Given("I open the homepage", async function (this: CustomWorld) {
-  await this.page.goto(config.browser.baseUrl);
-});
 
 When("I navigate to the Categories page", async function (this: CustomWorld) {
   if (this.categoryPage) {
