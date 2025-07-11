@@ -217,68 +217,73 @@ export class CategoryPage {
     try {
       logger.info(`Opening delete dialog for category: ${categoryName}`);
       
-      // Wait for category tree to be ready
-      await this.page.waitForSelector(".category-tree .tree-node-content", {
-        timeout: this.actionTimeout,
-      });
-      
-      // Find and hover over the category node to reveal action buttons
-      const categoryNode = this.categoryNode(categoryName);
-      await categoryNode.waitFor({ state: "visible", timeout: this.actionTimeout });
-      await categoryNode.hover();
-      await this.page.waitForTimeout(500); // Brief wait for hover effects
-      
-      // Find delete button (try primary selector, fallback to danger class)
-      let deleteButton = this.deleteButtonOnNode(categoryName);
-      
-      try {
-        await deleteButton.waitFor({ state: "visible", timeout: 3000 });
-      } catch (error) {
-        // Fallback: try alternative delete button selector
-        deleteButton = categoryNode.locator('button.el-button--danger, button[class*="danger"]');
-        await deleteButton.waitFor({ state: "visible", timeout: 3000 });
-      }
-      
-      // Click delete button
-      await deleteButton.click({ timeout: this.actionTimeout });
-      
-      // Wait for confirmation dialog (try primary selector, fallback to common alternatives)
-      let dialogSelector = ".el-dialog__wrapper";
-      
-      try {
-        await this.page.waitForSelector(dialogSelector, {
-          state: "visible",
-          timeout: 5000,
-        });
-      } catch (error) {
-        // Fallback: try alternative dialog selectors
-        const altSelectors = [".el-dialog", ".el-message-box", ".modal"];
-        let found = false;
-        
-        for (const selector of altSelectors) {
-          try {
-            await this.page.waitForSelector(selector, {
-              state: "visible", 
-              timeout: 2000,
-            });
-            dialogSelector = selector;
-            found = true;
-            break;
-          } catch (e) {
-            // Continue to next selector
-          }
-        }
-        
-        if (!found) {
-          throw new Error(`Delete confirmation dialog not found for category: ${categoryName}`);
-        }
-      }
+      await this.waitForCategoryTree();
+      const categoryNode = await this.prepareCategoryNode(categoryName);
+      const deleteButton = await this.findDeleteButton(categoryNode);
+      await this.clickDeleteButton(deleteButton);
+      await this.waitForConfirmationDialog();
       
       logger.info(`Delete confirmation dialog opened for: ${categoryName}`);
     } catch (error) {
       logger.error(`Failed to open delete dialog for ${categoryName}: ${error}`);
       throw error;
     }
+  }
+
+  private async waitForCategoryTree(): Promise<void> {
+    await this.page.waitForSelector(".category-tree .tree-node-content", {
+      timeout: this.actionTimeout,
+    });
+  }
+
+  private async prepareCategoryNode(categoryName: string): Promise<Locator> {
+    const categoryNode = this.categoryNode(categoryName);
+    await categoryNode.waitFor({ state: "visible", timeout: this.actionTimeout });
+    await categoryNode.hover();
+    await this.page.waitForTimeout(500); // Brief wait for hover effects
+    return categoryNode;
+  }
+
+  private async findDeleteButton(categoryNode: Locator): Promise<Locator> {
+    // Try primary delete button selector
+    const primaryDeleteButton = categoryNode.locator("button.el-button--danger").first();
+    
+    try {
+      await primaryDeleteButton.waitFor({ state: "visible", timeout: 3000 });
+      return primaryDeleteButton;
+    } catch (error) {
+      // Fallback: try alternative selector
+      const fallbackDeleteButton = categoryNode.locator('button[class*="danger"]');
+      await fallbackDeleteButton.waitFor({ state: "visible", timeout: 3000 });
+      return fallbackDeleteButton;
+    }
+  }
+
+  private async clickDeleteButton(deleteButton: Locator): Promise<void> {
+    await deleteButton.click({ timeout: this.actionTimeout });
+  }
+
+  private async waitForConfirmationDialog(): Promise<void> {
+    const dialogSelectors = [
+      ".el-dialog__wrapper",
+      ".el-dialog", 
+      ".el-message-box", 
+      ".modal"
+    ];
+
+    for (const selector of dialogSelectors) {
+      try {
+        await this.page.waitForSelector(selector, {
+          state: "visible",
+          timeout: selector === ".el-dialog__wrapper" ? 5000 : 2000,
+        });
+        return; // Success, exit early
+      } catch (error) {
+        // Continue to next selector
+      }
+    }
+    
+    throw new Error("Delete confirmation dialog not found");
   }
 
   async confirmDelete() {
