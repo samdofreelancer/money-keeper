@@ -1,4 +1,5 @@
 import { Page, Locator } from "@playwright/test";
+
 import { logger } from "../support/logger";
 import { config } from "../config/env.config";
 
@@ -36,9 +37,9 @@ export class CategoryRepository {
    */
   async waitForCategoryToAppear(categoryName: string): Promise<void> {
     const categoryLocator = this.getCategoryLocator(categoryName);
-    await categoryLocator.waitFor({ 
-      state: "visible", 
-      timeout: this.actionTimeout 
+    await categoryLocator.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
     });
     logger.info(`Category "${categoryName}" appeared`);
   }
@@ -48,9 +49,9 @@ export class CategoryRepository {
    */
   async waitForCategoryToDisappear(categoryName: string): Promise<void> {
     const categoryLocator = this.getCategoryLocator(categoryName);
-    await categoryLocator.waitFor({ 
-      state: "hidden", 
-      timeout: this.actionTimeout 
+    await categoryLocator.waitFor({
+      state: "hidden",
+      timeout: this.actionTimeout,
     });
     logger.info(`Category "${categoryName}" disappeared`);
   }
@@ -59,7 +60,9 @@ export class CategoryRepository {
    * Gets the count of visible categories
    */
   async getCategoryCount(): Promise<number> {
-    const categoryItems = this.page.locator('[data-testid="tree-node-content"]');
+    const categoryItems = this.page.locator(
+      '[data-testid="tree-node-content"]'
+    );
     return await categoryItems.count();
   }
 
@@ -67,17 +70,19 @@ export class CategoryRepository {
    * Gets all visible category names
    */
   async getVisibleCategoryNames(): Promise<string[]> {
-    const categoryItems = this.page.locator('[data-testid="tree-node-content"]');
+    const categoryItems = this.page.locator(
+      '[data-testid="tree-node-content"]'
+    );
     const count = await categoryItems.count();
     const names: string[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       const name = await categoryItems.nth(i).textContent();
       if (name) {
         names.push(name.trim());
       }
     }
-    
+
     return names;
   }
 
@@ -87,7 +92,7 @@ export class CategoryRepository {
   async isCategoryTreeLoaded(): Promise<boolean> {
     try {
       await this.page.waitForSelector('[data-testid="category-tree"]', {
-        timeout: this.actionTimeout
+        timeout: this.actionTimeout,
       });
       return true;
     } catch {

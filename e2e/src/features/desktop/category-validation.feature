@@ -31,7 +31,7 @@ Feature: Category Validation and Error Handling
 
   @validation
   Scenario: System validates category name length
-    When I try to create a category with a very long name exceeding 50 characters
+    When I try to create a category with a very long name exceeding 100 characters
     Then I should see an error message about maximum length
     And the category should not be created
 

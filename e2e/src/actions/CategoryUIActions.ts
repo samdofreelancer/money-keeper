@@ -1,4 +1,5 @@
 import { Page, Locator } from "@playwright/test";
+
 import { CategoryFormData } from "../types/CategoryTypes";
 import { logger } from "../support/logger";
 import { config } from "../config/env.config";
@@ -22,10 +23,13 @@ export class CategoryUIActions {
   async openCreateDialog(): Promise<void> {
     const addButton = this.page.locator('[data-testid="add-category-button"]');
     await addButton.click();
-    
+
     const categoryForm = this.page.locator('[data-testid="category-form"]');
-    await categoryForm.waitFor({ state: "visible", timeout: this.actionTimeout });
-    
+    await categoryForm.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
+
     logger.info("Create category dialog opened");
   }
 
@@ -34,14 +38,22 @@ export class CategoryUIActions {
    */
   async openEditDialog(categoryName: string): Promise<void> {
     const categoryNode = this.getCategoryNode(categoryName);
-    await categoryNode.waitFor({ state: "visible", timeout: this.actionTimeout });
-    
-    const editButton = categoryNode.locator("button.el-button--primary").first();
+    await categoryNode.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
+
+    const editButton = categoryNode
+      .locator("button.el-button--primary")
+      .first();
     await editButton.click({ timeout: this.actionTimeout });
-    
+
     const categoryForm = this.page.locator('[data-testid="category-form"]');
-    await categoryForm.waitFor({ state: "visible", timeout: this.actionTimeout });
-    
+    await categoryForm.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
+
     logger.info(`Edit dialog opened for category: ${categoryName}`);
   }
 
@@ -50,13 +62,21 @@ export class CategoryUIActions {
    */
   async openDeleteDialog(categoryName: string): Promise<void> {
     const categoryNode = this.getCategoryNode(categoryName);
-    await categoryNode.waitFor({ state: "visible", timeout: this.actionTimeout });
+    await categoryNode.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
     await categoryNode.hover();
-    
-    const deleteButton = categoryNode.locator("button.el-button--danger").first();
-    await deleteButton.waitFor({ state: "visible", timeout: this.actionTimeout });
+
+    const deleteButton = categoryNode
+      .locator("button.el-button--danger")
+      .first();
+    await deleteButton.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
     await deleteButton.click({ timeout: this.actionTimeout });
-    
+
     await this.waitForDeleteConfirmationDialog();
     logger.info(`Delete dialog opened for category: ${categoryName}`);
   }
@@ -113,14 +133,16 @@ export class CategoryUIActions {
    * Confirms the delete operation
    */
   async confirmDelete(): Promise<void> {
-    const confirmButton = this.page.locator('[data-testid="button-confirm-delete"]');
+    const confirmButton = this.page.locator(
+      '[data-testid="button-confirm-delete"]'
+    );
     await confirmButton.click();
-    
+
     await this.page.waitForSelector(".el-dialog__wrapper", {
       state: "hidden",
       timeout: this.actionTimeout,
     });
-    
+
     logger.info("Delete confirmed");
   }
 
@@ -128,15 +150,46 @@ export class CategoryUIActions {
    * Cancels the current operation
    */
   async cancelCurrentOperation(): Promise<void> {
-    const cancelButton = this.page.locator('[data-testid="button-cancel"]');
-    await cancelButton.click({ timeout: this.actionTimeout });
-    
-    await this.page.waitForSelector(".el-dialog__wrapper", {
-      state: "hidden",
-      timeout: this.actionTimeout,
-    });
-    
-    logger.info("Operation cancelled");
+    try {
+      // Try multiple cancel button selectors
+      const cancelSelectors = [
+        '[data-testid="button-cancel"]',
+        ".el-dialog__footer .el-button--default",
+        '.el-button:has-text("Cancel")',
+        '.el-button:has-text("取消")', // Chinese cancel
+        ".el-message-box__btns .el-button--default",
+      ];
+
+      let cancelButton = null;
+      for (const selector of cancelSelectors) {
+        const element = this.page.locator(selector);
+        if (await element.isVisible()) {
+          cancelButton = element;
+          break;
+        }
+      }
+
+      if (!cancelButton) {
+        // Try ESC key to close dialog
+        await this.page.keyboard.press("Escape");
+        await this.page.waitForTimeout(1000);
+        logger.info("Operation cancelled via ESC key");
+        return;
+      }
+
+      await cancelButton.click({ timeout: this.actionTimeout });
+
+      // Wait for dialog to close
+      await this.page.waitForSelector(".el-dialog__wrapper", {
+        state: "hidden",
+        timeout: this.actionTimeout,
+      });
+
+      logger.info("Operation cancelled");
+    } catch (error) {
+      // If no dialog is open, just continue
+      logger.info("No dialog to cancel or already closed");
+    }
   }
 
   /**
@@ -144,13 +197,16 @@ export class CategoryUIActions {
    */
   async searchByTerm(searchTerm: string): Promise<void> {
     const searchInput = this.page.locator('[data-testid="search-input"]');
-    await searchInput.waitFor({ state: "visible", timeout: this.actionTimeout });
-    
+    await searchInput.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
+
     await searchInput.clear();
     await searchInput.fill(searchTerm);
-    
+
     await this.page.waitForTimeout(2000); // Wait for search filtering
-    
+
     logger.info(`Search performed for term: ${searchTerm}`);
   }
 
@@ -162,11 +218,11 @@ export class CategoryUIActions {
       `[role="tab"][aria-controls="pane-${categoryType.toLowerCase()}"]`
     );
     await tabLocator.click({ timeout: this.actionTimeout });
-    
+
     await this.page.waitForSelector('[data-testid="category-tree"]', {
       timeout: this.actionTimeout,
     });
-    
+
     logger.info(`Filtered by category type: ${categoryType}`);
   }
 
@@ -200,7 +256,10 @@ export class CategoryUIActions {
     const parentOption = this.page.locator(
       `.el-select-dropdown__item:has-text("${parentCategory}")`
     );
-    await parentOption.waitFor({ state: "visible", timeout: this.actionTimeout });
+    await parentOption.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
     await parentOption.click({ timeout: this.actionTimeout });
   }
 

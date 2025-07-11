@@ -185,63 +185,69 @@ function generateReport() {
           for (const file of files) {
             if (file.endsWith(".json")) {
               try {
-              const content = fs.readFileSync(
-              path.join(reportsDir, file),
-              "utf-8"
-              );
-              
-              // Validate JSON before parsing
-              let json;
-              try {
-              json = JSON.parse(content);
-              } catch (parseError) {
-              console.warn(`Invalid JSON in ${file}, attempting to fix...`);
-              
-              // Try to fix common JSON issues
-              let fixedContent = content;
-              
-              // Remove trailing commas
-              fixedContent = fixedContent.replace(/,(\s*[}\]])/g, '$1');
-              
-              // Fix incomplete JSON
-                if (!fixedContent.trim().endsWith(']')) {
+                const content = fs.readFileSync(
+                  path.join(reportsDir, file),
+                  "utf-8"
+                );
+
+                // Validate JSON before parsing
+                let json;
+                try {
+                  json = JSON.parse(content);
+                } catch (parseError) {
+                  console.warn(`Invalid JSON in ${file}, attempting to fix...`);
+
+                  // Try to fix common JSON issues
+                  let fixedContent = content;
+
+                  // Remove trailing commas
+                  fixedContent = fixedContent.replace(/,(\s*[}\]])/g, "$1");
+
+                  // Fix incomplete JSON
+                  if (!fixedContent.trim().endsWith("]")) {
                     fixedContent = fixedContent.trim();
-                  if (fixedContent.endsWith(',')) {
+                    if (fixedContent.endsWith(",")) {
                       fixedContent = fixedContent.slice(0, -1);
-                      }
-                      fixedContent += ']';
                     }
-                    
-                    try {
-                      json = JSON.parse(fixedContent);
-                      console.log(`Successfully fixed JSON in ${file}`);
-                      
-                      // Write the fixed content back
-                      fs.writeFileSync(path.join(reportsDir, file), fixedContent);
-                    } catch (fixError) {
-                      console.warn(`Could not fix JSON in ${file}:`, fixError.message);
-                      continue; // Skip this file
-                    }
+                    fixedContent += "]";
                   }
-                  
-                  if (Array.isArray(json)) {
-                    for (const feature of json) {
-                      if (feature.elements) {
-                        for (const element of feature.elements) {
-                          if (element.steps) {
-                            for (const step of element.steps) {
-                              if (step.result && step.result.duration) {
-                                totalDurationNs += step.result.duration;
-                              }
+
+                  try {
+                    json = JSON.parse(fixedContent);
+                    console.log(`Successfully fixed JSON in ${file}`);
+
+                    // Write the fixed content back
+                    fs.writeFileSync(path.join(reportsDir, file), fixedContent);
+                  } catch (fixError) {
+                    console.warn(
+                      `Could not fix JSON in ${file}:`,
+                      fixError.message
+                    );
+                    continue; // Skip this file
+                  }
+                }
+
+                if (Array.isArray(json)) {
+                  for (const feature of json) {
+                    if (feature.elements) {
+                      for (const element of feature.elements) {
+                        if (element.steps) {
+                          for (const step of element.steps) {
+                            if (step.result && step.result.duration) {
+                              totalDurationNs += step.result.duration;
                             }
                           }
                         }
                       }
                     }
                   }
-                } catch (error) {
-                  console.warn(`Failed to process report file ${file}:`, error.message);
                 }
+              } catch (error) {
+                console.warn(
+                  `Failed to process report file ${file}:`,
+                  error.message
+                );
+              }
             }
           }
           totalExecutionTime = formatDuration(totalDurationNs);

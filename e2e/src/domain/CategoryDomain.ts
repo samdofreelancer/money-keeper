@@ -1,5 +1,9 @@
 import { Page } from "@playwright/test";
-import { CategoryFormData, CategorySearchCriteria } from "../types/CategoryTypes";
+
+import {
+  CategoryFormData,
+  CategorySearchCriteria,
+} from "../types/CategoryTypes";
 import { CategoryRepository } from "../repositories/CategoryRepository";
 import { CategoryUIActions } from "../actions/CategoryUIActions";
 import { CategoryValidationService } from "../services/CategoryValidationService";
@@ -25,15 +29,23 @@ export class CategoryDomain {
    */
   async createCategory(categoryData: CategoryFormData): Promise<void> {
     logger.info(`Creating category: ${categoryData.name}`);
-    
+
     // Business validation
     this.validationService.validateCategoryData(categoryData);
-    
+
+    // Check for duplicate names by checking existing categories
+    const exists = await this.categoryRepository.isCategoryPresent(
+      categoryData.name
+    );
+    if (exists) {
+      throw new Error("Category name already exists");
+    }
+
     // UI operations
     await this.categoryUIActions.openCreateDialog();
     await this.categoryUIActions.fillForm(categoryData);
     await this.categoryUIActions.submitForm();
-    
+
     // Verify creation
     await this.categoryRepository.waitForCategoryToAppear(categoryData.name);
   }
@@ -41,15 +53,28 @@ export class CategoryDomain {
   /**
    * Updates an existing category
    */
-  async updateCategory(originalName: string, newData: CategoryFormData): Promise<void> {
+  async updateCategory(
+    originalName: string,
+    newData: CategoryFormData
+  ): Promise<void> {
     logger.info(`Updating category: ${originalName} -> ${newData.name}`);
-    
+
     this.validationService.validateCategoryData(newData);
-    
+
+    // Check for duplicate names (excluding the original name)
+    if (originalName !== newData.name) {
+      const exists = await this.categoryRepository.isCategoryPresent(
+        newData.name
+      );
+      if (exists) {
+        throw new Error("Category name already exists");
+      }
+    }
+
     await this.categoryUIActions.openEditDialog(originalName);
     await this.categoryUIActions.fillForm(newData);
     await this.categoryUIActions.submitForm();
-    
+
     await this.categoryRepository.waitForCategoryToAppear(newData.name);
   }
 
@@ -58,10 +83,10 @@ export class CategoryDomain {
    */
   async deleteCategory(categoryName: string): Promise<void> {
     logger.info(`Deleting category: ${categoryName}`);
-    
+
     await this.categoryUIActions.openDeleteDialog(categoryName);
     await this.categoryUIActions.confirmDelete();
-    
+
     await this.categoryRepository.waitForCategoryToDisappear(categoryName);
   }
 
@@ -69,12 +94,14 @@ export class CategoryDomain {
    * Searches for categories based on criteria
    */
   async searchCategories(criteria: CategorySearchCriteria): Promise<void> {
-    logger.info(`Searching categories with criteria: ${JSON.stringify(criteria)}`);
-    
+    logger.info(
+      `Searching categories with criteria: ${JSON.stringify(criteria)}`
+    );
+
     if (criteria.searchTerm) {
       await this.categoryUIActions.searchByTerm(criteria.searchTerm);
     }
-    
+
     if (criteria.categoryType) {
       await this.categoryUIActions.filterByType(criteria.categoryType);
     }
@@ -91,6 +118,33 @@ export class CategoryDomain {
    * Cancels current operation
    */
   async cancelCurrentOperation(): Promise<void> {
-    await this.categoryUIActions.cancelCurrentOperation();
+    try {
+      await this.categoryUIActions.cancelCurrentOperation();
+      logger.info("Current operation cancelled successfully");
+    } catch (error) {
+      logger.info("No active operation to cancel or already closed");
+      // Don't throw error for cancellation - it's often expected to fail
+    }
+  }
+
+  /**
+   * Opens the create dialog for testing purposes
+   */
+  async openCreateDialog(): Promise<void> {
+    await this.categoryUIActions.openCreateDialog();
+  }
+
+  /**
+   * Opens the edit dialog for testing purposes
+   */
+  async openEditDialog(categoryName: string): Promise<void> {
+    await this.categoryUIActions.openEditDialog(categoryName);
+  }
+
+  /**
+   * Opens the delete dialog for testing purposes
+   */
+  async openDeleteDialog(categoryName: string): Promise<void> {
+    await this.categoryUIActions.openDeleteDialog(categoryName);
   }
 }

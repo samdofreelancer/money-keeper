@@ -16,21 +16,34 @@ import { CategoryPage } from "../pages/category.page";
 import { CategoryDomain } from "../domain/CategoryDomain";
 import { CategoryFormData } from "../types/CategoryTypes";
 
+/**
+ * Unified World class with clean separation of concerns
+ * Handles both legacy page object patterns and new domain-driven approach
+ */
 export class CustomWorld extends World {
+  // Browser infrastructure
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
+
+  // Legacy page objects (for backward compatibility)
   currentPage!: BasePage;
   categoryPage?: CategoryPage;
+  playwrightOptions?: PlaywrightTestOptions;
+
+  // Domain services (new architecture)
+  categoryDomain?: CategoryDomain;
+
+  // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
-  playwrightOptions?: PlaywrightTestOptions;
-  
-  // Enhanced properties for improved BDD support
-  categoryDomain?: CategoryDomain;
+
+  // Test state
   pendingCategoryData?: CategoryFormData;
   lastError?: Error;
+
+  // Configuration
   config = config;
 
   constructor(options: IWorldOptions) {
@@ -122,7 +135,7 @@ export class CustomWorld extends World {
   /**
    * Enhanced methods for improved BDD support
    */
-  
+
   /**
    * Tracks a created category for cleanup
    */
@@ -147,7 +160,7 @@ export class CustomWorld extends World {
    * Gets the last created category name
    */
   getLastCreatedCategory(): string | null {
-    return this.createdCategoryNames.length > 0 
+    return this.createdCategoryNames.length > 0
       ? this.createdCategoryNames[this.createdCategoryNames.length - 1]
       : null;
   }
@@ -160,6 +173,15 @@ export class CustomWorld extends World {
     await this.page.waitForLoadState("networkidle");
     await this.page.locator('[data-testid="page-title"]').click();
     await this.page.waitForTimeout(2000);
+  }
+
+  /**
+   * Cleans up test data
+   */
+  async cleanup(): Promise<void> {
+    // Cleanup logic for test data
+    // This could involve API calls to delete created categories
+    logger.info("Cleaning up test data");
   }
 }
 
