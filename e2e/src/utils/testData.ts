@@ -15,7 +15,7 @@ export const TestCategories = {
     },
     TRANSPORTATION: {
       name: "Transportation",
-      icon: "Grid", 
+      icon: "Grid",
       type: "EXPENSE" as const,
       parentId: null,
     },
@@ -47,7 +47,10 @@ export const ValidationMessages = {
   DUPLICATE_NAME: "Category name already exists",
 } as const;
 
-export const getTestCategoryData = (key: keyof typeof TestCategories.EXPENSE | keyof typeof TestCategories.INCOME, type: "EXPENSE" | "INCOME"): CategoryTestData => {
+export const getTestCategoryData = (
+  key: keyof typeof TestCategories.EXPENSE | keyof typeof TestCategories.INCOME,
+  type: "EXPENSE" | "INCOME"
+): CategoryTestData => {
   if (type === "EXPENSE") {
     return TestCategories.EXPENSE[key as keyof typeof TestCategories.EXPENSE];
   } else {
