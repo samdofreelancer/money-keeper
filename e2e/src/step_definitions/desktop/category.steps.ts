@@ -36,6 +36,19 @@ Given(
     logger.info(
       `Created category with unique name: ${this.createdCategoryNames}`
     );
+    
+    // Reload the category page to get latest data from backend
+    if (this.categoryPage) {
+      logger.info("Reloading category page to get latest data from backend");
+      await this.page.reload();
+      await this.page.waitForLoadState("networkidle");
+      await this.categoryPage.navigateToCategories();
+      
+      // Verify the category is visible after reload
+      await this.page.waitForTimeout(2000);
+      const isVisible = await this.categoryPage.isCategoryPresent(uniqueName);
+      logger.info(`After reload - Category "${uniqueName}" visible: ${isVisible}`);
+    }
   }
 );
 
@@ -59,6 +72,23 @@ Given(
       this.createdCategoryIds = [];
     }
     this.createdCategoryIds.push(newCategory.id);
+    this.createdCategoryNames = this.createdCategoryNames || [];
+    this.createdCategoryNames.push(uniqueName);
+    
+    logger.info(`Created category "${uniqueName}" of type "${categoryType}"`);
+    
+    // Reload the category page to get latest data from backend
+    if (this.categoryPage) {
+      logger.info("Reloading category page to get latest data from backend");
+      await this.page.reload();
+      await this.page.waitForLoadState("networkidle");
+      await this.categoryPage.navigateToCategories();
+      
+      // Verify the category is visible after reload
+      await this.page.waitForTimeout(2000);
+      const isVisible = await this.categoryPage.isCategoryPresent(uniqueName);
+      logger.info(`After reload - Category "${uniqueName}" (${categoryType}) visible: ${isVisible}`);
+    }
   }
 );
 
@@ -82,6 +112,7 @@ Given("I have an existing category called {string}", async function (this: Custo
     this.createdCategoryIds.push(newCategory.id);
     this.createdCategoryNames = this.createdCategoryNames || [];
     this.createdCategoryNames.push(uniqueName);
+    logger.info(`Category created via API successfully: ${uniqueName}`);
   } catch (error) {
     logger.error(`Failed to create category via API: ${error}`);
     // If API fails, try to create via UI as fallback
@@ -91,6 +122,32 @@ Given("I have an existing category called {string}", async function (this: Custo
       await this.categoryPage.submitForm();
       this.createdCategoryNames = this.createdCategoryNames || [];
       this.createdCategoryNames.push(uniqueName);
+      logger.info(`Category created via UI successfully: ${uniqueName}`);
+    }
+  }
+  
+  // Reload the category page to get latest data from backend
+  if (this.categoryPage) {
+    logger.info("Reloading category page to get latest data from backend");
+    await this.page.reload();
+    await this.page.waitForLoadState("networkidle");
+    await this.categoryPage.navigateToCategories();
+    
+    // Verify the category is visible after reload
+    await this.page.waitForTimeout(2000);
+    const isVisible = await this.categoryPage.isCategoryPresent(uniqueName);
+    logger.info(`After reload - Category "${uniqueName}" visible: ${isVisible}`);
+    
+    if (!isVisible) {
+      // Debug: Show all categories currently visible
+      const allCategories = this.page.locator(".category-tree .tree-node-content");
+      const count = await allCategories.count();
+      logger.info(`Total categories visible after reload: ${count}`);
+      
+      for (let i = 0; i < count; i++) {
+        const categoryText = await allCategories.nth(i).textContent();
+        logger.info(`Visible category ${i}: "${categoryText}"`);
+      }
     }
   }
 });
@@ -392,10 +449,44 @@ When("I change its icon to {string}", async function (this: CustomWorld, newIcon
 });
 
 When("I decide to delete this category", async function (this: CustomWorld) {
-  const categoryName = "Unused Category";
-  const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+  // Get the most recently created category name
+  let uniqueNameToDelete = null;
+  
+  // First, try to find the last created category from the context
+  if (this.createdCategoryNames && this.createdCategoryNames.length > 0) {
+    uniqueNameToDelete = this.createdCategoryNames[this.createdCategoryNames.length - 1];
+    logger.info(`Using last created category from context: ${uniqueNameToDelete}`);
+  } else {
+    // Fallback: check uniqueData for any category (use the last one added)
+    const uniqueDataEntries = Array.from(this.uniqueData.entries());
+    if (uniqueDataEntries.length > 0) {
+      const [originalName, uniqueName] = uniqueDataEntries[uniqueDataEntries.length - 1];
+      uniqueNameToDelete = uniqueName;
+      logger.info(`Using last category from uniqueData: ${originalName} -> ${uniqueName}`);
+    }
+  }
+  
+  if (!uniqueNameToDelete) {
+    throw new Error("No category found to delete. Make sure a category was created in a previous step.");
+  }
+  
+  logger.info(`Preparing to delete category: ${uniqueNameToDelete}`);
   
   if (this.categoryPage) {
+    logger.info(`Opening delete dialog for category: ${uniqueNameToDelete}`);
+    await this.categoryPage.openDeleteCategoryDialog(uniqueNameToDelete);
+  } else {
+    throw new Error("Category page is not initialized.");
+  }
+});
+
+// Alternative step that accepts a specific category name
+When("I decide to delete the category {string}", async function (this: CustomWorld, categoryName: string) {
+  const uniqueName = this.uniqueData.get(categoryName) ?? categoryName;
+  logger.info(`Preparing to delete specific category: ${categoryName} -> ${uniqueName}`);
+  
+  if (this.categoryPage) {
+    logger.info(`Opening delete dialog for category: ${uniqueName}`);
     await this.categoryPage.openDeleteCategoryDialog(uniqueName);
   } else {
     throw new Error("Category page is not initialized.");
