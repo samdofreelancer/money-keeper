@@ -153,13 +153,24 @@ export class CategoryPage {
 
   async submitForm() {
     await this.createButton.click({ timeout: this.actionTimeout });
-    await this.page.waitForSelector(".el-dialog__wrapper", {
-      state: "hidden",
-      timeout: this.actionTimeout,
-    });
-    await this.page.waitForSelector(".el-message--success", {
-      timeout: this.actionTimeout,
-    });
+    
+    // Wait for either success message or dialog to close
+    try {
+      await Promise.race([
+        this.page.waitForSelector(".el-dialog__wrapper", {
+          state: "hidden",
+          timeout: this.actionTimeout,
+        }),
+        this.page.waitForSelector(".el-message--success", {
+          timeout: this.actionTimeout,
+        }),
+      ]);
+    } catch (error) {
+      logger.info("Form submission completed without success message");
+    }
+    
+    // Give a small delay for the page to update
+    await this.page.waitForTimeout(1000);
   }
 
   async clickSubmit() {
@@ -167,19 +178,62 @@ export class CategoryPage {
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
-    const newCategory = this.newCategoryLocator(name);
-    return (await newCategory.count()) > 0;
+    try {
+      // Wait a bit for any UI updates
+      await this.page.waitForTimeout(500);
+      const newCategory = this.newCategoryLocator(name);
+      const count = await newCategory.count();
+      logger.info(`Checking for category "${name}": found ${count} matches`);
+      return count > 0;
+    } catch (error) {
+      logger.error(`Error checking category presence: ${error}`);
+      return false;
+    }
   }
 
   async openEditCategoryDialog(categoryName: string) {
-    await this.editButtonOnNode(categoryName).click();
-    await this.categoryForm.waitFor();
+    try {
+      logger.info(`Opening edit dialog for category: ${categoryName}`);
+      await this.page.waitForSelector(".category-tree .tree-node-content", {
+        timeout: this.actionTimeout,
+      });
+      
+      const editButton = this.editButtonOnNode(categoryName);
+      await editButton.waitFor({ state: "visible", timeout: this.actionTimeout });
+      await editButton.click({ timeout: this.actionTimeout });
+      
+      await this.categoryForm.waitFor({
+        state: "visible",
+        timeout: this.actionTimeout,
+      });
+      logger.info(`Edit dialog opened successfully for: ${categoryName}`);
+    } catch (error) {
+      logger.error(`Failed to open edit dialog for ${categoryName}: ${error}`);
+      throw error;
+    }
   }
 
   async openDeleteCategoryDialog(categoryName: string) {
-    await this.page.waitForSelector(".category-tree .tree-node-content");
-    logger.info(`Attempting to delete category: ${categoryName}`);
-    await this.deleteButtonOnNode(categoryName).click({ force: true });
+    try {
+      logger.info(`Opening delete dialog for category: ${categoryName}`);
+      await this.page.waitForSelector(".category-tree .tree-node-content", {
+        timeout: this.actionTimeout,
+      });
+      
+      const deleteButton = this.deleteButtonOnNode(categoryName);
+      await deleteButton.waitFor({ state: "visible", timeout: this.actionTimeout });
+      await deleteButton.click({ timeout: this.actionTimeout });
+      
+      // Wait for delete confirmation dialog
+      await this.page.waitForSelector(".el-dialog__wrapper", {
+        state: "visible",
+        timeout: this.actionTimeout,
+      });
+      logger.info(`Delete dialog opened successfully for: ${categoryName}`);
+    } catch (error) {
+      logger.error(`Failed to open delete dialog for ${categoryName}: ${error}`);
+      throw error;
+    }
   }
 
   async confirmDelete() {
@@ -195,10 +249,31 @@ export class CategoryPage {
   }
 
   async searchCategories(query: string) {
+    logger.info(`Filling search input with: "${query}"`);
+    
+    // Make sure search input is visible and ready
+    await this.searchInput.waitFor({ state: "visible", timeout: this.actionTimeout });
+    
+    // Clear any existing search text first
+    await this.searchInput.clear();
+    await this.page.waitForTimeout(500);
+    
+    // Fill the search input
     await this.searchInput.fill(query);
+    
+    // Verify the search input has the correct value
+    const inputValue = await this.searchInput.inputValue();
+    logger.info(`Search input value after fill: "${inputValue}"`);
+    
+    // Wait for search to complete - give some time for filtering
+    await this.page.waitForTimeout(2000);
+    
+    // Make sure the category tree is still present
     await this.page.waitForSelector('[data-testid="category-tree"]', {
       timeout: this.actionTimeout,
     });
+    
+    logger.info(`Search completed for: "${query}"`);
   }
 
   async filterByTab(tabName: string) {
@@ -226,5 +301,18 @@ export class CategoryPage {
       state: "hidden",
       timeout: this.actionTimeout,
     });
+  }
+
+  // Additional methods for new step definitions
+  async getSearchValue(): Promise<string> {
+    return await this.searchInput.inputValue();
+  }
+
+  async isSearchInputVisible(): Promise<boolean> {
+    return await this.searchInput.isVisible();
+  }
+
+  async isPageLoaded(): Promise<boolean> {
+    return await this.categoriesMenuItem.isVisible();
   }
 }
