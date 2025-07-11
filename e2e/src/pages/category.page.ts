@@ -217,253 +217,64 @@ export class CategoryPage {
     try {
       logger.info(`Opening delete dialog for category: ${categoryName}`);
       
-      // Debug: Check what's currently visible on the page
-      logger.info("Debugging page state before looking for category tree...");
-      
-      // Try to find any categories first with different selectors
-      const possibleSelectors = [
-        ".category-tree .tree-node-content",
-        "[data-testid='category-tree'] .tree-node-content", 
-        ".tree-node-content",
-        "[data-testid='tree-node-content']",
-        ".category-item",
-        ".category-list-item",
-        ".el-tree-node",
-        ".category-tree"
-      ];
-      
-      let foundSelector = null;
-      for (const selector of possibleSelectors) {
-        try {
-          const elements = this.page.locator(selector);
-          const count = await elements.count();
-          logger.info(`Selector "${selector}": found ${count} elements`);
-          
-          if (count > 0) {
-            foundSelector = selector;
-            // Log the content of first few elements
-            for (let i = 0; i < Math.min(count, 3); i++) {
-              const text = await elements.nth(i).textContent();
-              logger.info(`  Element ${i}: "${text}"`);
-            }
-            break;
-          }
-        } catch (error) {
-          logger.info(`Selector "${selector}": error - ${error instanceof Error ? error.message : String(error)}`);
-        }
-      }
-      
-      if (!foundSelector) {
-        // Take a screenshot for debugging
-        await this.page.screenshot({ path: 'debug-no-categories.png', fullPage: true });
-        logger.error("No category elements found with any selector. Screenshot saved as debug-no-categories.png");
-        
-        // Log the page URL and title
-        const url = this.page.url();
-        const title = await this.page.title();
-        logger.info(`Current page URL: ${url}`);
-        logger.info(`Current page title: ${title}`);
-        
-        throw new Error("No category tree elements found on the page");
-      }
-      
-      logger.info(`Using working selector: ${foundSelector}`);
-      
-      // Wait for the category tree to be ready
-      await this.page.waitForSelector(foundSelector, {
+      // Wait for category tree to be ready
+      await this.page.waitForSelector(".category-tree .tree-node-content", {
         timeout: this.actionTimeout,
       });
       
-      logger.info(`Waiting for specific category node: ${categoryName}`);
-      // First, let's find the category node
+      // Find and hover over the category node to reveal action buttons
       const categoryNode = this.categoryNode(categoryName);
-      
-      // Debug: Check if our specific category exists
-      try {
-        await categoryNode.waitFor({ state: "visible", timeout: 5000 });
-        logger.info(`Found category node for: ${categoryName}`);
-      } catch (error) {
-        logger.error(`Cannot find category node for: ${categoryName}`);
-        
-        // Debug: List all visible categories
-        const allCategoryElements = this.page.locator(foundSelector);
-        const count = await allCategoryElements.count();
-        logger.info(`Total categories visible: ${count}`);
-        
-        for (let i = 0; i < count; i++) {
-          const text = await allCategoryElements.nth(i).textContent();
-          logger.info(`Category ${i}: "${text}"`);
-        }
-        
-        throw new Error(`Category "${categoryName}" not found in the list`);
-      }
-      
-      // Try hovering over the category node in case buttons appear on hover
+      await categoryNode.waitFor({ state: "visible", timeout: this.actionTimeout });
       await categoryNode.hover();
-      await this.page.waitForTimeout(1000);
-      logger.info(`Hovered over category node for: ${categoryName}`);
+      await this.page.waitForTimeout(500); // Brief wait for hover effects
       
-      // Debug: Log all buttons in the category node
-      const allButtons = categoryNode.locator("button");
-      const buttonCount = await allButtons.count();
-      logger.info(`Found ${buttonCount} buttons in category node`);
+      // Find delete button (try primary selector, fallback to danger class)
+      let deleteButton = this.deleteButtonOnNode(categoryName);
       
-      for (let i = 0; i < buttonCount; i++) {
-        const button = allButtons.nth(i);
-        const buttonClass = await button.getAttribute("class");
-        const buttonText = await button.textContent();
-        const testId = await button.getAttribute("data-testid");
-        const isVisible = await button.isVisible();
-        logger.info(`Button ${i}: class="${buttonClass}", text="${buttonText}", testid="${testId}", visible="${isVisible}"`);
-      }
-      
-      // Try different approaches to find the delete button
-      let deleteButton = null;
-      
-      // Approach 1: Try the original selector
       try {
-        deleteButton = this.deleteButtonOnNode(categoryName);
-        await deleteButton.waitFor({ state: "visible", timeout: 5000 });
-        logger.info("Found delete button using original selector");
+        await deleteButton.waitFor({ state: "visible", timeout: 3000 });
       } catch (error) {
-        logger.info("Original delete button selector failed, trying alternatives");
+        // Fallback: try alternative delete button selector
+        deleteButton = categoryNode.locator('button.el-button--danger, button[class*="danger"]');
+        await deleteButton.waitFor({ state: "visible", timeout: 3000 });
       }
       
-      // Approach 2: Try by data-testid
-      if (!deleteButton || !(await deleteButton.isVisible())) {
-        try {
-          deleteButton = categoryNode.locator('[data-testid="button-delete"]');
-          await deleteButton.waitFor({ state: "visible", timeout: 5000 });
-          logger.info("Found delete button using data-testid");
-        } catch (error) {
-          logger.info("Delete button by data-testid not found");
-        }
-      }
-      
-      // Approach 3: Try by button text
-      if (!deleteButton || !(await deleteButton.isVisible())) {
-        try {
-          deleteButton = categoryNode.locator('button:has-text("Delete")');
-          await deleteButton.waitFor({ state: "visible", timeout: 5000 });
-          logger.info("Found delete button using text selector");
-        } catch (error) {
-          logger.info("Delete button by text not found");
-        }
-      }
-      
-      // Approach 4: Try by specific danger button pattern
-      if (!deleteButton || !(await deleteButton.isVisible())) {
-        try {
-          deleteButton = categoryNode.locator('button.el-button--danger, button[class*="danger"]');
-          await deleteButton.waitFor({ state: "visible", timeout: 5000 });
-          logger.info("Found delete button using danger class selector");
-        } catch (error) {
-          logger.info("Delete button by danger class not found");
-        }
-      }
-      
-      // Approach 5: Try right-click context menu (if delete is in context menu)
-      if (!deleteButton || !(await deleteButton.isVisible())) {
-        logger.info("Trying right-click context menu approach");
-        await categoryNode.click({ button: "right" });
-        await this.page.waitForTimeout(1000);
-        
-        try {
-          deleteButton = this.page.locator('[data-testid="context-menu-delete"], .context-menu button:has-text("Delete")');
-          await deleteButton.waitFor({ state: "visible", timeout: 5000 });
-          logger.info("Found delete button in context menu");
-        } catch (error) {
-          logger.info("Delete button in context menu not found");
-        }
-      }
-      
-      if (!deleteButton || !(await deleteButton.isVisible())) {
-        throw new Error(`Could not find delete button for category: ${categoryName}`);
-      }
-      
-      // Click the delete button
+      // Click delete button
       await deleteButton.click({ timeout: this.actionTimeout });
-      logger.info(`Clicked delete button for category: ${categoryName}`);
       
-      // Wait a moment for any animations/transitions
-      await this.page.waitForTimeout(1000);
+      // Wait for confirmation dialog (try primary selector, fallback to common alternatives)
+      let dialogSelector = ".el-dialog__wrapper";
       
-      // Debug: Check what happened after clicking delete button
-      logger.info("Debugging page state after delete button click...");
-      
-      // Try different selectors for the confirmation dialog
-      const possibleDialogSelectors = [
-        ".el-dialog__wrapper",
-        ".el-dialog",
-        "[data-testid='delete-confirmation-dialog']",
-        "[data-testid='confirmation-dialog']", 
-        ".confirmation-dialog",
-        ".delete-dialog",
-        ".modal",
-        ".el-message-box",
-        ".el-overlay"
-      ];
-      
-      let foundDialogSelector = null;
-      for (const selector of possibleDialogSelectors) {
-        try {
-          const elements = this.page.locator(selector);
-          const count = await elements.count();
-          logger.info(`Dialog selector "${selector}": found ${count} elements`);
-          
-          if (count > 0) {
-            // Check if any of these elements are visible
-            for (let i = 0; i < count; i++) {
-              const element = elements.nth(i);
-              const isVisible = await element.isVisible();
-              const text = await element.textContent();
-              logger.info(`  Element ${i}: visible=${isVisible}, text="${text?.substring(0, 100)}..."`);
-              
-              if (isVisible) {
-                foundDialogSelector = selector;
-                break;
-              }
-            }
-            if (foundDialogSelector) break;
-          }
-        } catch (error) {
-          logger.info(`Dialog selector "${selector}": error - ${error instanceof Error ? error.message : String(error)}`);
-        }
-      }
-      
-      if (!foundDialogSelector) {
-        // Take a screenshot to see what's on the page
-        await this.page.screenshot({ path: 'debug-after-delete-click.png', fullPage: true });
-        logger.error("No confirmation dialog found after delete button click. Screenshot saved as debug-after-delete-click.png");
+      try {
+        await this.page.waitForSelector(dialogSelector, {
+          state: "visible",
+          timeout: 5000,
+        });
+      } catch (error) {
+        // Fallback: try alternative dialog selectors
+        const altSelectors = [".el-dialog", ".el-message-box", ".modal"];
+        let found = false;
         
-        // Check if there are any error messages or notifications
-        const errorSelectors = [".el-message--error", ".el-notification--error", ".error-message"];
-        for (const errorSelector of errorSelectors) {
+        for (const selector of altSelectors) {
           try {
-            const errorElements = this.page.locator(errorSelector);
-            const errorCount = await errorElements.count();
-            if (errorCount > 0) {
-              for (let i = 0; i < errorCount; i++) {
-                const errorText = await errorElements.nth(i).textContent();
-                logger.error(`Error message found: "${errorText}"`);
-              }
-            }
-          } catch (error) {
-            // Ignore errors when checking for error messages
+            await this.page.waitForSelector(selector, {
+              state: "visible", 
+              timeout: 2000,
+            });
+            dialogSelector = selector;
+            found = true;
+            break;
+          } catch (e) {
+            // Continue to next selector
           }
         }
         
-        throw new Error("Delete confirmation dialog did not appear after clicking delete button");
+        if (!found) {
+          throw new Error(`Delete confirmation dialog not found for category: ${categoryName}`);
+        }
       }
       
-      logger.info(`Using dialog selector: ${foundDialogSelector}`);
-      
-      // Wait for the confirmation dialog to be fully visible
-      await this.page.waitForSelector(foundDialogSelector, {
-        state: "visible",
-        timeout: this.actionTimeout,
-      });
-      logger.info(`Delete dialog opened successfully for: ${categoryName}`);
+      logger.info(`Delete confirmation dialog opened for: ${categoryName}`);
     } catch (error) {
       logger.error(`Failed to open delete dialog for ${categoryName}: ${error}`);
       throw error;
