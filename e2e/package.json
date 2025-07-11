@@ -7,12 +7,15 @@
     "test:focus": "npm run cleanup-reports && ts-node src/support/formatter-setup.ts && cucumber-js  --tags @focus",
     "pretest": "npm run validate-env && npm run lint:fix && tsc --noEmit",
     "report": "node scripts/generate-report.js",
+    "report:fix": "node scripts/fix-json-report.js && npm run report",
+    "report:clean": "node scripts/clean-reports.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test:parallel": "cucumber-js --parallel 4",
     "validate-env": "ts-node src/utils/validate-env.ts",
     "cleanup-reports": "ts-node scripts/cleanup-reports.ts",
-    "test:run-and-report": "node ./scripts/run-tests-and-generate-report.js"
+    "test:run-and-report": "node ./scripts/run-tests-and-generate-report.js",
+    "test:clean": "npm run report:clean && npm run test:run-and-report"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^8.11.1",
