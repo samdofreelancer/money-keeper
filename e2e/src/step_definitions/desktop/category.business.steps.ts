@@ -1,4 +1,27 @@
 import { Given, When, Then } from "@cucumber/cucumber";
+
+When(
+  "I try to create a category with name containing {string} characters",
+  async function (this: CustomWorld, invalidChars: string) {
+    if (this.categoryDomain) {
+      try {
+        const invalidCategoryData: CategoryFormData = {
+          name: invalidChars,
+          icon: "Grid",
+          type: "EXPENSE",
+          parentCategory: "",
+        };
+
+        await this.categoryDomain.createCategory(invalidCategoryData);
+        // If we reach here, no error was thrown (unexpected)
+        this.lastError = new Error("Expected validation error but none was thrown");
+      } catch (error) {
+        this.lastError = error as Error;
+        logger.info("Category creation failed as expected due to invalid characters");
+      }
+    }
+  }
+);
 import { expect } from "@playwright/test";
 
 import { CategoryDomain } from "../../domain/CategoryDomain";
@@ -352,6 +375,8 @@ Then(
     // Handle different error message formats
     if (expectedMessage === "Please input category name") {
       expect(this.lastError?.message).toContain("Category name is required");
+    } else if (expectedMessage === "Category name contains invalid characters") {
+      expect(this.lastError?.message).toContain("invalid special characters");
     } else {
       expect(this.lastError?.message).toContain(expectedMessage);
     }
@@ -795,14 +820,7 @@ Then(
   }
 );
 
-Then(
-  "I should see an error message about invalid characters",
-  async function (this: CustomWorld) {
-    expect(this.lastError).toBeDefined();
-    expect(this.lastError?.message).toContain("invalid special characters");
-    logger.info("Verified invalid characters error message");
-  }
-);
+
 
 Then(
   "the category {string} should not be created",

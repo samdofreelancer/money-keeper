@@ -37,6 +37,6 @@ Feature: Category Validation and Error Handling
 
   @validation
   Scenario: System validates special characters in category names
-    When I try to create a category with invalid special characters
-    Then I should see an error message about invalid characters
+    When I try to create a category with name containing "<script>" characters
+    Then I should see an error message "Category name contains invalid characters"
     And the category should not be created
