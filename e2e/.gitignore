@@ -1,2 +1,21 @@
 
 .env
+
+# Test reports
+reports/
+logs/
+metadata/
+
+# Node modules
+node_modules/
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
