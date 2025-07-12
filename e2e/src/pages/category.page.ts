@@ -288,6 +288,8 @@ export class CategoryPage {
       ".modal",
     ];
 
+    const errors: string[] = [];
+
     for (const selector of dialogSelectors) {
       try {
         await this.page.waitForSelector(selector, {
@@ -296,11 +298,12 @@ export class CategoryPage {
         });
         return; // Success, exit early
       } catch (error) {
+        errors.push(`${selector}: ${error}`);
         // Continue to next selector
       }
     }
 
-    throw new Error("Delete confirmation dialog not found");
+    throw new Error(`Delete confirmation dialog not found. Tried selectors: ${errors.join(', ')}`);
   }
 
   async confirmDelete() {
