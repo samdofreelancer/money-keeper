@@ -171,7 +171,10 @@ export class CategoryPage {
         .locator(".el-dialog__wrapper")
         .isHidden();
       if (!dialogHidden) {
-        logger.warn("Form submission may have failed - dialog still visible");
+        logger.error(
+          "Form submission failed - dialog still visible after timeout"
+        );
+        throw new Error("Form submission failed - dialog did not close");
       }
       logger.info("Form submission completed without success message");
     }
