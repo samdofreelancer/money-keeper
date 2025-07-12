@@ -88,78 +88,36 @@ Given(
 Given(
   "I have multiple categories including {string} and {string}",
   async function (this: CustomWorld, category1: string, category2: string) {
-    logger.info(`Setting up categories: ${category1} and ${category2}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const formData1 = new CategoryFormValue({
-      name: category1,
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    const formData2 = new CategoryFormValue({
-      name: category2,
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    try {
-      await this.categoryService.createCategoryThroughAPI(
-        formData1.toCreateRequest()
-      );
-      await this.categoryService.createCategoryThroughAPI(
-        formData2.toCreateRequest()
-      );
-    } catch (error) {
-      // Categories might already exist
-      const exists1 = await this.categoryService.categoryExists(category1);
-      const exists2 = await this.categoryService.categoryExists(category2);
-      expect(exists1 && exists2).toBe(true);
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const setupUseCase = useCasesFactory.createSetupMultipleCategoriesUseCase();
+    await setupUseCase.execute(category1, category2);
   }
 );
 
 Given(
   "I have categories called {string} and {string}",
   async function (this: CustomWorld, category1: string, category2: string) {
-    logger.info(`Setting up categories: ${category1} and ${category2}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const formData1 = new CategoryFormValue({
-      name: category1,
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    const formData2 = new CategoryFormValue({
-      name: category2,
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    try {
-      await this.categoryService.createCategoryThroughAPI(
-        formData1.toCreateRequest()
-      );
-      await this.categoryService.createCategoryThroughAPI(
-        formData2.toCreateRequest()
-      );
-    } catch (error) {
-      // Categories might already exist
-      const exists1 = await this.categoryService.categoryExists(category1);
-      const exists2 = await this.categoryService.categoryExists(category2);
-      expect(exists1 && exists2).toBe(true);
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const setupUseCase = useCasesFactory.createSetupMultipleCategoriesUseCase();
+    await setupUseCase.execute(category1, category2);
   }
 );
 
