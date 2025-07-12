@@ -1,7 +1,7 @@
 import { Page, Locator } from "@playwright/test";
 
-import { logger } from "../../../../support/logger";
-import { config } from "../../../../config/env.config";
+import { logger } from "../../../../shared/utils/logger";
+import { config } from "../../../../shared/config/env.config";
 
 /**
  * Repository pattern for category data access

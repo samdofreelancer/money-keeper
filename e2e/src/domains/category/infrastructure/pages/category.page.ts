@@ -1,8 +1,8 @@
 import { Page, Locator } from "@playwright/test";
 
 import { logger } from "../../../../support/logger";
-import { config } from "../../../../config/env.config";
-import { BasePage } from "../../../../common/pages/base.page";
+import { config } from "../../../../shared/config/env.config";
+import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 
 export class CategoryPage extends BasePage {
   readonly categoriesMenuItem: Locator;

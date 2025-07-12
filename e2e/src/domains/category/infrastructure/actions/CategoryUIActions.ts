@@ -1,13 +1,8 @@
 import { Page, Locator } from "@playwright/test";
 
-import {
-  CategoryName,
-  CategoryIcon,
-  CategoryType,
-  ParentCategory,
-} from "../../types/CategoryTypes";
-import { logger } from "../../../../support/logger";
-import { config } from "../../../../config/env.config";
+import { CategoryFormUIData } from "../types/ui-actions.types";
+import { logger } from "../../../../shared/utils/logger";
+import { config } from "../../../../shared/config/env.config";
 
 /**
  * UI Actions for category operations
@@ -89,29 +84,20 @@ export class CategoryUIActions {
   /**
    * Fills the category form with provided data
    */
-  async fillForm(categoryData: {
-    name: CategoryName;
-    icon: CategoryIcon;
-    type: CategoryType;
-    parentCategory?: ParentCategory;
-  }): Promise<void> {
+  async fillForm(categoryData: CategoryFormUIData): Promise<void> {
     // Fill name
     const nameInput = this.page.locator('[data-testid="input-category-name"]');
-    await nameInput.fill(categoryData.name.value);
+    await nameInput.fill(categoryData.name);
 
     // Select icon
-    await this.selectIcon(categoryData.icon.value);
+    await this.selectIcon(categoryData.icon);
 
     // Select type
     await this.selectType(categoryData.type);
 
     // Select parent category if provided
-    if (
-      categoryData.parentCategory &&
-      categoryData.parentCategory.value &&
-      categoryData.parentCategory.value !== "None"
-    ) {
-      await this.selectParentCategory(categoryData.parentCategory.value);
+    if (categoryData.parentCategory && categoryData.parentCategory !== "None") {
+      await this.selectParentCategory(categoryData.parentCategory);
     }
 
     logger.info(`Form filled for category: ${categoryData.name}`);
