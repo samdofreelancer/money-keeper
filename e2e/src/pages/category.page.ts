@@ -167,7 +167,9 @@ export class CategoryPage {
       ]);
     } catch (error) {
       // Check if dialog is actually hidden as fallback
-      const dialogHidden = await this.page.locator(".el-dialog__wrapper").isHidden();
+      const dialogHidden = await this.page
+        .locator(".el-dialog__wrapper")
+        .isHidden();
       if (!dialogHidden) {
         logger.warn("Form submission may have failed - dialog still visible");
       }
@@ -303,7 +305,11 @@ export class CategoryPage {
       }
     }
 
-    throw new Error(`Delete confirmation dialog not found. Tried selectors: ${errors.join(', ')}`);
+    throw new Error(
+      `Delete confirmation dialog not found. Tried selectors: ${errors.join(
+        ", "
+      )}`
+    );
   }
 
   async confirmDelete() {
