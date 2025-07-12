@@ -121,12 +121,19 @@ export class CategoryUIActions {
           timeout: this.actionTimeout,
         }),
       ]);
+      logger.info("Form submitted successfully");
     } catch (error) {
-      logger.info("Form submission completed without success message");
+      // Verify if dialog actually closed despite timeout
+      const dialogHidden = await this.page.locator(".el-dialog__wrapper").isHidden();
+      if (dialogHidden) {
+        logger.info("Form submission completed without success message");
+      } else {
+        logger.error("Form submission may have failed - dialog still visible");
+        throw new Error("Form submission failed");
+      }
     }
 
     await this.page.waitForTimeout(1000);
-    logger.info("Form submitted successfully");
   }
 
   /**
