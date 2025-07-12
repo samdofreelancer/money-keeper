@@ -9,9 +9,9 @@ import { config } from "../../config/env.config";
 After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
   try {
     const categoryApiClient = new CategoryApiClient({
-      baseURL: config.browser.baseUrl
+      baseURL: config.browser.baseUrl,
     });
-    
+
     // Cleanup by ID for categories created via API
     if (this.createdCategoryIds && this.createdCategoryIds.length > 0) {
       logger.info(
@@ -29,7 +29,8 @@ After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
       logger.info(
         `Cleaning up ${this.createdCategoryNames.length} categories by name.`
       );
-      const allCategories: Category[] = await categoryApiClient.getAllCategories();
+      const allCategories: Category[] =
+        await categoryApiClient.getAllCategories();
       const categoriesToDelete = allCategories.filter((category) =>
         this.createdCategoryNames.includes(category.name)
       );

@@ -13,7 +13,7 @@ export class DeleteCurrentCategoryUseCase {
 
     // Get the current category name from context
     const categoryName = this.categoryService.getCurrentCategoryName();
-    
+
     if (!categoryName) {
       logger.info("No current category to delete");
       return;

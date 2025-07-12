@@ -52,8 +52,8 @@ export class CategorySearchValue {
     parentId?: string
   ): boolean {
     // Check search term
-    if (this.hasSearchTerm()) {
-      const searchTerm = this.searchTerm!.toLowerCase();
+    if (this.hasSearchTerm() && this.searchTerm) {
+      const searchTerm = this.searchTerm.toLowerCase();
       if (!categoryName.toLowerCase().includes(searchTerm)) {
         return false;
       }
@@ -79,16 +79,16 @@ export class CategorySearchValue {
   toQueryString(): string {
     const params = new URLSearchParams();
 
-    if (this.hasSearchTerm()) {
-      params.append("search", this.searchTerm!);
+    if (this.hasSearchTerm() && this.searchTerm) {
+      params.append("search", this.searchTerm);
     }
 
-    if (this.hasTypeFilter()) {
-      params.append("type", this.categoryType!);
+    if (this.hasTypeFilter() && this.categoryType) {
+      params.append("type", this.categoryType);
     }
 
-    if (this.hasParentFilter()) {
-      params.append("parentId", this.parentId!);
+    if (this.hasParentFilter() && this.parentId) {
+      params.append("parentId", this.parentId);
     }
 
     return params.toString();

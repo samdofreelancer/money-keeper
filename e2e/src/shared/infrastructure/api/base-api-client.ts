@@ -60,7 +60,7 @@ export class BaseApiClient {
 
   protected async post<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.client.post<T>(url, data, config);
@@ -69,7 +69,7 @@ export class BaseApiClient {
 
   protected async put<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.client.put<T>(url, data, config);

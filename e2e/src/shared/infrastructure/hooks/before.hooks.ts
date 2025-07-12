@@ -16,11 +16,14 @@ Before(async function (this: CustomWorld, { pickle }) {
 
   // Capture browser console logs and output to test logs with scenario name
   if (this.page) {
-    this.page.on("console", (msg: any) => {
-      const type = msg.type();
-      const text = msg.text();
-      logger.info(`Browser console [${type}] [${pickle.name}]: ${text}`);
-    });
+    this.page.on(
+      "console",
+      (msg: import("@playwright/test").ConsoleMessage) => {
+        const type = msg.type();
+        const text = msg.text();
+        logger.info(`Browser console [${type}] [${pickle.name}]: ${text}`);
+      }
+    );
   }
 
   // Save environment info to JSON file for report metadata

@@ -11,7 +11,7 @@ export function generateUniqueName(baseName: string): string {
 /**
  * Generates a unique email address
  */
-export function generateUniqueEmail(baseName: string = "test"): string {
+export function generateUniqueEmail(baseName = "test"): string {
   return `${baseName}-${uuidv4().slice(0, 8)}@example.com`;
 }
 
@@ -19,8 +19,9 @@ export function generateUniqueEmail(baseName: string = "test"): string {
  * Generates a random string of specified length
  */
 export function generateRandomString(length: number): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }

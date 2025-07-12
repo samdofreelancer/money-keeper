@@ -6,11 +6,8 @@
 
 import { Page } from "@playwright/test";
 
-import {
-  CategoryEntity,
-  Category,
-  CategoryCreate,
-} from "../../domain/models/category.model";
+import { Category, CategoryCreate } from "../../domain/models/category.model";
+import { CustomWorld } from "../../../../support/world";
 import { CategoryFormValue } from "../../domain/value-objects/category-form-data.vo";
 import { CategorySearchValue } from "../../domain/value-objects/category-search-criteria.vo";
 import { CategoryApiClient } from "../../infrastructure/api/category-api-client";
@@ -22,14 +19,14 @@ export class CategoryApplicationService {
   private apiClient: CategoryApiClient;
   private uiActions: CategoryUIActions;
   private repository: CategoryRepository;
-  private world: any;
+  private world: CustomWorld;
 
-  constructor(page: Page, world?: any) {
+  constructor(page: Page, world?: CustomWorld) {
     const apiBaseUrl = process.env.API_BASE_URL || "http://127.0.0.1:8080/api";
     this.apiClient = new CategoryApiClient({ baseURL: apiBaseUrl });
     this.uiActions = new CategoryUIActions(page);
     this.repository = new CategoryRepository(page);
-    this.world = world;
+    this.world = world as CustomWorld;
   }
 
   /**
@@ -142,7 +139,23 @@ export class CategoryApplicationService {
    * Get the current category name from world context
    */
   getCurrentCategoryName(): string | null {
-    return this.world.currentCategoryName || this.world.getLastCreatedCategory();
+    return (
+      this.world.currentCategoryName || this.world.getLastCreatedCategory()
+    );
+  }
+
+  /**
+   * Get the new category name from world context
+   */
+  getNewCategoryName(): string | null {
+    return this.world.newCategoryName || null;
+  }
+
+  /**
+   * Set the current category name in world context
+   */
+  setCurrentCategoryName(categoryName: string): void {
+    this.world.currentCategoryName = categoryName;
   }
 
   /**
