@@ -11,7 +11,9 @@ export class FilterByCategoryTypeUseCase {
   constructor(private categoryService: CategoryApplicationService) {}
 
   async execute(categoryType: string): Promise<void> {
-    logger.info(`Executing filter by category type use case: ${categoryType} categories`);
+    logger.info(
+      `Executing filter by category type use case: ${categoryType} categories`
+    );
 
     const searchCriteria = new CategorySearchValue({
       categoryType: categoryType.toUpperCase() as CategoryType,

@@ -1,10 +1,6 @@
 import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
-import { expect } from "@playwright/test";
 
 import { CategoryUseCasesFactory } from "../../application/use-cases";
-import { CategoryFormValue } from "../../domain/value-objects/category-form-data.vo";
-import { CategorySearchValue } from "../../domain/value-objects/category-search-criteria.vo";
-import { CategoryType } from "../../domain/models/category.model";
 import { CustomWorld } from "../../../../support/world";
 import { logger } from "../../../../shared/utils/logger";
 
@@ -433,25 +429,15 @@ When(
 When(
   "I try to rename {string} to {string}",
   async function (this: CustomWorld, originalName: string, newName: string) {
-    logger.info(`Attempting to rename ${originalName} to ${newName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    try {
-      // This would need to be implemented in the category service
-      // For now, we'll simulate the validation error
-      this.lastError = new Error("Category name already exists");
-      logger.info(`Category rename failed as expected: duplicate name`);
-    } catch (error) {
-      this.lastError = error as Error;
-      logger.info(
-        `Category rename failed as expected: ${(error as Error).message}`
-      );
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(this.categoryService);
+    const tryRenameUseCase = useCasesFactory.createTryRenameCategoryUseCase();
+    this.lastError = await tryRenameUseCase.execute(originalName, newName);
   }
 );
 
@@ -475,36 +461,11 @@ When(
   "I try to create a category with invalid special characters",
   async function (this: CustomWorld) {
     const invalidName = "Test<>Category!@#$%^&*()";
-    logger.info(
-      `Attempting to create category with invalid characters: ${invalidName}`
-    );
 
-    if (!this.categoryService) {
-      throw new Error(
-        "Category service not initialized. Please ensure category management access was set up."
-      );
-    }
-
-    try {
-      const invalidFormData = new CategoryFormValue({
-        name: invalidName,
-        icon: "Default",
-        type: "EXPENSE",
-      });
-
-      await this.categoryService.createCategoryThroughUI(invalidFormData);
-      // If we reach here, no error was thrown (unexpected)
-      this.lastError = new Error(
-        "Expected validation error but none was thrown"
-      );
-    } catch (error) {
-      this.lastError = error as Error;
-      logger.info(
-        `Invalid characters category creation failed as expected: ${
-          (error as Error).message
-        }`
-      );
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(undefined, this);
+    const tryCreateUseCase =
+      useCasesFactory.createTryCreateInvalidCharactersCategoryUseCase();
+    this.lastError = await tryCreateUseCase.execute(invalidName);
   }
 );
 
@@ -522,159 +483,148 @@ When(
 When(
   "I start creating a new category called {string}",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Starting to create category: ${categoryName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    // This would trigger opening the create dialog
-    // For now, just store the intention
-    this.currentCategoryName = categoryName;
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const startCreatingUseCase =
+      useCasesFactory.createStartCreatingCategoryUseCase();
+    await startCreatingUseCase.execute(categoryName);
   }
 );
 
 When(
   "I start editing it to change the name to {string}",
   async function (this: CustomWorld, newName: string) {
-    logger.info(`Starting to edit category name to: ${newName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    // This would trigger opening the edit dialog
-    // For now, just store the intention
-    this.newCategoryName = newName;
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const startEditingUseCase =
+      useCasesFactory.createStartEditingCategoryUseCase();
+    await startEditingUseCase.execute(newName);
   }
 );
 
 // Cancellation steps
 When("I decide to cancel the operation", async function (this: CustomWorld) {
-  logger.info("Cancelling current operation");
-
   if (!this.categoryService) {
     throw new Error(
       "Category service not initialized. Please ensure category management access was set up."
     );
   }
 
-  await this.categoryService.cancelCurrentOperation();
+  const useCasesFactory = new CategoryUseCasesFactory(
+    this.categoryService,
+    this
+  );
+  const cancelOperationUseCase =
+    useCasesFactory.createCancelCurrentOperationUseCase();
+  await cancelOperationUseCase.execute();
 });
 
 When("I decide to cancel the changes", async function (this: CustomWorld) {
-  logger.info("Cancelling changes");
-
   if (!this.categoryService) {
     throw new Error(
       "Category service not initialized. Please ensure category management access was set up."
     );
   }
 
-  await this.categoryService.cancelCurrentOperation();
+  const useCasesFactory = new CategoryUseCasesFactory(
+    this.categoryService,
+    this
+  );
+  const cancelOperationUseCase =
+    useCasesFactory.createCancelCurrentOperationUseCase();
+  await cancelOperationUseCase.execute();
 });
 
 // Verification steps
 Then(
   "the category {string} should be available for use",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Verifying category ${categoryName} is available`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    try {
-      const exists = await this.categoryService.categoryExists(categoryName);
-      expect(exists).toBe(true);
-    } catch (error) {
-      logger.error(
-        `Category verification failed: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
-      throw error;
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCategoryExistsUseCase =
+      useCasesFactory.createVerifyCategoryExistsUseCase();
+    await verifyCategoryExistsUseCase.execute(categoryName);
   }
 );
 
 Then(
   "I should be able to see it in my category list",
   async function (this: CustomWorld) {
-    logger.info("Verifying category appears in list");
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const categoryName = this.currentCategoryName;
-    if (!categoryName) {
-      throw new Error(
-        "No current category name available. Please ensure a category was created first."
-      );
-    }
-
-    const exists = await this.categoryService.categoryExists(categoryName);
-    expect(exists).toBe(true);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCurrentCategoryUseCase =
+      useCasesFactory.createVerifyCurrentCategoryInListUseCase();
+    await verifyCurrentCategoryUseCase.execute();
   }
 );
 
 Then(
   "the category {string} should no longer appear in my list",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Verifying ${categoryName} no longer appears`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    // Wait for deletion to take effect
-    await this.page.waitForTimeout(2000);
-
-    try {
-      // Check via UI first
-      const categoryLocator = this.page
-        .locator(".category-tree .tree-node-content")
-        .filter({ hasText: new RegExp(`^${categoryName}\\s`, "i") });
-      const count = await categoryLocator.count();
-
-      if (count > 0) {
-        // Category still visible in UI, check if it's really there or just not updated
-        const isVisible = await categoryLocator.first().isVisible();
-        expect(isVisible).toBe(false);
-      }
-
-      logger.info(`Verified ${categoryName} no longer appears in the list`);
-    } catch (error) {
-      // Fallback: if category is not found at all, that's what we want
-      logger.info(`Category ${categoryName} successfully removed from list`);
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCategoryNotInListUseCase =
+      useCasesFactory.createVerifyCategoryNotInListUseCase();
+    await verifyCategoryNotInListUseCase.execute(categoryName);
   }
 );
 
 Then(
   "the category should be updated with the new name {string}",
   async function (this: CustomWorld, newName: string) {
-    logger.info(`Verifying category updated with new name: ${newName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const exists = await this.categoryService.categoryExists(newName);
-    expect(exists).toBe(true);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCategoryExistsUseCase =
+      useCasesFactory.createVerifyCategoryExistsUseCase();
+    await verifyCategoryExistsUseCase.execute(newName);
   }
 );
 
@@ -722,22 +672,19 @@ Then(
 Then(
   "I should see an error message {string}",
   async function (this: CustomWorld, expectedMessage: string) {
-    expect(this.lastError).toBeDefined();
-
-    // Handle different error message formats
-    if (expectedMessage === "Please input category name") {
-      expect(this.lastError?.message).toContain("Category name is required");
-    } else if (
-      expectedMessage === "Category name contains invalid characters"
-    ) {
-      expect(this.lastError?.message).toContain("invalid special characters");
-    } else if (expectedMessage === "Category name already exists") {
-      expect(this.lastError?.message).toContain("already exists");
-    } else {
-      expect(this.lastError?.message).toContain(expectedMessage);
+    if (!this.categoryService) {
+      throw new Error(
+        "Category service not initialized. Please ensure category management access was set up."
+      );
     }
 
-    logger.info(`Verified error message: ${expectedMessage}`);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyErrorMessageUseCase =
+      useCasesFactory.createVerifyErrorMessageUseCase();
+    await verifyErrorMessageUseCase.execute(expectedMessage);
   }
 );
 
@@ -765,25 +712,38 @@ Then(
 Then(
   "I should see an error message about maximum length",
   async function (this: CustomWorld) {
-    expect(this.lastError).toBeDefined();
-    expect(this.lastError?.message).toContain("50 characters");
-    logger.info("Verified maximum length error message");
-  }
-);
-
-Then(
-  "the category {string} should not be created",
-  async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Verifying category was not created: ${categoryName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const exists = await this.categoryService.categoryExists(categoryName);
-    expect(exists).toBe(false);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyErrorMessageUseCase =
+      useCasesFactory.createVerifyErrorMessageUseCase();
+    await verifyErrorMessageUseCase.execute("50 characters");
+  }
+);
+
+Then(
+  "the category {string} should not be created",
+  async function (this: CustomWorld, categoryName: string) {
+    if (!this.categoryService) {
+      throw new Error(
+        "Category service not initialized. Please ensure category management access was set up."
+      );
+    }
+
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCategoryNotCreatedUseCase =
+      useCasesFactory.createVerifyCategoryNotCreatedUseCase();
+    await verifyCategoryNotCreatedUseCase.execute(categoryName);
   }
 );
 
@@ -798,16 +758,19 @@ Then(
 Then(
   "the category should remain as {string}",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Verifying category remains as: ${categoryName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const exists = await this.categoryService.categoryExists(categoryName);
-    expect(exists).toBe(true);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCategoryExistsUseCase =
+      useCasesFactory.createVerifyCategoryExistsUseCase();
+    await verifyCategoryExistsUseCase.execute(categoryName);
   }
 );
 
@@ -819,16 +782,19 @@ Then("the changes should not be saved", async function (this: CustomWorld) {
 Then(
   "the category {string} should remain in my list",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Verifying category remains in list: ${categoryName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const exists = await this.categoryService.categoryExists(categoryName);
-    expect(exists).toBe(true);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const verifyCategoryExistsUseCase =
+      useCasesFactory.createVerifyCategoryExistsUseCase();
+    await verifyCategoryExistsUseCase.execute(categoryName);
   }
 );
 

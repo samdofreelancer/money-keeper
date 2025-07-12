@@ -15,6 +15,9 @@ import { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-c
 import { PrepareCategoryCreationUseCase } from "./prepare-category-creation.use-case";
 import { PrepareCategoryRenameUseCase } from "./prepare-category-rename.use-case";
 import { CancelCategoryDeletionUseCase } from "./cancel-category-deletion.use-case";
+import { CancelCurrentOperationUseCase } from "./cancel-current-operation.use-case";
+import { StartCreatingCategoryUseCase } from "./start-creating-category.use-case";
+import { StartEditingCategoryUseCase } from "./start-editing-category.use-case";
 import { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 import { SearchCategoriesUseCase } from "./search-categories.use-case";
 import { SearchSpecificCategoryUseCase } from "./search-specific-category.use-case";
@@ -24,8 +27,13 @@ import { FilterByCategoryTypeUseCase } from "./filter-by-category-type.use-case"
 import { VerifyCategoryInResultsUseCase } from "./verify-category-in-results.use-case";
 import { TryCreateInvalidCharactersCategoryUseCase } from "./try-create-invalid-characters-category.use-case";
 import { TryCreateEmptyNameCategoryUseCase } from "./try-create-empty-name-category.use-case";
+import { TryRenameCategoryUseCase } from "./try-rename-category.use-case";
 import { VerifyCategoryExistsUseCase } from "./verify-category-exists.use-case";
 import { VerifyCategoryNotExistsUseCase } from "./verify-category-not-exists.use-case";
+import { VerifyCurrentCategoryInListUseCase } from "./verify-current-category-in-list.use-case";
+import { VerifyCategoryNotInListUseCase } from "./verify-category-not-in-list.use-case";
+import { VerifyErrorMessageUseCase } from "./verify-error-message.use-case";
+import { VerifyCategoryNotCreatedUseCase } from "./verify-category-not-created.use-case";
 
 /**
  * Factory for Category Use Cases
@@ -70,6 +78,24 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
     return new CancelCategoryDeletionUseCase(this.categoryService);
+  }
+
+  createCancelCurrentOperationUseCase(): CancelCurrentOperationUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new CancelCurrentOperationUseCase(this.categoryService);
+  }
+
+  createStartCreatingCategoryUseCase(): StartCreatingCategoryUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new StartCreatingCategoryUseCase(this.categoryService);
+  }
+
+  createStartEditingCategoryUseCase(): StartEditingCategoryUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new StartEditingCategoryUseCase(this.categoryService);
   }
 
   // Setup use cases
@@ -170,6 +196,30 @@ export class CategoryUseCasesFactory {
     return new VerifyCategoryNotExistsUseCase(this.categoryService, this.world);
   }
 
+  createVerifyCurrentCategoryInListUseCase(): VerifyCurrentCategoryInListUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new VerifyCurrentCategoryInListUseCase(this.categoryService);
+  }
+
+  createVerifyCategoryNotInListUseCase(): VerifyCategoryNotInListUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new VerifyCategoryNotInListUseCase(this.categoryService);
+  }
+
+  createVerifyErrorMessageUseCase(): VerifyErrorMessageUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new VerifyErrorMessageUseCase(this.categoryService);
+  }
+
+  createVerifyCategoryNotCreatedUseCase(): VerifyCategoryNotCreatedUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new VerifyCategoryNotCreatedUseCase(this.categoryService);
+  }
+
   // Validation testing use cases
   createTryCreateDuplicateCategoryUseCase(): TryCreateDuplicateCategoryUseCase {
     if (!this.categoryService)
@@ -191,5 +241,11 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
     return new TryCreateEmptyNameCategoryUseCase(this.categoryService);
+  }
+
+  createTryRenameCategoryUseCase(): TryRenameCategoryUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new TryRenameCategoryUseCase(this.categoryService);
   }
 }
