@@ -14,9 +14,13 @@ import { SetupBulkCategoriesUseCase } from "./setup-bulk-categories.use-case";
 import { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-case";
 import { PrepareCategoryCreationUseCase } from "./prepare-category-creation.use-case";
 import { PrepareCategoryRenameUseCase } from "./prepare-category-rename.use-case";
+import { CancelCategoryDeletionUseCase } from "./cancel-category-deletion.use-case";
 import { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 import { SearchCategoriesUseCase } from "./search-categories.use-case";
 import { SearchSpecificCategoryUseCase } from "./search-specific-category.use-case";
+import { SearchForSpecificCategoryUseCase } from "./search-for-specific-category.use-case";
+import { ClearSearchFilterUseCase } from "./clear-search-filter.use-case";
+import { FilterByCategoryTypeUseCase } from "./filter-by-category-type.use-case";
 import { VerifyCategoryInResultsUseCase } from "./verify-category-in-results.use-case";
 import { TryCreateInvalidCharactersCategoryUseCase } from "./try-create-invalid-characters-category.use-case";
 import { TryCreateEmptyNameCategoryUseCase } from "./try-create-empty-name-category.use-case";
@@ -60,6 +64,12 @@ export class CategoryUseCasesFactory {
   createPrepareCategoryRenameUseCase(): PrepareCategoryRenameUseCase {
     if (!this.world) throw new Error("World required for this use case");
     return new PrepareCategoryRenameUseCase(this.world);
+  }
+
+  createCancelCategoryDeletionUseCase(): CancelCategoryDeletionUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new CancelCategoryDeletionUseCase(this.categoryService);
   }
 
   // Setup use cases
@@ -122,6 +132,24 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
     return new SearchSpecificCategoryUseCase(this.categoryService);
+  }
+
+  createSearchForSpecificCategoryUseCase(): SearchForSpecificCategoryUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new SearchForSpecificCategoryUseCase(this.categoryService);
+  }
+
+  createClearSearchFilterUseCase(): ClearSearchFilterUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new ClearSearchFilterUseCase(this.categoryService);
+  }
+
+  createFilterByCategoryTypeUseCase(): FilterByCategoryTypeUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new FilterByCategoryTypeUseCase(this.categoryService);
   }
 
   // Verification use cases

@@ -310,15 +310,19 @@ When("I initiate the deletion process", async function (this: CustomWorld) {
 });
 
 When("I decide to cancel the deletion", async function (this: CustomWorld) {
-  logger.info("Cancelling deletion");
-
   if (!this.categoryService) {
     throw new Error(
       "Category service not initialized. Please ensure category management access was set up."
     );
   }
 
-  await this.categoryService.cancelCurrentOperation();
+  const useCasesFactory = new CategoryUseCasesFactory(
+    this.categoryService,
+    this
+  );
+  const cancelDeletionUseCase =
+    useCasesFactory.createCancelCategoryDeletionUseCase();
+  await cancelDeletionUseCase.execute();
 });
 
 // Search functionality
@@ -341,49 +345,52 @@ When(
 );
 
 When("I search for a specific category", async function (this: CustomWorld) {
-  logger.info("Searching for specific category");
-
   if (!this.categoryService) {
     throw new Error(
       "Category service not initialized. Please ensure category management access was set up."
     );
   }
 
-  const searchCriteria = new CategorySearchValue({
-    searchTerm: "Test Category 1",
-  });
-  await this.categoryService.searchCategories(searchCriteria);
+  const useCasesFactory = new CategoryUseCasesFactory(
+    this.categoryService,
+    this
+  );
+  const searchUseCase =
+    useCasesFactory.createSearchForSpecificCategoryUseCase();
+  await searchUseCase.execute();
 });
 
 When("I clear the search filter", async function (this: CustomWorld) {
-  logger.info("Clearing search filter");
-
   if (!this.categoryService) {
     throw new Error(
       "Category service not initialized. Please ensure category management access was set up."
     );
   }
 
-  const searchCriteria = new CategorySearchValue({ searchTerm: "" });
-  await this.categoryService.searchCategories(searchCriteria);
+  const useCasesFactory = new CategoryUseCasesFactory(
+    this.categoryService,
+    this
+  );
+  const clearFilterUseCase = useCasesFactory.createClearSearchFilterUseCase();
+  await clearFilterUseCase.execute();
 });
 
 // Filter functionality
 When(
   "I filter by {string} categories",
   async function (this: CustomWorld, categoryType: string) {
-    logger.info(`Filtering by ${categoryType} categories`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const searchCriteria = new CategorySearchValue({
-      categoryType: categoryType.toUpperCase() as CategoryType,
-    });
-    await this.categoryService.searchCategories(searchCriteria);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const filterUseCase = useCasesFactory.createFilterByCategoryTypeUseCase();
+    await filterUseCase.execute(categoryType);
   }
 );
 
