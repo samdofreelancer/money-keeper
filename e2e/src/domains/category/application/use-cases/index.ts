@@ -7,6 +7,7 @@ export { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-c
 export { SetupCategoryManagementUseCase } from "./setup-category-management.use-case";
 export { SetupExistingCategoryUseCase } from "./setup-existing-category.use-case";
 export { SetupMultipleCategoriesUseCase } from "./setup-multiple-categories.use-case";
+export { SetupBothCategoryTypesUseCase } from "./setup-both-category-types.use-case";
 export { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 
 // Search use cases

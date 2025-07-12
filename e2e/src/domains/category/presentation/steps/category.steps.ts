@@ -124,43 +124,18 @@ Given(
 Given(
   "I have both income and expense categories",
   async function (this: CustomWorld) {
-    logger.info("Setting up both income and expense categories");
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const expenseFormData = new CategoryFormValue({
-      name: "Test Expense Category",
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    const incomeFormData = new CategoryFormValue({
-      name: "Test Income Category",
-      icon: "Default",
-      type: "INCOME",
-    });
-
-    try {
-      await this.categoryService.createCategoryThroughAPI(
-        expenseFormData.toCreateRequest()
-      );
-      await this.categoryService.createCategoryThroughAPI(
-        incomeFormData.toCreateRequest()
-      );
-    } catch (error) {
-      // Categories might already exist
-      const exists1 = await this.categoryService.categoryExists(
-        "Test Expense Category"
-      );
-      const exists2 = await this.categoryService.categoryExists(
-        "Test Income Category"
-      );
-      expect(exists1 && exists2).toBe(true);
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const setupUseCase = useCasesFactory.createSetupBothCategoryTypesUseCase();
+    await setupUseCase.execute();
   }
 );
 

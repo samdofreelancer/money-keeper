@@ -7,6 +7,7 @@ import { TryCreateInvalidLengthCategoryUseCase } from "./try-create-invalid-leng
 import { SetupCategoryManagementUseCase } from "./setup-category-management.use-case";
 import { SetupExistingCategoryUseCase } from "./setup-existing-category.use-case";
 import { SetupMultipleCategoriesUseCase } from "./setup-multiple-categories.use-case";
+import { SetupBothCategoryTypesUseCase } from "./setup-both-category-types.use-case";
 import { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-case";
 import { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 import { SearchCategoriesUseCase } from "./search-categories.use-case";
@@ -61,6 +62,12 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
     return new SetupMultipleCategoriesUseCase(this.categoryService);
+  }
+
+  createSetupBothCategoryTypesUseCase(): SetupBothCategoryTypesUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new SetupBothCategoryTypesUseCase(this.categoryService);
   }
 
   createNavigateToApplicationUseCase(): NavigateToApplicationUseCase {
