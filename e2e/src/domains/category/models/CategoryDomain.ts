@@ -1,13 +1,16 @@
 import { Page } from "@playwright/test";
 
 import {
-  CategoryFormData,
-  CategorySearchCriteria,
+  CategoryName,
+  CategoryIcon,
+  CategoryType,
+  ParentCategory,
+  CategoryCriteria,
 } from "../types/CategoryTypes";
-import { CategoryRepository } from "../repositories/CategoryRepository";
-import { CategoryUIActions } from "../actions/CategoryUIActions";
+import { CategoryRepository } from "../infra/repositories/CategoryRepository";
+import { CategoryUIActions } from "../infra/actions/CategoryUIActions";
 import { CategoryValidationService } from "../services/CategoryValidationService";
-import { logger } from "../support/logger";
+import { logger } from "../../../support/logger";
 
 /**
  * Domain layer for category operations following DDD principles
@@ -27,15 +30,20 @@ export class CategoryDomain {
   /**
    * Creates a new category with business validation
    */
-  async createCategory(categoryData: CategoryFormData): Promise<void> {
-    logger.info(`Creating category: ${categoryData.name}`);
+  async createCategory(categoryData: {
+    name: CategoryName;
+    icon: CategoryIcon;
+    type: CategoryType;
+    parentCategory?: ParentCategory;
+  }): Promise<void> {
+    logger.info(`Creating category: ${categoryData.name.value}`);
 
     // Business validation
     this.validationService.validateCategoryData(categoryData);
 
     // Check for duplicate names by checking existing categories
     const exists = await this.categoryRepository.isCategoryPresent(
-      categoryData.name
+      categoryData.name.value
     );
     if (exists) {
       throw new Error("Category name already exists");
@@ -47,7 +55,9 @@ export class CategoryDomain {
     await this.categoryUIActions.submitForm();
 
     // Verify creation
-    await this.categoryRepository.waitForCategoryToAppear(categoryData.name);
+    await this.categoryRepository.waitForCategoryToAppear(
+      categoryData.name.value
+    );
   }
 
   /**
@@ -55,16 +65,21 @@ export class CategoryDomain {
    */
   async updateCategory(
     originalName: string,
-    newData: CategoryFormData
+    newData: {
+      name: CategoryName;
+      icon: CategoryIcon;
+      type: CategoryType;
+      parentCategory?: ParentCategory;
+    }
   ): Promise<void> {
-    logger.info(`Updating category: ${originalName} -> ${newData.name}`);
+    logger.info(`Updating category: ${originalName} -> ${newData.name.value}`);
 
     this.validationService.validateCategoryData(newData);
 
     // Check for duplicate names (excluding the original name)
-    if (originalName !== newData.name) {
+    if (originalName !== newData.name.value) {
       const exists = await this.categoryRepository.isCategoryPresent(
-        newData.name
+        newData.name.value
       );
       if (exists) {
         throw new Error("Category name already exists");
@@ -75,7 +90,7 @@ export class CategoryDomain {
     await this.categoryUIActions.fillForm(newData);
     await this.categoryUIActions.submitForm();
 
-    await this.categoryRepository.waitForCategoryToAppear(newData.name);
+    await this.categoryRepository.waitForCategoryToAppear(newData.name.value);
   }
 
   /**
@@ -93,17 +108,17 @@ export class CategoryDomain {
   /**
    * Searches for categories based on criteria
    */
-  async searchCategories(criteria: CategorySearchCriteria): Promise<void> {
+  async searchCategories(criteria: CategoryCriteria): Promise<void> {
     logger.info(
       `Searching categories with criteria: ${JSON.stringify(criteria)}`
     );
 
-    if (criteria.searchTerm) {
-      await this.categoryUIActions.searchByTerm(criteria.searchTerm);
+    if (criteria.name) {
+      await this.categoryUIActions.searchByTerm(criteria.name.value);
     }
 
-    if (criteria.categoryType) {
-      await this.categoryUIActions.filterByType(criteria.categoryType);
+    if (criteria.type) {
+      await this.categoryUIActions.filterByType(criteria.type);
     }
   }
 
