@@ -8,6 +8,7 @@ export { SetupCategoryManagementUseCase } from "./setup-category-management.use-
 export { SetupExistingCategoryUseCase } from "./setup-existing-category.use-case";
 export { SetupMultipleCategoriesUseCase } from "./setup-multiple-categories.use-case";
 export { SetupBothCategoryTypesUseCase } from "./setup-both-category-types.use-case";
+export { SetupMultipleTestCategoriesUseCase } from "./setup-multiple-test-categories.use-case";
 export { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 
 // Search use cases

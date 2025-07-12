@@ -140,33 +140,18 @@ Given(
 );
 
 Given("I have multiple categories", async function (this: CustomWorld) {
-  logger.info("Setting up multiple categories");
-
   if (!this.categoryService) {
     throw new Error(
       "Category service not initialized. Please ensure category management access was set up."
     );
   }
 
-  const categories = ["Test Category 1", "Test Category 2", "Test Category 3"];
-
-  for (const categoryName of categories) {
-    const formData = new CategoryFormValue({
-      name: categoryName,
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    try {
-      await this.categoryService.createCategoryThroughAPI(
-        formData.toCreateRequest()
-      );
-    } catch (error) {
-      // Category might already exist
-      const exists = await this.categoryService.categoryExists(categoryName);
-      expect(exists).toBe(true);
-    }
-  }
+  const useCasesFactory = new CategoryUseCasesFactory(
+    this.categoryService,
+    this
+  );
+  const setupUseCase = useCasesFactory.createSetupMultipleTestCategoriesUseCase();
+  await setupUseCase.execute();
 });
 
 Given(
