@@ -157,53 +157,18 @@ Given("I have multiple categories", async function (this: CustomWorld) {
 Given(
   "I have multiple income and expense categories",
   async function (this: CustomWorld) {
-    logger.info("Setting up multiple income and expense categories");
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    // Create income categories
-    const incomeCategories = ["Salary Income", "Freelance Income"];
-    for (const categoryName of incomeCategories) {
-      const formData = new CategoryFormValue({
-        name: categoryName,
-        icon: "Default",
-        type: "INCOME",
-      });
-
-      try {
-        await this.categoryService.createCategoryThroughAPI(
-          formData.toCreateRequest()
-        );
-      } catch (error) {
-        // Category might already exist
-        const exists = await this.categoryService.categoryExists(categoryName);
-        expect(exists).toBe(true);
-      }
-    }
-
-    // Create expense categories including Food category
-    const expenseCategories = ["Food Expenses", "Transport Expenses"];
-    for (const categoryName of expenseCategories) {
-      const formData = new CategoryFormValue({
-        name: categoryName,
-        icon: "Default",
-        type: "EXPENSE",
-      });
-
-      try {
-        await this.categoryService.createCategoryThroughAPI(
-          formData.toCreateRequest()
-        );
-      } catch (error) {
-        // Category might already exist
-        const exists = await this.categoryService.categoryExists(categoryName);
-        expect(exists).toBe(true);
-      }
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const setupUseCase = useCasesFactory.createSetupMultipleIncomeExpenseCategoriesUseCase();
+    await setupUseCase.execute();
   }
 );
 
