@@ -266,6 +266,8 @@ When(
         };
 
         await this.categoryDomain.createCategory(invalidCategoryData);
+        // If we reach here, no error was thrown (unexpected)
+        this.lastError = new Error("Expected validation error but none was thrown");
       } catch (error) {
         this.lastError = error as Error;
         logger.info("Category creation failed as expected due to validation");
