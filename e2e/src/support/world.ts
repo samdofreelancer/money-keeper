@@ -11,10 +11,15 @@ import {
 
 import { config } from "../config/env.config";
 import { logger } from "./logger";
-import { BasePage } from "../pages";
-import { CategoryPage } from "../pages/category.page";
-import { CategoryDomain } from "../domain/CategoryDomain";
-import { CategoryFormData } from "../types/CategoryTypes";
+import { BasePage } from "../common/pages/base.page";
+import { CategoryPage } from "../domains/category/infra/pages/category.page";
+import { CategoryDomain } from "../domains/category/models/CategoryDomain";
+import {
+  CategoryName,
+  CategoryIcon,
+  CategoryType,
+  ParentCategory,
+} from "../domains/category/types/CategoryTypes";
 
 /**
  * Unified World class with clean separation of concerns
@@ -40,7 +45,12 @@ export class CustomWorld extends World {
   uniqueData: Map<string, string> = new Map();
 
   // Test state
-  pendingCategoryData?: CategoryFormData;
+  pendingCategoryData?: {
+    name: CategoryName;
+    icon: CategoryIcon;
+    type: CategoryType;
+    parentCategory?: ParentCategory;
+  };
   lastError?: Error;
 
   // Configuration

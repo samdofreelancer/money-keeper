@@ -4,7 +4,7 @@ import * as path from "path";
 
 import { CustomWorld } from "../support/world";
 import { logger } from "../support/logger";
-import { CategoryPage } from "../pages/category.page";
+import { CategoryPage } from "../domains/category/infra/pages/category.page";
 
 Before(async function (this: CustomWorld, { pickle }) {
   logger.info(
