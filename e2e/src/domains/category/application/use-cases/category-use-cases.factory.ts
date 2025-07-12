@@ -8,6 +8,7 @@ import { SetupCategoryManagementUseCase } from "./setup-category-management.use-
 import { SetupExistingCategoryUseCase } from "./setup-existing-category.use-case";
 import { SetupMultipleCategoriesUseCase } from "./setup-multiple-categories.use-case";
 import { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-case";
+import { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 import { SearchCategoriesUseCase } from "./search-categories.use-case";
 import { VerifyCategoryInResultsUseCase } from "./verify-category-in-results.use-case";
 import { TryCreateInvalidCharactersCategoryUseCase } from "./try-create-invalid-characters-category.use-case";
@@ -60,6 +61,11 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
     return new SetupMultipleCategoriesUseCase(this.categoryService);
+  }
+
+  createNavigateToApplicationUseCase(): NavigateToApplicationUseCase {
+    if (!this.world) throw new Error("World required for this use case");
+    return new NavigateToApplicationUseCase(this.world);
   }
 
   // Search use cases

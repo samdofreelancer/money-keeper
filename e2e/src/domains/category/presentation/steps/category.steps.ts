@@ -7,7 +7,6 @@ import { CategorySearchValue } from "../../domain/value-objects/category-search-
 import { CategoryType } from "../../domain/models/category.model";
 import { CustomWorld } from "../../../../support/world";
 import { logger } from "../../../../shared/utils/logger";
-import { config } from "../../../../shared/config/env.config";
 
 // Set timeout for steps
 setDefaultTimeout(60000);
@@ -16,9 +15,9 @@ setDefaultTimeout(60000);
 Given(
   "I am on the Money Keeper application",
   async function (this: CustomWorld) {
-    const baseUrl = config.browser.baseUrl || "http://localhost:5173";
-    await this.page.goto(baseUrl);
-    logger.info(`Navigated to Money Keeper application at ${baseUrl}`);
+    const useCasesFactory = new CategoryUseCasesFactory(undefined, this);
+    const navigationUseCase = useCasesFactory.createNavigateToApplicationUseCase();
+    await navigationUseCase.execute();
   }
 );
 
