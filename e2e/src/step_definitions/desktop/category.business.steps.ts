@@ -484,20 +484,26 @@ Given(
   async function (this: CustomWorld, count: number) {
     logger.info(`Creating ${count} categories for performance test`);
 
+    const creationPromises = [];
+
     for (let i = 1; i <= count; i++) {
       const categoryName = `Test Category ${i}`;
       const uniqueName = generateUniqueName(categoryName);
       this.uniqueData.set(categoryName, uniqueName);
 
-      const newCategory = await createCategory({
+      const createPromise = createCategory({
         name: uniqueName,
         icon: "Grid",
         type: i % 2 === 0 ? "INCOME" : "EXPENSE",
         parentId: null,
+      }).then((newCategory) => {
+        this.trackCreatedCategory(newCategory.id, uniqueName);
       });
 
-      this.trackCreatedCategory(newCategory.id, uniqueName);
+      creationPromises.push(createPromise);
     }
+
+    await Promise.all(creationPromises);
 
     await this.refreshCategoryPage();
     logger.info(`Created ${count} categories successfully`);
