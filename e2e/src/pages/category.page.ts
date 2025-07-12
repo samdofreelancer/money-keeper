@@ -166,6 +166,11 @@ export class CategoryPage {
         }),
       ]);
     } catch (error) {
+      // Check if dialog is actually hidden as fallback
+      const dialogHidden = await this.page.locator(".el-dialog__wrapper").isHidden();
+      if (!dialogHidden) {
+        logger.warn("Form submission may have failed - dialog still visible");
+      }
       logger.info("Form submission completed without success message");
     }
 
