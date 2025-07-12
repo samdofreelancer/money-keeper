@@ -10,7 +10,9 @@ export class SetupMultipleIncomeExpenseCategoriesUseCase {
   constructor(private categoryService: CategoryApplicationService) {}
 
   async execute(): Promise<void> {
-    logger.info("Executing setup multiple income and expense categories use case");
+    logger.info(
+      "Executing setup multiple income and expense categories use case"
+    );
 
     // Create income categories
     const incomeCategories = ["Salary Income", "Freelance Income"];

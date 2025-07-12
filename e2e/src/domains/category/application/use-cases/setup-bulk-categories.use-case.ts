@@ -14,7 +14,9 @@ export class SetupBulkCategoriesUseCase {
   ) {}
 
   async execute(count: number): Promise<void> {
-    logger.info(`Executing setup bulk categories use case: ${count} categories`);
+    logger.info(
+      `Executing setup bulk categories use case: ${count} categories`
+    );
 
     let successCount = 0;
 

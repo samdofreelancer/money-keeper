@@ -16,7 +16,8 @@ Given(
   "I am on the Money Keeper application",
   async function (this: CustomWorld) {
     const useCasesFactory = new CategoryUseCasesFactory(undefined, this);
-    const navigationUseCase = useCasesFactory.createNavigateToApplicationUseCase();
+    const navigationUseCase =
+      useCasesFactory.createNavigateToApplicationUseCase();
     await navigationUseCase.execute();
   }
 );
@@ -150,7 +151,8 @@ Given("I have multiple categories", async function (this: CustomWorld) {
     this.categoryService,
     this
   );
-  const setupUseCase = useCasesFactory.createSetupMultipleTestCategoriesUseCase();
+  const setupUseCase =
+    useCasesFactory.createSetupMultipleTestCategoriesUseCase();
   await setupUseCase.execute();
 });
 
@@ -167,7 +169,8 @@ Given(
       this.categoryService,
       this
     );
-    const setupUseCase = useCasesFactory.createSetupMultipleIncomeExpenseCategoriesUseCase();
+    const setupUseCase =
+      useCasesFactory.createSetupMultipleIncomeExpenseCategoriesUseCase();
     await setupUseCase.execute();
   }
 );
@@ -193,16 +196,18 @@ Given(
 Given(
   "I have searched for a specific category",
   async function (this: CustomWorld) {
-    logger.info("Performing search for specific category");
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const searchCriteria = new CategorySearchValue({ searchTerm: "Test" });
-    await this.categoryService.searchCategories(searchCriteria);
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const searchUseCase = useCasesFactory.createSearchSpecificCategoryUseCase();
+    await searchUseCase.execute();
   }
 );
 
@@ -214,16 +219,13 @@ When(
     categoryType: string,
     categoryName: string
   ) {
-    logger.info(`Creating new ${categoryType} category: ${categoryName}`);
-
-    const formData = new CategoryFormValue({
-      name: categoryName,
-      icon: "Default",
-      type: categoryType.toUpperCase() as CategoryType,
-    });
-
-    this.currentFormData = formData;
-    this.currentCategoryName = categoryName;
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const prepareUseCase =
+      useCasesFactory.createPrepareCategoryCreationUseCase();
+    await prepareUseCase.execute(categoryType, categoryName);
   }
 );
 
@@ -255,8 +257,13 @@ When(
 When(
   "I want to rename it to {string}",
   async function (this: CustomWorld, newName: string) {
-    logger.info(`Preparing to rename category to: ${newName}`);
-    this.newCategoryName = newName;
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const prepareRenameUseCase =
+      useCasesFactory.createPrepareCategoryRenameUseCase();
+    await prepareRenameUseCase.execute(newName);
   }
 );
 

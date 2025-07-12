@@ -12,8 +12,11 @@ import { SetupMultipleTestCategoriesUseCase } from "./setup-multiple-test-catego
 import { SetupMultipleIncomeExpenseCategoriesUseCase } from "./setup-multiple-income-expense-categories.use-case";
 import { SetupBulkCategoriesUseCase } from "./setup-bulk-categories.use-case";
 import { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-case";
+import { PrepareCategoryCreationUseCase } from "./prepare-category-creation.use-case";
+import { PrepareCategoryRenameUseCase } from "./prepare-category-rename.use-case";
 import { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 import { SearchCategoriesUseCase } from "./search-categories.use-case";
+import { SearchSpecificCategoryUseCase } from "./search-specific-category.use-case";
 import { VerifyCategoryInResultsUseCase } from "./verify-category-in-results.use-case";
 import { TryCreateInvalidCharactersCategoryUseCase } from "./try-create-invalid-characters-category.use-case";
 import { TryCreateEmptyNameCategoryUseCase } from "./try-create-empty-name-category.use-case";
@@ -49,6 +52,16 @@ export class CategoryUseCasesFactory {
     return new CreateCategoryWithIconUseCase(this.categoryService);
   }
 
+  createPrepareCategoryCreationUseCase(): PrepareCategoryCreationUseCase {
+    if (!this.world) throw new Error("World required for this use case");
+    return new PrepareCategoryCreationUseCase(this.world);
+  }
+
+  createPrepareCategoryRenameUseCase(): PrepareCategoryRenameUseCase {
+    if (!this.world) throw new Error("World required for this use case");
+    return new PrepareCategoryRenameUseCase(this.world);
+  }
+
   // Setup use cases
   createSetupCategoryManagementUseCase(): SetupCategoryManagementUseCase {
     if (!this.world) throw new Error("World required for this use case");
@@ -82,7 +95,9 @@ export class CategoryUseCasesFactory {
   createSetupMultipleIncomeExpenseCategoriesUseCase(): SetupMultipleIncomeExpenseCategoriesUseCase {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
-    return new SetupMultipleIncomeExpenseCategoriesUseCase(this.categoryService);
+    return new SetupMultipleIncomeExpenseCategoriesUseCase(
+      this.categoryService
+    );
   }
 
   createSetupBulkCategoriesUseCase(): SetupBulkCategoriesUseCase {
@@ -101,6 +116,12 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService || !this.world)
       throw new Error("CategoryService and World required for this use case");
     return new SearchCategoriesUseCase(this.categoryService, this.world);
+  }
+
+  createSearchSpecificCategoryUseCase(): SearchSpecificCategoryUseCase {
+    if (!this.categoryService)
+      throw new Error("CategoryService required for this use case");
+    return new SearchSpecificCategoryUseCase(this.categoryService);
   }
 
   // Verification use cases

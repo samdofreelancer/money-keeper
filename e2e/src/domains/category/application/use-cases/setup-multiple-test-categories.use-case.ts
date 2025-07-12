@@ -12,7 +12,11 @@ export class SetupMultipleTestCategoriesUseCase {
   async execute(): Promise<void> {
     logger.info("Executing setup multiple test categories use case");
 
-    const categories = ["Test Category 1", "Test Category 2", "Test Category 3"];
+    const categories = [
+      "Test Category 1",
+      "Test Category 2",
+      "Test Category 3",
+    ];
 
     for (const categoryName of categories) {
       const formData = new CategoryFormValue({

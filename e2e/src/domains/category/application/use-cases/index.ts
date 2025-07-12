@@ -2,6 +2,8 @@
 export { DeleteCurrentCategoryUseCase } from "./delete-current-category.use-case";
 export { UpdateCategoryWithIconUseCase } from "./update-category-with-icon.use-case";
 export { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-case";
+export { PrepareCategoryCreationUseCase } from "./prepare-category-creation.use-case";
+export { PrepareCategoryRenameUseCase } from "./prepare-category-rename.use-case";
 
 // Setup use cases
 export { SetupCategoryManagementUseCase } from "./setup-category-management.use-case";
@@ -15,6 +17,7 @@ export { NavigateToApplicationUseCase } from "./navigate-to-application.use-case
 
 // Search use cases
 export { SearchCategoriesUseCase } from "./search-categories.use-case";
+export { SearchSpecificCategoryUseCase } from "./search-specific-category.use-case";
 
 // Verification use cases
 export { VerifyCategoryInResultsUseCase } from "./verify-category-in-results.use-case";
