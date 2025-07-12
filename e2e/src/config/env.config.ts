@@ -35,7 +35,7 @@ export const config: EnvironmentConfig = {
       ? process.env.HEADLESS.toLowerCase() === "true"
       : true,
     baseUrl: process.env.BASE_URL || "http://localhost:3000",
-    actionTimeout: Number(process.env.ACTION_TIMEOUT) || 0,
+    actionTimeout: Number(process.env.ACTION_TIMEOUT) || 30000,
     trace: getTraceMode(process.env.TRACE_MODE),
   },
 

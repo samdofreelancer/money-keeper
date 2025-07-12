@@ -1,8 +1,8 @@
 import { Page, Locator } from "@playwright/test";
 
-import { CategoryFormData } from "../types/CategoryTypes";
-import { logger } from "../support/logger";
-import { config } from "../config/env.config";
+import { CategoryFormData } from "../../models/CategoryFormData";
+import { logger } from "../../../../support/logger";
+import { config } from "../../../../config/env.config";
 
 /**
  * UI Actions for category operations
@@ -44,7 +44,7 @@ export class CategoryUIActions {
     });
 
     const editButton = categoryNode
-      .locator("button.el-button--primary")
+      .locator('[data-testid="edit-category-button"]')
       .first();
     await editButton.click({ timeout: this.actionTimeout });
 
@@ -69,7 +69,7 @@ export class CategoryUIActions {
     await categoryNode.hover();
 
     const deleteButton = categoryNode
-      .locator("button.el-button--danger")
+      .locator('[data-testid="delete-category-button"]')
       .first();
     await deleteButton.waitFor({
       state: "visible",
@@ -107,7 +107,9 @@ export class CategoryUIActions {
    * Submits the category form
    */
   async submitForm(): Promise<void> {
+    logger.info("Submitting form");
     const submitButton = this.page.locator('[data-testid="button-submit"]');
+    await submitButton.waitFor({ state: "visible", timeout: this.actionTimeout });
     await submitButton.click({ timeout: this.actionTimeout });
 
     // Wait for form to close or success message
@@ -125,7 +127,7 @@ export class CategoryUIActions {
       logger.info("Form submission completed without success message");
     }
 
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(2000); // Give more time for backend processing
     logger.info("Form submitted successfully");
   }
 
@@ -227,29 +229,45 @@ export class CategoryUIActions {
   }
 
   private async selectIcon(icon: string): Promise<void> {
-    const iconSelect = this.page.locator(
-      'div.el-form-item:has(label:has-text("Icon")) .el-select'
-    );
+    logger.info(`Selecting icon: ${icon}`);
+    const iconSelect = this.page.locator('[data-testid="select-icon"]');
+    await iconSelect.waitFor({ state: "visible", timeout: this.actionTimeout });
     await iconSelect.click({ timeout: this.actionTimeout });
+
+    // Wait for dropdown to open
+    await this.page.waitForSelector('.el-select-dropdown', { 
+      state: 'visible', 
+      timeout: this.actionTimeout 
+    });
 
     const iconOption = this.page.locator(
       `.el-select-dropdown__item:has-text("${icon}")`
     );
     await iconOption.waitFor({ state: "visible", timeout: this.actionTimeout });
     await iconOption.click({ timeout: this.actionTimeout });
+    
+    // Wait for dropdown to close
+    await this.page.waitForSelector('.el-select-dropdown', { 
+      state: 'hidden', 
+      timeout: this.actionTimeout 
+    });
+    
+    logger.info(`Icon "${icon}" selected successfully`);
   }
 
   private async selectType(categoryType: string): Promise<void> {
+    logger.info(`Selecting type: ${categoryType}`);
     const typeRadio = this.page.locator(
-      `label.el-radio-button:has(input[value="${categoryType}"])`
+      `[data-testid="radio-${categoryType.toLowerCase()}"]`
     );
     await typeRadio.waitFor({ state: "visible", timeout: this.actionTimeout });
     await typeRadio.click({ timeout: this.actionTimeout });
+    logger.info(`Type "${categoryType}" selected successfully`);
   }
 
   private async selectParentCategory(parentCategory: string): Promise<void> {
     const parentSelect = this.page.locator(
-      'div.el-form-item:has(label:has-text("Parent Category")) .el-select'
+      '[data-testid="select-parent-category"]'
     );
     await parentSelect.click({ timeout: this.actionTimeout });
 
@@ -264,7 +282,7 @@ export class CategoryUIActions {
   }
 
   private getCategoryNode(categoryName: string): Locator {
-    return this.page.locator(".category-tree .tree-node-content", {
+    return this.page.locator('[data-testid="tree-node-content"]', {
       hasText: categoryName,
     });
   }

@@ -1,7 +1,7 @@
 import { Page, Locator } from "@playwright/test";
 
-import { logger } from "../support/logger";
-import { config } from "../config/env.config";
+import { logger } from "../../../../support/logger";
+import { config } from "../../../../config/env.config";
 
 /**
  * Repository pattern for category data access
@@ -21,7 +21,12 @@ export class CategoryRepository {
    */
   async isCategoryPresent(categoryName: string): Promise<boolean> {
     try {
-      await this.page.waitForTimeout(500);
+      // Wait for category tree to load
+      await this.page.waitForSelector('[data-testid="category-tree"]', {
+        timeout: this.actionTimeout,
+      });
+      
+      await this.page.waitForTimeout(1000);
       const categoryLocator = this.getCategoryLocator(categoryName);
       const count = await categoryLocator.count();
       logger.info(`Category "${categoryName}" found: ${count} matches`);
@@ -36,12 +41,23 @@ export class CategoryRepository {
    * Waits for a category to appear in the UI
    */
   async waitForCategoryToAppear(categoryName: string): Promise<void> {
+    logger.info(`Waiting for category "${categoryName}" to appear`);
+    
+    // First wait for the category tree to be ready
+    await this.page.waitForSelector('[data-testid="category-tree"]', {
+      timeout: this.actionTimeout,
+    });
+    
+    // Give some time for the backend to process and UI to update
+    await this.page.waitForTimeout(2000);
+    
+    // Now wait for the specific category
     const categoryLocator = this.getCategoryLocator(categoryName);
     await categoryLocator.waitFor({
       state: "visible",
       timeout: this.actionTimeout,
     });
-    logger.info(`Category "${categoryName}" appeared`);
+    logger.info(`Category "${categoryName}" appeared successfully`);
   }
 
   /**
@@ -101,7 +117,7 @@ export class CategoryRepository {
   }
 
   private getCategoryLocator(categoryName: string): Locator {
-    return this.page.locator(".category-tree .tree-node-content", {
+    return this.page.locator('[data-testid="tree-node-content"]', {
       hasText: categoryName,
     });
   }

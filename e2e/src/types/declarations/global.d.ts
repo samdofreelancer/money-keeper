@@ -2,7 +2,7 @@ import { World as CucumberWorld } from "@cucumber/cucumber";
 import { ITestCaseHookParameter } from "@cucumber/cucumber/lib/support_code_library_builder/types";
 import { Browser, BrowserContext, Page } from "@playwright/test";
 
-import { BasePage } from "../src/pages/base.page";
+import { BasePage } from "../../shared/pages/BasePage";
 
 declare module "@cucumber/cucumber" {
   export interface IWorld {

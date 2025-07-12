@@ -1,10 +1,10 @@
 import { Page, Locator } from "@playwright/test";
 
-import { logger } from "../support/logger";
-import { config } from "../config/env.config";
+import { BasePage } from "../../../../shared/pages/BasePage";
+import { logger } from "../../../../support/logger";
+import { config } from "../../../../config/env.config";
 
-export class CategoryPage {
-  readonly page: Page;
+export class CategoryPage extends BasePage {
   readonly categoriesMenuItem: Locator;
   readonly categoryItems: Locator;
   readonly addCategoryButton: Locator;
@@ -24,7 +24,7 @@ export class CategoryPage {
     config.browser.actionTimeout || 10000;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.categoriesMenuItem = page.locator('[data-testid="page-title"]');
     this.categoryItems = page.locator('[data-testid="tree-node-content"]');
     this.addCategoryButton = page.locator(
