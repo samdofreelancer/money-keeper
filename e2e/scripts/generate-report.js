@@ -189,7 +189,44 @@ function generateReport() {
                   path.join(reportsDir, file),
                   "utf-8"
                 );
-                const json = JSON.parse(content);
+
+                // Validate JSON before parsing
+                let json;
+                try {
+                  json = JSON.parse(content);
+                } catch (parseError) {
+                  console.warn(`Invalid JSON in ${file}, attempting to fix...`);
+
+                  // Try to fix common JSON issues
+                  let fixedContent = content;
+
+                  // Remove trailing commas
+                  fixedContent = fixedContent.replace(/,(\s*[}\]])/g, "$1");
+
+                  // Fix incomplete JSON
+                  if (!fixedContent.trim().endsWith("]")) {
+                    fixedContent = fixedContent.trim();
+                    if (fixedContent.endsWith(",")) {
+                      fixedContent = fixedContent.slice(0, -1);
+                    }
+                    fixedContent += "]";
+                  }
+
+                  try {
+                    json = JSON.parse(fixedContent);
+                    console.log(`Successfully fixed JSON in ${file}`);
+
+                    // Write the fixed content back
+                    fs.writeFileSync(path.join(reportsDir, file), fixedContent);
+                  } catch (fixError) {
+                    console.warn(
+                      `Could not fix JSON in ${file}:`,
+                      fixError.message
+                    );
+                    continue; // Skip this file
+                  }
+                }
+
                 if (Array.isArray(json)) {
                   for (const feature of json) {
                     if (feature.elements) {
@@ -206,7 +243,10 @@ function generateReport() {
                   }
                 }
               } catch (error) {
-                console.warn(`Failed to parse report file ${file}:`, error);
+                console.warn(
+                  `Failed to process report file ${file}:`,
+                  error.message
+                );
               }
             }
           }

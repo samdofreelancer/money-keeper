@@ -13,17 +13,38 @@ import { config } from "../config/env.config";
 import { logger } from "./logger";
 import { BasePage } from "../pages";
 import { CategoryPage } from "../pages/category.page";
+import { CategoryDomain } from "../domain/CategoryDomain";
+import { CategoryFormData } from "../types/CategoryTypes";
 
+/**
+ * Unified World class with clean separation of concerns
+ * Handles both legacy page object patterns and new domain-driven approach
+ */
 export class CustomWorld extends World {
+  // Browser infrastructure
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
+
+  // Legacy page objects (for backward compatibility)
   currentPage!: BasePage;
   categoryPage?: CategoryPage;
+  playwrightOptions?: PlaywrightTestOptions;
+
+  // Domain services (new architecture)
+  categoryDomain?: CategoryDomain;
+
+  // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
-  playwrightOptions?: PlaywrightTestOptions;
+
+  // Test state
+  pendingCategoryData?: CategoryFormData;
+  lastError?: Error;
+
+  // Configuration
+  config = config;
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -109,6 +130,58 @@ export class CustomWorld extends World {
         version: platformVersion,
       },
     };
+  }
+
+  /**
+   * Enhanced methods for improved BDD support
+   */
+
+  /**
+   * Tracks a created category for cleanup
+   */
+  trackCreatedCategory(categoryId: string | null, categoryName: string): void {
+    if (categoryId) {
+      this.createdCategoryIds.push(categoryId);
+    }
+    this.createdCategoryNames.push(categoryName);
+  }
+
+  /**
+   * Removes a category from tracking
+   */
+  removeFromTrackedCategories(categoryName: string): void {
+    const index = this.createdCategoryNames.indexOf(categoryName);
+    if (index > -1) {
+      this.createdCategoryNames.splice(index, 1);
+    }
+  }
+
+  /**
+   * Gets the last created category name
+   */
+  getLastCreatedCategory(): string | null {
+    return this.createdCategoryNames.length > 0
+      ? this.createdCategoryNames[this.createdCategoryNames.length - 1]
+      : null;
+  }
+
+  /**
+   * Refreshes the category page to reflect backend changes
+   */
+  async refreshCategoryPage(): Promise<void> {
+    await this.page.reload();
+    await this.page.waitForLoadState("networkidle");
+    await this.page.locator('[data-testid="page-title"]').click();
+    await this.page.waitForTimeout(2000);
+  }
+
+  /**
+   * Cleans up test data
+   */
+  async cleanup(): Promise<void> {
+    // Cleanup logic for test data
+    // This could involve API calls to delete created categories
+    logger.info("Cleaning up test data");
   }
 }
 

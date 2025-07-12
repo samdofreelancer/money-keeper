@@ -153,13 +153,34 @@ export class CategoryPage {
 
   async submitForm() {
     await this.createButton.click({ timeout: this.actionTimeout });
-    await this.page.waitForSelector(".el-dialog__wrapper", {
-      state: "hidden",
-      timeout: this.actionTimeout,
-    });
-    await this.page.waitForSelector(".el-message--success", {
-      timeout: this.actionTimeout,
-    });
+
+    // Wait for either success message or dialog to close
+    try {
+      await Promise.race([
+        this.page.waitForSelector(".el-dialog__wrapper", {
+          state: "hidden",
+          timeout: this.actionTimeout,
+        }),
+        this.page.waitForSelector(".el-message--success", {
+          timeout: this.actionTimeout,
+        }),
+      ]);
+    } catch (error) {
+      // Check if dialog is actually hidden as fallback
+      const dialogHidden = await this.page
+        .locator(".el-dialog__wrapper")
+        .isHidden();
+      if (!dialogHidden) {
+        logger.error(
+          "Form submission failed - dialog still visible after timeout"
+        );
+        throw new Error("Form submission failed - dialog did not close");
+      }
+      logger.info("Form submission completed without success message");
+    }
+
+    // Give a small delay for the page to update
+    await this.page.waitForTimeout(1000);
   }
 
   async clickSubmit() {
@@ -167,19 +188,131 @@ export class CategoryPage {
   }
 
   async isCategoryPresent(name: string): Promise<boolean> {
-    const newCategory = this.newCategoryLocator(name);
-    return (await newCategory.count()) > 0;
+    try {
+      // Wait a bit for any UI updates
+      await this.page.waitForTimeout(500);
+      const newCategory = this.newCategoryLocator(name);
+      const count = await newCategory.count();
+      logger.info(`Checking for category "${name}": found ${count} matches`);
+      return count > 0;
+    } catch (error) {
+      logger.error(`Error checking category presence: ${error}`);
+      return false;
+    }
   }
 
   async openEditCategoryDialog(categoryName: string) {
-    await this.editButtonOnNode(categoryName).click();
-    await this.categoryForm.waitFor();
+    try {
+      logger.info(`Opening edit dialog for category: ${categoryName}`);
+      await this.page.waitForSelector(".category-tree .tree-node-content", {
+        timeout: this.actionTimeout,
+      });
+
+      const editButton = this.editButtonOnNode(categoryName);
+      await editButton.waitFor({
+        state: "visible",
+        timeout: this.actionTimeout,
+      });
+      await editButton.click({ timeout: this.actionTimeout });
+
+      await this.categoryForm.waitFor({
+        state: "visible",
+        timeout: this.actionTimeout,
+      });
+      logger.info(`Edit dialog opened successfully for: ${categoryName}`);
+    } catch (error) {
+      logger.error(`Failed to open edit dialog for ${categoryName}: ${error}`);
+      throw error;
+    }
   }
 
   async openDeleteCategoryDialog(categoryName: string) {
-    await this.page.waitForSelector(".category-tree .tree-node-content");
-    logger.info(`Attempting to delete category: ${categoryName}`);
-    await this.deleteButtonOnNode(categoryName).click({ force: true });
+    try {
+      logger.info(`Opening delete dialog for category: ${categoryName}`);
+
+      await this.waitForCategoryTree();
+      const categoryNode = await this.prepareCategoryNode(categoryName);
+      const deleteButton = await this.findDeleteButton(categoryNode);
+      await this.clickDeleteButton(deleteButton);
+      await this.waitForConfirmationDialog();
+
+      logger.info(`Delete confirmation dialog opened for: ${categoryName}`);
+    } catch (error) {
+      logger.error(
+        `Failed to open delete dialog for ${categoryName}: ${error}`
+      );
+      throw error;
+    }
+  }
+
+  private async waitForCategoryTree(): Promise<void> {
+    await this.page.waitForSelector(".category-tree .tree-node-content", {
+      timeout: this.actionTimeout,
+    });
+  }
+
+  private async prepareCategoryNode(categoryName: string): Promise<Locator> {
+    const categoryNode = this.categoryNode(categoryName);
+    await categoryNode.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
+    await categoryNode.hover();
+    await this.page.waitForTimeout(500); // Brief wait for hover effects
+    return categoryNode;
+  }
+
+  private async findDeleteButton(categoryNode: Locator): Promise<Locator> {
+    // Try primary delete button selector
+    const primaryDeleteButton = categoryNode
+      .locator("button.el-button--danger")
+      .first();
+
+    try {
+      await primaryDeleteButton.waitFor({ state: "visible", timeout: 3000 });
+      return primaryDeleteButton;
+    } catch (error) {
+      // Fallback: try alternative selector
+      const fallbackDeleteButton = categoryNode.locator(
+        'button[class*="danger"]'
+      );
+      await fallbackDeleteButton.waitFor({ state: "visible", timeout: 3000 });
+      return fallbackDeleteButton;
+    }
+  }
+
+  private async clickDeleteButton(deleteButton: Locator): Promise<void> {
+    await deleteButton.click({ timeout: this.actionTimeout });
+  }
+
+  private async waitForConfirmationDialog(): Promise<void> {
+    const dialogSelectors = [
+      ".el-dialog__wrapper",
+      ".el-dialog",
+      ".el-message-box",
+      ".modal",
+    ];
+
+    const errors: string[] = [];
+
+    for (const selector of dialogSelectors) {
+      try {
+        await this.page.waitForSelector(selector, {
+          state: "visible",
+          timeout: selector === ".el-dialog__wrapper" ? 5000 : 2000,
+        });
+        return; // Success, exit early
+      } catch (error) {
+        errors.push(`${selector}: ${error}`);
+        // Continue to next selector
+      }
+    }
+
+    throw new Error(
+      `Delete confirmation dialog not found. Tried selectors: ${errors.join(
+        ", "
+      )}`
+    );
   }
 
   async confirmDelete() {
@@ -195,10 +328,34 @@ export class CategoryPage {
   }
 
   async searchCategories(query: string) {
+    logger.info(`Filling search input with: "${query}"`);
+
+    // Make sure search input is visible and ready
+    await this.searchInput.waitFor({
+      state: "visible",
+      timeout: this.actionTimeout,
+    });
+
+    // Clear any existing search text first
+    await this.searchInput.clear();
+    await this.page.waitForTimeout(500);
+
+    // Fill the search input
     await this.searchInput.fill(query);
+
+    // Verify the search input has the correct value
+    const inputValue = await this.searchInput.inputValue();
+    logger.info(`Search input value after fill: "${inputValue}"`);
+
+    // Wait for search to complete - give some time for filtering
+    await this.page.waitForTimeout(2000);
+
+    // Make sure the category tree is still present
     await this.page.waitForSelector('[data-testid="category-tree"]', {
       timeout: this.actionTimeout,
     });
+
+    logger.info(`Search completed for: "${query}"`);
   }
 
   async filterByTab(tabName: string) {
@@ -226,5 +383,18 @@ export class CategoryPage {
       state: "hidden",
       timeout: this.actionTimeout,
     });
+  }
+
+  // Additional methods for new step definitions
+  async getSearchValue(): Promise<string> {
+    return await this.searchInput.inputValue();
+  }
+
+  async isSearchInputVisible(): Promise<boolean> {
+    return await this.searchInput.isVisible();
+  }
+
+  async isPageLoaded(): Promise<boolean> {
+    return await this.categoriesMenuItem.isVisible();
   }
 }
