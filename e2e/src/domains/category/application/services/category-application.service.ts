@@ -139,6 +139,13 @@ export class CategoryApplicationService {
   }
 
   /**
+   * Get the current category name from world context
+   */
+  getCurrentCategoryName(): string | null {
+    return this.world.currentCategoryName || this.world.getLastCreatedCategory();
+  }
+
+  /**
    * Search for categories
    */
   async searchCategories(criteria: CategorySearchValue): Promise<void> {

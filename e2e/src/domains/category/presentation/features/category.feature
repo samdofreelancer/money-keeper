@@ -34,7 +34,7 @@ Feature: Category Management for Personal Finance Tracking
       | originalName    | newName           | newIcon |
       | Sample Category | Updated Category  | Food    |
 
-  @smoke @critical @focus
+  @smoke @critical
   Scenario: User can remove categories they no longer need
     Given I have a category called "Unused Category"
     When I decide to delete this category

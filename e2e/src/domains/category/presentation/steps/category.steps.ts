@@ -2,6 +2,7 @@ import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 
 import { CategoryApplicationService } from "../../application/services/category-application.service";
+import { CategoryUseCasesFactory } from "../../application/use-cases";
 import { CategoryFormValue } from "../../domain/value-objects/category-form-data.vo";
 import { CategorySearchValue } from "../../domain/value-objects/category-search-criteria.vo";
 import { CategoryType } from "../../domain/models/category.model";
@@ -495,27 +496,13 @@ When("I decide to delete this category", async function (this: CustomWorld) {
 });
 
 When("I confirm the deletion", async function (this: CustomWorld) {
-  logger.info("Confirming category deletion");
-
   if (!this.categoryService) {
     throw new Error("Category service not initialized. Please ensure category management access was set up.");
   }
 
-  const categoryName = this.currentCategoryName || this.getLastCreatedCategory();
-  if (categoryName) {
-    try {
-      // First check if category exists before trying to delete
-      const exists = await this.categoryService.categoryExists(categoryName);
-      if (exists) {
-        await this.categoryService.deleteCategory(categoryName);
-      } else {
-        logger.info(`Category ${categoryName} not found, skipping deletion`);
-      }
-    } catch (error) {
-      logger.error(`Failed to delete category ${categoryName}: ${error}`);
-      // Don't throw - deletion might have succeeded or category might not exist
-    }
-  }
+  const useCasesFactory = new CategoryUseCasesFactory(this.categoryService);
+  const deleteCurrentCategoryUseCase = useCasesFactory.createDeleteCurrentCategoryUseCase();
+  await deleteCurrentCategoryUseCase.execute();
 });
 
 When("I initiate the deletion process", async function (this: CustomWorld) {
@@ -631,39 +618,13 @@ When(
 When(
   "I try to create another category with the same name {string}",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Attempting to create duplicate category: ${categoryName}`);
-
     if (!this.categoryService) {
       throw new Error("Category service not initialized. Please ensure category management access was set up.");
     }
 
-    try {
-      // First check if category already exists
-      const existingCategories = await this.categoryService.getAllCategories();
-      const categoryExists = existingCategories.some(cat => cat.name === categoryName);
-      
-      if (categoryExists) {
-        // Simulate the duplicate validation error that should happen
-        this.lastError = new Error("Category name already exists");
-        logger.info("Duplicate category validation triggered as expected");
-        return;
-      }
-
-      const duplicateFormData = new CategoryFormValue({
-        name: categoryName,
-        icon: "Default",
-        type: "EXPENSE",
-      });
-
-      await this.categoryService.createCategoryThroughUI(duplicateFormData);
-      // If we reach here, no error was thrown (unexpected)
-      this.lastError = new Error(
-        "Expected duplicate name error but none was thrown"
-      );
-    } catch (error) {
-      this.lastError = error as Error;
-      logger.info(`Duplicate category creation failed as expected: ${(error as Error).message}`);
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(this.categoryService);
+    const tryCreateDuplicateUseCase = useCasesFactory.createTryCreateDuplicateCategoryUseCase();
+    this.lastError = await tryCreateDuplicateUseCase.execute(categoryName);
   }
 );
 
