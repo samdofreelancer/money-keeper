@@ -70,29 +70,18 @@ Given(
 Given(
   "I already have a category called {string}",
   async function (this: CustomWorld, categoryName: string) {
-    logger.info(`Setting up existing category: ${categoryName}`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    const formData = new CategoryFormValue({
-      name: categoryName,
-      icon: "Default",
-      type: "EXPENSE",
-    });
-
-    try {
-      await this.categoryService.createCategoryThroughAPI(
-        formData.toCreateRequest()
-      );
-    } catch (error) {
-      // Category might already exist
-      const exists = await this.categoryService.categoryExists(categoryName);
-      expect(exists).toBe(true);
-    }
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
+    );
+    const setupUseCase = useCasesFactory.createSetupExistingCategoryUseCase();
+    await setupUseCase.execute(categoryName);
   }
 );
 
