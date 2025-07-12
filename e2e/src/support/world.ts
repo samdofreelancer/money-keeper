@@ -9,12 +9,12 @@ import {
   PlaywrightTestOptions,
 } from "@playwright/test";
 
-import { config } from "../config/env.config";
+import { config } from "../shared/config/env.config";
 import { logger } from "./logger";
-import { BasePage } from "../pages";
-import { CategoryPage } from "../pages/category.page";
-import { CategoryDomain } from "../domain/CategoryDomain";
-import { CategoryFormData } from "../types/CategoryTypes";
+import { BasePage } from "../shared/infrastructure/pages/base.page";
+import { CategoryPage } from "../domains/category/infrastructure/pages/category.page";
+import { CategoryApplicationService } from "../domains/category/application/services/category-application.service";
+import { CategoryFormValue } from "../domains/category/domain/value-objects/category-form-data.vo";
 
 /**
  * Unified World class with clean separation of concerns
@@ -32,7 +32,7 @@ export class CustomWorld extends World {
   playwrightOptions?: PlaywrightTestOptions;
 
   // Domain services (new architecture)
-  categoryDomain?: CategoryDomain;
+  categoryService?: CategoryApplicationService;
 
   // Test data management
   createdCategoryNames: string[] = [];
@@ -40,7 +40,10 @@ export class CustomWorld extends World {
   uniqueData: Map<string, string> = new Map();
 
   // Test state
-  pendingCategoryData?: CategoryFormData;
+  currentFormData?: CategoryFormValue;
+  currentCategoryName?: string;
+  newCategoryName?: string;
+  newIcon?: string;
   lastError?: Error;
 
   // Configuration
