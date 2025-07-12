@@ -10,6 +10,7 @@ import { SetupMultipleCategoriesUseCase } from "./setup-multiple-categories.use-
 import { SetupBothCategoryTypesUseCase } from "./setup-both-category-types.use-case";
 import { SetupMultipleTestCategoriesUseCase } from "./setup-multiple-test-categories.use-case";
 import { SetupMultipleIncomeExpenseCategoriesUseCase } from "./setup-multiple-income-expense-categories.use-case";
+import { SetupBulkCategoriesUseCase } from "./setup-bulk-categories.use-case";
 import { CreateCategoryWithIconUseCase } from "./create-category-with-icon.use-case";
 import { NavigateToApplicationUseCase } from "./navigate-to-application.use-case";
 import { SearchCategoriesUseCase } from "./search-categories.use-case";
@@ -82,6 +83,12 @@ export class CategoryUseCasesFactory {
     if (!this.categoryService)
       throw new Error("CategoryService required for this use case");
     return new SetupMultipleIncomeExpenseCategoriesUseCase(this.categoryService);
+  }
+
+  createSetupBulkCategoriesUseCase(): SetupBulkCategoriesUseCase {
+    if (!this.categoryService || !this.world)
+      throw new Error("CategoryService and World required for this use case");
+    return new SetupBulkCategoriesUseCase(this.categoryService, this.world);
   }
 
   createNavigateToApplicationUseCase(): NavigateToApplicationUseCase {

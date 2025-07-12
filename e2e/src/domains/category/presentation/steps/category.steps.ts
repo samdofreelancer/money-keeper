@@ -175,68 +175,18 @@ Given(
 Given(
   "I have created {int} categories",
   async function (this: CustomWorld, count: number) {
-    logger.info(`Creating ${count} categories for performance test`);
-
     if (!this.categoryService) {
       throw new Error(
         "Category service not initialized. Please ensure category management access was set up."
       );
     }
 
-    let successCount = 0;
-
-    // Create categories in smaller batches to avoid overwhelming the system
-    const batchSize = 10;
-    for (let batch = 0; batch < Math.ceil(count / batchSize); batch++) {
-      const batchStart = batch * batchSize + 1;
-      const batchEnd = Math.min((batch + 1) * batchSize, count);
-
-      for (let i = batchStart; i <= batchEnd; i++) {
-        const categoryName = `Test Category ${i}`;
-        const formData = new CategoryFormValue({
-          name: categoryName,
-          icon: "Default",
-          type: i % 2 === 0 ? "INCOME" : "EXPENSE",
-        });
-
-        try {
-          // Try creating through UI instead for better reliability in tests
-          await this.categoryService.createCategoryThroughUI(formData);
-          successCount++;
-          logger.info(`Created category ${i}/${count}: ${categoryName}`);
-        } catch (error) {
-          // Category might already exist or creation failed
-          logger.warn(`Failed to create category ${categoryName}: ${error}`);
-
-          // Check if it actually exists anyway
-          try {
-            const exists = await this.categoryService.categoryExists(
-              categoryName
-            );
-            if (exists) {
-              successCount++;
-              logger.info(
-                `Category ${categoryName} already exists, counting as success`
-              );
-            }
-          } catch (checkError) {
-            logger.warn(`Failed to check category existence: ${checkError}`);
-          }
-        }
-
-        // Small delay between creations
-        await this.page.waitForTimeout(100);
-      }
-
-      // Longer pause between batches
-      await this.page.waitForTimeout(1000);
-    }
-
-    logger.info(
-      `Successfully created/verified ${successCount}/${count} categories`
+    const useCasesFactory = new CategoryUseCasesFactory(
+      this.categoryService,
+      this
     );
-    // Accept if we have at least 50% success for large datasets (more realistic)
-    expect(successCount).toBeGreaterThanOrEqual(Math.floor(count * 0.5));
+    const setupUseCase = useCasesFactory.createSetupBulkCategoriesUseCase();
+    await setupUseCase.execute(count);
   }
 );
 
