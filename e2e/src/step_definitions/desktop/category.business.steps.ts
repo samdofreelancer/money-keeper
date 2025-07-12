@@ -1,4 +1,13 @@
 import { Given, When, Then } from "@cucumber/cucumber";
+import { expect } from "@playwright/test";
+
+import { CategoryDomain } from "../../domain/CategoryDomain";
+import { CategoryFormData } from "../../types/CategoryTypes";
+import { generateUniqueName } from "../../utils/testDataHelper";
+import { createCategory } from "../../api/categoryApiHelper";
+import { logger } from "../../support/logger";
+import { CustomWorld } from "../../support/world";
+import { config } from "../../config/env.config";
 
 When(
   "I try to create a category with name containing {string} characters",
@@ -14,23 +23,18 @@ When(
 
         await this.categoryDomain.createCategory(invalidCategoryData);
         // If we reach here, no error was thrown (unexpected)
-        this.lastError = new Error("Expected validation error but none was thrown");
+        this.lastError = new Error(
+          "Expected validation error but none was thrown"
+        );
       } catch (error) {
         this.lastError = error as Error;
-        logger.info("Category creation failed as expected due to invalid characters");
+        logger.info(
+          "Category creation failed as expected due to invalid characters"
+        );
       }
     }
   }
 );
-import { expect } from "@playwright/test";
-
-import { CategoryDomain } from "../../domain/CategoryDomain";
-import { CategoryFormData } from "../../types/CategoryTypes";
-import { generateUniqueName } from "../../utils/testDataHelper";
-import { createCategory } from "../../api/categoryApiHelper";
-import { logger } from "../../support/logger";
-import { CustomWorld } from "../../support/world";
-import { config } from "../../config/env.config";
 
 /**
  * Business-focused step definitions following BDD principles
@@ -290,7 +294,9 @@ When(
 
         await this.categoryDomain.createCategory(invalidCategoryData);
         // If we reach here, no error was thrown (unexpected)
-        this.lastError = new Error("Expected validation error but none was thrown");
+        this.lastError = new Error(
+          "Expected validation error but none was thrown"
+        );
       } catch (error) {
         this.lastError = error as Error;
         logger.info("Category creation failed as expected due to validation");
@@ -375,7 +381,9 @@ Then(
     // Handle different error message formats
     if (expectedMessage === "Please input category name") {
       expect(this.lastError?.message).toContain("Category name is required");
-    } else if (expectedMessage === "Category name contains invalid characters") {
+    } else if (
+      expectedMessage === "Category name contains invalid characters"
+    ) {
       expect(this.lastError?.message).toContain("invalid special characters");
     } else {
       expect(this.lastError?.message).toContain(expectedMessage);
@@ -819,8 +827,6 @@ Then(
     logger.info("Verified maximum length error message");
   }
 );
-
-
 
 Then(
   "the category {string} should not be created",

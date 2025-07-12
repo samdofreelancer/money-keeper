@@ -124,7 +124,9 @@ export class CategoryUIActions {
       logger.info("Form submitted successfully");
     } catch (error) {
       // Verify if dialog actually closed despite timeout
-      const dialogHidden = await this.page.locator(".el-dialog__wrapper").isHidden();
+      const dialogHidden = await this.page
+        .locator(".el-dialog__wrapper")
+        .isHidden();
       if (dialogHidden) {
         logger.info("Form submission completed without success message");
       } else {
