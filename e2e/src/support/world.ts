@@ -33,6 +33,7 @@ export class CustomWorld extends World {
 
   // Domain services (new architecture)
   categoryService?: CategoryApplicationService;
+  accountService?: any; // Added accountService to fix TS errors
 
   // Test data management
   createdCategoryNames: string[] = [];
@@ -40,7 +41,7 @@ export class CustomWorld extends World {
   uniqueData: Map<string, string> = new Map();
 
   // Test state
-  currentFormData?: CategoryFormValue;
+  currentFormData?: CategoryFormValue | Record<string, any>; // Allow generic form data for account
   currentCategoryName?: string;
   newCategoryName?: string;
   newIcon?: string;
