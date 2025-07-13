@@ -20,10 +20,10 @@ export const config: EnvironmentConfig = {
   screenshotOnFailure: true,
 
   // Report configurations
-  reportsDir: process.env.REPORTS_DIR || path.join(__dirname, "../../reports"),
+  reportsDir: process.env.REPORTS_DIR || path.join(__dirname, "../../../reports"),
   screenshotsDir:
     process.env.SCREENSHOTS_DIR ||
-    path.join(__dirname, "../../reports/screenshots"),
+    path.join(__dirname, "../../../reports/screenshots"),
 
   // Browser configurations
   browser: {

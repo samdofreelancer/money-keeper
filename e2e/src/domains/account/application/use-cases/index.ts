@@ -81,7 +81,27 @@ export class AccountUseCasesFactory {
             active: true
           };
 
-          await this.accountService.create(existingAccount);
+          const createdAccount = await this.accountService.create(existingAccount);
+          
+          // Track the account for cleanup
+          if (!this.world) {
+            throw new Error("World instance is not available");
+          }
+          
+          if (createdAccount && typeof createdAccount === 'object' && 'id' in createdAccount) {
+            if (!this.world.createdAccountIds) {
+              this.world.createdAccountIds = [];
+            }
+            this.world.createdAccountIds.push(createdAccount.id as string);
+            logger.info(`Tracking account for cleanup: ${createdAccount.id}`);
+          }
+          
+          // Also track by name as backup
+          if (!this.world.createdAccountNames) {
+            this.world.createdAccountNames = [];
+          }
+          this.world.createdAccountNames.push(accountName);
+          
           logger.info(`Setup existing account: ${accountName}`);
         } catch (error) {
           logger.error(`Failed to setup existing account: ${error}`);
