@@ -8,7 +8,10 @@ import {
 } from "./verify-account.use-case";
 import { ClickButtonUseCase } from "./click-button.use-case";
 import { CustomWorld } from "../../../../support/world";
-import { AccountApiClient } from "../../infrastructure/api/account-api.client";
+import {
+  AccountApiClient,
+  AccountCreate,
+} from "../../infrastructure/api/account-api.client";
 
 interface AccountService {
   create(account: unknown): Promise<unknown>;
@@ -34,22 +37,26 @@ export class AccountUseCasesFactory {
         }
 
         // Initialize the account service with real API client
-        const apiBaseUrl = process.env.API_BASE_URL || "http://127.0.0.1:8080/api";
+        const apiBaseUrl =
+          process.env.API_BASE_URL || "http://127.0.0.1:8080/api";
         const accountApiClient = new AccountApiClient({ baseURL: apiBaseUrl });
-        
+
         this.world.accountService = {
           create: async (account: unknown) => {
             logger.info("Creating account via API service:", account);
-            return await accountApiClient.create(account as any);
-          }
+            return await accountApiClient.create(account as AccountCreate);
+          },
         };
 
         try {
           await this.world.accountUiPort.navigateToApp();
-          
+
           // Initialize the use cases factory for convenience
-          this.world.useCases = new AccountUseCasesFactory(this.world.accountService, this.world);
-          
+          this.world.useCases = new AccountUseCasesFactory(
+            this.world.accountService,
+            this.world
+          );
+
           logger.info("Successfully navigated to account management page");
           logger.info("Account service initialized");
           logger.info("Use cases factory initialized");
@@ -83,30 +90,36 @@ export class AccountUseCasesFactory {
             initBalance: 500,
             currency: "USD",
             description: "Existing test account",
-            active: true
+            active: true,
           };
 
-          const createdAccount = await this.accountService.create(existingAccount);
-          
+          const createdAccount = await this.accountService.create(
+            existingAccount
+          );
+
           // Track the account for cleanup
           if (!this.world) {
             throw new Error("World instance is not available");
           }
-          
-          if (createdAccount && typeof createdAccount === 'object' && 'id' in createdAccount) {
+
+          if (
+            createdAccount &&
+            typeof createdAccount === "object" &&
+            "id" in createdAccount
+          ) {
             if (!this.world.createdAccountIds) {
               this.world.createdAccountIds = [];
             }
             this.world.createdAccountIds.push(createdAccount.id as string);
             logger.info(`Tracking account for cleanup: ${createdAccount.id}`);
           }
-          
+
           // Also track by name as backup
           if (!this.world.createdAccountNames) {
             this.world.createdAccountNames = [];
           }
           this.world.createdAccountNames.push(accountName);
-          
+
           logger.info(`Setup existing account: ${accountName}`);
         } catch (error) {
           logger.error(`Failed to setup existing account: ${error}`);

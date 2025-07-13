@@ -30,9 +30,12 @@ Given(
 
 Given("I am on the create account form", async function (this: CustomWorld) {
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
-  const navigateUseCase = this.useCases.createNavigateToCreateAccountFormUseCase();
+  const navigateUseCase =
+    this.useCases.createNavigateToCreateAccountFormUseCase();
   await navigateUseCase.execute();
 });
 
@@ -40,7 +43,9 @@ When(
   "I click the {string} button",
   async function (this: CustomWorld, buttonName: string) {
     if (!this.useCases) {
-      throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
     }
     const clickUseCase = this.useCases.createClickButtonUseCase();
     await clickUseCase.execute({ buttonName });
@@ -65,7 +70,9 @@ When(
 
     this.currentFormData = formData;
     if (!this.useCases) {
-      throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
     }
     const fillFormUseCase = this.useCases.createFillAccountFormUseCase();
     await fillFormUseCase.execute(formData);
@@ -74,7 +81,9 @@ When(
 
 When("I submit the form", async function (this: CustomWorld) {
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
   const submitUseCase = this.useCases.createSubmitAccountFormUseCase();
   await submitUseCase.execute();
@@ -84,7 +93,9 @@ Then(
   "the account should be created successfully",
   async function (this: CustomWorld) {
     if (!this.useCases) {
-      throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
     }
     const verifyUseCase = this.useCases.createVerifyAccountCreatedUseCase();
     await verifyUseCase.execute();
@@ -107,10 +118,11 @@ Then(
   "I should see the account in the accounts list",
   async function (this: CustomWorld) {
     if (!this.useCases) {
-      throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
     }
-    const verifyListUseCase =
-      this.useCases.createVerifyAccountInListUseCase();
+    const verifyListUseCase = this.useCases.createVerifyAccountInListUseCase();
     let accountName: string | undefined = undefined;
     if (this.currentFormData) {
       if (typeof this.currentFormData === "object") {
@@ -130,7 +142,9 @@ Then(
 
 Then("the total balance should be updated", async function (this: CustomWorld) {
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
   const verifyBalanceUseCase =
     this.useCases.createVerifyTotalBalanceUpdatedUseCase();
@@ -140,9 +154,10 @@ Then("the total balance should be updated", async function (this: CustomWorld) {
 When(
   "I try to create another account with the same name {string}",
   async function (this: CustomWorld, accountName: string) {
-
     if (!this.useCases) {
-      throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
     }
 
     //Open form create account
@@ -157,7 +172,9 @@ When(
 
 Then("I should receive a conflict error", async function (this: CustomWorld) {
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
   const verifyErrorUseCase = this.useCases.createVerifyConflictErrorUseCase();
   if (!this.lastError) {
@@ -168,7 +185,9 @@ Then("I should receive a conflict error", async function (this: CustomWorld) {
 
 Then("the account should not be created", async function (this: CustomWorld) {
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
   const verifyNotCreatedUseCase =
     this.useCases.createVerifyAccountNotCreatedUseCase();
@@ -179,7 +198,9 @@ When("I try to submit with:", async function (this: CustomWorld, dataTable) {
   const formData = dataTable.rowsHash();
   this.currentFormData = formData;
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
   const trySubmitUseCase =
     this.useCases.createTrySubmitInvalidAccountFormUseCase();
@@ -188,7 +209,9 @@ When("I try to submit with:", async function (this: CustomWorld, dataTable) {
 
 Then("I should see validation errors", async function (this: CustomWorld) {
   if (!this.useCases) {
-    throw new Error("Use cases not initialized. Please ensure account management access was set up.");
+    throw new Error(
+      "Use cases not initialized. Please ensure account management access was set up."
+    );
   }
   const verifyValidationUseCase =
     this.useCases.createVerifyValidationErrorsUseCase();

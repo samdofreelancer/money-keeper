@@ -17,7 +17,9 @@ export class VerifyAccountCreatedUseCase extends BaseUseCase<void, void> {
   async execute(): Promise<void> {
     const isSuccessful = await this.uiPort.verifyAccountCreationSuccess();
     if (!isSuccessful) {
-      throw new Error("Account creation was not successful - no success indicator found");
+      throw new Error(
+        "Account creation was not successful - no success indicator found"
+      );
     }
   }
 }
@@ -59,7 +61,9 @@ export class VerifyAccountInListUseCase extends BaseUseCase<
       expectedBalance
     );
     if (!isListed) {
-      throw new Error(`Account "${accountName}" with balance "${expectedBalance}" not found in accounts list`);
+      throw new Error(
+        `Account "${accountName}" with balance "${expectedBalance}" not found in accounts list`
+      );
     }
   }
 }
@@ -76,10 +80,12 @@ export class VerifyTotalBalanceUpdatedUseCase extends BaseUseCase<void, void> {
   async execute(): Promise<void> {
     const balanceText = await this.uiPort.verifyTotalBalanceUpdated();
     if (balanceText === null) {
-      logger.info("Total balance element not found, but this might be expected behavior");
+      logger.info(
+        "Total balance element not found, but this might be expected behavior"
+      );
       return;
     }
-    
+
     logger.info(`Total balance text: ${balanceText}`);
   }
 }

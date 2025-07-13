@@ -184,11 +184,11 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
   async verifyValidationErrors(): Promise<string | null> {
     logger.info("Looking for validation errors...");
     await this.page.waitForTimeout(2000);
-    
+
     // Try multiple possible validation error selectors
     const possibleSelectors = [
       ".error",
-      ".validation-error", 
+      ".validation-error",
       ".el-form-item__error",
       ".form-error",
       "[data-testid*='error']",
@@ -196,29 +196,38 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
       "text=invalid",
       "text=This field is required",
       "text=must be positive",
-      "text=cannot be empty"
+      "text=cannot be empty",
     ];
-    
+
     for (const selector of possibleSelectors) {
       try {
         const elements = await this.page.locator(selector).count();
         if (elements > 0) {
-          const errorText = await this.page.locator(selector).first().textContent();
-          logger.info(`Found validation error with selector "${selector}": ${errorText}`);
+          const errorText = await this.page
+            .locator(selector)
+            .first()
+            .textContent();
+          logger.info(
+            `Found validation error with selector "${selector}": ${errorText}`
+          );
           return errorText;
         }
       } catch (error) {
         // Continue to next selector
       }
     }
-    
+
     // Check if form submission was actually prevented (button still exists)
-    const submitButtonStillExists = await this.page.locator('[data-testid="button-submit"]').count();
+    const submitButtonStillExists = await this.page
+      .locator('[data-testid="button-submit"]')
+      .count();
     if (submitButtonStillExists > 0) {
-      logger.info("Form submission appears to have been prevented by validation");
+      logger.info(
+        "Form submission appears to have been prevented by validation"
+      );
       return "Form validation prevented submission";
     }
-    
+
     logger.info("No validation errors found");
     return null;
   }
@@ -226,9 +235,11 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
   async isOnFormPage(): Promise<boolean> {
     // Check for form elements using the actual data-testid selectors used in the form
     const formElements = await this.page
-      .locator('[data-testid="account-form"], [data-testid="button-submit"], [data-testid="input-account-name"]')
+      .locator(
+        '[data-testid="account-form"], [data-testid="button-submit"], [data-testid="input-account-name"]'
+      )
       .count();
-    
+
     logger.info(`Form elements found: ${formElements}`);
     return formElements > 0;
   }
@@ -240,7 +251,9 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
     currency?: string;
     description?: string;
   }): Promise<string | null> {
-    logger.info(`Trying to submit invalid form with data: ${JSON.stringify(data)}`);
+    logger.info(
+      `Trying to submit invalid form with data: ${JSON.stringify(data)}`
+    );
     // Fill with invalid data
     const accountData = {
       accountName: data.accountName || "",
@@ -251,10 +264,12 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
     };
 
     await this.fillAccountForm(accountData);
-    
+
     // Try to submit - frontend validation may prevent this
     try {
-      logger.info(`Attempting to submit form with data: ${JSON.stringify(accountData)}`);
+      logger.info(
+        `Attempting to submit form with data: ${JSON.stringify(accountData)}`
+      );
       await this.submitForm();
       logger.info("Form submit button clicked");
       // Wait for potential validation to trigger
@@ -262,7 +277,7 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
     } catch (error) {
       logger.info(`Submit action failed: ${error}`);
     }
-    
+
     // Wait for validation errors and return error message
     return await this.verifyValidationErrors();
   }
