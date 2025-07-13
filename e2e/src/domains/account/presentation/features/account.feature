@@ -7,13 +7,12 @@ Feature: Account Creation
     Given I am on the Money Keeper application
     And I have access to the account management features
 
-  @focus
   Scenario: Successfully create a bank account
     When I click the "Add Account" button
     And I fill in the account form with:
       | Field           | Value               |
       | Account Name    | My Checking Account |
-      | Account Type    | BANK_ACCOUNT        |
+      | Account Type    | Bank Account        |
       | Initial Balance | 1000.00             |
       | Currency        | USD                 |
       | Description     | Primary checking    |

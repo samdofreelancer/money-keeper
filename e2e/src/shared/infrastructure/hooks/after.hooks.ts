@@ -1,47 +1,40 @@
 import { After } from "@cucumber/cucumber";
 
 import { CustomWorld } from "../../../support/world";
-import { CategoryApiClient } from "../../../domains/category/infrastructure/api/category-api-client";
-import { Category } from "../../../domains/category/domain/models/category.model";
 import { logger } from "../../../support/logger";
-import { config } from "../../config/env.config";
+import { AccountApiClient } from "../../../domains/account/infrastructure/api/account-api.client";
 
 After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
   try {
-    const categoryApiClient = new CategoryApiClient({
-      baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
-    });
-
-    // Cleanup by ID for categories created via API
-    if (this.createdCategoryIds && this.createdCategoryIds.length > 0) {
+    // Account cleanup via API (by ID)
+    if (this.createdAccountIds && this.createdAccountIds.length > 0) {
       logger.info(
-        `Cleaning up ${this.createdCategoryIds.length} categories by ID.`
-      );
-      const deletePromises = this.createdCategoryIds.map((id: string) =>
-        categoryApiClient.deleteCategory(id)
-      );
-      await Promise.all(deletePromises);
-      this.createdCategoryIds = []; // Reset after cleanup
-    }
-
-    // Fallback cleanup by name for categories created via UI
-    if (this.createdCategoryNames && this.createdCategoryNames.length > 0) {
-      logger.info(
-        `Cleaning up ${this.createdCategoryNames.length} categories by name.`
-      );
-      const allCategories: Category[] =
-        await categoryApiClient.getAllCategories();
-      const categoriesToDelete = allCategories.filter((category) =>
-        this.createdCategoryNames.includes(category.name)
+        `Cleaning up ${this.createdAccountIds.length} created accounts via API (by ID)`
       );
 
-      if (categoriesToDelete.length > 0) {
-        const deletePromises = categoriesToDelete.map((category) =>
-          categoryApiClient.deleteCategory(category.id)
-        );
-        await Promise.all(deletePromises);
-      }
-      this.createdCategoryNames = []; // Reset after cleanup
+      const accountApiClient = new AccountApiClient({
+        baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
+      });
+
+      const deletePromises = this.createdAccountIds.map(
+        async (accountId: string) => {
+          try {
+            await accountApiClient.deleteAccount(accountId);
+            logger.info(`Successfully cleaned up account ID: ${accountId}`);
+            return true;
+          } catch (error) {
+            logger.error(`Failed to cleanup account ID ${accountId}: ${error}`);
+            return false;
+          }
+        }
+      );
+
+      await Promise.allSettled(deletePromises);
+
+      // Clear the tracking arrays
+      this.createdAccountIds = [];
+      this.createdAccountNames = []; // Also clear names for safety
+      logger.info("Account cleanup completed");
     }
   } catch (error) {
     logger.error("Error during cleanup:", error);

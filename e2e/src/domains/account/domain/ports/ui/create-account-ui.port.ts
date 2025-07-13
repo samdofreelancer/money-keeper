@@ -24,4 +24,6 @@ export interface CreateAccountUiPort {
     currency?: string;
     description?: string;
   }): Promise<string | null>;
+  deleteAccount(accountName: string): Promise<boolean>;
+  getLastCreatedAccountId(): Promise<string | null>;
 }

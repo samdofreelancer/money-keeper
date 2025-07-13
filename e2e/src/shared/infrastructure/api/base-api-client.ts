@@ -84,7 +84,9 @@ export class BaseApiClient {
     if (response.status !== 204) {
       logger.warn(`Expected 204 No Content, but got ${response.status}`);
     } else {
-      logger.info(`Successfully deleted resource at ${this.client.defaults.baseURL}${url}`);
+      logger.info(
+        `Successfully deleted resource at ${this.client.defaults.baseURL}${url}`
+      );
     }
     // Return an empty object for successful delete operations
     return response.data;

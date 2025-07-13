@@ -12,9 +12,7 @@ import {
 import { config } from "../shared/config/env.config";
 import { logger } from "./logger";
 import { BasePage } from "../shared/infrastructure/pages/base.page";
-import { CategoryPage } from "../domains/category/infrastructure/pages/category.page";
-import { CategoryApplicationService } from "../domains/category/application/services/category-application.service";
-import { CategoryFormValue } from "../domains/category/domain/value-objects/category-form-data.vo";
+import { AccountFormValue } from "../domains/account/domain/value-objects/account-form-data.vo";
 import { CreateAccountUiPort } from "../domains/account/domain/ports/ui/create-account-ui.port";
 import { CreateAccountPlaywrightPage } from "../domains/account/infrastructure/pages/create-account.playwright.page";
 
@@ -30,12 +28,12 @@ export class CustomWorld extends World {
 
   // Legacy page objects (for backward compatibility)
   currentPage!: BasePage;
-  categoryPage?: CategoryPage;
   playwrightOptions?: PlaywrightTestOptions;
 
   // Domain services (new architecture)
-  categoryService?: CategoryApplicationService;
-  accountService?: any; // Added accountService to fix TS errors
+  accountService?: {
+    create(account: unknown): Promise<unknown>;
+  };
 
   // Domain UI ports (new architecture)
   accountUiPort?: CreateAccountUiPort;
@@ -43,10 +41,12 @@ export class CustomWorld extends World {
   // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
+  createdAccountNames: string[] = [];
+  createdAccountIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
 
   // Test state
-  currentFormData?: CategoryFormValue | Record<string, any>; // Allow generic form data for account
+  currentFormData?: AccountFormValue | Record<string, unknown>; // Allow form data for account and generic forms
   currentCategoryName?: string;
   newCategoryName?: string;
   newIcon?: string;
@@ -55,7 +55,11 @@ export class CustomWorld extends World {
   // Configuration
   config = config;
 
-  constructor(options: IWorldOptions & { attach: (data: string | Buffer, mimeType: string) => void }) {
+  constructor(
+    options: IWorldOptions & {
+      attach: (data: string | Buffer, mimeType: string) => void;
+    }
+  ) {
     super(options);
   }
 
@@ -79,10 +83,10 @@ export class CustomWorld extends World {
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
       this.currentPage = new BasePage(this.page);
-      
+
       // Initialize account UI port
       this.accountUiPort = new CreateAccountPlaywrightPage(this.page);
-      
+
       logger.info(`Browser launched: ${browserName}`);
     } catch (error) {
       logger.error("Error launching browser:", error);
@@ -189,12 +193,46 @@ export class CustomWorld extends World {
   }
 
   /**
+   * Tracks a created account for cleanup
+   */
+  trackCreatedAccount(accountName: string): void {
+    if (!this.createdAccountNames.includes(accountName)) {
+      this.createdAccountNames.push(accountName);
+    }
+  }
+
+  /**
+   * Removes an account from tracking
+   */
+  removeFromTrackedAccounts(accountName: string): void {
+    const index = this.createdAccountNames.indexOf(accountName);
+    if (index > -1) {
+      this.createdAccountNames.splice(index, 1);
+    }
+  }
+
+  /**
+   * Gets the last created account name
+   */
+  getLastCreatedAccount(): string | null {
+    return this.createdAccountNames.length > 0
+      ? this.createdAccountNames[this.createdAccountNames.length - 1]
+      : null;
+  }
+
+  /**
    * Cleans up test data
    */
   async cleanup(): Promise<void> {
     // Cleanup logic for test data
-    // This could involve API calls to delete created categories
+    // This could involve API calls to delete created categories and accounts
     logger.info("Cleaning up test data");
+    logger.info(
+      `Created accounts to cleanup: ${this.createdAccountNames.join(", ")}`
+    );
+    logger.info(
+      `Created categories to cleanup: ${this.createdCategoryNames.join(", ")}`
+    );
   }
 }
 

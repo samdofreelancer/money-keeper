@@ -1,7 +1,23 @@
-import { logger } from '../../../../shared/utils/logger';
+import { logger } from "../../../../shared/utils/logger";
+import { FillAccountFormUseCase } from "./fill-account-form.use-case";
+import { SubmitAccountFormUseCase } from "./submit-account-form.use-case";
+import {
+  VerifyAccountCreatedUseCase,
+  VerifyAccountInListUseCase,
+  VerifyTotalBalanceUpdatedUseCase,
+} from "./verify-account.use-case";
+import { ClickButtonUseCase } from "./click-button.use-case";
+import { CustomWorld } from "../../../../support/world";
+
+interface AccountService {
+  create(account: unknown): Promise<unknown>;
+}
 
 export class AccountUseCasesFactory {
-  constructor(private accountService?: any, private world?: any) {}
+  constructor(
+    private accountService?: AccountService,
+    private world?: CustomWorld
+  ) {}
 
   createSetupAccountManagementUseCase() {
     return {
@@ -38,9 +54,9 @@ export class AccountUseCasesFactory {
     return {
       execute: async (accountName: string) => {
         if (!this.accountService) {
-          throw new Error('Account service is not available');
+          throw new Error("Account service is not available");
         }
-        
+
         // Create an existing account using the account service
         try {
           const existingAccount = {
@@ -48,9 +64,9 @@ export class AccountUseCasesFactory {
             type: "BANK_ACCOUNT",
             balance: 500,
             currency: "USD",
-            description: "Existing test account"
+            description: "Existing test account",
           };
-          
+
           // Assuming the account service has a create method
           await this.accountService.create(existingAccount);
           logger.info(`Setup existing account: ${accountName}`);
@@ -75,99 +91,45 @@ export class AccountUseCasesFactory {
   }
 
   createClickButtonUseCase() {
-    return {
-      execute: async (buttonName: string) => {
-        if (!this.world || !this.world.accountUiPort) {
-          throw new Error("Account UI port is not initialized");
-        }
-        await this.world.accountUiPort.clickButton(buttonName);
-      },
-    };
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new ClickButtonUseCase(this.world.accountUiPort);
   }
 
   createFillAccountFormUseCase() {
-    return {
-      execute: async (formData: any) => {
-        if (!this.world || !this.world.accountUiPort) {
-          throw new Error("Account UI port is not initialized");
-        }
-        
-        const accountData = {
-          accountName: formData["Account Name"] || formData.accountName,
-          accountType: formData["Account Type"] || formData.accountType || "BANK_ACCOUNT",
-          initialBalance: parseFloat(formData["Initial Balance"] || formData.initialBalance || "0"),
-          currency: formData["Currency"] || formData.currency || "USD",
-          description: formData["Description"] || formData.description
-        };
-        
-        await this.world.accountUiPort.fillAccountForm(accountData);
-      },
-    };
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new FillAccountFormUseCase(this.world.accountUiPort);
   }
 
   createSubmitAccountFormUseCase() {
-    return {
-      execute: async () => {
-        if (!this.world || !this.world.accountUiPort) {
-          throw new Error("Account UI port is not initialized");
-        }
-        await this.world.accountUiPort.submitForm();
-      },
-    };
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new SubmitAccountFormUseCase(this.world.accountUiPort);
   }
 
   createVerifyAccountCreatedUseCase() {
-    return {
-      execute: async () => {
-        if (!this.world || !this.world.accountUiPort) {
-          throw new Error("Account UI port is not initialized");
-        }
-        const isSuccessful = await this.world.accountUiPort.verifyAccountCreationSuccess();
-        if (!isSuccessful) {
-          throw new Error("Account creation was not successful - no success indicator found");
-        }
-      },
-    };
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new VerifyAccountCreatedUseCase(this.world.accountUiPort);
   }
 
   createVerifyAccountInListUseCase() {
-    return {
-      execute: async (accountName: string) => {
-        if (!this.world || !this.world.accountUiPort) {
-          throw new Error("Account UI port is not initialized");
-        }
-        
-        // Get initial balance from stored form data
-        let expectedBalance = "0.00";
-        if (this.world.currentFormData) {
-          const balance = this.world.currentFormData["Initial Balance"] || this.world.currentFormData.initialBalance;
-          expectedBalance = parseFloat(balance || "0").toFixed(2);
-        }
-        
-        const isListed = await this.world.accountUiPort.isAccountListed(accountName, expectedBalance);
-        if (!isListed) {
-          throw new Error(`Account "${accountName}" with balance "${expectedBalance}" not found in accounts list`);
-        }
-      },
-    };
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new VerifyAccountInListUseCase(this.world.accountUiPort, this.world);
   }
 
   createVerifyTotalBalanceUpdatedUseCase() {
-    return {
-      execute: async () => {
-        if (!this.world || !this.world.accountUiPort) {
-          throw new Error("Account UI port is not initialized");
-        }
-        
-        const balanceText = await this.world.accountUiPort.verifyTotalBalanceUpdated();
-        if (balanceText === null) {
-          logger.info("Total balance element not found, but this might be expected behavior");
-          return;
-        }
-        
-        logger.info(`Total balance text: ${balanceText}`);
-      },
-    };
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new VerifyTotalBalanceUpdatedUseCase(this.world.accountUiPort);
   }
 
   createTryCreateDuplicateAccountUseCase() {
@@ -176,7 +138,7 @@ export class AccountUseCasesFactory {
         if (!this.world || !this.world.accountUiPort) {
           throw new Error("Account UI port is not initialized");
         }
-        
+
         try {
           // Try to create duplicate account
           await this.world.accountUiPort.fillAccountForm({
@@ -184,16 +146,17 @@ export class AccountUseCasesFactory {
             accountType: "BANK_ACCOUNT",
             initialBalance: 100,
             currency: "USD",
-            description: "Duplicate test account"
+            description: "Duplicate test account",
           });
           await this.world.accountUiPort.submitForm();
-          
+
           // Check for error message
-          const errorText = await this.world.accountUiPort.verifyConflictError();
+          const errorText =
+            await this.world.accountUiPort.verifyConflictError();
           if (errorText) {
             return new Error(`Conflict error: ${errorText}`);
           }
-          
+
           return new Error("Conflict error: Duplicate account name");
         } catch (error) {
           return error as Error;
@@ -208,12 +171,16 @@ export class AccountUseCasesFactory {
         if (!error) {
           throw new Error("No error provided to verify");
         }
-        
+
         const errorMessage = error.message.toLowerCase();
-        if (!errorMessage.includes("conflict") && !errorMessage.includes("duplicate") && !errorMessage.includes("already exists")) {
+        if (
+          !errorMessage.includes("conflict") &&
+          !errorMessage.includes("duplicate") &&
+          !errorMessage.includes("already exists")
+        ) {
           throw new Error(`Expected conflict error, but got: ${error.message}`);
         }
-        
+
         logger.info(`Conflict error verified: ${error.message}`);
       },
     };
@@ -225,13 +192,15 @@ export class AccountUseCasesFactory {
         if (!this.world || !this.world.accountUiPort) {
           throw new Error("Account UI port is not initialized");
         }
-        
+
         // Check that we're still on the form page (not redirected)
         const isOnFormPage = await this.world.accountUiPort.isOnFormPage();
         if (!isOnFormPage) {
-          throw new Error("Expected to remain on form page, but appears to have been redirected");
+          throw new Error(
+            "Expected to remain on form page, but appears to have been redirected"
+          );
         }
-        
+
         logger.info("Verified account was not created - still on form page");
       },
     };
@@ -239,25 +208,34 @@ export class AccountUseCasesFactory {
 
   createTrySubmitInvalidAccountFormUseCase() {
     return {
-      execute: async (formData: any) => {
+      execute: async (formData: Record<string, unknown>) => {
         if (!this.world || !this.world.accountUiPort) {
           throw new Error("Account UI port is not initialized");
         }
-        
+
         try {
           const invalidData = {
-            accountName: formData["Account Name"] || formData.accountName,
-            accountType: formData["Account Type"] || formData.accountType,
-            initialBalance: parseFloat(formData["Initial Balance"] || formData.initialBalance || "0"),
-            currency: formData["Currency"] || formData.currency,
-            description: formData["Description"] || formData.description
+            accountName: (formData["Account Name"] ||
+              formData.accountName) as string,
+            accountType: (formData["Account Type"] ||
+              formData.accountType) as string,
+            initialBalance: parseFloat(
+              String(
+                formData["Initial Balance"] || formData.initialBalance || "0"
+              )
+            ),
+            currency: (formData["Currency"] || formData.currency) as string,
+            description: (formData["Description"] ||
+              formData.description) as string,
           };
-          
-          const errorText = await this.world.accountUiPort.trySubmitInvalidForm(invalidData);
+
+          const errorText = await this.world.accountUiPort.trySubmitInvalidForm(
+            invalidData
+          );
           if (errorText) {
             return new Error(`Validation error: ${errorText}`);
           }
-          
+
           return new Error("Validation error: Invalid form data");
         } catch (error) {
           return error as Error;
@@ -272,12 +250,18 @@ export class AccountUseCasesFactory {
         if (!error) {
           throw new Error("No error provided to verify");
         }
-        
+
         const errorMessage = error.message.toLowerCase();
-        if (!errorMessage.includes("validation") && !errorMessage.includes("required") && !errorMessage.includes("invalid")) {
-          throw new Error(`Expected validation error, but got: ${error.message}`);
+        if (
+          !errorMessage.includes("validation") &&
+          !errorMessage.includes("required") &&
+          !errorMessage.includes("invalid")
+        ) {
+          throw new Error(
+            `Expected validation error, but got: ${error.message}`
+          );
         }
-        
+
         logger.info(`Validation error verified: ${error.message}`);
       },
     };

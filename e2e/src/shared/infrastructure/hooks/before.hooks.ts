@@ -4,7 +4,6 @@ import * as path from "path";
 
 import { CustomWorld } from "../../../support/world";
 import { logger } from "../../../support/logger";
-import { CategoryPage } from "../../../domains/category/infrastructure/pages/category.page";
 
 Before(async function (this: CustomWorld, { pickle }) {
   logger.info(
@@ -12,7 +11,6 @@ Before(async function (this: CustomWorld, { pickle }) {
   );
 
   await this.launchBrowser();
-  this.categoryPage = new CategoryPage(this.page);
 
   // Capture browser console logs and output to test logs with scenario name
   if (this.page) {
