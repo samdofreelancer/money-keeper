@@ -81,6 +81,12 @@ export class BaseApiClient {
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.client.delete<T>(url, config);
+    if (response.status !== 204) {
+      logger.warn(`Expected 204 No Content, but got ${response.status}`);
+    } else {
+      logger.info(`Successfully deleted resource at ${this.client.defaults.baseURL}${url}`);
+    }
+    // Return an empty object for successful delete operations
     return response.data;
   }
 }

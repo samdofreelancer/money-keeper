@@ -9,7 +9,7 @@ import { config } from "../../config/env.config";
 After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
   try {
     const categoryApiClient = new CategoryApiClient({
-      baseURL: config.browser.baseUrl,
+      baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
     });
 
     // Cleanup by ID for categories created via API
