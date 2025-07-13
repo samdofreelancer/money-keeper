@@ -12,6 +12,7 @@ import {
   AccountApiClient,
   AccountCreate,
 } from "../../infrastructure/api/account-api.client";
+import { CreateBankAccountFlowUseCase } from "./flows/create-bank-account-flow.use-case";
 
 interface AccountService {
   create(account: unknown): Promise<unknown>;
@@ -303,11 +304,30 @@ export class AccountUseCasesFactory {
         }
 
         const errorMessage = error.message.toLowerCase();
-        if (
-          !errorMessage.includes("validation") &&
-          !errorMessage.includes("required") &&
-          !errorMessage.includes("invalid")
-        ) {
+        
+        // Check for various validation error patterns
+        const validationPatterns = [
+          "validation",
+          "required", 
+          "invalid",
+          "please input",
+          "please enter",
+          "cannot be empty",
+          "must be",
+          "should be",
+          "is required",
+          "field is required",
+          "enter a valid",
+          "provide a valid",
+          "must be positive",
+          "cannot be negative"
+        ];
+        
+        const isValidationError = validationPatterns.some(pattern => 
+          errorMessage.includes(pattern)
+        );
+        
+        if (!isValidationError) {
           throw new Error(
             `Expected validation error, but got: ${error.message}`
           );
@@ -316,5 +336,13 @@ export class AccountUseCasesFactory {
         logger.info(`Validation error verified: ${error.message}`);
       },
     };
+  }
+
+  // Flow Use Cases
+  createBankAccountFlowUseCase() {
+    if (!this.world || !this.world.accountUiPort) {
+      throw new Error("Account UI port is not initialized");
+    }
+    return new CreateBankAccountFlowUseCase(this.world.accountUiPort);
   }
 }

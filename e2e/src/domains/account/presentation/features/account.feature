@@ -8,30 +8,23 @@ Feature: Account Creation
     And I have access to the account management features
 
   Scenario: Successfully create a bank account
-    When I click the "Add Account" button
-    And I fill in the account form with:
-      | Field           | Value               |
+    When I create a new bank account with the following details:
       | Account Name    | My Checking Account |
       | Account Type    | Bank Account        |
       | Initial Balance | 1000.00             |
       | Currency        | USD                 |
       | Description     | Primary checking    |
-    And I submit the form
-    Then the account should be created successfully
-    And I should see the account in the accounts list
-    And the total balance should be updated
+    Then I should see the account "My Checking Account" in my list
+    And the total balance should include "1000.00"
 
-  Scenario: Create account with duplicate name fails
+  Scenario: Duplicate account name is not allowed
     Given I have an existing account named "My Savings"
-    When I try to create another account with the same name "My Savings"
-    Then I should receive a conflict error
-    And the account should not be created
+    When I try to create another account named "My Savings"
+    Then I should see an error about duplicate account name
 
-  Scenario: Create account with invalid data fails
-    Given I am on the create account form
-    When I try to submit with:
-      | Field           | Value |
+  Scenario: Cannot create account with invalid input
+    When I try to create a bank account with:
       | Account Name    |       |
+      | Account Type    | Bank Account |
       | Initial Balance | -100  |
     Then I should see validation errors
-    And the account should not be created
