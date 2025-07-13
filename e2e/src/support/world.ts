@@ -225,6 +225,18 @@ export class CustomWorld extends World {
   }
 
   /**
+   * Gets the use cases factory or throws an error if not initialized
+   */
+  getUseCasesOrThrow(): AccountUseCasesFactory {
+    if (!this.useCases) {
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
+    }
+    return this.useCases;
+  }
+
+  /**
    * Cleans up test data
    */
   async cleanup(): Promise<void> {

@@ -18,36 +18,22 @@ Given(
 Given(
   "I have an existing account named {string}",
   async function (this: CustomWorld, accountName: string) {
-    if (!this.useCases) {
-      throw new Error(
-        "Use cases not initialized. Please ensure account management access was set up."
-      );
-    }
-    const setupUseCase = this.useCases.createSetupExistingAccountUseCase();
+    const setupUseCase =
+      this.getUseCasesOrThrow().createSetupExistingAccountUseCase();
     await setupUseCase.execute(accountName);
   }
 );
 
 Given("I am on the create account form", async function (this: CustomWorld) {
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
   const navigateUseCase =
-    this.useCases.createNavigateToCreateAccountFormUseCase();
+    this.getUseCasesOrThrow().createNavigateToCreateAccountFormUseCase();
   await navigateUseCase.execute();
 });
 
 When(
   "I click the {string} button",
   async function (this: CustomWorld, buttonName: string) {
-    if (!this.useCases) {
-      throw new Error(
-        "Use cases not initialized. Please ensure account management access was set up."
-      );
-    }
-    const clickUseCase = this.useCases.createClickButtonUseCase();
+    const clickUseCase = this.getUseCasesOrThrow().createClickButtonUseCase();
     await clickUseCase.execute({ buttonName });
   }
 );
@@ -69,35 +55,23 @@ When(
     this.createdAccountNames.push(uniqueAccountName);
 
     this.currentFormData = formData;
-    if (!this.useCases) {
-      throw new Error(
-        "Use cases not initialized. Please ensure account management access was set up."
-      );
-    }
-    const fillFormUseCase = this.useCases.createFillAccountFormUseCase();
+    const fillFormUseCase =
+      this.getUseCasesOrThrow().createFillAccountFormUseCase();
     await fillFormUseCase.execute(formData);
   }
 );
 
 When("I submit the form", async function (this: CustomWorld) {
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
-  const submitUseCase = this.useCases.createSubmitAccountFormUseCase();
+  const submitUseCase =
+    this.getUseCasesOrThrow().createSubmitAccountFormUseCase();
   await submitUseCase.execute();
 });
 
 Then(
   "the account should be created successfully",
   async function (this: CustomWorld) {
-    if (!this.useCases) {
-      throw new Error(
-        "Use cases not initialized. Please ensure account management access was set up."
-      );
-    }
-    const verifyUseCase = this.useCases.createVerifyAccountCreatedUseCase();
+    const verifyUseCase =
+      this.getUseCasesOrThrow().createVerifyAccountCreatedUseCase();
     await verifyUseCase.execute();
 
     // Capture the account ID for cleanup
@@ -117,12 +91,8 @@ Then(
 Then(
   "I should see the account in the accounts list",
   async function (this: CustomWorld) {
-    if (!this.useCases) {
-      throw new Error(
-        "Use cases not initialized. Please ensure account management access was set up."
-      );
-    }
-    const verifyListUseCase = this.useCases.createVerifyAccountInListUseCase();
+    const verifyListUseCase =
+      this.getUseCasesOrThrow().createVerifyAccountInListUseCase();
     let accountName: string | undefined = undefined;
     if (this.currentFormData) {
       if (typeof this.currentFormData === "object") {
@@ -141,42 +111,27 @@ Then(
 );
 
 Then("the total balance should be updated", async function (this: CustomWorld) {
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
   const verifyBalanceUseCase =
-    this.useCases.createVerifyTotalBalanceUpdatedUseCase();
+    this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
   await verifyBalanceUseCase.execute();
 });
 
 When(
   "I try to create another account with the same name {string}",
   async function (this: CustomWorld, accountName: string) {
-    if (!this.useCases) {
-      throw new Error(
-        "Use cases not initialized. Please ensure account management access was set up."
-      );
-    }
-
     //Open form create account
-    const clickUseCase = this.useCases.createClickButtonUseCase();
+    const clickUseCase = this.getUseCasesOrThrow().createClickButtonUseCase();
     await clickUseCase.execute({ buttonName: "Add Account" });
 
     const tryCreateDuplicateUseCase =
-      this.useCases.createTryCreateDuplicateAccountUseCase();
+      this.getUseCasesOrThrow().createTryCreateDuplicateAccountUseCase();
     this.lastError = await tryCreateDuplicateUseCase.execute(accountName);
   }
 );
 
 Then("I should receive a conflict error", async function (this: CustomWorld) {
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
-  const verifyErrorUseCase = this.useCases.createVerifyConflictErrorUseCase();
+  const verifyErrorUseCase =
+    this.getUseCasesOrThrow().createVerifyConflictErrorUseCase();
   if (!this.lastError) {
     throw new Error("No error found to verify conflict error");
   }
@@ -184,37 +139,22 @@ Then("I should receive a conflict error", async function (this: CustomWorld) {
 });
 
 Then("the account should not be created", async function (this: CustomWorld) {
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
   const verifyNotCreatedUseCase =
-    this.useCases.createVerifyAccountNotCreatedUseCase();
+    this.getUseCasesOrThrow().createVerifyAccountNotCreatedUseCase();
   await verifyNotCreatedUseCase.execute();
 });
 
 When("I try to submit with:", async function (this: CustomWorld, dataTable) {
   const formData = dataTable.rowsHash();
   this.currentFormData = formData;
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
   const trySubmitUseCase =
-    this.useCases.createTrySubmitInvalidAccountFormUseCase();
+    this.getUseCasesOrThrow().createTrySubmitInvalidAccountFormUseCase();
   this.lastError = await trySubmitUseCase.execute(formData);
 });
 
 Then("I should see validation errors", async function (this: CustomWorld) {
-  if (!this.useCases) {
-    throw new Error(
-      "Use cases not initialized. Please ensure account management access was set up."
-    );
-  }
   const verifyValidationUseCase =
-    this.useCases.createVerifyValidationErrorsUseCase();
+    this.getUseCasesOrThrow().createVerifyValidationErrorsUseCase();
   if (!this.lastError) {
     throw new Error("No error found to verify validation errors");
   }
