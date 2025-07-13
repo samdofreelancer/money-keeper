@@ -304,11 +304,11 @@ export class AccountUseCasesFactory {
         }
 
         const errorMessage = error.message.toLowerCase();
-        
+
         // Check for various validation error patterns
         const validationPatterns = [
           "validation",
-          "required", 
+          "required",
           "invalid",
           "please input",
           "please enter",
@@ -320,13 +320,13 @@ export class AccountUseCasesFactory {
           "enter a valid",
           "provide a valid",
           "must be positive",
-          "cannot be negative"
+          "cannot be negative",
         ];
-        
-        const isValidationError = validationPatterns.some(pattern => 
+
+        const isValidationError = validationPatterns.some((pattern) =>
           errorMessage.includes(pattern)
         );
-        
+
         if (!isValidationError) {
           throw new Error(
             `Expected validation error, but got: ${error.message}`

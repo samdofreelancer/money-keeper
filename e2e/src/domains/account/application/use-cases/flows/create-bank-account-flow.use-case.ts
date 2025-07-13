@@ -23,9 +23,13 @@ export interface CreateBankAccountResult {
 export class CreateBankAccountFlowUseCase {
   constructor(private readonly accountUiPort: CreateAccountUiPort) {}
 
-  async execute(request: CreateBankAccountRequest): Promise<CreateBankAccountResult> {
+  async execute(
+    request: CreateBankAccountRequest
+  ): Promise<CreateBankAccountResult> {
     try {
-      logger.info(`Starting bank account creation flow for: ${request.accountName}`);
+      logger.info(
+        `Starting bank account creation flow for: ${request.accountName}`
+      );
 
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
@@ -44,29 +48,33 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 4: Verify successful creation
       logger.info("Step 4: Verifying account creation...");
-      
+
       // Wait a moment for the form to process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       let accountId: string | undefined;
       try {
         accountId = await this.verifyAccountCreated();
         logger.info("Step 4: Account creation verified");
       } catch (verificationError) {
-        logger.warn(`Account verification failed, but continuing: ${verificationError}`);
+        logger.warn(
+          `Account verification failed, but continuing: ${verificationError}`
+        );
         // Don't fail the entire flow if verification fails
         accountId = undefined;
       }
 
-      logger.info(`Bank account creation flow completed successfully: ${request.accountName}`);
-      
+      logger.info(
+        `Bank account creation flow completed successfully: ${request.accountName}`
+      );
+
       return {
         success: true,
         accountId,
       };
     } catch (error) {
       logger.error(`Bank account creation flow failed at step: ${error}`);
-      
+
       return {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
@@ -77,9 +85,13 @@ export class CreateBankAccountFlowUseCase {
   /**
    * Attempts to create an account with invalid data to test validation
    */
-  async executeWithValidation(request: CreateBankAccountRequest): Promise<CreateBankAccountResult> {
+  async executeWithValidation(
+    request: CreateBankAccountRequest
+  ): Promise<CreateBankAccountResult> {
     try {
-      logger.info(`Starting bank account creation flow with validation for: ${request.accountName}`);
+      logger.info(
+        `Starting bank account creation flow with validation for: ${request.accountName}`
+      );
 
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
@@ -97,8 +109,10 @@ export class CreateBankAccountFlowUseCase {
       logger.info("Step 3: Submit attempt completed");
 
       if (validationResult.hasValidationErrors) {
-        logger.info(`Validation errors detected as expected: ${validationResult.errorMessage}`);
-        
+        logger.info(
+          `Validation errors detected as expected: ${validationResult.errorMessage}`
+        );
+
         return {
           success: false,
           errorMessage: validationResult.errorMessage,
@@ -107,7 +121,9 @@ export class CreateBankAccountFlowUseCase {
       }
 
       // If no validation errors, the form was submitted successfully
-      logger.info("No validation errors detected, verifying successful creation...");
+      logger.info(
+        "No validation errors detected, verifying successful creation..."
+      );
       let accountId: string | undefined;
       try {
         accountId = await this.verifyAccountCreated();
@@ -121,8 +137,10 @@ export class CreateBankAccountFlowUseCase {
         accountId,
       };
     } catch (error) {
-      logger.error(`Bank account creation flow with validation failed: ${error}`);
-      
+      logger.error(
+        `Bank account creation flow with validation failed: ${error}`
+      );
+
       return {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
@@ -133,9 +151,13 @@ export class CreateBankAccountFlowUseCase {
   /**
    * Attempts to create a duplicate account to test conflict handling
    */
-  async executeForDuplicateTest(accountName: string): Promise<CreateBankAccountResult> {
+  async executeForDuplicateTest(
+    accountName: string
+  ): Promise<CreateBankAccountResult> {
     try {
-      logger.info(`Starting duplicate account creation test for: ${accountName}`);
+      logger.info(
+        `Starting duplicate account creation test for: ${accountName}`
+      );
 
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
@@ -160,16 +182,16 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 4: Check for conflict error
       logger.info("Step 4: Checking for conflict error...");
-      
+
       // Wait a moment for error to appear
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       const conflictError = await this.accountUiPort.verifyConflictError();
       logger.info(`Conflict check result: ${conflictError}`);
-      
+
       if (conflictError) {
         logger.info(`Conflict error detected as expected: ${conflictError}`);
-        
+
         return {
           success: false,
           errorMessage: conflictError,
@@ -179,7 +201,9 @@ export class CreateBankAccountFlowUseCase {
       // If no conflict error found, check if we're still on the form
       const stillOnForm = await this.accountUiPort.isOnFormPage();
       if (stillOnForm) {
-        logger.info("Still on form page, treating as conflict (form prevented submission)");
+        logger.info(
+          "Still on form page, treating as conflict (form prevented submission)"
+        );
         return {
           success: false,
           errorMessage: "Duplicate account name prevented form submission",
@@ -187,14 +211,17 @@ export class CreateBankAccountFlowUseCase {
       }
 
       // If no conflict error, this is unexpected
-      logger.warn("No conflict error found and not on form page - unexpected behavior");
+      logger.warn(
+        "No conflict error found and not on form page - unexpected behavior"
+      );
       return {
         success: false,
-        errorMessage: "Expected conflict error for duplicate account name, but behavior was unclear",
+        errorMessage:
+          "Expected conflict error for duplicate account name, but behavior was unclear",
       };
     } catch (error) {
       logger.error(`Duplicate account creation test failed: ${error}`);
-      
+
       return {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
@@ -207,7 +234,9 @@ export class CreateBankAccountFlowUseCase {
     await this.accountUiPort.clickButton("Add Account");
   }
 
-  private async fillAccountForm(request: CreateBankAccountRequest): Promise<void> {
+  private async fillAccountForm(
+    request: CreateBankAccountRequest
+  ): Promise<void> {
     const formData = {
       accountName: request.accountName,
       accountType: request.accountType,
@@ -225,11 +254,11 @@ export class CreateBankAccountFlowUseCase {
 
   private async verifyAccountCreated(): Promise<string | undefined> {
     logger.info("Verifying account creation success...");
-    
+
     try {
       const isCreated = await this.accountUiPort.verifyAccountCreationSuccess();
       logger.info(`Account creation verification result: ${isCreated}`);
-      
+
       if (!isCreated) {
         throw new Error("Account creation verification failed");
       }
@@ -237,7 +266,7 @@ export class CreateBankAccountFlowUseCase {
       logger.info("Getting last created account ID...");
       const accountId = await this.accountUiPort.getLastCreatedAccountId();
       logger.info(`Retrieved account ID: ${accountId}`);
-      
+
       return accountId || undefined;
     } catch (error) {
       logger.error(`Error in verifyAccountCreated: ${error}`);
@@ -253,17 +282,17 @@ export class CreateBankAccountFlowUseCase {
     try {
       // Try to submit the form
       await this.accountUiPort.submitForm();
-      
+
       // Wait a moment for potential validation errors
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Check if we're still on the form page (validation prevented submission)
       const stillOnForm = await this.accountUiPort.isOnFormPage();
-      
+
       if (stillOnForm) {
         // Look for validation error messages
         const errorMessage = await this.accountUiPort.verifyValidationErrors();
-        
+
         if (errorMessage) {
           return {
             hasValidationErrors: true,
@@ -271,7 +300,7 @@ export class CreateBankAccountFlowUseCase {
             validationErrors: [errorMessage],
           };
         }
-        
+
         // Still on form but no specific error message found
         return {
           hasValidationErrors: true,
@@ -279,7 +308,7 @@ export class CreateBankAccountFlowUseCase {
           validationErrors: ["Form validation prevented submission"],
         };
       }
-      
+
       // Form was submitted successfully (no validation errors)
       return {
         hasValidationErrors: false,
@@ -289,7 +318,9 @@ export class CreateBankAccountFlowUseCase {
       return {
         hasValidationErrors: true,
         errorMessage: error instanceof Error ? error.message : String(error),
-        validationErrors: [error instanceof Error ? error.message : String(error)],
+        validationErrors: [
+          error instanceof Error ? error.message : String(error),
+        ],
       };
     }
   }

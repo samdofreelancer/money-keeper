@@ -167,7 +167,7 @@ When(
   "I create a new bank account with the following details:",
   async function (this: CustomWorld, dataTable) {
     const formData = dataTable.rowsHash();
-    
+
     const request = {
       accountName: formData["Account Name"],
       accountType: formData["Account Type"] || "Bank Account",
@@ -182,13 +182,14 @@ When(
     }
     this.createdAccountNames.push(request.accountName);
 
-    const flowUseCase = this.getUseCasesOrThrow().createBankAccountFlowUseCase();
+    const flowUseCase =
+      this.getUseCasesOrThrow().createBankAccountFlowUseCase();
     const result = await flowUseCase.execute(request);
-    
+
     if (!result.success) {
       throw new Error(`Failed to create bank account: ${result.errorMessage}`);
     }
-    
+
     // Track account ID for cleanup
     if (result.accountId) {
       if (!this.createdAccountIds) {
@@ -197,7 +198,7 @@ When(
       this.createdAccountIds.push(result.accountId);
       logger.info(`Tracked account ID for cleanup: ${result.accountId}`);
     }
-    
+
     // Store the created account data for later verification
     this.currentFormData = formData;
   }
@@ -206,9 +207,10 @@ When(
 When(
   "I try to create another account named {string}",
   async function (this: CustomWorld, accountName: string) {
-    const flowUseCase = this.getUseCasesOrThrow().createBankAccountFlowUseCase();
+    const flowUseCase =
+      this.getUseCasesOrThrow().createBankAccountFlowUseCase();
     const result = await flowUseCase.executeForDuplicateTest(accountName);
-    
+
     // Store the result for later verification (should be an error)
     if (!result.success && result.errorMessage) {
       this.lastError = new Error(result.errorMessage);
@@ -220,7 +222,7 @@ When(
   "I try to create a bank account with:",
   async function (this: CustomWorld, dataTable) {
     const formData = dataTable.rowsHash();
-    
+
     const request = {
       accountName: formData["Account Name"] || "",
       accountType: formData["Account Type"] || "BANK_ACCOUNT",
@@ -229,9 +231,10 @@ When(
       description: formData["Description"],
     };
 
-    const flowUseCase = this.getUseCasesOrThrow().createBankAccountFlowUseCase();
+    const flowUseCase =
+      this.getUseCasesOrThrow().createBankAccountFlowUseCase();
     const result = await flowUseCase.executeWithValidation(request);
-    
+
     // Store the result for later verification (expecting validation errors)
     if (!result.success && result.errorMessage) {
       this.lastError = new Error(result.errorMessage);
@@ -242,26 +245,29 @@ When(
 Then(
   "I should see the account {string} in my list",
   async function (this: CustomWorld, accountName: string) {
-    const verifyListUseCase = this.getUseCasesOrThrow().createVerifyAccountInListUseCase();
+    const verifyListUseCase =
+      this.getUseCasesOrThrow().createVerifyAccountInListUseCase();
     await verifyListUseCase.execute({ accountName });
   }
 );
 
 Then(
   "the total balance should include {string}",
-  async function (this: CustomWorld, expectedBalance: string) {
-    const verifyBalanceUseCase = this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
+  async function (this: CustomWorld, _expectedBalance: string) {
+    const verifyBalanceUseCase =
+      this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
     await verifyBalanceUseCase.execute();
-    
-    // Additional verification that the balance includes the expected amount
-    // This could be enhanced to check the actual balance value
+
+    // TODO: Additional verification that the balance includes the expected amount
+    // This could be enhanced to check the actual balance value against _expectedBalance
   }
 );
 
 Then(
   "I should see an error about duplicate account name",
   async function (this: CustomWorld) {
-    const verifyErrorUseCase = this.getUseCasesOrThrow().createVerifyConflictErrorUseCase();
+    const verifyErrorUseCase =
+      this.getUseCasesOrThrow().createVerifyConflictErrorUseCase();
     if (!this.lastError) {
       throw new Error("No error found to verify conflict error");
     }
