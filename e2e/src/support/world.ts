@@ -15,6 +15,8 @@ import { BasePage } from "../shared/infrastructure/pages/base.page";
 import { CategoryPage } from "../domains/category/infrastructure/pages/category.page";
 import { CategoryApplicationService } from "../domains/category/application/services/category-application.service";
 import { CategoryFormValue } from "../domains/category/domain/value-objects/category-form-data.vo";
+import { CreateAccountUiPort } from "../domains/account/domain/ports/ui/create-account-ui.port";
+import { CreateAccountPlaywrightPage } from "../domains/account/infrastructure/pages/create-account.playwright.page";
 
 /**
  * Unified World class with clean separation of concerns
@@ -35,6 +37,9 @@ export class CustomWorld extends World {
   categoryService?: CategoryApplicationService;
   accountService?: any; // Added accountService to fix TS errors
 
+  // Domain UI ports (new architecture)
+  accountUiPort?: CreateAccountUiPort;
+
   // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
@@ -50,7 +55,7 @@ export class CustomWorld extends World {
   // Configuration
   config = config;
 
-  constructor(options: IWorldOptions) {
+  constructor(options: IWorldOptions & { attach: (data: string | Buffer, mimeType: string) => void }) {
     super(options);
   }
 
@@ -74,6 +79,10 @@ export class CustomWorld extends World {
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
       this.currentPage = new BasePage(this.page);
+      
+      // Initialize account UI port
+      this.accountUiPort = new CreateAccountPlaywrightPage(this.page);
+      
       logger.info(`Browser launched: ${browserName}`);
     } catch (error) {
       logger.error("Error launching browser:", error);

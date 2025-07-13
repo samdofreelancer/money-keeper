@@ -3,9 +3,12 @@ Feature: Account Creation
   I want to create new accounts
   So that I can manage my finances across different account types
 
-  Scenario: Successfully create a bank account
+  Background:
     Given I am on the Money Keeper application
     And I have access to the account management features
+
+  @focus
+  Scenario: Successfully create a bank account
     When I click the "Add Account" button
     And I fill in the account form with:
       | Field           | Value               |
