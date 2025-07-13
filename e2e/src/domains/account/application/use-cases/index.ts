@@ -8,6 +8,7 @@ import {
 } from "./verify-account.use-case";
 import { ClickButtonUseCase } from "./click-button.use-case";
 import { CustomWorld } from "../../../../support/world";
+import { AccountApiClient } from "../../infrastructure/api/account-api.client";
 
 interface AccountService {
   create(account: unknown): Promise<unknown>;
@@ -32,9 +33,21 @@ export class AccountUseCasesFactory {
           throw new Error("Account UI port is not initialized in world");
         }
 
+        // Initialize the account service with real API client
+        const apiBaseUrl = process.env.API_BASE_URL || "http://127.0.0.1:8080/api";
+        const accountApiClient = new AccountApiClient({ baseURL: apiBaseUrl });
+        
+        this.world.accountService = {
+          create: async (account: unknown) => {
+            logger.info("Creating account via API service:", account);
+            return await accountApiClient.create(account as any);
+          }
+        };
+
         try {
           await this.world.accountUiPort.navigateToApp();
           logger.info("Successfully navigated to account management page");
+          logger.info("Account service initialized");
           return this.world.accountUiPort;
         } catch (error) {
           logger.error(
@@ -60,14 +73,14 @@ export class AccountUseCasesFactory {
         // Create an existing account using the account service
         try {
           const existingAccount = {
-            name: accountName,
+            accountName: accountName,
             type: "BANK_ACCOUNT",
-            balance: 500,
+            initBalance: 500,
             currency: "USD",
             description: "Existing test account",
+            active: true
           };
 
-          // Assuming the account service has a create method
           await this.accountService.create(existingAccount);
           logger.info(`Setup existing account: ${accountName}`);
         } catch (error) {
@@ -143,7 +156,7 @@ export class AccountUseCasesFactory {
           // Try to create duplicate account
           await this.world.accountUiPort.fillAccountForm({
             accountName,
-            accountType: "BANK_ACCOUNT",
+            accountType: "Bank Account",
             initialBalance: 100,
             currency: "USD",
             description: "Duplicate test account",

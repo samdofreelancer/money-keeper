@@ -131,6 +131,7 @@ Then("the total balance should be updated", async function (this: CustomWorld) {
 When(
   "I try to create another account with the same name {string}",
   async function (this: CustomWorld, accountName: string) {
+
     if (!this.accountService) {
       throw new Error(
         "Account service not initialized. Please ensure account management access was set up."
@@ -140,6 +141,11 @@ When(
       this.accountService,
       this
     );
+
+    //Open form create account
+    const clickUseCase = useCasesFactory.createClickButtonUseCase();
+    await clickUseCase.execute({ buttonName: "Add Account" });
+
     const tryCreateDuplicateUseCase =
       useCasesFactory.createTryCreateDuplicateAccountUseCase();
     this.lastError = await tryCreateDuplicateUseCase.execute(accountName);

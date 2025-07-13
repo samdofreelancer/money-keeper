@@ -73,6 +73,18 @@ export class AccountApiClient {
     logger.info(`Account deleted successfully: ${id}`);
   }
 
+  async create(account: AccountCreate): Promise<Account> {
+    try {
+      logger.info(`Creating account: ${account.accountName}`);
+      const response = await this.client.post("/", account);
+      logger.info(`Account created successfully: ${account.accountName}`);
+      return response.data;
+    } catch (error) {
+      logger.error(`Failed to create account ${account.accountName}:`, error);
+      throw error;
+    }
+  }
+
   async deleteAccountByName(accountName: string): Promise<boolean> {
     try {
       logger.info(`Attempting to delete account by name: ${accountName}`);

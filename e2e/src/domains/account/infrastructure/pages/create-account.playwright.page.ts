@@ -199,11 +199,13 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
   }
 
   async isOnFormPage(): Promise<boolean> {
-    const isOnFormPage =
-      (await this.page
-        .locator('button:has-text("Submit"), input[name="accountName"]')
-        .count()) > 0;
-    return isOnFormPage;
+    // Check for form elements using the actual data-testid selectors used in the form
+    const formElements = await this.page
+      .locator('[data-testid="account-form"], [data-testid="button-submit"], [data-testid="input-account-name"]')
+      .count();
+    
+    logger.info(`Form elements found: ${formElements}`);
+    return formElements > 0;
   }
 
   async trySubmitInvalidForm(data: {
