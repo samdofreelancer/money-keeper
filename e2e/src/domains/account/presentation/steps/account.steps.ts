@@ -4,12 +4,6 @@ import { CustomWorld } from "../../../../support/world";
 
 setDefaultTimeout(60000);
 
-Given("I am on the Money Keeper application", async function (this: CustomWorld) {
-  const useCasesFactory = new AccountUseCasesFactory(undefined, this);
-  const navigationUseCase = useCasesFactory.createNavigateToApplicationUseCase();
-  await navigationUseCase.execute();
-});
-
 Given("I have access to the account management features", async function (this: CustomWorld) {
   const useCasesFactory = new AccountUseCasesFactory(undefined, this);
   const setupUseCase = useCasesFactory.createSetupAccountManagementUseCase();

@@ -142,11 +142,6 @@ export class CategoryUseCasesFactory {
     return new SetupBulkCategoriesUseCase(this.categoryService, this.world);
   }
 
-  createNavigateToApplicationUseCase(): NavigateToApplicationUseCase {
-    if (!this.world) throw new Error("World required for this use case");
-    return new NavigateToApplicationUseCase(this.world);
-  }
-
   // Search use cases
   createSearchCategoriesUseCase(): SearchCategoriesUseCase {
     if (!this.categoryService || !this.world)

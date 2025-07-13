@@ -7,17 +7,6 @@ import { logger } from "../../../../shared/utils/logger";
 // Set timeout for steps
 setDefaultTimeout(60000);
 
-// Background steps
-Given(
-  "I am on the Money Keeper application",
-  async function (this: CustomWorld) {
-    const useCasesFactory = new CategoryUseCasesFactory(undefined, this);
-    const navigationUseCase =
-      useCasesFactory.createNavigateToApplicationUseCase();
-    await navigationUseCase.execute();
-  }
-);
-
 Given(
   "I have access to the category management features",
   async function (this: CustomWorld) {
