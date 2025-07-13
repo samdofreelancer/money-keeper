@@ -27,7 +27,8 @@ export class SetupBulkCategoriesUseCase {
       const batchEnd = Math.min((batch + 1) * batchSize, count);
 
       for (let i = batchStart; i <= batchEnd; i++) {
-        const categoryName = `Test Category ${i}`;
+        const uniqueSuffix = Date.now(); // or use a UUID
+        const categoryName = `Test Category ${i} - ${uniqueSuffix}`;
         const formData = new CategoryFormValue({
           name: categoryName,
           icon: "Default",
@@ -35,9 +36,14 @@ export class SetupBulkCategoriesUseCase {
         });
 
         try {
-          // Try creating through UI instead for better reliability in tests
-          await this.categoryService.createCategoryThroughUI(formData);
+          // Use backend API for faster creation
+          const createdCategory = await this.categoryService.createCategoryThroughAPI(formData.toCreateRequest());
           successCount++;
+          // Track for cleanup
+          if (createdCategory && createdCategory.id) {
+            this.world.createdCategoryIds.push(createdCategory.id);
+          }
+          this.world.createdCategoryNames.push(categoryName);
           logger.info(`Created category ${i}/${count}: ${categoryName}`);
         } catch (error) {
           // Category might already exist or creation failed
