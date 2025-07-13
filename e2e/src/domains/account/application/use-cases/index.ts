@@ -46,8 +46,13 @@ export class AccountUseCasesFactory {
 
         try {
           await this.world.accountUiPort.navigateToApp();
+          
+          // Initialize the use cases factory for convenience
+          this.world.useCases = new AccountUseCasesFactory(this.world.accountService, this.world);
+          
           logger.info("Successfully navigated to account management page");
           logger.info("Account service initialized");
+          logger.info("Use cases factory initialized");
           return this.world.accountUiPort;
         } catch (error) {
           logger.error(

@@ -240,10 +240,6 @@ export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
     currency?: string;
     description?: string;
   }): Promise<string | null> {
-    // Navigate to form first
-    await this.navigateToApp();
-    await this.clickButton("Add Account");
-
     logger.info(`Trying to submit invalid form with data: ${JSON.stringify(data)}`);
     // Fill with invalid data
     const accountData = {
