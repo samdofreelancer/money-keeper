@@ -1,5 +1,5 @@
 import { logger } from "../../../../../shared/utils/logger";
-import { CreateAccountUiPort } from "../../../domain/ports/ui/create-account-ui.port";
+import { AccountUiPort } from "../../../domain/ports/ui/create-account-ui.port";
 import { Account } from "../../../domain/entities/Account.entity";
 import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
 
@@ -42,7 +42,7 @@ export type CreateBankAccountResult =
   | { type: "unknown_error"; error: Error };
 
 export class CreateBankAccountFlowUseCase {
-  constructor(private readonly accountUiPort: CreateAccountUiPort) {}
+  constructor(private readonly accountUiPort: AccountUiPort) {}
 
   async execute(
     request: CreateBankAccountRequest

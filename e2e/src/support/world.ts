@@ -13,7 +13,7 @@ import { config } from "../shared/config/env.config";
 import { logger } from "./logger";
 import { BasePage } from "../shared/infrastructure/pages/base.page";
 import { AccountFormValue } from "../domains/account/domain/value-objects/account-form-data.vo";
-import { CreateAccountUiPort } from "../domains/account/domain/ports/ui/create-account-ui.port";
+import { AccountUiPort } from "../domains/account/domain/ports/ui/create-account-ui.port";
 import { CreateAccountPlaywrightPage } from "../domains/account/infrastructure/pages/create-account.playwright.page";
 import { AccountUseCasesFactory } from "../domains/account/application/use-cases";
 
@@ -37,7 +37,7 @@ export class CustomWorld extends World {
   };
 
   // Domain UI ports (new architecture)
-  accountUiPort?: CreateAccountUiPort;
+  accountUiPort?: AccountUiPort;
 
   // Use case factories (convenience)
   useCases?: AccountUseCasesFactory;

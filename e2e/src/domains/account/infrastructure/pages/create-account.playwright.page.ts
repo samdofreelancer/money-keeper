@@ -2,11 +2,11 @@
 
 import { Page } from "@playwright/test";
 
-import { CreateAccountUiPort } from "../../domain/ports/ui/create-account-ui.port";
+import { AccountUiPort } from "../../domain/ports/ui/create-account-ui.port";
 import { config } from "../../../../shared/config/env.config";
 import { logger } from "../../../../shared/utils/logger";
 
-export class CreateAccountPlaywrightPage implements CreateAccountUiPort {
+export class CreateAccountPlaywrightPage implements AccountUiPort {
   private lastCreatedAccountId: string | null = null;
 
   constructor(private readonly page: Page) {
