@@ -1,5 +1,7 @@
 import { logger } from "../../../../../shared/utils/logger";
 import { CreateAccountUiPort } from "../../../domain/ports/ui/create-account-ui.port";
+import { Account } from "../../../domain/entities/Account.entity";
+import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
 
 export interface CreateBankAccountRequest {
   accountName: string;
@@ -31,6 +33,57 @@ export class CreateBankAccountFlowUseCase {
         `Starting bank account creation flow for: ${request.accountName}`
       );
 
+      // Validate and normalize input using domain value object
+      let accountFormValue: AccountFormValue;
+      try {
+        // Cast request to RawAccountFormValue to satisfy type
+        accountFormValue = new AccountFormValue(
+          request as unknown as { [key: string]: unknown }
+        );
+      } catch (validationError) {
+        logger.warn(
+          `Validation failed in AccountFormValue: ${validationError}`
+        );
+        return {
+          success: false,
+          errorMessage:
+            validationError instanceof Error
+              ? validationError.message
+              : String(validationError),
+          validationErrors: [
+            validationError instanceof Error
+              ? validationError.message
+              : String(validationError),
+          ],
+        };
+      }
+
+      // Create domain entity and enforce business rules
+      let accountEntity: Account;
+      try {
+        accountEntity = new Account({
+          _accountName: accountFormValue.accountName,
+          accountType: accountFormValue.accountType,
+          initialBalance: accountFormValue.initialBalance,
+          currency: accountFormValue.currency,
+          description: accountFormValue.description,
+        });
+      } catch (domainError) {
+        logger.warn(`Domain entity validation failed: ${domainError}`);
+        return {
+          success: false,
+          errorMessage:
+            domainError instanceof Error
+              ? domainError.message
+              : String(domainError),
+          validationErrors: [
+            domainError instanceof Error
+              ? domainError.message
+              : String(domainError),
+          ],
+        };
+      }
+
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
       await this.navigateToCreateForm();
@@ -38,7 +91,13 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 2: Fill the form with provided data
       logger.info("Step 2: Filling account form...");
-      await this.fillAccountForm(request);
+      await this.fillAccountForm({
+        accountName: accountEntity.accountName,
+        accountType: accountEntity.accountType,
+        initialBalance: accountEntity.initialBalance,
+        currency: accountEntity.currency,
+        description: accountEntity.description,
+      });
       logger.info("Step 2: Form filling completed");
 
       // Step 3: Submit the form
@@ -65,7 +124,7 @@ export class CreateBankAccountFlowUseCase {
       }
 
       logger.info(
-        `Bank account creation flow completed successfully: ${request.accountName}`
+        `Bank account creation flow completed successfully: ${accountEntity.accountName}`
       );
 
       return {
@@ -82,9 +141,6 @@ export class CreateBankAccountFlowUseCase {
     }
   }
 
-  /**
-   * Attempts to create an account with invalid data to test validation
-   */
   async executeWithValidation(
     request: CreateBankAccountRequest
   ): Promise<CreateBankAccountResult> {
@@ -93,6 +149,57 @@ export class CreateBankAccountFlowUseCase {
         `Starting bank account creation flow with validation for: ${request.accountName}`
       );
 
+      // Validate and normalize input using domain value object
+      let accountFormValue: AccountFormValue;
+      try {
+        // Cast request to RawAccountFormValue to satisfy type
+        accountFormValue = new AccountFormValue(
+          request as unknown as { [key: string]: unknown }
+        );
+      } catch (validationError) {
+        logger.warn(
+          `Validation failed in AccountFormValue: ${validationError}`
+        );
+        return {
+          success: false,
+          errorMessage:
+            validationError instanceof Error
+              ? validationError.message
+              : String(validationError),
+          validationErrors: [
+            validationError instanceof Error
+              ? validationError.message
+              : String(validationError),
+          ],
+        };
+      }
+
+      // Create domain entity and enforce business rules
+      let accountEntity: Account;
+      try {
+        accountEntity = new Account({
+          _accountName: accountFormValue.accountName,
+          accountType: accountFormValue.accountType,
+          initialBalance: accountFormValue.initialBalance,
+          currency: accountFormValue.currency,
+          description: accountFormValue.description,
+        });
+      } catch (domainError) {
+        logger.warn(`Domain entity validation failed: ${domainError}`);
+        return {
+          success: false,
+          errorMessage:
+            domainError instanceof Error
+              ? domainError.message
+              : String(domainError),
+          validationErrors: [
+            domainError instanceof Error
+              ? domainError.message
+              : String(domainError),
+          ],
+        };
+      }
+
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
       await this.navigateToCreateForm();
@@ -100,7 +207,13 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 2: Fill the form with provided data (potentially invalid)
       logger.info("Step 2: Filling form with potentially invalid data...");
-      await this.fillAccountForm(request);
+      await this.fillAccountForm({
+        accountName: accountEntity.accountName,
+        accountType: accountEntity.accountType,
+        initialBalance: accountEntity.initialBalance,
+        currency: accountEntity.currency,
+        description: accountEntity.description,
+      });
       logger.info("Step 2: Form filling completed");
 
       // Step 3: Try to submit the form (may be prevented by validation)
@@ -148,9 +261,6 @@ export class CreateBankAccountFlowUseCase {
     }
   }
 
-  /**
-   * Attempts to create a duplicate account to test conflict handling
-   */
   async executeForDuplicateTest(
     accountName: string
   ): Promise<CreateBankAccountResult> {

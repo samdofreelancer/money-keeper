@@ -1,21 +1,21 @@
 type RawAccountFormValue = {
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 function normalizeKey(key: string): string {
   // Normalize keys to camelCase without spaces
-  const lowerKey = key.toLowerCase().replace(/\s+/g, '');
+  const lowerKey = key.toLowerCase().replace(/\s+/g, "");
   switch (lowerKey) {
-    case 'accountname':
-      return 'accountName';
-    case 'accounttype':
-      return 'accountType';
-    case 'initialbalance':
-      return 'initialBalance';
-    case 'currency':
-      return 'currency';
-    case 'description':
-      return 'description';
+    case "accountname":
+      return "accountName";
+    case "accounttype":
+      return "accountType";
+    case "initialbalance":
+      return "initialBalance";
+    case "currency":
+      return "currency";
+    case "description":
+      return "description";
     default:
       return key;
   }
@@ -29,7 +29,7 @@ export class AccountFormValue {
   public readonly description?: string;
 
   constructor(raw: RawAccountFormValue) {
-    const normalized: { [key: string]: any } = {};
+    const normalized: { [key: string]: unknown } = {};
 
     // Normalize keys and assign values
     for (const key in raw) {
@@ -40,31 +40,31 @@ export class AccountFormValue {
     }
 
     // Validate required fields presence
-    if (!normalized.accountName || typeof normalized.accountName !== 'string') {
-      throw new Error('Invalid or missing accountName');
+    if (!normalized.accountName || typeof normalized.accountName !== "string") {
+      throw new Error("Invalid or missing accountName");
     }
-    if (!normalized.accountType || typeof normalized.accountType !== 'string') {
-      throw new Error('Invalid or missing accountType');
+    if (!normalized.accountType || typeof normalized.accountType !== "string") {
+      throw new Error("Invalid or missing accountType");
     }
     if (
       normalized.initialBalance === undefined ||
       normalized.initialBalance === null ||
       isNaN(Number(normalized.initialBalance))
     ) {
-      throw new Error('Invalid or missing initialBalance');
+      throw new Error("Invalid or missing initialBalance");
     }
-    if (!normalized.currency || typeof normalized.currency !== 'string') {
-      throw new Error('Invalid or missing currency');
+    if (!normalized.currency || typeof normalized.currency !== "string") {
+      throw new Error("Invalid or missing currency");
     }
 
     // Assign normalized and validated values
-    this.accountName = normalized.accountName;
-    this.accountType = normalized.accountType;
+    this.accountName = normalized.accountName as string;
+    this.accountType = normalized.accountType as string;
     this.initialBalance = Number(normalized.initialBalance);
-    this.currency = normalized.currency;
+    this.currency = normalized.currency as string;
     this.description =
-      normalized.description && typeof normalized.description === 'string'
-        ? normalized.description
+      normalized.description && typeof normalized.description === "string"
+        ? (normalized.description as string)
         : undefined;
   }
 }
