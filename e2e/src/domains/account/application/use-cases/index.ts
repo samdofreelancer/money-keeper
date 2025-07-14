@@ -98,28 +98,19 @@ export class AccountUseCasesFactory {
             existingAccount
           );
 
-          // Track the account for cleanup
+          // Track the account for cleanup using centralized method
           if (!this.world) {
             throw new Error("World instance is not available");
           }
 
-          if (
+          const accountId =
             createdAccount &&
             typeof createdAccount === "object" &&
             "id" in createdAccount
-          ) {
-            if (!this.world.createdAccountIds) {
-              this.world.createdAccountIds = [];
-            }
-            this.world.createdAccountIds.push(createdAccount.id as string);
-            logger.info(`Tracking account for cleanup: ${createdAccount.id}`);
-          }
+              ? (createdAccount.id as string)
+              : undefined;
 
-          // Also track by name as backup
-          if (!this.world.createdAccountNames) {
-            this.world.createdAccountNames = [];
-          }
-          this.world.createdAccountNames.push(accountName);
+          this.world.trackCreatedAccount(accountName, accountId);
 
           logger.info(`Setup existing account: ${accountName}`);
         } catch (error) {

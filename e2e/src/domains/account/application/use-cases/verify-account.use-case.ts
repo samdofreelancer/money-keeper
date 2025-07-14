@@ -114,13 +114,16 @@ export class VerifyTotalBalanceUpdatedUseCase extends BaseUseCase<
       }
 
       if (balanceNumbers.length === 0) {
-        throw new Error(`No numeric values found in balance text: ${balanceText}`);
+        throw new Error(
+          `No numeric values found in balance text: ${balanceText}`
+        );
       }
 
       // The total balance should be AT LEAST the expected amount (since there might be other accounts)
       const actualTotal = balanceNumbers[0]; // First number is typically the main total
 
-      if (actualTotal < expectedNumber - 0.01) { // Allow for floating point precision
+      if (actualTotal < expectedNumber - 0.01) {
+        // Allow for floating point precision
         throw new Error(
           `Expected total balance to be at least ${expectedAmount}, but got: ${balanceText} (${actualTotal})`
         );

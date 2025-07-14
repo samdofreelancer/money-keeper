@@ -199,9 +199,19 @@ export class CustomWorld extends World {
   /**
    * Tracks a created account for cleanup
    */
-  trackCreatedAccount(accountName: string): void {
+  trackCreatedAccount(accountName: string, accountId?: string): void {
     if (!this.createdAccountNames.includes(accountName)) {
       this.createdAccountNames.push(accountName);
+    }
+
+    if (accountId) {
+      if (!this.createdAccountIds) {
+        this.createdAccountIds = [];
+      }
+      if (!this.createdAccountIds.includes(accountId)) {
+        this.createdAccountIds.push(accountId);
+        logger.info(`Tracked account ID for cleanup: ${accountId}`);
+      }
     }
   }
 

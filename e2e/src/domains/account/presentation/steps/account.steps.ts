@@ -2,7 +2,6 @@ import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
 
 import { AccountUseCasesFactory } from "../../application/use-cases";
 import { CustomWorld } from "../../../../support/world";
-import { logger } from "../../../../shared/utils/logger";
 
 setDefaultTimeout(20000);
 
@@ -90,12 +89,6 @@ When(
       description: formData["Description"],
     };
 
-    // Track for cleanup
-    if (!this.createdAccountNames) {
-      this.createdAccountNames = [];
-    }
-    this.createdAccountNames.push(request.accountName);
-
     const flowUseCase =
       this.getUseCasesOrThrow().createBankAccountFlowUseCase();
     const result = await flowUseCase.execute(request);
@@ -104,14 +97,8 @@ When(
       throw new Error(`Failed to create bank account: ${result.errorMessage}`);
     }
 
-    // Track account ID for cleanup
-    if (result.accountId) {
-      if (!this.createdAccountIds) {
-        this.createdAccountIds = [];
-      }
-      this.createdAccountIds.push(result.accountId);
-      logger.info(`Tracked account ID for cleanup: ${result.accountId}`);
-    }
+    // Track created account for automatic cleanup
+    this.trackCreatedAccount(request.accountName, result.accountId);
 
     // Store the created account data for later verification
     this.currentFormData = formData;
