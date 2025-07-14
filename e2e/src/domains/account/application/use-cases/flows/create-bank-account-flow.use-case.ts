@@ -11,17 +11,36 @@ export interface CreateBankAccountRequest {
   description?: string;
 }
 
-export interface CreateBankAccountResult {
-  success: boolean;
-  accountId?: string;
-  errorMessage?: string;
-  validationErrors?: string[];
+// Define custom error classes for better error semantics
+export class ValidationError extends Error {
+  constructor(message: string, public validationErrors: string[]) {
+    super(message);
+    this.name = "ValidationError";
+  }
 }
 
-/**
- * Orchestrates the complete bank account creation flow
- * This encapsulates the entire business process from navigation to completion
- */
+export class DomainError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DomainError";
+  }
+}
+
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
+// Define richer result types using discriminated unions
+export type CreateBankAccountResult =
+  | { type: "success"; accountId?: string }
+  | { type: "validation_error"; error: ValidationError }
+  | { type: "domain_error"; error: DomainError }
+  | { type: "conflict_error"; error: ConflictError }
+  | { type: "unknown_error"; error: Error };
+
 export class CreateBankAccountFlowUseCase {
   constructor(private readonly accountUiPort: CreateAccountUiPort) {}
 
@@ -45,16 +64,20 @@ export class CreateBankAccountFlowUseCase {
           `Validation failed in AccountFormValue: ${validationError}`
         );
         return {
-          success: false,
-          errorMessage:
-            validationError instanceof Error
-              ? validationError.message
-              : String(validationError),
-          validationErrors: [
-            validationError instanceof Error
-              ? validationError.message
-              : String(validationError),
-          ],
+          type: "validation_error",
+          error:
+            validationError instanceof ValidationError
+              ? validationError
+              : new ValidationError(
+                  validationError instanceof Error
+                    ? validationError.message
+                    : String(validationError),
+                  [
+                    validationError instanceof Error
+                      ? validationError.message
+                      : String(validationError),
+                  ]
+                ),
         };
       }
 
@@ -71,16 +94,15 @@ export class CreateBankAccountFlowUseCase {
       } catch (domainError) {
         logger.warn(`Domain entity validation failed: ${domainError}`);
         return {
-          success: false,
-          errorMessage:
-            domainError instanceof Error
-              ? domainError.message
-              : String(domainError),
-          validationErrors: [
-            domainError instanceof Error
-              ? domainError.message
-              : String(domainError),
-          ],
+          type: "domain_error",
+          error:
+            domainError instanceof DomainError
+              ? domainError
+              : new DomainError(
+                  domainError instanceof Error
+                    ? domainError.message
+                    : String(domainError)
+                ),
         };
       }
 
@@ -128,15 +150,15 @@ export class CreateBankAccountFlowUseCase {
       );
 
       return {
-        success: true,
+        type: "success",
         accountId,
       };
     } catch (error) {
       logger.error(`Bank account creation flow failed at step: ${error}`);
 
       return {
-        success: false,
-        errorMessage: error instanceof Error ? error.message : String(error),
+        type: "unknown_error",
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }
@@ -161,16 +183,20 @@ export class CreateBankAccountFlowUseCase {
           `Validation failed in AccountFormValue: ${validationError}`
         );
         return {
-          success: false,
-          errorMessage:
-            validationError instanceof Error
-              ? validationError.message
-              : String(validationError),
-          validationErrors: [
-            validationError instanceof Error
-              ? validationError.message
-              : String(validationError),
-          ],
+          type: "validation_error",
+          error:
+            validationError instanceof ValidationError
+              ? validationError
+              : new ValidationError(
+                  validationError instanceof Error
+                    ? validationError.message
+                    : String(validationError),
+                  [
+                    validationError instanceof Error
+                      ? validationError.message
+                      : String(validationError),
+                  ]
+                ),
         };
       }
 
@@ -187,16 +213,15 @@ export class CreateBankAccountFlowUseCase {
       } catch (domainError) {
         logger.warn(`Domain entity validation failed: ${domainError}`);
         return {
-          success: false,
-          errorMessage:
-            domainError instanceof Error
-              ? domainError.message
-              : String(domainError),
-          validationErrors: [
-            domainError instanceof Error
-              ? domainError.message
-              : String(domainError),
-          ],
+          type: "domain_error",
+          error:
+            domainError instanceof DomainError
+              ? domainError
+              : new DomainError(
+                  domainError instanceof Error
+                    ? domainError.message
+                    : String(domainError)
+                ),
         };
       }
 
@@ -227,9 +252,11 @@ export class CreateBankAccountFlowUseCase {
         );
 
         return {
-          success: false,
-          errorMessage: validationResult.errorMessage,
-          validationErrors: validationResult.validationErrors,
+          type: "validation_error",
+          error: new ValidationError(
+            validationResult.errorMessage || "Validation error",
+            validationResult.validationErrors || []
+          ),
         };
       }
 
@@ -246,7 +273,7 @@ export class CreateBankAccountFlowUseCase {
       }
 
       return {
-        success: true,
+        type: "success",
         accountId,
       };
     } catch (error) {
@@ -255,8 +282,8 @@ export class CreateBankAccountFlowUseCase {
       );
 
       return {
-        success: false,
-        errorMessage: error instanceof Error ? error.message : String(error),
+        type: "unknown_error",
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }
@@ -303,8 +330,8 @@ export class CreateBankAccountFlowUseCase {
         logger.info(`Conflict error detected as expected: ${conflictError}`);
 
         return {
-          success: false,
-          errorMessage: conflictError,
+          type: "conflict_error",
+          error: new ConflictError(conflictError),
         };
       }
 
@@ -315,8 +342,10 @@ export class CreateBankAccountFlowUseCase {
           "Still on form page, treating as conflict (form prevented submission)"
         );
         return {
-          success: false,
-          errorMessage: "Duplicate account name prevented form submission",
+          type: "conflict_error",
+          error: new ConflictError(
+            "Duplicate account name prevented form submission"
+          ),
         };
       }
 
@@ -325,16 +354,17 @@ export class CreateBankAccountFlowUseCase {
         "No conflict error found and not on form page - unexpected behavior"
       );
       return {
-        success: false,
-        errorMessage:
-          "Expected conflict error for duplicate account name, but behavior was unclear",
+        type: "unknown_error",
+        error: new Error(
+          "Expected conflict error for duplicate account name, but behavior was unclear"
+        ),
       };
     } catch (error) {
       logger.error(`Duplicate account creation test failed: ${error}`);
 
       return {
-        success: false,
-        errorMessage: error instanceof Error ? error.message : String(error),
+        type: "unknown_error",
+        error: error instanceof Error ? error : new Error(String(error)),
       };
     }
   }

@@ -84,15 +84,23 @@ When(
       this.getUseCasesOrThrow().createBankAccountFlowUseCase();
     const result = await flowUseCase.execute(request);
 
-    if (!result.success) {
-      throw new Error(`Failed to create bank account: ${result.errorMessage}`);
+    switch (result.type) {
+      case "success":
+        // Track created account for automatic cleanup
+        this.trackCreatedAccount(request.accountName, result.accountId);
+        // Store the normalized and validated form data for later verification
+        this.currentFormData = accountFormValue;
+        break;
+      case "validation_error":
+      case "domain_error":
+      case "conflict_error":
+      case "unknown_error":
+        throw new Error(
+          `Failed to create bank account: ${result.error.message}`
+        );
+      default:
+        throw new Error("Unexpected result type from create bank account flow");
     }
-
-    // Track created account for automatic cleanup
-    this.trackCreatedAccount(request.accountName, result.accountId);
-
-    // Store the normalized and validated form data for later verification
-    this.currentFormData = accountFormValue;
   }
 );
 
@@ -104,8 +112,20 @@ When(
     const result = await flowUseCase.executeForDuplicateTest(accountName);
 
     // Store the result for later verification (should be an error)
-    if (!result.success && result.errorMessage) {
-      this.lastError = new Error(result.errorMessage);
+    switch (result.type) {
+      case "conflict_error":
+      case "validation_error":
+      case "domain_error":
+      case "unknown_error":
+        this.lastError = new Error(result.error.message);
+        break;
+      case "success":
+        // No error, do nothing
+        break;
+      default:
+        this.lastError = new Error(
+          "Unexpected result type from duplicate test"
+        );
     }
   }
 );
@@ -128,8 +148,20 @@ When(
     const result = await flowUseCase.executeWithValidation(request);
 
     // Store the result for later verification (expecting validation errors)
-    if (!result.success && result.errorMessage) {
-      this.lastError = new Error(result.errorMessage);
+    switch (result.type) {
+      case "validation_error":
+      case "domain_error":
+      case "conflict_error":
+      case "unknown_error":
+        this.lastError = new Error(result.error.message);
+        break;
+      case "success":
+        // No error, do nothing
+        break;
+      default:
+        this.lastError = new Error(
+          "Unexpected result type from create with validation"
+        );
     }
   }
 );
