@@ -16,6 +16,13 @@ import { AccountFormValue } from "../domains/account/domain/value-objects/accoun
 import { AccountUiPort } from "../domains/account/domain/ports/ui/create-account-ui.port";
 import { CreateAccountPlaywrightPage } from "../domains/account/infrastructure/pages/create-account.playwright.page";
 import { AccountUseCasesFactory } from "../domains/account/application/use-cases";
+import {
+  DomainEvent,
+  AccountCreatedEvent,
+  AccountDeletedEvent,
+  CategoryCreatedEvent,
+  CategoryDeletedEvent,
+} from "../shared/domain/events";
 
 /**
  * Unified World class with clean separation of concerns
@@ -42,6 +49,12 @@ export class CustomWorld extends World {
   // Use case factories (convenience)
   useCases?: AccountUseCasesFactory;
 
+  // Event handlers map
+  private eventHandlers: Map<
+    string,
+    ((event: DomainEvent) => Promise<void>)[]
+  > = new Map();
+
   // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
@@ -65,6 +78,32 @@ export class CustomWorld extends World {
     }
   ) {
     super(options);
+  }
+
+  // Fix for forbidden non-null assertion warning on line 88
+  getEventHandlers(
+    eventType: string
+  ): ((event: DomainEvent) => Promise<void>)[] {
+    return this.eventHandlers.get(eventType) ?? [];
+  }
+
+  // Event registration
+  on(eventType: string, handler: (event: DomainEvent) => Promise<void>): void {
+    if (!this.eventHandlers.has(eventType)) {
+      this.eventHandlers.set(eventType, []);
+    }
+    const handlers = this.eventHandlers.get(eventType);
+    if (handlers) {
+      handlers.push(handler);
+    }
+  }
+
+  // Event dispatching
+  async emit(event: DomainEvent): Promise<void> {
+    const handlers = this.eventHandlers.get(event.type) || [];
+    for (const handler of handlers) {
+      await handler(event);
+    }
   }
 
   async launchBrowser(browserName = config.browser.name) {
@@ -160,20 +199,30 @@ export class CustomWorld extends World {
   /**
    * Tracks a created category for cleanup
    */
-  trackCreatedCategory(categoryId: string | null, categoryName: string): void {
+  async trackCreatedCategory(
+    categoryId: string | null,
+    categoryName: string
+  ): Promise<void> {
     if (categoryId) {
       this.createdCategoryIds.push(categoryId);
     }
     this.createdCategoryNames.push(categoryName);
+    await this.emit(
+      new CategoryCreatedEvent({
+        categoryName,
+        categoryId: categoryId ?? undefined,
+      })
+    );
   }
 
   /**
    * Removes a category from tracking
    */
-  removeFromTrackedCategories(categoryName: string): void {
+  async removeFromTrackedCategories(categoryName: string): Promise<void> {
     const index = this.createdCategoryNames.indexOf(categoryName);
     if (index > -1) {
       this.createdCategoryNames.splice(index, 1);
+      await this.emit(new CategoryDeletedEvent({ categoryName }));
     }
   }
 
@@ -199,7 +248,10 @@ export class CustomWorld extends World {
   /**
    * Tracks a created account for cleanup
    */
-  trackCreatedAccount(accountName: string, accountId?: string): void {
+  async trackCreatedAccount(
+    accountName: string,
+    accountId?: string
+  ): Promise<void> {
     if (!this.createdAccountNames.includes(accountName)) {
       this.createdAccountNames.push(accountName);
     }
@@ -213,15 +265,17 @@ export class CustomWorld extends World {
         logger.info(`Tracked account ID for cleanup: ${accountId}`);
       }
     }
+    await this.emit(new AccountCreatedEvent({ accountName, accountId }));
   }
 
   /**
    * Removes an account from tracking
    */
-  removeFromTrackedAccounts(accountName: string): void {
+  async removeFromTrackedAccounts(accountName: string): Promise<void> {
     const index = this.createdAccountNames.indexOf(accountName);
     if (index > -1) {
       this.createdAccountNames.splice(index, 1);
+      await this.emit(new AccountDeletedEvent({ accountName }));
     }
   }
 
@@ -244,21 +298,6 @@ export class CustomWorld extends World {
       );
     }
     return this.useCases;
-  }
-
-  /**
-   * Cleans up test data
-   */
-  async cleanup(): Promise<void> {
-    // Cleanup logic for test data
-    // This could involve API calls to delete created categories and accounts
-    logger.info("Cleaning up test data");
-    logger.info(
-      `Created accounts to cleanup: ${this.createdAccountNames.join(", ")}`
-    );
-    logger.info(
-      `Created categories to cleanup: ${this.createdCategoryNames.join(", ")}`
-    );
   }
 }
 
