@@ -12,13 +12,46 @@ export interface Account {
   active: boolean;
 }
 
-export interface AccountCreate {
-  accountName: string;
-  initBalance: number;
-  type: string;
-  currency: string;
-  description?: string;
-  active?: boolean;
+export class AccountCreate {
+  public readonly accountName: string;
+  public readonly initBalance: number;
+  public readonly type: string;
+  public readonly currency: string;
+  public readonly description?: string;
+  public readonly active?: boolean;
+
+  constructor(data: {
+    accountName: string;
+    initBalance: number;
+    type: string;
+    currency: string;
+    description?: string;
+    active?: boolean;
+  }) {
+    if (!data.accountName || typeof data.accountName !== "string") {
+      throw new Error("Invalid or missing accountName");
+    }
+    if (
+      data.initBalance === undefined ||
+      data.initBalance === null ||
+      isNaN(Number(data.initBalance))
+    ) {
+      throw new Error("Invalid or missing initBalance");
+    }
+    if (!data.type || typeof data.type !== "string") {
+      throw new Error("Invalid or missing type");
+    }
+    if (!data.currency || typeof data.currency !== "string") {
+      throw new Error("Invalid or missing currency");
+    }
+
+    this.accountName = data.accountName;
+    this.initBalance = Number(data.initBalance);
+    this.type = data.type;
+    this.currency = data.currency;
+    this.description = data.description;
+    this.active = data.active;
+  }
 }
 
 export class AccountApiClient {
@@ -76,7 +109,16 @@ export class AccountApiClient {
   async create(account: AccountCreate): Promise<Account> {
     try {
       logger.info(`Creating account: ${account.accountName}`);
-      const response = await this.client.post("/", account);
+      // Convert class instance to plain object for API request
+      const payload = {
+        accountName: account.accountName,
+        initBalance: account.initBalance,
+        type: account.type,
+        currency: account.currency,
+        description: account.description,
+        active: account.active,
+      };
+      const response = await this.client.post("/", payload);
       logger.info(`Account created successfully: ${account.accountName}`);
       return response.data;
     } catch (error) {
