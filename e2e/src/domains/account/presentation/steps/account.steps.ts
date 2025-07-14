@@ -24,92 +24,6 @@ Given(
   }
 );
 
-Given("I am on the create account form", async function (this: CustomWorld) {
-  const navigateUseCase =
-    this.getUseCasesOrThrow().createNavigateToCreateAccountFormUseCase();
-  await navigateUseCase.execute();
-});
-
-When(
-  "I click the {string} button",
-  async function (this: CustomWorld, buttonName: string) {
-    const clickUseCase = this.getUseCasesOrThrow().createClickButtonUseCase();
-    await clickUseCase.execute({ buttonName });
-  }
-);
-
-When(
-  "I fill in the account form with:",
-  async function (this: CustomWorld, dataTable) {
-    const formData = dataTable.rowsHash();
-
-    // Generate unique account name to avoid duplicates
-    const timestamp = Date.now();
-    const uniqueAccountName = `${formData["Account Name"]}_${timestamp}`;
-    formData["Account Name"] = uniqueAccountName;
-
-    // Track for cleanup
-    if (!this.createdAccountNames) {
-      this.createdAccountNames = [];
-    }
-    this.createdAccountNames.push(uniqueAccountName);
-
-    this.currentFormData = formData;
-    const fillFormUseCase =
-      this.getUseCasesOrThrow().createFillAccountFormUseCase();
-    await fillFormUseCase.execute(formData);
-  }
-);
-
-When("I submit the form", async function (this: CustomWorld) {
-  const submitUseCase =
-    this.getUseCasesOrThrow().createSubmitAccountFormUseCase();
-  await submitUseCase.execute();
-});
-
-Then(
-  "the account should be created successfully",
-  async function (this: CustomWorld) {
-    const verifyUseCase =
-      this.getUseCasesOrThrow().createVerifyAccountCreatedUseCase();
-    await verifyUseCase.execute();
-
-    // Capture the account ID for cleanup
-    if (this.accountUiPort) {
-      const accountId = await this.accountUiPort.getLastCreatedAccountId();
-      if (accountId) {
-        if (!this.createdAccountIds) {
-          this.createdAccountIds = [];
-        }
-        this.createdAccountIds.push(accountId);
-        logger.info(`Tracked account ID for cleanup: ${accountId}`);
-      }
-    }
-  }
-);
-
-Then(
-  "I should see the account in the accounts list",
-  async function (this: CustomWorld) {
-    const verifyListUseCase =
-      this.getUseCasesOrThrow().createVerifyAccountInListUseCase();
-    let accountName: string | undefined = undefined;
-    if (this.currentFormData) {
-      if (typeof this.currentFormData === "object") {
-        if ("Account Name" in this.currentFormData) {
-          accountName = this.currentFormData["Account Name"] as string;
-        } else if ("AccountName" in this.currentFormData) {
-          accountName = this.currentFormData["AccountName"] as string;
-        }
-      }
-    }
-    if (!accountName) {
-      throw new Error("Account Name not found in currentFormData");
-    }
-    await verifyListUseCase.execute({ accountName });
-  }
-);
-
 Then("the total balance should be updated", async function (this: CustomWorld) {
   const verifyBalanceUseCase =
     this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
@@ -257,9 +171,6 @@ Then(
     const verifyBalanceUseCase =
       this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
     await verifyBalanceUseCase.execute();
-
-    // TODO: Additional verification that the balance includes the expected amount
-    // This could be enhanced to check the actual balance value against _expectedBalance
   }
 );
 
