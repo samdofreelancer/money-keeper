@@ -29,19 +29,6 @@ Then("the total balance should be updated", async function (this: CustomWorld) {
   await verifyBalanceUseCase.execute();
 });
 
-When(
-  "I try to create another account with the same name {string}",
-  async function (this: CustomWorld, accountName: string) {
-    //Open form create account
-    const clickUseCase = this.getUseCasesOrThrow().createClickButtonUseCase();
-    await clickUseCase.execute({ buttonName: "Add Account" });
-
-    const tryCreateDuplicateUseCase =
-      this.getUseCasesOrThrow().createTryCreateDuplicateAccountUseCase();
-    this.lastError = await tryCreateDuplicateUseCase.execute(accountName);
-  }
-);
-
 Then("I should receive a conflict error", async function (this: CustomWorld) {
   const verifyErrorUseCase =
     this.getUseCasesOrThrow().createVerifyConflictErrorUseCase();

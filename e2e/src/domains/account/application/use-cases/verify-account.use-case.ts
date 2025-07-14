@@ -6,25 +6,6 @@ import { logger } from "../../../../shared/utils/logger";
 import { CustomWorld } from "../../../../support/world";
 
 // ========================
-// Verify Account Created Use Case
-// ========================
-
-export class VerifyAccountCreatedUseCase extends BaseUseCase<void, void> {
-  constructor(private readonly uiPort: CreateAccountUiPort) {
-    super();
-  }
-
-  async execute(): Promise<void> {
-    const isSuccessful = await this.uiPort.verifyAccountCreationSuccess();
-    if (!isSuccessful) {
-      throw new Error(
-        "Account creation was not successful - no success indicator found"
-      );
-    }
-  }
-}
-
-// ========================
 // Verify Account In List Use Case
 // ========================
 

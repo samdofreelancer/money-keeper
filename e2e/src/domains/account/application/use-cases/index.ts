@@ -1,12 +1,8 @@
 import { logger } from "../../../../shared/utils/logger";
-import { FillAccountFormUseCase } from "./fill-account-form.use-case";
-import { SubmitAccountFormUseCase } from "./submit-account-form.use-case";
 import {
-  VerifyAccountCreatedUseCase,
   VerifyAccountInListUseCase,
   VerifyTotalBalanceUpdatedUseCase,
 } from "./verify-account.use-case";
-import { ClickButtonUseCase } from "./click-button.use-case";
 import { CustomWorld } from "../../../../support/world";
 import {
   AccountApiClient,
@@ -131,34 +127,6 @@ export class AccountUseCasesFactory {
         await this.world.accountUiPort.clickButton("Add Account");
       },
     };
-  }
-
-  createClickButtonUseCase() {
-    if (!this.world || !this.world.accountUiPort) {
-      throw new Error("Account UI port is not initialized");
-    }
-    return new ClickButtonUseCase(this.world.accountUiPort);
-  }
-
-  createFillAccountFormUseCase() {
-    if (!this.world || !this.world.accountUiPort) {
-      throw new Error("Account UI port is not initialized");
-    }
-    return new FillAccountFormUseCase(this.world.accountUiPort);
-  }
-
-  createSubmitAccountFormUseCase() {
-    if (!this.world || !this.world.accountUiPort) {
-      throw new Error("Account UI port is not initialized");
-    }
-    return new SubmitAccountFormUseCase(this.world.accountUiPort);
-  }
-
-  createVerifyAccountCreatedUseCase() {
-    if (!this.world || !this.world.accountUiPort) {
-      throw new Error("Account UI port is not initialized");
-    }
-    return new VerifyAccountCreatedUseCase(this.world.accountUiPort);
   }
 
   createVerifyAccountInListUseCase() {
