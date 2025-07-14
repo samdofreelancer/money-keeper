@@ -1,5 +1,5 @@
 import { logger } from "../../../../../shared/utils/logger";
-import { AccountUiPort } from "../../../domain/ports/ui/create-account-ui.port";
+import { AccountPort } from "../../../domain/ports/ui/create-account-ui.port";
 import { Account } from "../../../domain/entities/Account.entity";
 import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
 
@@ -42,7 +42,7 @@ export type CreateBankAccountResult =
   | { type: "unknown_error"; error: Error };
 
 export class CreateBankAccountFlowUseCase {
-  constructor(private readonly accountUiPort: AccountUiPort) {}
+  constructor(private readonly accountPort: AccountPort) {}
 
   async execute(
     request: CreateBankAccountRequest
@@ -323,7 +323,7 @@ export class CreateBankAccountFlowUseCase {
       // Wait a moment for error to appear
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const conflictError = await this.accountUiPort.verifyConflictError();
+      const conflictError = await this.accountPort.verifyConflictError();
       logger.info(`Conflict check result: ${conflictError}`);
 
       if (conflictError) {
@@ -336,7 +336,7 @@ export class CreateBankAccountFlowUseCase {
       }
 
       // If no conflict error found, check if we're still on the form
-      const stillOnForm = await this.accountUiPort.isOnFormPage();
+      const stillOnForm = await this.accountPort.isOnFormPage();
       if (stillOnForm) {
         logger.info(
           "Still on form page, treating as conflict (form prevented submission)"
@@ -370,8 +370,8 @@ export class CreateBankAccountFlowUseCase {
   }
 
   private async navigateToCreateForm(): Promise<void> {
-    await this.accountUiPort.navigateToApp();
-    await this.accountUiPort.clickButton("Add Account");
+    await this.accountPort.navigateToApp();
+    await this.accountPort.clickButton("Add Account");
   }
 
   private async fillAccountForm(
@@ -385,18 +385,18 @@ export class CreateBankAccountFlowUseCase {
       description: request.description,
     };
 
-    await this.accountUiPort.fillAccountForm(formData);
+    await this.accountPort.fillAccountForm(formData);
   }
 
   private async submitForm(): Promise<void> {
-    await this.accountUiPort.submitForm();
+    await this.accountPort.submitForm();
   }
 
   private async verifyAccountCreated(): Promise<string | undefined> {
     logger.info("Verifying account creation success...");
 
     try {
-      const isCreated = await this.accountUiPort.verifyAccountCreationSuccess();
+      const isCreated = await this.accountPort.verifyAccountCreationSuccess();
       logger.info(`Account creation verification result: ${isCreated}`);
 
       if (!isCreated) {
@@ -404,7 +404,7 @@ export class CreateBankAccountFlowUseCase {
       }
 
       logger.info("Getting last created account ID...");
-      const accountId = await this.accountUiPort.getLastCreatedAccountId();
+      const accountId = await this.accountPort.getLastCreatedAccountId();
       logger.info(`Retrieved account ID: ${accountId}`);
 
       return accountId || undefined;
@@ -421,17 +421,17 @@ export class CreateBankAccountFlowUseCase {
   }> {
     try {
       // Try to submit the form
-      await this.accountUiPort.submitForm();
+      await this.accountPort.submitForm();
 
       // Wait a moment for potential validation errors
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Check if we're still on the form page (validation prevented submission)
-      const stillOnForm = await this.accountUiPort.isOnFormPage();
+      const stillOnForm = await this.accountPort.isOnFormPage();
 
       if (stillOnForm) {
         // Look for validation error messages
-        const errorMessage = await this.accountUiPort.verifyValidationErrors();
+        const errorMessage = await this.accountPort.verifyValidationErrors();
 
         if (errorMessage) {
           return {

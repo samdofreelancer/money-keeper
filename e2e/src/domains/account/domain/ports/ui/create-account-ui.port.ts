@@ -1,6 +1,6 @@
 // e2e/src/domains/account/domain/ports/ui/create-account-ui.port.ts
 
-export interface AccountUiPort {
+export interface AccountPort {
   navigateToApp(): Promise<void>;
   clickButton(buttonName: string): Promise<void>;
   fillAccountForm(data: {

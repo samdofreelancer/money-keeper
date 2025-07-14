@@ -1,4 +1,4 @@
-export { AccountUiPort } from "../../domain/ports/ui/create-account-ui.port";
+export { AccountPort } from "../../domain/ports/ui/create-account-ui.port";
 export { AccountManagementPort } from "../../domain/ports/account-management.port";
 
 import { logger } from "../../../../shared/utils/logger";

@@ -1,6 +1,6 @@
 // e2e/src/domains/account/application/use-cases/verify-account.use-case.ts
 
-import { AccountUiPort } from "../../domain/ports/ui/create-account-ui.port";
+import { AccountPort } from "../../domain/ports/ui/create-account-ui.port";
 import { BaseUseCase } from "../../../../shared/application/BaseUseCase";
 import { logger } from "../../../../shared/utils/logger";
 import { CustomWorld } from "../../../../support/world";
@@ -19,7 +19,7 @@ export class VerifyAccountInListUseCase extends BaseUseCase<
   void
 > {
   constructor(
-    private readonly uiPort: AccountUiPort,
+    private readonly uiPort: AccountPort,
     private readonly world?: CustomWorld
   ) {
     super();
@@ -59,7 +59,7 @@ export class VerifyTotalBalanceUpdatedUseCase extends BaseUseCase<
   VerifyTotalBalanceInput,
   void
 > {
-  constructor(private readonly uiPort: AccountUiPort) {
+  constructor(private readonly uiPort: AccountPort) {
     super();
   }
 
