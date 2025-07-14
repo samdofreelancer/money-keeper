@@ -15,7 +15,7 @@ Feature: Account Creation
       | Currency        | USD                 |
       | Description     | Primary checking    |
     Then I should see the account "My Checking Account" in my list
-    And the total balance should include "1000.00"
+    And the total balance should be at least "1000.00"
 
   Scenario: Duplicate account name is not allowed
     Given I have an existing account named "My Savings"

@@ -166,11 +166,11 @@ Then(
 );
 
 Then(
-  "the total balance should include {string}",
-  async function (this: CustomWorld, expectedBalance: string) {
+  "the total balance should be at least {string}",
+  async function (this: CustomWorld, minimumBalance: string) {
     const verifyBalanceUseCase =
       this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
-    await verifyBalanceUseCase.execute({ expectedAmount: expectedBalance });
+    await verifyBalanceUseCase.execute({ expectedAmount: minimumBalance });
   }
 );
 

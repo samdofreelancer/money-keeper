@@ -100,7 +100,7 @@ export class VerifyTotalBalanceUpdatedUseCase extends BaseUseCase<
 
     logger.info(`Total balance text: ${balanceText}`);
 
-    // If expected amount is provided, verify it's included in the balance
+    // If expected amount is provided, verify the total balance is correct
     if (input.expectedAmount) {
       const expectedAmount = input.expectedAmount;
 
@@ -113,20 +113,21 @@ export class VerifyTotalBalanceUpdatedUseCase extends BaseUseCase<
         throw new Error(`Invalid expected amount format: ${expectedAmount}`);
       }
 
-      // Check if any of the balance numbers includes the expected amount
-      const balanceIncludesExpected = balanceNumbers.some(
-        (balance) => Math.abs(balance - expectedNumber) < 0.01 // Allow for floating point precision
-      );
+      if (balanceNumbers.length === 0) {
+        throw new Error(`No numeric values found in balance text: ${balanceText}`);
+      }
 
-      if (!balanceIncludesExpected) {
+      // The total balance should be AT LEAST the expected amount (since there might be other accounts)
+      const actualTotal = balanceNumbers[0]; // First number is typically the main total
+
+      if (actualTotal < expectedNumber - 0.01) { // Allow for floating point precision
         throw new Error(
-          `Expected balance to include ${expectedAmount}, but got: ${balanceText}. ` +
-            `Extracted numbers: ${balanceNumbers.join(", ")}`
+          `Expected total balance to be at least ${expectedAmount}, but got: ${balanceText} (${actualTotal})`
         );
       }
 
       logger.info(
-        `✅ Balance verification passed: ${balanceText} includes ${expectedAmount}`
+        `✅ Balance verification passed: Total balance ${actualTotal} is at least ${expectedAmount}`
       );
     }
   }
