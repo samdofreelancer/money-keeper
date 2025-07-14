@@ -167,10 +167,10 @@ Then(
 
 Then(
   "the total balance should include {string}",
-  async function (this: CustomWorld, _expectedBalance: string) {
+  async function (this: CustomWorld, expectedBalance: string) {
     const verifyBalanceUseCase =
       this.getUseCasesOrThrow().createVerifyTotalBalanceUpdatedUseCase();
-    await verifyBalanceUseCase.execute();
+    await verifyBalanceUseCase.execute({ expectedAmount: expectedBalance });
   }
 );
 
