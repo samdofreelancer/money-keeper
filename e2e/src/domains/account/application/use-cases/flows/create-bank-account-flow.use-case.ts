@@ -84,13 +84,13 @@ export class CreateBankAccountFlowUseCase {
       // Create domain entity and enforce business rules
       let accountEntity: Account;
       try {
-      accountEntity = new Account({
-        _accountName: accountFormValue.accountName,
-        accountType: accountFormValue.accountType,
-        initialBalance: accountFormValue.initialBalance,
-        currency: accountFormValue.currency,
-        description: accountFormValue.description,
-      });
+        accountEntity = new Account({
+          _accountName: accountFormValue.accountName,
+          accountType: accountFormValue.accountType,
+          initialBalance: accountFormValue.initialBalance,
+          currency: accountFormValue.currency,
+          description: accountFormValue.description,
+        });
       } catch (domainError) {
         logger.warn(`Domain entity validation failed: ${domainError}`);
         return {
