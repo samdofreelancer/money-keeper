@@ -32,7 +32,6 @@ export class VerifyAccountInListUseCase extends BaseUseCase<
     // Get initial balance from stored form data if not provided
     if (!input.expectedBalance && this.world?.currentFormData) {
       const balance =
-        this.world.currentFormData["Initial Balance"] ||
         this.world.currentFormData.initialBalance;
       expectedBalance = parseFloat(String(balance || "0")).toFixed(2);
     }

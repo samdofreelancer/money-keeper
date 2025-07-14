@@ -2,6 +2,7 @@ import { Given, When, Then, setDefaultTimeout } from "@cucumber/cucumber";
 
 import { AccountUseCasesFactory } from "../../application/use-cases";
 import { CustomWorld } from "../../../../support/world";
+import { AccountFormValue } from "../../domain/value-objects/account-form-data.vo";
 
 setDefaultTimeout(20000);
 
@@ -68,12 +69,15 @@ When(
   async function (this: CustomWorld, dataTable) {
     const formData = dataTable.rowsHash();
 
+    // Use AccountFormValue class to normalize and validate form data
+    const accountFormValue = new AccountFormValue(formData);
+
     const request = {
-      accountName: formData["Account Name"],
-      accountType: formData["Account Type"] || "Bank Account",
-      initialBalance: parseFloat(formData["Initial Balance"]),
-      currency: formData["Currency"],
-      description: formData["Description"],
+      accountName: accountFormValue.accountName,
+      accountType: accountFormValue.accountType,
+      initialBalance: accountFormValue.initialBalance,
+      currency: accountFormValue.currency,
+      description: accountFormValue.description,
     };
 
     const flowUseCase =
@@ -87,8 +91,8 @@ When(
     // Track created account for automatic cleanup
     this.trackCreatedAccount(request.accountName, result.accountId);
 
-    // Store the created account data for later verification
-    this.currentFormData = formData;
+    // Store the normalized and validated form data for later verification
+    this.currentFormData = accountFormValue;
   }
 );
 
