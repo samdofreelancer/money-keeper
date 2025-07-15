@@ -2,6 +2,8 @@ import { logger } from "../../../../../shared/utils/logger";
 import { AccountPort } from "../../../domain/ports/ui/create-account-ui.port";
 import { Account } from "../../../domain/entities/Account.entity";
 import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
+import { DomainEvent } from "../../../../../shared/domain/events";
+import { handleAccountEvent } from '../../events/AccountEventsHandler';
 
 export interface CreateBankAccountRequest {
   accountName: string;
@@ -10,6 +12,8 @@ export interface CreateBankAccountRequest {
   currency: string;
   description?: string;
 }
+
+export type EventPublisher = (event: DomainEvent) => void;
 
 // Define custom error classes for better error semantics
 export class ValidationError extends Error {
@@ -42,12 +46,20 @@ export type CreateBankAccountResult =
   | { type: "unknown_error"; error: Error };
 
 export class CreateBankAccountFlowUseCase {
-  constructor(private readonly accountPort: AccountPort) {}
+  constructor(
+    private readonly accountPort: AccountPort,
+    private readonly eventPublisher: EventPublisher = handleAccountEvent
+  ) {}
 
   async execute(
     request: CreateBankAccountRequest
   ): Promise<CreateBankAccountResult> {
     try {
+      this.eventPublisher?.({
+        type: "AccountCreated",
+        payload: { accountName: request.accountName },
+      });
+
       logger.info(
         `Starting bank account creation flow for: ${request.accountName}`
       );
@@ -63,6 +75,16 @@ export class CreateBankAccountFlowUseCase {
         logger.warn(
           `Validation failed in AccountFormValue: ${validationError}`
         );
+        this.eventPublisher?.({
+          type: "AccountCreationFailed",
+          payload: {
+            accountName: request.accountName,
+            error:
+              validationError instanceof Error
+                ? validationError.message
+                : String(validationError),
+          },
+        });
         return {
           type: "validation_error",
           error:
@@ -93,6 +115,16 @@ export class CreateBankAccountFlowUseCase {
         });
       } catch (domainError) {
         logger.warn(`Domain entity validation failed: ${domainError}`);
+        this.eventPublisher?.({
+          type: "AccountCreationFailed",
+          payload: {
+            accountName: request.accountName,
+            error:
+              domainError instanceof Error
+                ? domainError.message
+                : String(domainError),
+          },
+        });
         return {
           type: "domain_error",
           error:
@@ -149,12 +181,25 @@ export class CreateBankAccountFlowUseCase {
         `Bank account creation flow completed successfully: ${accountEntity.accountName}`
       );
 
+      this.eventPublisher?.({
+        type: "AccountCreated",
+        payload: { accountName: accountEntity.accountName, accountId },
+      });
+
       return {
         type: "success",
         accountId,
       };
     } catch (error) {
       logger.error(`Bank account creation flow failed at step: ${error}`);
+
+      this.eventPublisher?.({
+        type: "AccountCreationFailed",
+        payload: {
+          accountName: request.accountName,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
 
       return {
         type: "unknown_error",

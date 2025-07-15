@@ -30,3 +30,10 @@ export class CategoryDeletedEvent
   type = "CategoryDeleted";
   constructor(public payload: { categoryName: string; categoryId?: string }) {}
 }
+
+export class AccountCreationFailedEvent
+  implements DomainEvent<{ accountName: string; error: string }>
+{
+  type = "AccountCreationFailed";
+  constructor(public payload: { accountName: string; error: string }) {}
+}
