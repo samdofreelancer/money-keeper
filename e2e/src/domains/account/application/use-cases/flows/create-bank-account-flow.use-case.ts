@@ -4,6 +4,9 @@ import { Account } from "../../../domain/entities/Account.entity";
 import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
 import { DomainEvent } from "../../../../../shared/domain/events";
 import { handleAccountEvent } from '../../events/AccountEventsHandler';
+import { NavigateToFormUseCase } from './navigate-to-form.use-case';
+import { FillAccountFormUseCase } from './fill-account-form.use-case';
+import { SubmitAccountFormUseCase } from './submit-account-form.use-case';
 
 export interface CreateBankAccountRequest {
   accountName: string;
@@ -46,10 +49,18 @@ export type CreateBankAccountResult =
   | { type: "unknown_error"; error: Error };
 
 export class CreateBankAccountFlowUseCase {
+  private readonly navigateToFormUseCase: NavigateToFormUseCase;
+  private readonly fillAccountFormUseCase: FillAccountFormUseCase;
+  private readonly submitAccountFormUseCase: SubmitAccountFormUseCase;
+
   constructor(
     private readonly accountPort: AccountPort,
     private readonly eventPublisher: EventPublisher = handleAccountEvent
-  ) {}
+  ) {
+    this.navigateToFormUseCase = new NavigateToFormUseCase(accountPort);
+    this.fillAccountFormUseCase = new FillAccountFormUseCase(accountPort);
+    this.submitAccountFormUseCase = new SubmitAccountFormUseCase(accountPort);
+  }
 
   async execute(
     request: CreateBankAccountRequest
@@ -140,12 +151,12 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
-      await this.navigateToCreateForm();
+      await this.navigateToFormUseCase.execute();
       logger.info("Step 1: Navigation completed");
 
       // Step 2: Fill the form with provided data
       logger.info("Step 2: Filling account form...");
-      await this.fillAccountForm({
+      await this.fillAccountFormUseCase.execute({
         accountName: accountEntity.accountName,
         accountType: accountEntity.accountType,
         initialBalance: accountEntity.initialBalance,
@@ -156,7 +167,7 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 3: Submit the form
       logger.info("Step 3: Submitting form...");
-      await this.submitForm();
+      await this.submitAccountFormUseCase.execute();
       logger.info("Step 3: Form submission completed");
 
       // Step 4: Verify successful creation
@@ -272,12 +283,12 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
-      await this.navigateToCreateForm();
+      await this.navigateToFormUseCase.execute();
       logger.info("Step 1: Navigation completed");
 
       // Step 2: Fill the form with provided data (potentially invalid)
       logger.info("Step 2: Filling form with potentially invalid data...");
-      await this.fillAccountForm({
+      await this.fillAccountFormUseCase.execute({
         accountName: accountEntity.accountName,
         accountType: accountEntity.accountType,
         initialBalance: accountEntity.initialBalance,
@@ -343,12 +354,12 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 1: Navigate to account creation form
       logger.info("Step 1: Navigating to create form...");
-      await this.navigateToCreateForm();
+      await this.navigateToFormUseCase.execute();
       logger.info("Step 1: Navigation completed");
 
       // Step 2: Fill form with duplicate account name
       logger.info("Step 2: Filling form with duplicate data...");
-      await this.fillAccountForm({
+      await this.fillAccountFormUseCase.execute({
         accountName,
         accountType: "Bank Account",
         initialBalance: 100,
@@ -359,7 +370,7 @@ export class CreateBankAccountFlowUseCase {
 
       // Step 3: Submit form and expect conflict error
       logger.info("Step 3: Submitting form (expecting conflict)...");
-      await this.submitForm();
+      await this.submitAccountFormUseCase.execute();
       logger.info("Step 3: Form submission completed");
 
       // Step 4: Check for conflict error
@@ -412,29 +423,6 @@ export class CreateBankAccountFlowUseCase {
         error: error instanceof Error ? error : new Error(String(error)),
       };
     }
-  }
-
-  private async navigateToCreateForm(): Promise<void> {
-    await this.accountPort.navigateToApp();
-    await this.accountPort.clickButton("Add Account");
-  }
-
-  private async fillAccountForm(
-    request: CreateBankAccountRequest
-  ): Promise<void> {
-    const formData = {
-      accountName: request.accountName,
-      accountType: request.accountType,
-      initialBalance: request.initialBalance,
-      currency: request.currency,
-      description: request.description,
-    };
-
-    await this.accountPort.fillAccountForm(formData);
-  }
-
-  private async submitForm(): Promise<void> {
-    await this.accountPort.submitForm();
   }
 
   private async verifyAccountCreated(): Promise<string | undefined> {
