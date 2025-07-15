@@ -1,6 +1,6 @@
-import { Account } from '../../../domain/entities/Account.entity';
-import { AccountFormValue } from '../../../domain/value-objects/account-form-data.vo';
-import { DomainError } from './create-bank-account-flow.use-case';
+import { Account } from "../../../domain/entities/Account.entity";
+import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
+import { DomainError } from "./create-bank-account-flow.use-case";
 
 export class CreateAccountEntityUseCase {
   execute(accountFormValue: AccountFormValue): Account {
@@ -16,7 +16,9 @@ export class CreateAccountEntityUseCase {
       throw domainError instanceof DomainError
         ? domainError
         : new DomainError(
-            domainError instanceof Error ? domainError.message : String(domainError)
+            domainError instanceof Error
+              ? domainError.message
+              : String(domainError)
           );
     }
   }

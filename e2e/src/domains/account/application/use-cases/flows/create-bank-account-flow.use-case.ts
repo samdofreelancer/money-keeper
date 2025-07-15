@@ -3,14 +3,14 @@ import { AccountPort } from "../../../domain/ports/ui/create-account-ui.port";
 import { Account } from "../../../domain/entities/Account.entity";
 import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
 import { DomainEvent } from "../../../../../shared/domain/events";
-import { handleAccountEvent } from '../../events/AccountEventsHandler';
-import { NavigateToFormUseCase } from './navigate-to-form.use-case';
-import { FillAccountFormUseCase } from './fill-account-form.use-case';
-import { SubmitAccountFormUseCase } from './submit-account-form.use-case';
-import { ValidateAccountFormUseCase } from './validate-account-form.use-case';
-import { CreateAccountEntityUseCase } from './create-account-entity.use-case';
-import { VerifyAccountCreatedUseCase } from './verify-account-created.use-case';
-import { TrySubmitWithValidationUseCase } from './try-submit-with-validation.use-case';
+import { handleAccountEvent } from "../../events/AccountEventsHandler";
+import { NavigateToFormUseCase } from "./navigate-to-form.use-case";
+import { FillAccountFormUseCase } from "./fill-account-form.use-case";
+import { SubmitAccountFormUseCase } from "./submit-account-form.use-case";
+import { ValidateAccountFormUseCase } from "./validate-account-form.use-case";
+import { CreateAccountEntityUseCase } from "./create-account-entity.use-case";
+import { VerifyAccountCreatedUseCase } from "./verify-account-created.use-case";
+import { TrySubmitWithValidationUseCase } from "./try-submit-with-validation.use-case";
 
 export interface CreateBankAccountRequest {
   accountName: string;
@@ -70,8 +70,12 @@ export class CreateBankAccountFlowUseCase {
     this.submitAccountFormUseCase = new SubmitAccountFormUseCase(accountPort);
     this.validateAccountFormUseCase = new ValidateAccountFormUseCase();
     this.createAccountEntityUseCase = new CreateAccountEntityUseCase();
-    this.verifyAccountCreatedUseCase = new VerifyAccountCreatedUseCase(accountPort);
-    this.trySubmitWithValidationUseCase = new TrySubmitWithValidationUseCase(accountPort);
+    this.verifyAccountCreatedUseCase = new VerifyAccountCreatedUseCase(
+      accountPort
+    );
+    this.trySubmitWithValidationUseCase = new TrySubmitWithValidationUseCase(
+      accountPort
+    );
   }
 
   async execute(
@@ -83,45 +87,60 @@ export class CreateBankAccountFlowUseCase {
       try {
         accountFormValue = this.validateAccountFormUseCase.execute(request);
       } catch (validationError) {
-        logger.warn(`Validation failed in AccountFormValue: ${validationError}`);
+        logger.warn(
+          `Validation failed in AccountFormValue: ${validationError}`
+        );
         this.eventPublisher?.({
           type: "AccountCreationFailed",
           payload: {
             accountName: request.accountName,
-            error: validationError instanceof Error ? validationError.message : String(validationError),
+            error:
+              validationError instanceof Error
+                ? validationError.message
+                : String(validationError),
           },
         });
         return {
           type: "validation_error",
-          error: validationError instanceof ValidationError
-            ? validationError
-            : new ValidationError(
-                validationError instanceof Error ? validationError.message : String(validationError),
-                []
-              ),
+          error:
+            validationError instanceof ValidationError
+              ? validationError
+              : new ValidationError(
+                  validationError instanceof Error
+                    ? validationError.message
+                    : String(validationError),
+                  []
+                ),
         };
       }
 
       // Create domain entity and enforce business rules
       let accountEntity: Account;
       try {
-        accountEntity = this.createAccountEntityUseCase.execute(accountFormValue);
+        accountEntity =
+          this.createAccountEntityUseCase.execute(accountFormValue);
       } catch (domainError) {
         logger.warn(`Domain entity validation failed: ${domainError}`);
         this.eventPublisher?.({
           type: "AccountCreationFailed",
           payload: {
             accountName: request.accountName,
-            error: domainError instanceof Error ? domainError.message : String(domainError),
+            error:
+              domainError instanceof Error
+                ? domainError.message
+                : String(domainError),
           },
         });
         return {
           type: "domain_error",
-          error: domainError instanceof DomainError
-            ? domainError
-            : new DomainError(
-                domainError instanceof Error ? domainError.message : String(domainError)
-              ),
+          error:
+            domainError instanceof DomainError
+              ? domainError
+              : new DomainError(
+                  domainError instanceof Error
+                    ? domainError.message
+                    : String(domainError)
+                ),
         };
       }
 
@@ -154,11 +173,15 @@ export class CreateBankAccountFlowUseCase {
         accountId = await this.verifyAccountCreatedUseCase.execute();
         logger.info("Step 4: Account creation verified");
       } catch (verificationError) {
-        logger.warn(`Account verification failed, but continuing: ${verificationError}`);
+        logger.warn(
+          `Account verification failed, but continuing: ${verificationError}`
+        );
         accountId = undefined;
       }
 
-      logger.info(`Bank account creation flow completed successfully: ${accountEntity.accountName}`);
+      logger.info(
+        `Bank account creation flow completed successfully: ${accountEntity.accountName}`
+      );
       this.eventPublisher?.({
         type: "AccountCreated",
         payload: { accountName: accountEntity.accountName, accountId },
@@ -167,7 +190,7 @@ export class CreateBankAccountFlowUseCase {
         type: "success",
         accountId,
       };
-      } catch (error) {
+    } catch (error) {
       logger.error(`Bank account creation flow failed at step: ${error}`);
       this.eventPublisher?.({
         type: "AccountCreationFailed",
@@ -179,7 +202,9 @@ export class CreateBankAccountFlowUseCase {
       const domainError: DomainError =
         error instanceof DomainError
           ? error
-          : new DomainError(error instanceof Error ? error.message : String(error));
+          : new DomainError(
+              error instanceof Error ? error.message : String(error)
+            );
       return {
         type: "unknown_error",
         error: domainError,
@@ -191,34 +216,45 @@ export class CreateBankAccountFlowUseCase {
     request: CreateBankAccountRequest
   ): Promise<CreateBankAccountResult> {
     try {
-      logger.info(`Starting bank account creation flow with validation for: ${request.accountName}`);
+      logger.info(
+        `Starting bank account creation flow with validation for: ${request.accountName}`
+      );
       let accountFormValue: AccountFormValue;
       try {
         accountFormValue = this.validateAccountFormUseCase.execute(request);
       } catch (validationError) {
-        logger.warn(`Validation failed in AccountFormValue: ${validationError}`);
+        logger.warn(
+          `Validation failed in AccountFormValue: ${validationError}`
+        );
         return {
           type: "validation_error",
-          error: validationError instanceof ValidationError
-            ? validationError
-            : new ValidationError(
-                validationError instanceof Error ? validationError.message : String(validationError),
-                []
-              ),
+          error:
+            validationError instanceof ValidationError
+              ? validationError
+              : new ValidationError(
+                  validationError instanceof Error
+                    ? validationError.message
+                    : String(validationError),
+                  []
+                ),
         };
       }
       let accountEntity: Account;
       try {
-        accountEntity = this.createAccountEntityUseCase.execute(accountFormValue);
+        accountEntity =
+          this.createAccountEntityUseCase.execute(accountFormValue);
       } catch (domainError) {
         logger.warn(`Domain entity validation failed: ${domainError}`);
         return {
           type: "domain_error",
-          error: domainError instanceof DomainError
-            ? domainError
-            : new DomainError(
-                domainError instanceof Error ? domainError.message : String(domainError)
-              ),
+          error:
+            domainError instanceof DomainError
+              ? domainError
+              : new DomainError(
+                  domainError instanceof Error
+                    ? domainError.message
+                    : String(domainError)
+                ),
         };
       }
       logger.info("Step 1: Navigating to create form...");
@@ -234,10 +270,13 @@ export class CreateBankAccountFlowUseCase {
       });
       logger.info("Step 2: Form filling completed");
       logger.info("Step 3: Trying to submit form (expecting validation)...");
-      const validationResult = await this.trySubmitWithValidationUseCase.execute();
+      const validationResult =
+        await this.trySubmitWithValidationUseCase.execute();
       logger.info("Step 3: Submit attempt completed");
       if (validationResult.hasValidationErrors) {
-        logger.info(`Validation errors detected as expected: ${validationResult.errorMessage}`);
+        logger.info(
+          `Validation errors detected as expected: ${validationResult.errorMessage}`
+        );
         return {
           type: "validation_error",
           error: new ValidationError(
@@ -246,7 +285,9 @@ export class CreateBankAccountFlowUseCase {
           ),
         };
       }
-      logger.info("No validation errors detected, verifying successful creation...");
+      logger.info(
+        "No validation errors detected, verifying successful creation..."
+      );
       let accountId: string | undefined;
       try {
         accountId = await this.verifyAccountCreatedUseCase.execute();
@@ -259,7 +300,9 @@ export class CreateBankAccountFlowUseCase {
         accountId,
       };
     } catch (error) {
-      logger.error(`Bank account creation flow with validation failed: ${error}`);
+      logger.error(
+        `Bank account creation flow with validation failed: ${error}`
+      );
       return {
         type: "unknown_error",
         error: error instanceof Error ? error : new Error(String(error)),

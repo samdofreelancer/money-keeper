@@ -1,4 +1,4 @@
-import { AccountPort } from '../../../domain/ports/ui/create-account-ui.port';
+import { AccountPort } from "../../../domain/ports/ui/create-account-ui.port";
 
 export class SubmitAccountFormUseCase {
   constructor(private readonly accountPort: AccountPort) {}

@@ -1,4 +1,4 @@
-import { AccountPort } from '../../../domain/ports/ui/create-account-ui.port';
+import { AccountPort } from "../../../domain/ports/ui/create-account-ui.port";
 
 export class TrySubmitWithValidationUseCase {
   constructor(private readonly accountPort: AccountPort) {}
@@ -23,8 +23,8 @@ export class TrySubmitWithValidationUseCase {
         }
         return {
           hasValidationErrors: true,
-          errorMessage: 'Form validation prevented submission',
-          validationErrors: ['Form validation prevented submission'],
+          errorMessage: "Form validation prevented submission",
+          validationErrors: ["Form validation prevented submission"],
         };
       }
       return { hasValidationErrors: false };
@@ -32,7 +32,9 @@ export class TrySubmitWithValidationUseCase {
       return {
         hasValidationErrors: true,
         errorMessage: error instanceof Error ? error.message : String(error),
-        validationErrors: [error instanceof Error ? error.message : String(error)],
+        validationErrors: [
+          error instanceof Error ? error.message : String(error),
+        ],
       };
     }
   }
