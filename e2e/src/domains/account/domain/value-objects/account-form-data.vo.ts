@@ -90,14 +90,13 @@ export class AccountFormValue {
           "AccountName",
         ]) || "",
 
-      accountType:
-        AccountFormValue.normalizeAccountType(
-          AccountFormValue.extractField(input, [
-            "accountType",
-            "Account Type",
-            "AccountType",
-          ]) || "BANK_ACCOUNT"
-        ),
+      accountType: AccountFormValue.normalizeAccountType(
+        AccountFormValue.extractField(input, [
+          "accountType",
+          "Account Type",
+          "AccountType",
+        ]) || "BANK_ACCOUNT"
+      ),
 
       initialBalance:
         AccountFormValue.extractNumericField(input, [
@@ -121,15 +120,15 @@ export class AccountFormValue {
   private static normalizeAccountType(accountType: string): string {
     const accountTypeMap: { [key: string]: string } = {
       "Bank Account": "BANK_ACCOUNT",
-      "Savings Account": "SAVINGS_ACCOUNT", 
+      "Savings Account": "SAVINGS_ACCOUNT",
       "Credit Account": "CREDIT_ACCOUNT",
       "Investment Account": "INVESTMENT_ACCOUNT",
-      "BANK_ACCOUNT": "BANK_ACCOUNT",
-      "SAVINGS_ACCOUNT": "SAVINGS_ACCOUNT",
-      "CREDIT_ACCOUNT": "CREDIT_ACCOUNT", 
-      "INVESTMENT_ACCOUNT": "INVESTMENT_ACCOUNT",
+      BANK_ACCOUNT: "BANK_ACCOUNT",
+      SAVINGS_ACCOUNT: "SAVINGS_ACCOUNT",
+      CREDIT_ACCOUNT: "CREDIT_ACCOUNT",
+      INVESTMENT_ACCOUNT: "INVESTMENT_ACCOUNT",
     };
-    
+
     return accountTypeMap[accountType] || accountType;
   }
 
@@ -194,8 +193,10 @@ export class AccountFormValue {
       "INVESTMENT_ACCOUNT",
     ];
     logger.info(
-      `Validating account type: ${data.accountType}, valid types: ${validAccountTypes.join(", ")}`
-    );  
+      `Validating account type: ${
+        data.accountType
+      }, valid types: ${validAccountTypes.join(", ")}`
+    );
     if (!validAccountTypes.includes(data.accountType)) {
       errors.push(
         `Account type must be one of: ${validAccountTypes.join(", ")}`

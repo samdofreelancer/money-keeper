@@ -9,12 +9,19 @@ import {
   DomainError,
   ConflictError,
 } from "./shared/types/CreateBankAccountTypes";
-
-// Re-export types for backward compatibility
-export { CreateBankAccountRequest, CreateBankAccountResult, EventPublisher, ValidationError, DomainError, ConflictError };
 import { AccountValidationService } from "./shared/services/AccountValidationService";
 import { AccountFlowOrchestrator } from "./shared/orchestrators/AccountFlowOrchestrator";
 import { CreateBankAccountResultMapper } from "./shared/mappers/CreateBankAccountResultMapper";
+
+// Re-export types for backward compatibility
+export {
+  CreateBankAccountRequest,
+  CreateBankAccountResult,
+  EventPublisher,
+  ValidationError,
+  DomainError,
+  ConflictError,
+};
 
 export class CreateBankAccountFlowUseCase {
   private readonly validationService: AccountValidationService;
@@ -46,7 +53,7 @@ export class CreateBankAccountFlowUseCase {
       const accountId = await this.flowOrchestrator.executeStandardFlow(
         accountEntity
       );
-      
+
       return this.resultMapper.mapSuccess(accountEntity.accountName, accountId);
     } catch (error) {
       if (error instanceof ValidationError) {

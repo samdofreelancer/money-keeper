@@ -25,12 +25,12 @@ export class CreateAccountEntityUseCase {
 
   private mapAccountType(formAccountType: string): string {
     const accountTypeMap: { [key: string]: string } = {
-      "BANK_ACCOUNT": "Bank Account",
-      "SAVINGS_ACCOUNT": "Bank Account", // Map savings to bank account for now
-      "CREDIT_ACCOUNT": "Credit Card",
-      "INVESTMENT_ACCOUNT": "Investment",
+      BANK_ACCOUNT: "Bank Account",
+      SAVINGS_ACCOUNT: "Bank Account", // Map savings to bank account for now
+      CREDIT_ACCOUNT: "Credit Card",
+      INVESTMENT_ACCOUNT: "Investment",
     };
-    
+
     return accountTypeMap[formAccountType] || formAccountType;
   }
 }

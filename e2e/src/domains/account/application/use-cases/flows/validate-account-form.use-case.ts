@@ -8,9 +8,10 @@ import {
 export class ValidateAccountFormUseCase {
   execute(request: CreateBankAccountRequest): AccountFormValue {
     try {
-      logger.info(
-        `Validating account form data for: ${request.accountName}`);
-      return AccountFormValue.fromRawInput(request as any);
+      logger.info(`Validating account form data for: ${request.accountName}`);
+      return AccountFormValue.fromRawInput(
+        request as unknown as { [key: string]: unknown }
+      );
     } catch (validationError) {
       throw validationError instanceof ValidationError
         ? validationError
