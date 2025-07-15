@@ -70,7 +70,7 @@ When(
     const formData = dataTable.rowsHash();
 
     // Use AccountFormValue class to normalize and validate form data
-    const accountFormValue = new AccountFormValue(formData);
+    const accountFormValue = AccountFormValue.fromRawInput(formData);
 
     const request = {
       accountName: accountFormValue.accountName,

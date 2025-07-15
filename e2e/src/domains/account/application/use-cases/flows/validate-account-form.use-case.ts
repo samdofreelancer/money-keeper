@@ -1,15 +1,16 @@
+import { logger } from "../../../../../shared/utils/logger";
 import { AccountFormValue } from "../../../domain/value-objects/account-form-data.vo";
 import {
   CreateBankAccountRequest,
   ValidationError,
-} from "./create-bank-account-flow.use-case";
+} from "./shared/types/CreateBankAccountTypes";
 
 export class ValidateAccountFormUseCase {
   execute(request: CreateBankAccountRequest): AccountFormValue {
     try {
-      return new AccountFormValue(
-        request as unknown as { [key: string]: unknown }
-      );
+      logger.info(
+        `Validating account form data for: ${request.accountName}`);
+      return AccountFormValue.fromRawInput(request as any);
     } catch (validationError) {
       throw validationError instanceof ValidationError
         ? validationError

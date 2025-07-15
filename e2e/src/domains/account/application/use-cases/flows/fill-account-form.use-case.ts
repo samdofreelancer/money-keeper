@@ -1,5 +1,5 @@
 import { AccountPort } from "../../../domain/ports/ui/create-account-ui.port";
-import { CreateBankAccountRequest } from "./create-bank-account-flow.use-case";
+import { CreateBankAccountRequest } from "./shared/types/CreateBankAccountTypes";
 
 export class FillAccountFormUseCase {
   constructor(private readonly accountPort: AccountPort) {}

@@ -2,7 +2,7 @@ import * as fs from "fs";
 
 import { config } from "../config/env.config";
 import { isValidTraceMode as validateTraceMode } from "./validate-trace-mode";
-import { logger } from "../support/logger";
+import { logger } from "./logger";
 
 function validateConfig() {
   // Validate required directories exist or can be created
