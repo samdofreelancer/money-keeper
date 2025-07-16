@@ -9,12 +9,20 @@ import {
   PlaywrightTestOptions,
 } from "@playwright/test";
 
-import { config } from "../config/env.config";
+import { config } from "../shared/config/env.config";
 import { logger } from "./logger";
-import { BasePage } from "../pages";
-import { CategoryPage } from "../pages/category.page";
-import { CategoryDomain } from "../domain/CategoryDomain";
-import { CategoryFormData } from "../types/CategoryTypes";
+import { BasePage } from "../shared/infrastructure/pages/base.page";
+import { AccountFormValue } from "../domains/account/domain/value-objects/account-form-data.vo";
+import { AccountPort } from "../domains/account/domain/ports/ui/create-account-ui.port";
+import { CreateAccountPlaywrightPage } from "../domains/account/infrastructure/pages/create-account.playwright.page";
+import { AccountUseCasesFactory } from "../domains/account/application/use-cases";
+import {
+  DomainEvent,
+  AccountCreatedEvent,
+  AccountDeletedEvent,
+  CategoryCreatedEvent,
+  CategoryDeletedEvent,
+} from "../shared/domain/events";
 
 /**
  * Unified World class with clean separation of concerns
@@ -28,26 +36,74 @@ export class CustomWorld extends World {
 
   // Legacy page objects (for backward compatibility)
   currentPage!: BasePage;
-  categoryPage?: CategoryPage;
   playwrightOptions?: PlaywrightTestOptions;
 
   // Domain services (new architecture)
-  categoryDomain?: CategoryDomain;
+  accountService?: {
+    create(account: unknown): Promise<unknown>;
+  };
+
+  // Domain UI ports (new architecture)
+  accountUiPort?: AccountPort;
+
+  // Use case factories (convenience)
+  useCases?: AccountUseCasesFactory;
+
+  // Event handlers map
+  private eventHandlers: Map<
+    string,
+    ((event: DomainEvent) => Promise<void>)[]
+  > = new Map();
 
   // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
+  createdAccountNames: string[] = [];
+  createdAccountIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
 
   // Test state
-  pendingCategoryData?: CategoryFormData;
+  currentFormData?: AccountFormValue | Record<string, unknown>; // Allow form data for account and generic forms
+  currentCategoryName?: string;
+  newCategoryName?: string;
+  newIcon?: string;
   lastError?: Error;
 
   // Configuration
   config = config;
 
-  constructor(options: IWorldOptions) {
+  constructor(
+    options: IWorldOptions & {
+      attach: (data: string | Buffer, mimeType: string) => void;
+    }
+  ) {
     super(options);
+  }
+
+  // Fix for forbidden non-null assertion warning on line 88
+  getEventHandlers(
+    eventType: string
+  ): ((event: DomainEvent) => Promise<void>)[] {
+    return this.eventHandlers.get(eventType) ?? [];
+  }
+
+  // Event registration
+  on(eventType: string, handler: (event: DomainEvent) => Promise<void>): void {
+    if (!this.eventHandlers.has(eventType)) {
+      this.eventHandlers.set(eventType, []);
+    }
+    const handlers = this.eventHandlers.get(eventType);
+    if (handlers) {
+      handlers.push(handler);
+    }
+  }
+
+  // Event dispatching
+  async emit(event: DomainEvent): Promise<void> {
+    const handlers = this.eventHandlers.get(event.type) || [];
+    for (const handler of handlers) {
+      await handler(event);
+    }
   }
 
   async launchBrowser(browserName = config.browser.name) {
@@ -70,6 +126,10 @@ export class CustomWorld extends World {
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
       this.currentPage = new BasePage(this.page);
+
+      // Initialize account UI port
+      this.accountUiPort = new CreateAccountPlaywrightPage(this.page);
+
       logger.info(`Browser launched: ${browserName}`);
     } catch (error) {
       logger.error("Error launching browser:", error);
@@ -139,20 +199,30 @@ export class CustomWorld extends World {
   /**
    * Tracks a created category for cleanup
    */
-  trackCreatedCategory(categoryId: string | null, categoryName: string): void {
+  async trackCreatedCategory(
+    categoryId: string | null,
+    categoryName: string
+  ): Promise<void> {
     if (categoryId) {
       this.createdCategoryIds.push(categoryId);
     }
     this.createdCategoryNames.push(categoryName);
+    await this.emit(
+      new CategoryCreatedEvent({
+        categoryName,
+        categoryId: categoryId ?? undefined,
+      })
+    );
   }
 
   /**
    * Removes a category from tracking
    */
-  removeFromTrackedCategories(categoryName: string): void {
+  async removeFromTrackedCategories(categoryName: string): Promise<void> {
     const index = this.createdCategoryNames.indexOf(categoryName);
     if (index > -1) {
       this.createdCategoryNames.splice(index, 1);
+      await this.emit(new CategoryDeletedEvent({ categoryName }));
     }
   }
 
@@ -176,12 +246,58 @@ export class CustomWorld extends World {
   }
 
   /**
-   * Cleans up test data
+   * Tracks a created account for cleanup
    */
-  async cleanup(): Promise<void> {
-    // Cleanup logic for test data
-    // This could involve API calls to delete created categories
-    logger.info("Cleaning up test data");
+  async trackCreatedAccount(
+    accountName: string,
+    accountId?: string
+  ): Promise<void> {
+    if (!this.createdAccountNames.includes(accountName)) {
+      this.createdAccountNames.push(accountName);
+    }
+
+    if (accountId) {
+      if (!this.createdAccountIds) {
+        this.createdAccountIds = [];
+      }
+      if (!this.createdAccountIds.includes(accountId)) {
+        this.createdAccountIds.push(accountId);
+        logger.info(`Tracked account ID for cleanup: ${accountId}`);
+      }
+    }
+    await this.emit(new AccountCreatedEvent({ accountName, accountId }));
+  }
+
+  /**
+   * Removes an account from tracking
+   */
+  async removeFromTrackedAccounts(accountName: string): Promise<void> {
+    const index = this.createdAccountNames.indexOf(accountName);
+    if (index > -1) {
+      this.createdAccountNames.splice(index, 1);
+      await this.emit(new AccountDeletedEvent({ accountName }));
+    }
+  }
+
+  /**
+   * Gets the last created account name
+   */
+  getLastCreatedAccount(): string | null {
+    return this.createdAccountNames.length > 0
+      ? this.createdAccountNames[this.createdAccountNames.length - 1]
+      : null;
+  }
+
+  /**
+   * Gets the use cases factory or throws an error if not initialized
+   */
+  getUseCasesOrThrow(): AccountUseCasesFactory {
+    if (!this.useCases) {
+      throw new Error(
+        "Use cases not initialized. Please ensure account management access was set up."
+      );
+    }
+    return this.useCases;
   }
 }
 
