@@ -17,15 +17,15 @@ Feature: Category Management
     When I create a category with name "Electricity", icon "House", type "expense" and parent "Utilities"
     Then the category "Electricity" should be created as a child of "Utilities"
 
-  @focus
   Scenario: Fail to create a category with a duplicate name
     Given a category "Transport" with icon "Transport" and type "expense" exists
     When I create another category with name "Transport", icon "Transport", type "expense"
     Then the category creation should fail with error "Category name already exists"
 
+  @focus
   Scenario: Fail to update a category to create a cyclic parent relationship
-    Given a category "A" with icon "A" and type "expense" exists
-    And a category "B" with icon "B" and type "expense" and parent "A" exists
+    Given a category "A" with icon "Transport" and type "expense" exists
+    And a category "B" with icon "Food" and type "expense" and parent "A" exists
     When I update category "A" to have parent "B"
     Then the update should fail with error "Cyclic parent relationship is not allowed"
 

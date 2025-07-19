@@ -117,8 +117,21 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     newParentName: string
   ): Promise<void> {
     await this.page.click(`text=${categoryName}`);
-    await this.page.selectOption("select[name='parent']", newParentName);
-    await this.page.click("button#update-category");
+    await this.page.getByTestId("select-parent-category").click();
+    const parentOptions = await this.page.$$('[data-testid="option-parent-category"]');
+    let found = false;
+    for (const option of parentOptions) {
+      const text = await option.textContent();
+      if (text?.trim() === newParentName) {
+        await option.click();
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      throw new Error(`Parent category option '${newParentName}' not found in dropdown.`);
+    }
+    await this.page.getByTestId("button-update-category").click();
   }
 
   async deleteCategory(name: string): Promise<void> {
@@ -204,9 +217,19 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     // Fill type and parent if needed (add logic as per your UI)
     if (parent) {
       await this.page.getByTestId("select-parent-category").click();
-      const parentOption = this.page.getByRole("option", { name: parent });
-      await parentOption.waitFor({ state: "visible", timeout: 10000 });
-      await parentOption.click();
+      const parentOptions = await this.page.$$('[data-testid="option-parent-category"]');
+      let found = false;
+      for (const option of parentOptions) {
+        const text = await option.textContent();
+        if (text?.trim() === parent) {
+          await option.click();
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        throw new Error(`Parent category option '${parent}' not found in dropdown.`);
+      }
     }
     await this.page.getByTestId("button-submit").click();
     // Do NOT wait for a successful response, just return

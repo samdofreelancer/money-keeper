@@ -189,4 +189,51 @@ export class CategoryUseCasesFactory {
   async assertOnCategoryPage(): Promise<void> {
     await this.categoryUiPort.assertOnCategoryPage();
   }
+
+  async createChildCategory(
+    name: string,
+    icon: string,
+    type: string,
+    parent: string,
+    trackCreatedCategory?: (id: string, name: string, opts?: { isParent?: boolean }) => Promise<void>,
+    page?: any // Playwright Page, for reload and UI assertion
+  ): Promise<void> {
+    // Ensure parent exists and get its ID
+    const parentId = await this.ensureParentCategoryExists(
+      parent,
+      icon, // Optionally, you may want to use a default or specific icon/type for the parent
+      type,
+      undefined,
+      trackCreatedCategory
+    );
+
+    // Normalize type to match backend enum (EXPENSE/INCOME)
+    const normalizedType = (type || "EXPENSE").toUpperCase();
+    const normalizedIcon = icon || "default";
+    // Create the child category via backend API
+    const categoryApiClient = new CategoryApiClient({
+      baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
+    });
+    const resp = await categoryApiClient.createCategory({
+      name: name,
+      icon: normalizedIcon,
+      type: normalizedType,
+      parentId,
+    });
+
+    if (trackCreatedCategory) {
+      await trackCreatedCategory(resp.id, name, { isParent: false });
+    }
+    // Reload the page to ensure the UI reflects the new backend data
+    if (page) {
+      await page.reload();
+      // Assert the new category is visible on the UI
+      const isVisible = await this.isCategoryCreated(name);
+      if (!isVisible) {
+        throw new Error(
+          `Category '${name}' was not found on the UI after backend creation and reload.`
+        );
+      }
+    }
+  }
 }

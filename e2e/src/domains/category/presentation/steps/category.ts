@@ -140,7 +140,14 @@ Then(
 Given(
   "a category {string} with icon {string} and type {string} and parent {string} exists",
   async function (name: string, icon: string, type: string, parent: string) {
-    await categoryUseCases.createCategory(name, icon, type, parent);
+    await categoryUseCases.createChildCategory(
+      name,
+      icon,
+      type,
+      parent,
+      this.trackCreatedCategory ? this.trackCreatedCategory.bind(this) : undefined,
+      this.page
+    );
   }
 );
 
