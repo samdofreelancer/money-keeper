@@ -18,6 +18,7 @@ export const config: EnvironmentConfig = {
   // Screenshot configurations
   screenshotOnSuccess: process.env.SCREENSHOT_ON_SUCCESS === "true",
   screenshotOnFailure: true,
+  screenshotAllAfterStep: process.env.SCREENSHOT_ALL_AFTER_STEP === "true",
 
   // Report configurations
   reportsDir:
