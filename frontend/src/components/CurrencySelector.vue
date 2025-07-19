@@ -16,6 +16,7 @@
       :key="currency.code"
       :label="currency.name"
       :value="currency.code"
+      :data-testid="`currency-${currency.code.toLowerCase()}`"
     >
       <template #default>
         <div class="currency-item">
