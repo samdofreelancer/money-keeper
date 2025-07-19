@@ -7,13 +7,14 @@ Feature: Category Management
   Background:
     Given the system has no categories
 
+  @focus
   Scenario: Create a new category
     When I create a category with name "Food", icon "🍔", type "expense"
     Then the category "Food" should be created successfully
 
   Scenario: Create a category with a parent
     Given a category "Utilities" with icon "💡" and type "expense" exists
-    When I create a category with name "Electricity", icon "🔌", type "expense", and parent "Utilities"
+    When I create a category with name "Electricity", icon "🔌", type "expense" and parent "Utilities"
     Then the category "Electricity" should be created as a child of "Utilities"
 
   Scenario: Prevent duplicate category names

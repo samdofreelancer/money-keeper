@@ -1,73 +1,122 @@
-import { Given, When, Then, DataTable } from '@cucumber/cucumber';
+import { Given, When, Then, After } from '@cucumber/cucumber';
+import { CategoryUseCasesFactory } from '../../application/use-cases/CategoryUseCasesFactory';
+import { CategoryPage } from '../../infrastructure/pages/category.page';
 
-Given(`the system has no categories`, async () => {
-    // [Given] Sets up the initial state of the system.
+let categoryUseCases: CategoryUseCasesFactory;
+let createdCategoryName: string | null = null;
+
+Given('the system has no categories', async function () {
+  const categoryPage = new CategoryPage(this.page);
+  categoryUseCases = new CategoryUseCasesFactory(categoryPage);
+  // Implement logic to clear all categories if needed
 });
 
-When(`I create a category with name {string}, icon {string}, type {string}`, async (arg0: string, arg1: string, arg2: string) => {
-    // [When] Describes the action or event that triggers the scenario.
+When('I create a category with name {string}, icon {string}, type {string}', async function (name: string, icon: string, type: string) {
+  await categoryUseCases.createUniqueCategory(name, icon, type, undefined);
 });
 
-Then(`the category {string} should be created successfully`, async (arg0: string) => {
-    // [Then] Describes the expected outcome or result of the scenario.
+When('I create a category with name {string}, icon {string}, type {string} and parrent {string}', async function (name: string, icon: string, type: string, parent: string) {
+  await categoryUseCases.createUniqueCategory(name, icon, type, parent);
 });
 
-Given(`a category {string} with icon {string} and type {string} exists`, async (arg0: string, arg1: string, arg2: string) => {
-    // [Given] Sets up the initial state of the system.
+Then('the category {string} should be created successfully', async function (name: string) {
+  const created = await categoryUseCases.isCategoryCreated(name);
+  if (!created) {
+    throw new Error(`Category ${name} was not created successfully`);
+  }
 });
 
-When(`I create a category with name {string}, icon {string}, type {string}, and parent {string}`, async (arg0: string, arg1: string, arg2: string, arg3: string) => {
-    // [When] Describes the action or event that triggers the scenario.
+Then('the unique category should be created successfully', async function () {
+  if (!createdCategoryName) {
+    throw new Error('No unique category was created');
+  }
+  const created = await categoryUseCases.isCategoryCreated(createdCategoryName);
+  if (!created) {
+    throw new Error(`Category ${createdCategoryName} was not created successfully`);
+  }
 });
 
-Then(`the category {string} should be created as a child of {string}`, async (arg0: string, arg1: string) => {
-    // [Then] Describes the expected outcome or result of the scenario.
+After(async function () {
+  if (createdCategoryName) {
+    await categoryUseCases.deleteCategory(createdCategoryName);
+    createdCategoryName = null;
+  }
 });
 
-When(`I create another category with name {string}, icon {string}, type {string}`, async (arg0: string, arg1: string, arg2: string) => {
-    // [When] Describes the action or event that triggers the scenario.
+Given('a category {string} with icon {string} and type {string} exists', async function (name: string, icon: string, type: string) {
+  await categoryUseCases.createCategory(name, icon, type);
 });
 
-Then(`the category creation should fail with error {string}`, async (arg0: string) => {
-    // [Then] Describes the expected outcome or result of the scenario.
+When('I create a category with name {string}, icon {string}, type {string}, and parent {string}', async function (name: string, icon: string, type: string, parent: string) {
+  await categoryUseCases.createCategory(name, icon, type, parent);
 });
 
-Given(`a category {string} with icon {string} and type {string} and parent {string} exists`, async (arg0: string, arg1: string, arg2: string, arg3: string) => {
-    // [Given] Sets up the initial state of the system.
+Then('the category {string} should be created as a child of {string}', async function (child: string, parent: string) {
+  const isChild = await categoryUseCases.isCategoryChildOf(child, parent);
+  if (!isChild) {
+    throw new Error(`Category ${child} is not a child of ${parent}`);
+  }
 });
 
-When(`I update category {string} to have parent {string}`, async (arg0: string, arg1: string) => {
-    // [When] Describes the action or event that triggers the scenario.
+When('I create another category with name {string}, icon {string}, type {string}', async function (name: string, icon: string, type: string) {
+  await categoryUseCases.createCategoryWithDuplicateName(name, icon, type);
 });
 
-Then(`the update should fail with error {string}`, async (arg0: string) => {
-    // [Then] Describes the expected outcome or result of the scenario.
+Then('the category creation should fail with error {string}', async function (errorMessage: string) {
+  const errorVisible = await categoryUseCases.isErrorMessageVisible(errorMessage);
+  if (!errorVisible) {
+    throw new Error(`Expected error message "${errorMessage}" was not visible`);
+  }
 });
 
-When(`I create a category with a name longer than the maximum allowed length`, async () => {
-    // [When] Describes the action or event that triggers the scenario.
+Given('a category {string} with icon {string} and type {string} and parent {string} exists', async function (name: string, icon: string, type: string, parent: string) {
+  await categoryUseCases.createCategory(name, icon, type, parent);
 });
 
-When(`I delete the category {string}`, async (arg0: string) => {
-    // [When] Describes the action or event that triggers the scenario.
+When('I update category {string} to have parent {string}', async function (name: string, newParent: string) {
+  await categoryUseCases.updateCategoryParent(name, newParent);
 });
 
-Then(`the deletion should fail with error {string}`, async (arg0: string) => {
-    // [Then] Describes the expected outcome or result of the scenario.
+Then('the update should fail with error {string}', async function (errorMessage: string) {
+  const errorVisible = await categoryUseCases.isErrorMessageVisible(errorMessage);
+  if (!errorVisible) {
+    throw new Error(`Expected error message "${errorMessage}" was not visible`);
+  }
 });
 
-When(`I create a category with name {string}, icon {string}, and type {string}`, async (arg0: string, arg1: string, arg2: string) => {
-    // [When] Describes the action or event that triggers the scenario.
+When('I create a category with a name longer than the maximum allowed length', async function () {
+  const longName = 'A'.repeat(256); // Assuming 255 is max length
+  await categoryUseCases.createCategory(longName, 'X', 'expense');
 });
 
-Given(`categories {string}, {string}, and {string} exist`, async (arg0: string, arg1: string, arg2: string) => {
-    // [Given] Sets up the initial state of the system.
+When('I delete the category {string}', async function (name: string) {
+  await categoryUseCases.deleteCategory(name);
 });
 
-When(`I list all categories`, async () => {
-    // [When] Describes the action or event that triggers the scenario.
+Then('the deletion should fail with error {string}', async function (errorMessage: string) {
+  const errorVisible = await categoryUseCases.isErrorMessageVisible(errorMessage);
+  if (!errorVisible) {
+    throw new Error(`Expected error message "${errorMessage}" was not visible`);
+  }
 });
 
-Then(`I should see {string}, {string}, and {string} in the`, async (arg0: string, arg1: string, arg2: string) => {
-    // [Then] Describes the expected outcome or result of the scenario.
+When('I create a category with name {string}, icon {string}, and type {string}', async function (name: string, icon: string, type: string) {
+  await categoryUseCases.createCategory(name, icon, type);
+});
+
+Given('categories {string}, {string}, and {string} exist', async function (name1: string, name2: string, name3: string) {
+  await categoryUseCases.createCategory(name1, '', 'expense');
+  await categoryUseCases.createCategory(name2, '', 'income');
+  await categoryUseCases.createCategory(name3, '', 'expense');
+});
+
+When('I list all categories', async function () {
+  this.categories = await categoryUseCases.listCategories();
+});
+
+Then('I should see {string}, {string}, and {string} in the list', async function (name1: string, name2: string, name3: string) {
+  const categories = this.categories || [];
+  if (!categories.includes(name1) || !categories.includes(name2) || !categories.includes(name3)) {
+    throw new Error(`Expected categories ${name1}, ${name2}, and ${name3} to be listed`);
+  }
 });
