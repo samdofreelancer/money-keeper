@@ -127,7 +127,14 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
   }
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
-    return await this.page.isVisible(`text=${message}`);
+    const errorElements = await this.page.$$(".el-form-item__error");
+    for (const el of errorElements) {
+      const text = await el.textContent();
+      if (text?.trim() === message) {
+        return true;
+      }
+    }
+    return false;
   }
 
   async listCategories(): Promise<string[]> {
@@ -182,5 +189,26 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     if (!isVisible) {
       throw new Error("Category Management page did not load correctly");
     }
+  }
+
+  async attemptCreateCategoryExpectingFailure(
+    name: string,
+    icon: string,
+    type: string,
+    parent?: string
+  ): Promise<void> {
+    await this.page.getByTestId("add-category-button").click();
+    await this.page.getByTestId("input-category-name").fill(name);
+    await this.page.getByTestId("select-icon").locator("div").nth(3).click();
+    await this.page.getByRole("option", { name: "Grid" }).click();
+    // Fill type and parent if needed (add logic as per your UI)
+    if (parent) {
+      await this.page.getByTestId("select-parent-category").click();
+      const parentOption = this.page.getByRole("option", { name: parent });
+      await parentOption.waitFor({ state: "visible", timeout: 10000 });
+      await parentOption.click();
+    }
+    await this.page.getByTestId("button-submit").click();
+    // Do NOT wait for a successful response, just return
   }
 }

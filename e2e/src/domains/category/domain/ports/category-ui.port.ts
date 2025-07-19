@@ -32,4 +32,10 @@ export interface CategoryUiPort {
   isErrorMessageVisible(message: string): Promise<boolean>;
   listCategories(): Promise<string[]>;
   assertOnCategoryPage(): Promise<void>;
+  attemptCreateCategoryExpectingFailure(
+    name: string,
+    icon: string,
+    type: string,
+    parent?: string
+  ): Promise<void>;
 }

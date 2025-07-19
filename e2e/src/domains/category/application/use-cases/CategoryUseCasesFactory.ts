@@ -144,7 +144,11 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string
   ): Promise<void> {
-    await this.categoryUiPort.createCategoryWithDuplicateName(name, icon, type);
+    await this.categoryUiPort.attemptCreateCategoryExpectingFailure(
+      name,
+      icon,
+      type
+    );
   }
 
   async updateCategoryParent(

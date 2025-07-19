@@ -1,4 +1,3 @@
-@focus
 Feature: Account Creation
   As a user
   I want to create new accounts
