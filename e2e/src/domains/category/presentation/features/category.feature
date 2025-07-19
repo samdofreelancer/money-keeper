@@ -8,18 +8,20 @@ Feature: Category Management
     Given the system has no categories
     And the user is on the Category Management page
 
+  @focus
   Scenario: Successfully create a new category
     When I create a category with name "Food", icon "Food", type "expense"
     Then the category "Food" should be created successfully
 
+  @focus
   Scenario: Successfully create a category as a child of another
     Given a category "Utilities" with icon "Food" and type "expense" exists
-    When I create a category with name "Electricity", icon "🔌", type "expense" and parent "Utilities"
+    When I create a category with name "Electricity", icon "House", type "expense" and parent "Utilities"
     Then the category "Electricity" should be created as a child of "Utilities"
 
   Scenario: Fail to create a category with a duplicate name
-    Given a category "Transport" with icon "🚗" and type "expense" exists
-    When I create another category with name "Transport", icon "🚌", type "expense"
+    Given a category "Transport" with icon "Transport" and type "expense" exists
+    When I create another category with name "Transport", icon "Transport", type "expense"
     Then the category creation should fail with error "Category name must be unique"
 
   Scenario: Fail to update a category to create a cyclic parent relationship

@@ -13,7 +13,9 @@ AfterStep(async function (
   this: World,
   { pickle, result }: ITestCaseHookParameter
 ) {
-  logger.info(`[DEBUG] AfterStep hook running for scenario: ${pickle.name}, config.screenshotAllAfterStep: ${config.screenshotAllAfterStep}`);
+  logger.info(
+    `[DEBUG] AfterStep hook running for scenario: ${pickle.name}, config.screenshotAllAfterStep: ${config.screenshotAllAfterStep}`
+  );
   if (!result) {
     return;
   }
@@ -24,12 +26,16 @@ AfterStep(async function (
   if (config.screenshotAllAfterStep) {
     const screenshotPath = path.join(
       config.screenshotsDir,
-      `${result.status === Status.FAILED ? "failed" : "step"}-${pickle.name.replace(/\W+/g, "_")}-${timestamp}.png`
+      `${
+        result.status === Status.FAILED ? "failed" : "step"
+      }-${pickle.name.replace(/\W+/g, "_")}-${timestamp}.png`
     );
     const screenshot = await this.page.screenshot({ path: screenshotPath });
     this.attach(screenshot, "image/png");
     logger.info(
-      `Screenshot taken for ${result.status === Status.FAILED ? "failed " : ""}step in scenario "${pickle.name}"`
+      `Screenshot taken for ${
+        result.status === Status.FAILED ? "failed " : ""
+      }step in scenario "${pickle.name}"`
     );
   } else if (result.status === Status.FAILED) {
     const screenshotPath = path.join(

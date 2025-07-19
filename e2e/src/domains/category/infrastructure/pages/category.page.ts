@@ -1,5 +1,6 @@
-import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 import { Page } from "@playwright/test";
+
+import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../support/logger";
 
@@ -14,29 +15,38 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     await this.page.goto(`${baseUrl}/categories`);
   }
 
-  async createCategory(name: string, icon: string, type: string, parent?: string): Promise<string> {
+  async createCategory(
+    name: string,
+    icon: string,
+    type: string,
+    parent?: string
+  ): Promise<string> {
     try {
-      logger.info(`Creating unique category with name: ${name}, icon: ${icon}, type: ${type}, parent: ${parent}`);
+      logger.info(
+        `Creating unique category with name: ${name}, icon: ${icon}, type: ${type}, parent: ${parent}`
+      );
 
-      await this.page.getByTestId('add-category-button').click();
+      await this.page.getByTestId("add-category-button").click();
 
-      logger.info(`Creating category with name: ${name}, icon: ${icon}, type: ${type}, parent: ${parent}`);
-      await this.page.getByTestId('input-category-name').click();
-      await this.page.getByTestId('input-category-name').fill(name);
+      logger.info(
+        `Creating category with name: ${name}, icon: ${icon}, type: ${type}, parent: ${parent}`
+      );
+      await this.page.getByTestId("input-category-name").click();
+      await this.page.getByTestId("input-category-name").fill(name);
       logger.info(`Filled category name: ${name}`);
 
-      await this.page.getByTestId('select-icon').locator('div').nth(3).click();
+      await this.page.getByTestId("select-icon").locator("div").nth(3).click();
       logger.info(`Selected icon: ${icon}`);
-      await this.page.getByRole('option', { name: 'Grid' }).click();
+      await this.page.getByRole("option", { name: "Grid" }).click();
       logger.info(`Selected type: ${type}`);
       if (parent) {
         logger.info(`Setting parent category: ${parent}`);
         // Click the dropdown to open parent selection
-        await this.page.getByTestId('select-parent-category').click();
-        logger.info('Parent category dropdown opened');
+        await this.page.getByTestId("select-parent-category").click();
+        logger.info("Parent category dropdown opened");
         // Wait for the parent option to be visible and enabled
-        const parentOption = this.page.getByRole('option', { name: parent });
-        await parentOption.waitFor({ state: 'visible', timeout: 10000 });
+        const parentOption = this.page.getByRole("option", { name: parent });
+        await parentOption.waitFor({ state: "visible", timeout: 10000 });
         logger.info(`Parent option '${parent}' is visible`);
         await parentOption.click();
         logger.info(`Selected parent category: ${parent}`);
@@ -45,10 +55,13 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
 
       // Intercept the API response for category creation
       const [response] = await Promise.all([
-        this.page.waitForResponse(resp =>
-          resp.url().includes('/categories') && resp.request().method() === 'POST' && resp.status() === 201
+        this.page.waitForResponse(
+          (resp) =>
+            resp.url().includes("/categories") &&
+            resp.request().method() === "POST" &&
+            resp.status() === 201
         ),
-        this.page.getByTestId('button-submit').click(),
+        this.page.getByTestId("button-submit").click(),
       ]);
 
       const data = await response.json();
@@ -60,7 +73,12 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     }
   }
 
-  async createUniqueCategory(name: string, icon: string, type: string, parent?: string): Promise<string> {
+  async createUniqueCategory(
+    name: string,
+    icon: string,
+    type: string,
+    parent?: string
+  ): Promise<string> {
     const uniqueName = `${name}-${Date.now()}`;
     return await this.createCategory(uniqueName, icon, type, parent);
   }
@@ -69,7 +87,10 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     return await this.page.isVisible(`text=${name}`);
   }
 
-  async isCategoryChildOf(childName: string, parentName: string): Promise<boolean> {
+  async isCategoryChildOf(
+    childName: string,
+    parentName: string
+  ): Promise<boolean> {
     // Implement logic to verify if childName is under parentName in the UI
     const childElement = await this.page.$(`text=${childName}`);
     if (!childElement) return false;
@@ -83,11 +104,18 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     return childBox.y > parentBox.y && Math.abs(childBox.x - parentBox.x) < 50;
   }
 
-  async createCategoryWithDuplicateName(name: string, icon: string, type: string): Promise<void> {
+  async createCategoryWithDuplicateName(
+    name: string,
+    icon: string,
+    type: string
+  ): Promise<void> {
     await this.createCategory(name, icon, type);
   }
 
-  async updateCategoryParent(categoryName: string, newParentName: string): Promise<void> {
+  async updateCategoryParent(
+    categoryName: string,
+    newParentName: string
+  ): Promise<void> {
     await this.page.click(`text=${categoryName}`);
     await this.page.selectOption("select[name='parent']", newParentName);
     await this.page.click("button#update-category");
@@ -114,36 +142,45 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     return categories;
   }
 
-  async updateCategoryNameAndIcon(oldName: string, newName: string, newIcon: string): Promise<void> {
+  async updateCategoryNameAndIcon(
+    oldName: string,
+    newName: string,
+    newIcon: string
+  ): Promise<void> {
     // Click the category to edit
     await this.page.click(`text=${oldName}`);
     // Fill new name
-    await this.page.getByTestId('input-category-name').fill(newName);
+    await this.page.getByTestId("input-category-name").fill(newName);
     // Select new icon (assuming icon picker is accessible by test id and icon name)
-    await this.page.getByTestId('select-icon').click();
-    await this.page.getByRole('option', { name: newIcon }).click();
+    await this.page.getByTestId("select-icon").click();
+    await this.page.getByRole("option", { name: newIcon }).click();
     // Save changes
-    await this.page.getByTestId('button-submit').click();
+    await this.page.getByTestId("button-submit").click();
   }
 
   async assertOnCategoryPage(): Promise<void> {
     const url = this.page.url();
-    logger.info(`url: ${url}`)
-    
-    if (!(await url).includes('/categories')) {
-      throw new Error('User is not on the Category Management page');
+    logger.info(`url: ${url}`);
+
+    if (!(await url).includes("/categories")) {
+      throw new Error("User is not on the Category Management page");
     }
     // Wait for network to be idle
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
     // Wait for loading overlay to disappear if it exists
     try {
-      await this.page.waitForSelector('[data-test=loading-overlay]', { state: 'detached', timeout: 5000 });
+      await this.page.waitForSelector("[data-test=loading-overlay]", {
+        state: "detached",
+        timeout: 5000,
+      });
     } catch (e) {
       // If overlay never appears, that's fine
     }
-    const isVisible = await this.page.isVisible('[data-testid=add-category-button]');
+    const isVisible = await this.page.isVisible(
+      "[data-testid=add-category-button]"
+    );
     if (!isVisible) {
-      throw new Error('Category Management page did not load correctly');
+      throw new Error("Category Management page did not load correctly");
     }
   }
 }

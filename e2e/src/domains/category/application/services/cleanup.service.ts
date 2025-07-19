@@ -1,4 +1,4 @@
-import { logger } from '../../../../support/logger';
+import { logger } from "../../../../support/logger";
 
 // Interface for dependency inversion
 export interface ICategoryApiClient {
@@ -23,21 +23,25 @@ export class CategoryCleanupService {
   ): Promise<void> {
     await this.cleanupByIds(categoryIds, false);
     await this.cleanupByIds(parentCategoryIds, true);
-    logger.info('Category cleanup completed');
+    logger.info("Category cleanup completed");
   }
 
   // Single Responsibility: handles only deletion by IDs
   private async cleanupByIds(ids?: string[], isParent = false): Promise<void> {
     if (!ids || ids.length === 0) return;
-    const type = isParent ? 'parent ' : '';
+    const type = isParent ? "parent " : "";
     logger.info(`Cleaning up ${ids.length} ${type}categories via API (by ID)`);
     const deletePromises = ids.map(async (categoryId: string) => {
       try {
         await this.categoryApiClient.deleteCategory(categoryId);
-        logger.info(`Successfully cleaned up ${type}category ID: ${categoryId}`);
+        logger.info(
+          `Successfully cleaned up ${type}category ID: ${categoryId}`
+        );
         return true;
       } catch (error) {
-        logger.error(`Failed to cleanup ${type}category ID ${categoryId}: ${error}`);
+        logger.error(
+          `Failed to cleanup ${type}category ID ${categoryId}: ${error}`
+        );
         return false;
       }
     });

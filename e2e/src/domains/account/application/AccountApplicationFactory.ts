@@ -56,11 +56,6 @@ export class AccountApplicationFactory {
           });
           await this.world.accountUiPort.submitForm();
 
-          // Generate an ID for the account
-          const accountId = `acc_${Date.now()}_${Math.random()
-            .toString(36)
-            .substr(2, 9)}`;
-
           // Create a new Account entity with the ID
           return new Account({
             _accountName: account.accountName,

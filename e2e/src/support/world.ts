@@ -111,11 +111,14 @@ export class CustomWorld extends World {
     try {
       // Allow override via PW_HEADLESS env variable
       let headless = config.browser.headless;
-      if (typeof process !== 'undefined' && process.env.PW_HEADLESS !== undefined) {
+      if (
+        typeof process !== "undefined" &&
+        process.env.PW_HEADLESS !== undefined
+      ) {
         const envVal = process.env.PW_HEADLESS.trim().toLowerCase();
-        if (envVal === 'false' || envVal === '0') {
+        if (envVal === "false" || envVal === "0") {
           headless = false;
-        } else if (envVal === 'true' || envVal === '1') {
+        } else if (envVal === "true" || envVal === "1") {
           headless = true;
         }
       }

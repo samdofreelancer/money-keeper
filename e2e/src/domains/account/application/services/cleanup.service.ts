@@ -1,5 +1,5 @@
-import { logger } from '../../../../support/logger';
-import { AccountApiClient } from '../../infrastructure/api/account-api.client';
+import { logger } from "../../../../support/logger";
+import { AccountApiClient } from "../../infrastructure/api/account-api.client";
 
 export class AccountCleanupService {
   private accountApiClient: AccountApiClient;
@@ -22,6 +22,6 @@ export class AccountCleanupService {
       }
     });
     await Promise.allSettled(deletePromises);
-    logger.info('Account cleanup completed');
+    logger.info("Account cleanup completed");
   }
 }
