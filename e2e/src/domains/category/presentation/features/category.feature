@@ -8,13 +8,12 @@ Feature: Category Management
     Given the system has no categories
     And the user is on the Category Management page
 
-  @focus
   Scenario: Successfully create a new category
-    When I create a category with name "Food", icon "🍔", type "expense"
+    When I create a category with name "Food", icon "Food", type "expense"
     Then the category "Food" should be created successfully
 
   Scenario: Successfully create a category as a child of another
-    Given a category "Utilities" with icon "💡" and type "expense" exists
+    Given a category "Utilities" with icon "Food" and type "expense" exists
     When I create a category with name "Electricity", icon "🔌", type "expense" and parent "Utilities"
     Then the category "Electricity" should be created as a child of "Utilities"
 

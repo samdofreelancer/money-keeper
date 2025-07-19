@@ -58,6 +58,14 @@ export class CategoryUseCasesFactory {
       if (trackCreatedCategory) {
         await trackCreatedCategory(resp.id, parentName, { isParent: true });
       }
+
+      // Fetch all categories to verify creation
+      const allCategories = await categoryApiClient.getAllCategories();
+      logger.info(`allCategories: ${JSON.stringify(allCategories)}`)
+      const createdCat = allCategories.find((cat: any) => cat.name === parentName);
+      if (!createdCat) {
+        throw new Error(`Category '${parentName}' was not found after creation via API.`);
+      }
       return resp.id;
     }
   }

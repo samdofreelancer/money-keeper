@@ -71,6 +71,13 @@ Given('a category {string} with icon {string} and type {string} exists', async f
     undefined,
     this.trackCreatedCategory ? this.trackCreatedCategory.bind(this) : undefined
   );
+  // Reload the page to ensure the UI reflects the new backend data
+  await this.page.reload();
+  // Assert the new category is visible on the UI
+  const isVisible = await categoryUseCases.isCategoryCreated(name);
+  if (!isVisible) {
+    throw new Error(`Category '${name}' was not found on the UI after backend creation and reload.`);
+  }
 });
 
 When('I create a category with name {string}, icon {string}, type {string}, and parent {string}', async function (name: string, icon: string, type: string, parent: string) {

@@ -4,6 +4,7 @@ import { devices } from "@playwright/test";
 
 import { EnvironmentConfig } from "../types/config.types";
 import { getTraceMode } from "../utils/validate-trace-mode";
+import { logger } from "../../support/logger";
 
 // Load .env file
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
@@ -18,6 +19,7 @@ export const config: EnvironmentConfig = {
   // Screenshot configurations
   screenshotOnSuccess: process.env.SCREENSHOT_ON_SUCCESS === "true",
   screenshotOnFailure: true,
+  screenshotAllAfterStep: process.env.SCREENSHOT_ALL_AFTER_STEP === "true",
 
   // Report configurations
   reportsDir:

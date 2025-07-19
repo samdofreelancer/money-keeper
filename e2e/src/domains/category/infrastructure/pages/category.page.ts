@@ -31,8 +31,14 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
       logger.info(`Selected type: ${type}`);
       if (parent) {
         logger.info(`Setting parent category: ${parent}`);
-        await this.page.getByText('Select parent category').click();
-        await this.page.getByRole('option', { name: parent }).click();
+        // Click the dropdown to open parent selection
+        await this.page.getByTestId('select-parent-category').click();
+        logger.info('Parent category dropdown opened');
+        // Wait for the parent option to be visible and enabled
+        const parentOption = this.page.getByRole('option', { name: parent });
+        await parentOption.waitFor({ state: 'visible', timeout: 10000 });
+        logger.info(`Parent option '${parent}' is visible`);
+        await parentOption.click();
         logger.info(`Selected parent category: ${parent}`);
       }
       logger.info(`Submitting category creation for: ${name}`);
