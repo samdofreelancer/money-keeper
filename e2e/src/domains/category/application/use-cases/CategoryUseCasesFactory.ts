@@ -75,7 +75,6 @@ export class CategoryUseCasesFactory {
     trackCreatedCategory?: (id: string, name: string) => Promise<void>
   ): Promise<string> {
     logger.info(`Creating unique category with icon: ${icon}, type: ${type}, parent: ${parent}`);
-    await this.categoryUiPort.navigateToCategoryPage();
     const categoryId = await this.categoryUiPort.createUniqueCategory(name, icon, type, parent);
     if (trackCreatedCategory) {
       await trackCreatedCategory(categoryId, name);
