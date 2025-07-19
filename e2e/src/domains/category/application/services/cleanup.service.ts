@@ -1,10 +1,14 @@
 import { logger } from '../../../../support/logger';
-import { CategoryApiClient } from '../../infrastructure/api/category-api.client';
+
+// Interface for dependency inversion
+export interface ICategoryApiClient {
+  deleteCategory(categoryId: string): Promise<void>;
+}
 
 export class CategoryCleanupService {
-  private categoryApiClient: CategoryApiClient;
+  private readonly categoryApiClient: ICategoryApiClient;
 
-  constructor(categoryApiClient: CategoryApiClient) {
+  constructor(categoryApiClient: ICategoryApiClient) {
     this.categoryApiClient = categoryApiClient;
   }
 
@@ -17,40 +21,26 @@ export class CategoryCleanupService {
     categoryIds: string[],
     parentCategoryIds?: string[]
   ): Promise<void> {
-    // Clean up child categories first
-    if (categoryIds && categoryIds.length > 0) {
-      logger.info(
-        `Cleaning up ${categoryIds.length} created categories via API (by ID)`
-      );
-      const deletePromises = categoryIds.map(async (categoryId: string) => {
-        try {
-          await this.categoryApiClient.deleteCategory(categoryId);
-          logger.info(`Successfully cleaned up category ID: ${categoryId}`);
-          return true;
-        } catch (error) {
-          logger.error(`Failed to cleanup category ID ${categoryId}: ${error}`);
-          return false;
-        }
-      });
-      await Promise.allSettled(deletePromises);
-    }
-    // Then clean up parent categories
-    if (parentCategoryIds && parentCategoryIds.length > 0) {
-      logger.info(
-        `Cleaning up ${parentCategoryIds.length} parent categories via API (by ID)`
-      );
-      const deletePromises = parentCategoryIds.map(async (categoryId: string) => {
-        try {
-          await this.categoryApiClient.deleteCategory(categoryId);
-          logger.info(`Successfully cleaned up parent category ID: ${categoryId}`);
-          return true;
-        } catch (error) {
-          logger.error(`Failed to cleanup parent category ID ${categoryId}: ${error}`);
-          return false;
-        }
-      });
-      await Promise.allSettled(deletePromises);
-    }
+    await this.cleanupByIds(categoryIds, false);
+    await this.cleanupByIds(parentCategoryIds, true);
     logger.info('Category cleanup completed');
+  }
+
+  // Single Responsibility: handles only deletion by IDs
+  private async cleanupByIds(ids?: string[], isParent = false): Promise<void> {
+    if (!ids || ids.length === 0) return;
+    const type = isParent ? 'parent ' : '';
+    logger.info(`Cleaning up ${ids.length} ${type}categories via API (by ID)`);
+    const deletePromises = ids.map(async (categoryId: string) => {
+      try {
+        await this.categoryApiClient.deleteCategory(categoryId);
+        logger.info(`Successfully cleaned up ${type}category ID: ${categoryId}`);
+        return true;
+      } catch (error) {
+        logger.error(`Failed to cleanup ${type}category ID ${categoryId}: ${error}`);
+        return false;
+      }
+    });
+    await Promise.allSettled(deletePromises);
   }
 }
