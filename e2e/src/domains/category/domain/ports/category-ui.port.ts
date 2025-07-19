@@ -6,7 +6,9 @@ export interface CategoryUiPort {
   isCategoryChildOf(childName: string, parentName: string): Promise<boolean>;
   createCategoryWithDuplicateName(name: string, icon: string, type: string): Promise<void>;
   updateCategoryParent(categoryName: string, newParentName: string): Promise<void>;
+  updateCategoryNameAndIcon(oldName: string, newName: string, newIcon: string): Promise<void>;
   deleteCategory(name: string): Promise<void>;
   isErrorMessageVisible(message: string): Promise<boolean>;
   listCategories(): Promise<string[]>;
+  assertOnCategoryPage(): Promise<void>;
 }

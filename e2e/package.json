@@ -4,7 +4,7 @@
   "description": "BDD framework using Cucumber + Playwright in TypeScript",
   "scripts": {
     "test": "npm run cleanup-reports && ts-node src/support/formatter-setup.ts && cucumber-js",
-    "test:focus": "npm run cleanup-reports && ts-node src/support/formatter-setup.ts && cucumber-js  --tags @focus",
+    "test:focus": "npx cross-env PW_HEADLESS=true npm run cleanup-reports && ts-node src/support/formatter-setup.ts && cucumber-js --tags @focus",
     "pretest": "npm run validate-env && npm run lint:fix && tsc --noEmit",
     "report": "node scripts/generate-report.js",
     "report:fix": "node scripts/fix-json-report.js && npm run report",

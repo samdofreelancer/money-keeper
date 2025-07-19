@@ -107,4 +107,37 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     }
     return categories;
   }
+
+  async updateCategoryNameAndIcon(oldName: string, newName: string, newIcon: string): Promise<void> {
+    // Click the category to edit
+    await this.page.click(`text=${oldName}`);
+    // Fill new name
+    await this.page.getByTestId('input-category-name').fill(newName);
+    // Select new icon (assuming icon picker is accessible by test id and icon name)
+    await this.page.getByTestId('select-icon').click();
+    await this.page.getByRole('option', { name: newIcon }).click();
+    // Save changes
+    await this.page.getByTestId('button-submit').click();
+  }
+
+  async assertOnCategoryPage(): Promise<void> {
+    const url = this.page.url();
+    logger.info(`url: ${url}`)
+    
+    if (!(await url).includes('/categories')) {
+      throw new Error('User is not on the Category Management page');
+    }
+    // Wait for network to be idle
+    await this.page.waitForLoadState('networkidle');
+    // Wait for loading overlay to disappear if it exists
+    try {
+      await this.page.waitForSelector('[data-test=loading-overlay]', { state: 'detached', timeout: 5000 });
+    } catch (e) {
+      // If overlay never appears, that's fine
+    }
+    const isVisible = await this.page.isVisible('[data-testid=add-category-button]');
+    if (!isVisible) {
+      throw new Error('Category Management page did not load correctly');
+    }
+  }
 }

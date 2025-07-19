@@ -109,7 +109,16 @@ export class CustomWorld extends World {
 
   async launchBrowser(browserName = config.browser.name) {
     try {
-      const { headless } = config.browser;
+      // Allow override via PW_HEADLESS env variable
+      let headless = config.browser.headless;
+      if (typeof process !== 'undefined' && process.env.PW_HEADLESS !== undefined) {
+        const envVal = process.env.PW_HEADLESS.trim().toLowerCase();
+        if (envVal === 'false' || envVal === '0') {
+          headless = false;
+        } else if (envVal === 'true' || envVal === '1') {
+          headless = true;
+        }
+      }
 
       switch (browserName) {
         case "chromium":
@@ -131,7 +140,7 @@ export class CustomWorld extends World {
       // Initialize account UI port
       this.accountUiPort = new CreateAccountPlaywrightPage(this.page);
 
-      logger.info(`Browser launched: ${browserName}`);
+      logger.info(`Browser launched: ${browserName} (headless: ${headless})`);
     } catch (error) {
       logger.error("Error launching browser:", error);
       throw error;

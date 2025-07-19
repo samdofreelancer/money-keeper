@@ -13,6 +13,11 @@ Given('the system has no categories', async function () {
   // Implement logic to clear all categories if needed
 });
 
+Given('the user is on the Category Management page', async function () {
+  await categoryUseCases.navigateToCategoryPage();
+  await categoryUseCases.assertOnCategoryPage();
+});
+
 When('I create a category with name {string}, icon {string}, type {string}', async function (name: string, icon: string, type: string) {
   await categoryUseCases.createUniqueCategory(
     name,
@@ -58,7 +63,14 @@ After(async function () {
 });
 
 Given('a category {string} with icon {string} and type {string} exists', async function (name: string, icon: string, type: string) {
-  await categoryUseCases.createCategory(name, icon, type);
+  // Use use case to ensure category exists via backend API and track it
+  await categoryUseCases.ensureParentCategoryExists(
+    name,
+    icon, 
+    type,
+    undefined,
+    this.trackCreatedCategory ? this.trackCreatedCategory.bind(this) : undefined
+  );
 });
 
 When('I create a category with name {string}, icon {string}, type {string}, and parent {string}', async function (name: string, icon: string, type: string, parent: string) {
@@ -128,9 +140,17 @@ When('I list all categories', async function () {
   this.categories = await categoryUseCases.listCategories();
 });
 
-Then('I should see {string}, {string}, and {string} in the list', async function (name1: string, name2: string, name3: string) {
+Then('I should see {string}, {string}, and {string} in the category list', async function (name1: string, name2: string, name3: string) {
   const categories = this.categories || [];
   if (!categories.includes(name1) || !categories.includes(name2) || !categories.includes(name3)) {
     throw new Error(`Expected categories ${name1}, ${name2}, and ${name3} to be listed`);
   }
+});
+
+When('I update the category {string} to have name {string} and icon {string}', async function (oldName: string, newName: string, newIcon: string) {
+  await categoryUseCases.updateCategoryNameAndIcon(oldName, newName, newIcon);
+});
+
+When('I create a category with name {string}, icon {string}, type {string}', async function (name: string, icon: string, type: string) {
+  await categoryUseCases.createCategory(name, icon, type);
 });

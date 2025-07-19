@@ -1,4 +1,6 @@
+import { log } from 'console';
 import { BaseApiClient, ApiClientConfig } from '../../../../shared/infrastructure/api/base-api-client';
+import { logger } from '../../../../support/logger';
 
 export class CategoryApiClient extends BaseApiClient {
   constructor(config: ApiClientConfig) {
@@ -15,7 +17,13 @@ export class CategoryApiClient extends BaseApiClient {
   }
 
   async createCategory(data: { name: string; icon: string; type: string; parentId?: string | null }): Promise<any> {
-    const response = await this.client.post('/categories', data);
-    return response.data;
+    logger.info(`Creating category with data: ${JSON.stringify(data)}`);
+    try {
+      const response = await this.client.post('/categories', data);
+      return response.data;
+    } catch (error) {
+      logger.error(`Failed to create category: ${error}`);
+      throw error;
+    }
   }
 }

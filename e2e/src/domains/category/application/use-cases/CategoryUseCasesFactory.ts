@@ -17,12 +17,14 @@ export class CategoryUseCasesFactory {
     parent: string,
     trackCreatedCategory: (id: string, name: string, opts?: { isParent?: boolean }) => Promise<void>
   ): Promise<void> {
-    const parentId = await this.ensureParentCategoryExists(parent);
-    // Track parent with isParent flag
-    await trackCreatedCategory(parentId, parent, { isParent: true });
-    const categoryId = await this.createUniqueCategory(name, icon, type, parent);
-    // Track child (normal)
-    await trackCreatedCategory(categoryId, name, { isParent: false });
+    // Create and track child
+    const categoryId = await this.createUniqueCategory(
+      name,
+      icon,
+      type,
+      parent,
+      trackCreatedCategory
+    );
   }
   private categoryUiPort: CategoryUiPort;
 
@@ -33,14 +35,29 @@ export class CategoryUseCasesFactory {
   /**
    * Ensures a parent category exists via backend API, returns its id
    */
-  async ensureParentCategoryExists(parentName: string, apiBaseUrl?: string): Promise<string> {
+  async ensureParentCategoryExists(
+    parentName: string,
+    icon: string,
+    type: string,
+    apiBaseUrl?: string,
+    trackCreatedCategory?: (id: string, name: string, opts?: { isParent?: boolean }) => Promise<void>
+  ): Promise<string> {
     const categoryApiClient = new CategoryApiClient({ baseURL: apiBaseUrl || process.env.API_BASE_URL || "http://127.0.0.1:8080/api" });
     const categories = await categoryApiClient.getAllCategories();
     let parentCat = categories.find((cat: any) => cat.name === parentName);
+    // Normalize type to match backend enum (EXPENSE/INCOME)
+    const normalizedType = (type || 'EXPENSE').toUpperCase();
+    const normalizedIcon = icon || 'default';
     if (parentCat) {
+      if (trackCreatedCategory) {
+        await trackCreatedCategory(parentCat.id, parentName, { isParent: true });
+      }
       return parentCat.id;
     } else {
-      const resp = await categoryApiClient.createCategory({ name: parentName, icon: 'default', type: 'expense' });
+      const resp = await categoryApiClient.createCategory({ name: parentName, icon: normalizedIcon, type: normalizedType });
+      if (trackCreatedCategory) {
+        await trackCreatedCategory(resp.id, parentName, { isParent: true });
+      }
       return resp.id;
     }
   }
@@ -82,6 +99,10 @@ export class CategoryUseCasesFactory {
     await this.categoryUiPort.updateCategoryParent(categoryName, newParentName);
   }
 
+  async updateCategoryNameAndIcon(oldName: string, newName: string, newIcon: string): Promise<void> {
+    await this.categoryUiPort.updateCategoryNameAndIcon(oldName, newName, newIcon);
+  }
+
   async deleteCategory(name: string): Promise<void> {
     await this.categoryUiPort.deleteCategory(name);
   }
@@ -92,5 +113,13 @@ export class CategoryUseCasesFactory {
 
   async listCategories(): Promise<string[]> {
     return await this.categoryUiPort.listCategories();
+  }
+
+  async navigateToCategoryPage(): Promise<void> {
+    await this.categoryUiPort.navigateToCategoryPage();
+  }
+
+  async assertOnCategoryPage(): Promise<void> {
+    await this.categoryUiPort.assertOnCategoryPage();
   }
 }
