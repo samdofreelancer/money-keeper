@@ -150,7 +150,3 @@ Then('I should see {string}, {string}, and {string} in the category list', async
 When('I update the category {string} to have name {string} and icon {string}', async function (oldName: string, newName: string, newIcon: string) {
   await categoryUseCases.updateCategoryNameAndIcon(oldName, newName, newIcon);
 });
-
-When('I create a category with name {string}, icon {string}, type {string}', async function (name: string, icon: string, type: string) {
-  await categoryUseCases.createCategory(name, icon, type);
-});
