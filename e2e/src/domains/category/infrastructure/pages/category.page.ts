@@ -14,7 +14,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     await this.page.goto(`${baseUrl}/categories`);
   }
 
-  async createCategory(name: string, icon: string, type: string, parent?: string): Promise<void> {
+  async createCategory(name: string, icon: string, type: string, parent?: string): Promise<string> {
     try {
       logger.info(`Creating unique category with name: ${name}, icon: ${icon}, type: ${type}, parent: ${parent}`);
 
@@ -36,8 +36,18 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
         logger.info(`Selected parent category: ${parent}`);
       }
       logger.info(`Submitting category creation for: ${name}`);
-      await this.page.getByTestId('button-submit').click();
-      logger.info(`Category ${name} created successfully`);
+
+      // Intercept the API response for category creation
+      const [response] = await Promise.all([
+        this.page.waitForResponse(resp =>
+          resp.url().includes('/categories') && resp.request().method() === 'POST' && resp.status() === 201
+        ),
+        this.page.getByTestId('button-submit').click(),
+      ]);
+
+      const data = await response.json();
+      logger.info(`Category ${name} created successfully with id: ${data.id}`);
+      return data.id;
     } catch (error) {
       logger.error(`Failed to create category ${name}: ${error}`);
       throw error;
@@ -46,8 +56,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
 
   async createUniqueCategory(name: string, icon: string, type: string, parent?: string): Promise<string> {
     const uniqueName = `${name}-${Date.now()}`;
-    await this.createCategory(uniqueName, icon, type, parent);
-    return uniqueName;
+    return await this.createCategory(uniqueName, icon, type, parent);
   }
 
   async isCategoryCreated(name: string): Promise<boolean> {

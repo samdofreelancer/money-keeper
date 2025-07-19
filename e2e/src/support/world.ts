@@ -58,6 +58,7 @@ export class CustomWorld extends World {
   // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
+  createdParentCategoryIds: string[] = [];
   createdAccountNames: string[] = [];
   createdAccountIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
@@ -199,12 +200,25 @@ export class CustomWorld extends World {
   /**
    * Tracks a created category for cleanup
    */
+  /**
+   * Tracks a created category for cleanup, with support for parent/child distinction.
+   * If opts.isParent is true, stores in createdParentCategoryIds for correct cleanup order.
+   */
   async trackCreatedCategory(
     categoryId: string | null,
-    categoryName: string
+    categoryName: string,
+    opts?: { isParent?: boolean }
   ): Promise<void> {
+    if (!this.createdCategoryIds) this.createdCategoryIds = [];
+    if (!this.createdCategoryNames) this.createdCategoryNames = [];
+    if (!this.createdParentCategoryIds) this.createdParentCategoryIds = [];
+
     if (categoryId) {
-      this.createdCategoryIds.push(categoryId);
+      if (opts?.isParent) {
+        this.createdParentCategoryIds.push(categoryId);
+      } else {
+        this.createdCategoryIds.push(categoryId);
+      }
     }
     this.createdCategoryNames.push(categoryName);
     await this.emit(

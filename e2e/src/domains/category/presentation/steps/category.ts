@@ -1,6 +1,8 @@
 import { Given, When, Then, After } from '@cucumber/cucumber';
+
 import { CategoryUseCasesFactory } from '../../application/use-cases/CategoryUseCasesFactory';
 import { CategoryPage } from '../../infrastructure/pages/category.page';
+import { CategoryApiClient } from '../../infrastructure/api/category-api.client';
 
 let categoryUseCases: CategoryUseCasesFactory;
 let createdCategoryName: string | null = null;
@@ -12,11 +14,23 @@ Given('the system has no categories', async function () {
 });
 
 When('I create a category with name {string}, icon {string}, type {string}', async function (name: string, icon: string, type: string) {
-  await categoryUseCases.createUniqueCategory(name, icon, type, undefined);
+  await categoryUseCases.createUniqueCategory(
+    name,
+    icon,
+    type,
+    undefined,
+    this.trackCreatedCategory ? this.trackCreatedCategory.bind(this) : undefined
+  );
 });
 
-When('I create a category with name {string}, icon {string}, type {string} and parrent {string}', async function (name: string, icon: string, type: string, parent: string) {
-  await categoryUseCases.createUniqueCategory(name, icon, type, parent);
+When('I create a category with name {string}, icon {string}, type {string} and parent {string}', async function (name: string, icon: string, type: string, parent: string) {
+  await categoryUseCases.createCategoryWithParentWorkflow(
+    name,
+    icon,
+    type,
+    parent,
+    this.trackCreatedCategory?.bind(this)
+  );
 });
 
 Then('the category {string} should be created successfully', async function (name: string) {
