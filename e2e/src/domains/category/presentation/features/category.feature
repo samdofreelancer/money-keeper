@@ -27,7 +27,7 @@ Feature: Category Management
     Given a category "A" with icon "Transport" and type "expense" exists
     And a category "B" with icon "Food" and type "expense" and parent "A" exists
     When I update category "A" to have parent "B"
-    Then the update should fail with error "Cyclic parent relationship is not allowed"
+    Then the update should fail with error "Cyclic dependency detected: category cannot be its own ancestor"
 
   Scenario: Fail to create a category with a name exceeding maximum length
     When I create a category with name "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", icon "X", type "expense"

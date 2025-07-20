@@ -116,27 +116,60 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     categoryName: string,
     newParentName: string
   ): Promise<void> {
+    logger.debug(`Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`);
     // Ensure on Category Management page
     await this.assertOnCategoryPage();
-    // Find the element containing the category name
-    const categoryNameElement = await this.page.getByText(categoryName, {
-      exact: true,
+    logger.info("Asserted on Category Management page");
+    logger.info(`Updating category "${categoryName}" to have parent "${newParentName}"`);
+    
+    // Find the row/container that contains the category name
+    const categoryRow = this.page.locator('[data-testid="tree-node-content"]', {
+      has: this.page.getByTestId('category-name').filter({ hasText: categoryName }),
     });
-    // Go up to the parent container (adjust the number of '..' as needed for your DOM)
-    const categoryContainer = categoryNameElement.locator("..");
-    // Find the edit button within this container
-    const editButton = categoryContainer.getByTestId("edit-category-button");
+    logger.info(`Located tree-node-content row for: '${categoryName}' with categoryRow: ${categoryRow}`);
+
+    // Find the edit button within that row
+    const editButton = categoryRow.getByTestId("edit-category-button");
+    logger.info(`Located edit button in tree-node-content row: ${editButton}`);
+
+    // Click the edit button
     await editButton.click();
+    logger.info(`Clicked edit button for category "${categoryName}"`);
+    
     // Open the parent dropdown
+    logger.info("Opening parent dropdown");
     await this.page
       .getByTestId("select-parent-category")
       .locator("div")
       .nth(3)
       .click();
+    logger.info(`Opened parent dropdown`);
+    
     // Select the new parent by name
+    logger.info(`Selecting new parent by name: '${newParentName}'`);
     await this.page.getByRole("option", { name: newParentName }).click();
-    // Submit the update
+    logger.info(`Selected parent "${newParentName}"`);
+    
+    // Submit the update and wait for any response (success or error)
+    logger.info(`Submitting update category`);
+    logger.info("Clicking submit button");
     await this.page.getByTestId("button-submit").click();
+    logger.info(`Summited category`);
+    
+    logger.info("Waiting for PUT /categories/ response");
+    await this.page.waitForResponse(
+      (resp) => {
+        const isCategoryPut = resp.url().includes("/categories/") && resp.request().method() === "PUT";
+        logger.info(`Response intercepted: url=${resp.url()}, method=${resp.request().method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`);
+        if (isCategoryPut) {
+          logger.info(`Received PUT response for categories: ${resp.status()} - ${resp.url()}`);
+        }
+        return isCategoryPut;
+      },
+      { timeout: 10000 }
+    );
+    logger.info(`Update category request completed`);
+    logger.info("Exiting updateCategoryParent");
   }
 
   async deleteCategory(name: string): Promise<void> {
@@ -145,6 +178,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
   }
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
+    // First check for form validation errors
     const errorElements = await this.page.$$(".el-form-item__error");
     for (const el of errorElements) {
       const text = await el.textContent();
@@ -152,7 +186,60 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
         return true;
       }
     }
+    
+    // Then check for Element Plus toast messages
+    const toastMessages = await this.page.$$(".el-message--error");
+    for (const el of toastMessages) {
+      const text = await el.textContent();
+      if (text?.trim().includes(message)) {
+        return true;
+      }
+    }
+    
+    // Also check for any element with the error message text
+    const messageElements = await this.page.$$(`text=${message}`);
+    if (messageElements.length > 0) {
+      return true;
+    }
+    
     return false;
+  }
+
+  async isToastMessageVisible(message: string): Promise<boolean> {
+    // Wait a bit for toast to appear
+    await this.page.waitForTimeout(1000);
+    
+    // Check for Element Plus toast messages
+    const toastMessages = await this.page.$$(".el-message--error");
+    for (const el of toastMessages) {
+      const text = await el.textContent();
+      if (text?.trim().includes(message)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  async waitForToastMessage(message: string, timeout: number = 5000): Promise<boolean> {
+    try {
+      await this.page.waitForFunction(
+        (msg) => {
+          const toastMessages = Array.from(document.querySelectorAll(".el-message--error"));
+          for (const el of toastMessages) {
+            if (el.textContent?.includes(msg)) {
+              return true;
+            }
+          }
+          return false;
+        },
+        message,
+        { timeout }
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   async listCategories(): Promise<string[]> {

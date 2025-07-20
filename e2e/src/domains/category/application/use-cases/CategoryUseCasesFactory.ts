@@ -180,6 +180,13 @@ export class CategoryUseCasesFactory {
     return await this.categoryUiPort.isErrorMessageVisible(message);
   }
 
+  async waitForToastMessage(
+    message: string,
+    timeout?: number
+  ): Promise<boolean> {
+    return await this.categoryUiPort.waitForToastMessage(message, timeout);
+  }
+
   async listCategories(): Promise<string[]> {
     return await this.categoryUiPort.listCategories();
   }

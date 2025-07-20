@@ -126,13 +126,21 @@ When(
 Then(
   "the category creation should fail with error {string}",
   async function (errorMessage: string) {
-    const errorVisible = await categoryUseCases.isErrorMessageVisible(
-      errorMessage
+    // Wait for the toast message to appear
+    const toastVisible = await categoryUseCases.waitForToastMessage(
+      errorMessage,
+      10000
     );
-    if (!errorVisible) {
-      throw new Error(
-        `Expected error message "${errorMessage}" was not visible`
+    if (!toastVisible) {
+      // Fallback to checking for any error message
+      const errorVisible = await categoryUseCases.isErrorMessageVisible(
+        errorMessage
       );
+      if (!errorVisible) {
+        throw new Error(
+          `Expected error message "${errorMessage}" was not visible in toast or form`
+        );
+      }
     }
   }
 );
@@ -163,12 +171,33 @@ When(
 Then(
   "the update should fail with error {string}",
   async function (errorMessage: string) {
-    const errorVisible = await categoryUseCases.isErrorMessageVisible(
-      errorMessage
+    // Wait for the toast message to appear
+    const toastVisible = await categoryUseCases.waitForToastMessage(
+      errorMessage,
+      10000
     );
-    if (!errorVisible) {
+    if (!toastVisible) {
+      // Fallback to checking for any error message
+      const errorVisible = await categoryUseCases.isErrorMessageVisible(
+        errorMessage
+      );
+      if (!errorVisible) {
+        throw new Error(
+          `Expected error message "${errorMessage}" was not visible in toast or form`
+        );
+      }
+    }
+
+    // Wait a bit for the UI to stabilize
+    await this.page.waitForTimeout(1000);
+
+    // Verify that the form is still open (indicating the update failed)
+    const dialogVisible = await this.page.isVisible(
+      '[data-testid="category-dialog"]'
+    );
+    if (!dialogVisible) {
       throw new Error(
-        `Expected error message "${errorMessage}" was not visible`
+        `Expected category dialog to remain open after failed update, but it was closed`
       );
     }
   }
@@ -189,13 +218,21 @@ When("I delete the category {string}", async function (name: string) {
 Then(
   "the deletion should fail with error {string}",
   async function (errorMessage: string) {
-    const errorVisible = await categoryUseCases.isErrorMessageVisible(
-      errorMessage
+    // Wait for the toast message to appear
+    const toastVisible = await categoryUseCases.waitForToastMessage(
+      errorMessage,
+      10000
     );
-    if (!errorVisible) {
-      throw new Error(
-        `Expected error message "${errorMessage}" was not visible`
+    if (!toastVisible) {
+      // Fallback to checking for any error message
+      const errorVisible = await categoryUseCases.isErrorMessageVisible(
+        errorMessage
       );
+      if (!errorVisible) {
+        throw new Error(
+          `Expected error message "${errorMessage}" was not visible in toast or form`
+        );
+      }
     }
   }
 );
