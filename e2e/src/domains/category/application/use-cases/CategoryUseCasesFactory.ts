@@ -263,4 +263,12 @@ export class CategoryUseCasesFactory {
       true // expectError
     );
   }
+
+  // Helper to generate a unique name of a given length
+  public generateUniqueName(length: number): string {
+    const unique = Math.random().toString(36).substring(2, 8); // 6-char unique string
+    if (length <= unique.length) return unique.substring(0, length);
+    const base = "A".repeat(length - unique.length);
+    return base + unique;
+  }
 }

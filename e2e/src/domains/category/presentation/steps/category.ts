@@ -207,6 +207,50 @@ When(
   }
 );
 
+When(
+  "I create a category with a name of {int} characters, icon {string}, and type {string}",
+  async function (length: number, icon: string, type: string) {
+    const name = categoryUseCases.generateUniqueName(length);
+    this.generatedCategoryName = name;
+    await categoryUseCases.createCategory(
+      name,
+      icon,
+      type,
+      undefined,
+      false // expectError: false (happy case)
+    );
+  }
+);
+
+When(
+  "I attempt to create a category with a name of {int} characters, icon {string}, and type {string}",
+  async function (length: number, icon: string, type: string) {
+    const name = categoryUseCases.generateUniqueName(length);
+    this.generatedCategoryName = name;
+    await categoryUseCases.createCategory(
+      name,
+      icon,
+      type,
+      undefined,
+      true // expectError: true (error case)
+    );
+  }
+);
+
+Then(
+  "the category with a name of {int} characters should be created successfully",
+  async function (length: number) {
+    const name = this.generatedCategoryName;
+    if (!name) {
+      throw new Error("No generated category name found for assertion");
+    }
+    const created = await categoryUseCases.isCategoryCreated(name);
+    if (!created) {
+      throw new Error(`Category with a name of ${length} characters was not created successfully (name: ${name})`);
+    }
+  }
+);
+
 When("I delete the category {string}", async function (name: string) {
   await categoryUseCases.deleteCategory(name);
 });

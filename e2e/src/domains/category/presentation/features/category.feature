@@ -28,9 +28,14 @@ Feature: Category Management
     When I update category "A" to have parent "B"
     Then the update should fail with error "Cyclic dependency detected: category cannot be its own ancestor"
 
+  @focus @boundary
+  Scenario: Successfully create a category with a name at maximum length
+    When I create a category with a name of 100 characters, icon "Food", and type "expense"
+    Then the category with a name of 100 characters should be created successfully
+
   @focus
   Scenario: Fail to create a category with a name exceeding maximum length
-    When I create a category with name "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", icon "Food", type "expense"
+    When I attempt to create a category with a name of 101 characters, icon "Food", and type "expense"
     Then the category creation should fail with error "Category name exceeds maximum length"
 
   Scenario: Fail to delete a category that has children

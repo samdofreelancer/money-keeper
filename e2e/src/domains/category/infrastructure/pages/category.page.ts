@@ -50,6 +50,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
         await this.page.getByTestId("button-submit").click();
         logger.info(`Submitted category and expect error`)
         // Wait for a failed POST /categories response (status 400-499)
+        logger.info(`Wait for a failed POST /categories response (status 400-499)`);
         const response = await this.page.waitForResponse(
           (resp) =>
             resp.url().includes("/categories") &&
