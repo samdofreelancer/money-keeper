@@ -8,7 +8,6 @@ Feature: Category Management
     Given the system has no categories
     And the user is on the Category Management page
 
-  @focus
   Scenario: Successfully create a new category
     When I create a category with name "Food", icon "Food", type "expense"
     Then the category "Food" should be created successfully

@@ -115,7 +115,7 @@ export class CategoryUseCasesFactory {
       expectError
     );
     // If a category was created and a tracker is provided, call it
-    if (!expectError && result && typeof result === 'string' && trackCreatedCategory) {
+    if (!expectError && result && trackCreatedCategory) {
       trackCreatedCategory(result, name);
     }
     return result;
