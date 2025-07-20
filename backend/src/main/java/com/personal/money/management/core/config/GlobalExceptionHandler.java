@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -62,5 +64,26 @@ public class GlobalExceptionHandler {
             ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String message = "Validation error";
+        if (ex.getBindingResult().hasErrors()) {
+            FieldError fieldError = ex.getBindingResult().getFieldError();
+            if (fieldError != null) {
+                if ("name".equals(fieldError.getField()) && fieldError.getCode() != null && fieldError.getCode().contains("Size")) {
+                    message = "Category name exceeds maximum length";
+                } else {
+                    message = fieldError.getDefaultMessage();
+                }
+            }
+        }
+        ApiErrorResponse errorResponse = new ApiErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+            message
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }

@@ -102,10 +102,11 @@ export class CategoryUseCasesFactory {
     name: string,
     icon: string,
     type: string,
-    parent?: string
-  ): Promise<string> {
+    parent?: string,
+    expectError: boolean = false
+  ): Promise<string | void> {
     await this.categoryUiPort.navigateToCategoryPage();
-    return await this.categoryUiPort.createCategory(name, icon, type, parent);
+    return await this.categoryUiPort.createCategory(name, icon, type, parent, expectError);
   }
 
   async createUniqueCategory(
@@ -113,18 +114,20 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string,
     parent?: string,
-    trackCreatedCategory?: (id: string, name: string) => Promise<void>
-  ): Promise<string> {
+    trackCreatedCategory?: (id: string, name: string) => Promise<void>,
+    expectError: boolean = false
+  ): Promise<string | void> {
     logger.info(
-      `Creating unique category with icon: ${icon}, type: ${type}, parent: ${parent}`
+      `Creating unique category with icon: ${icon}, type: ${type}, parent: ${parent}, expectError: ${expectError}`
     );
     const categoryId = await this.categoryUiPort.createUniqueCategory(
       name,
       icon,
       type,
-      parent
+      parent,
+      expectError
     );
-    if (trackCreatedCategory) {
+    if (trackCreatedCategory && categoryId && typeof categoryId === 'string') {
       await trackCreatedCategory(categoryId, name);
     }
     return categoryId;
@@ -146,11 +149,7 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string
   ): Promise<void> {
-    await this.categoryUiPort.attemptCreateCategoryExpectingFailure(
-      name,
-      icon,
-      type
-    );
+    await this.categoryUiPort.createCategory(name, icon, type, undefined, true);
   }
 
   async updateCategoryParent(
@@ -248,5 +247,20 @@ export class CategoryUseCasesFactory {
         );
       }
     }
+  }
+
+  async createCategoryExpectingError(
+    name: string,
+    icon: string,
+    type: string
+  ): Promise<void> {
+    await this.createUniqueCategory(
+      name,
+      icon,
+      type,
+      undefined,
+      undefined,
+      true // expectError
+    );
   }
 }

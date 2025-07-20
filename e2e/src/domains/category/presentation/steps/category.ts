@@ -20,14 +20,10 @@ Given("the user is on the Category Management page", async function () {
 When(
   "I create a category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createUniqueCategory(
+    await categoryUseCases.createCategoryExpectingError(
       name,
       icon,
-      type,
-      undefined,
-      this.trackCreatedCategory
-        ? this.trackCreatedCategory.bind(this)
-        : undefined
+      type
     );
   }
 );

@@ -4,14 +4,16 @@ export interface CategoryUiPort {
     name: string,
     icon: string,
     type: string,
-    parent?: string
-  ): Promise<string>;
+    parent?: string,
+    expectError?: boolean
+  ): Promise<string | void>;
   createUniqueCategory(
     name: string,
     icon: string,
     type: string,
-    parent?: string
-  ): Promise<string>;
+    parent?: string,
+    expectError?: boolean
+  ): Promise<string | void>;
   isCategoryCreated(name: string): Promise<boolean>;
   isCategoryChildOf(childName: string, parentName: string): Promise<boolean>;
   createCategoryWithDuplicateName(
@@ -33,10 +35,4 @@ export interface CategoryUiPort {
   waitForToastMessage(message: string, timeout?: number): Promise<boolean>;
   listCategories(): Promise<string[]>;
   assertOnCategoryPage(): Promise<void>;
-  attemptCreateCategoryExpectingFailure(
-    name: string,
-    icon: string,
-    type: string,
-    parent?: string
-  ): Promise<void>;
 }

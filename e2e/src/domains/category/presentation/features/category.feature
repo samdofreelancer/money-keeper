@@ -22,15 +22,15 @@ Feature: Category Management
     When I create another category with name "Transport", icon "Transport", type "expense"
     Then the category creation should fail with error "Category name already exists"
 
-  @focus
   Scenario: Fail to update a category to create a cyclic parent relationship
     Given a category "A" with icon "Transport" and type "expense" exists
     And a category "B" with icon "Food" and type "expense" and parent "A" exists
     When I update category "A" to have parent "B"
     Then the update should fail with error "Cyclic dependency detected: category cannot be its own ancestor"
 
+  @focus
   Scenario: Fail to create a category with a name exceeding maximum length
-    When I create a category with name "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", icon "X", type "expense"
+    When I create a category with name "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", icon "Food", type "expense"
     Then the category creation should fail with error "Category name exceeds maximum length"
 
   Scenario: Fail to delete a category that has children
