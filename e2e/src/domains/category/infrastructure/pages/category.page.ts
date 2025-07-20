@@ -20,7 +20,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     icon: string,
     type: string,
     parent?: string,
-    expectError: boolean = false
+    expectError = false
   ): Promise<string | void> {
     try {
       logger.info(
@@ -48,16 +48,21 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
       if (expectError) {
         logger.info(`Submit category with expect error`);
         await this.page.getByTestId("button-submit").click();
-        logger.info(`Submitted category and expect error`)
+        logger.info(`Submitted category and expect error`);
         // Wait for a failed POST /categories response (status 400-499)
-        logger.info(`Wait for a failed POST /categories response (status 400-499)`);
+        logger.info(
+          `Wait for a failed POST /categories response (status 400-499)`
+        );
         const response = await this.page.waitForResponse(
           (resp) =>
             resp.url().includes("/categories") &&
             resp.request().method() === "POST" &&
-            resp.status() >= 400 && resp.status() < 500
+            resp.status() >= 400 &&
+            resp.status() < 500
         );
-        logger.info(`Received expected error response for category creation: status ${response.status()}`);
+        logger.info(
+          `Received expected error response for category creation: status ${response.status()}`
+        );
         return;
       } else {
         const [response] = await Promise.all([
@@ -70,7 +75,9 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
           this.page.getByTestId("button-submit").click(),
         ]);
         const data = await response.json();
-        logger.info(`Category ${name} created successfully with id: ${data.id}`);
+        logger.info(
+          `Category ${name} created successfully with id: ${data.id}`
+        );
         return data.id;
       }
     } catch (error) {
@@ -84,10 +91,16 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     icon: string,
     type: string,
     parent?: string,
-    expectError: boolean = false
+    expectError = false
   ): Promise<string | void> {
     const uniqueName = `${name}-${Date.now()}`;
-    return await this.createCategory(uniqueName, icon, type, parent, expectError);
+    return await this.createCategory(
+      uniqueName,
+      icon,
+      type,
+      parent,
+      expectError
+    );
   }
 
   async isCategoryCreated(name: string): Promise<boolean> {
@@ -123,13 +136,17 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     categoryName: string,
     newParentName: string
   ): Promise<void> {
-    logger.info(`Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`);
+    logger.info(
+      `Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`
+    );
     // Ensure on Category Management page
     await this.assertOnCategoryPage();
-    
+
     // Find the row/container that contains the category name
     const categoryRow = this.page.locator('[data-testid="tree-node-content"]', {
-      has: this.page.getByTestId('category-name').filter({ hasText: categoryName }),
+      has: this.page
+        .getByTestId("category-name")
+        .filter({ hasText: categoryName }),
     });
 
     // Find the edit button within that row
@@ -137,33 +154,43 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
 
     // Click the edit button
     await editButton.click();
-    
+
     // Open the parent dropdown
     await this.page
       .getByTestId("select-parent-category")
       .locator("div")
       .nth(3)
       .click();
-    
+
     // Select the new parent by name
     await this.page.getByRole("option", { name: newParentName }).click();
     logger.info(`Selected parent "${newParentName}"`);
-    
+
     // Submit the update and wait for any response (success or error)
-    await this.page.getByTestId("button-submit").click();    
+    await this.page.getByTestId("button-submit").click();
     await this.page.waitForResponse(
       (resp) => {
-        const isCategoryPut = resp.url().includes("/categories/") && resp.request().method() === "PUT";
-        logger.info(`Response intercepted: url=${resp.url()}, method=${resp.request().method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`);
+        const isCategoryPut =
+          resp.url().includes("/categories/") &&
+          resp.request().method() === "PUT";
+        logger.info(
+          `Response intercepted: url=${resp.url()}, method=${resp
+            .request()
+            .method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`
+        );
         if (isCategoryPut) {
-          logger.info(`Received PUT response for categories: ${resp.status()} - ${resp.url()}`);
+          logger.info(
+            `Received PUT response for categories: ${resp.status()} - ${resp.url()}`
+          );
         }
         return isCategoryPut;
       },
       { timeout: 10000 }
     );
 
-    logger.info(`Ending updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`);
+    logger.info(
+      `Ending updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`
+    );
   }
 
   async deleteCategory(name: string): Promise<void> {
@@ -180,7 +207,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
         return true;
       }
     }
-    
+
     // Then check for Element Plus toast messages
     const toastMessages = await this.page.$$(".el-message--error");
     for (const el of toastMessages) {
@@ -189,20 +216,20 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
         return true;
       }
     }
-    
+
     // Also check for any element with the error message text
     const messageElements = await this.page.$$(`text=${message}`);
     if (messageElements.length > 0) {
       return true;
     }
-    
+
     return false;
   }
 
   async isToastMessageVisible(message: string): Promise<boolean> {
     // Wait a bit for toast to appear
     await this.page.waitForTimeout(1000);
-    
+
     // Check for Element Plus toast messages
     const toastMessages = await this.page.$$(".el-message--error");
     for (const el of toastMessages) {
@@ -211,15 +238,17 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
         return true;
       }
     }
-    
+
     return false;
   }
 
-  async waitForToastMessage(message: string, timeout: number = 5000): Promise<boolean> {
+  async waitForToastMessage(message: string, timeout = 5000): Promise<boolean> {
     try {
       await this.page.waitForFunction(
         (msg) => {
-          const toastMessages = Array.from(document.querySelectorAll(".el-message--error"));
+          const toastMessages = Array.from(
+            document.querySelectorAll(".el-message--error")
+          );
           for (const el of toastMessages) {
             if (el.textContent?.includes(msg)) {
               return true;

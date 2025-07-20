@@ -103,10 +103,16 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string,
     parent?: string,
-    expectError: boolean = false
+    expectError = false
   ): Promise<string | void> {
     await this.categoryUiPort.navigateToCategoryPage();
-    return await this.categoryUiPort.createCategory(name, icon, type, parent, expectError);
+    return await this.categoryUiPort.createCategory(
+      name,
+      icon,
+      type,
+      parent,
+      expectError
+    );
   }
 
   async createUniqueCategory(
@@ -115,7 +121,7 @@ export class CategoryUseCasesFactory {
     type: string,
     parent?: string,
     trackCreatedCategory?: (id: string, name: string) => Promise<void>,
-    expectError: boolean = false
+    expectError = false
   ): Promise<string | void> {
     logger.info(
       `Creating unique category with icon: ${icon}, type: ${type}, parent: ${parent}, expectError: ${expectError}`
@@ -127,7 +133,7 @@ export class CategoryUseCasesFactory {
       parent,
       expectError
     );
-    if (trackCreatedCategory && categoryId && typeof categoryId === 'string') {
+    if (trackCreatedCategory && categoryId && typeof categoryId === "string") {
       await trackCreatedCategory(categoryId, name);
     }
     return categoryId;

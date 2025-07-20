@@ -20,11 +20,7 @@ Given("the user is on the Category Management page", async function () {
 When(
   "I create a category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createCategoryExpectingError(
-      name,
-      icon,
-      type
-    );
+    await categoryUseCases.createCategoryExpectingError(name, icon, type);
   }
 );
 
@@ -246,7 +242,9 @@ Then(
     }
     const created = await categoryUseCases.isCategoryCreated(name);
     if (!created) {
-      throw new Error(`Category with a name of ${length} characters was not created successfully (name: ${name})`);
+      throw new Error(
+        `Category with a name of ${length} characters was not created successfully (name: ${name})`
+      );
     }
   }
 );
