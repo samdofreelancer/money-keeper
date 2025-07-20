@@ -116,22 +116,21 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     categoryName: string,
     newParentName: string
   ): Promise<void> {
-    await this.page.click(`text=${categoryName}`);
-    await this.page.getByTestId("select-parent-category").click();
-    const parentOptions = await this.page.$$('[data-testid="option-parent-category"]');
-    let found = false;
-    for (const option of parentOptions) {
-      const text = await option.textContent();
-      if (text?.trim() === newParentName) {
-        await option.click();
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      throw new Error(`Parent category option '${newParentName}' not found in dropdown.`);
-    }
-    await this.page.getByTestId("button-update-category").click();
+    // Ensure on Category Management page
+    await this.assertOnCategoryPage();
+    // Find the element containing the category name
+    const categoryNameElement = await this.page.getByText(categoryName, { exact: true });
+    // Go up to the parent container (adjust the number of '..' as needed for your DOM)
+    const categoryContainer = categoryNameElement.locator('..');
+    // Find the edit button within this container
+    const editButton = categoryContainer.getByTestId('edit-category-button');
+    await editButton.click();
+    // Open the parent dropdown
+    await this.page.getByTestId('select-parent-category').locator('div').nth(3).click();
+    // Select the new parent by name
+    await this.page.getByRole('option', { name: newParentName }).click();
+    // Submit the update
+    await this.page.getByTestId('button-submit').click();
   }
 
   async deleteCategory(name: string): Promise<void> {
