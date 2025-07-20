@@ -116,47 +116,34 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     categoryName: string,
     newParentName: string
   ): Promise<void> {
-    logger.debug(`Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`);
+    logger.info(`Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`);
     // Ensure on Category Management page
     await this.assertOnCategoryPage();
-    logger.info("Asserted on Category Management page");
-    logger.info(`Updating category "${categoryName}" to have parent "${newParentName}"`);
     
     // Find the row/container that contains the category name
     const categoryRow = this.page.locator('[data-testid="tree-node-content"]', {
       has: this.page.getByTestId('category-name').filter({ hasText: categoryName }),
     });
-    logger.info(`Located tree-node-content row for: '${categoryName}' with categoryRow: ${categoryRow}`);
 
     // Find the edit button within that row
     const editButton = categoryRow.getByTestId("edit-category-button");
-    logger.info(`Located edit button in tree-node-content row: ${editButton}`);
 
     // Click the edit button
     await editButton.click();
-    logger.info(`Clicked edit button for category "${categoryName}"`);
     
     // Open the parent dropdown
-    logger.info("Opening parent dropdown");
     await this.page
       .getByTestId("select-parent-category")
       .locator("div")
       .nth(3)
       .click();
-    logger.info(`Opened parent dropdown`);
     
     // Select the new parent by name
-    logger.info(`Selecting new parent by name: '${newParentName}'`);
     await this.page.getByRole("option", { name: newParentName }).click();
     logger.info(`Selected parent "${newParentName}"`);
     
     // Submit the update and wait for any response (success or error)
-    logger.info(`Submitting update category`);
-    logger.info("Clicking submit button");
-    await this.page.getByTestId("button-submit").click();
-    logger.info(`Summited category`);
-    
-    logger.info("Waiting for PUT /categories/ response");
+    await this.page.getByTestId("button-submit").click();    
     await this.page.waitForResponse(
       (resp) => {
         const isCategoryPut = resp.url().includes("/categories/") && resp.request().method() === "PUT";
@@ -168,8 +155,8 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
       },
       { timeout: 10000 }
     );
-    logger.info(`Update category request completed`);
-    logger.info("Exiting updateCategoryParent");
+
+    logger.info(`Ending updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`);
   }
 
   async deleteCategory(name: string): Promise<void> {
