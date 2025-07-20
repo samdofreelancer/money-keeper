@@ -1,3 +1,5 @@
+import { Page } from "@playwright/test";
+
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../shared";
 import {
@@ -195,8 +197,12 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string,
     parent: string,
-    trackCreatedCategory?: (id: string, name: string, opts?: { isParent?: boolean }) => Promise<void>,
-    page?: any // Playwright Page, for reload and UI assertion
+    trackCreatedCategory?: (
+      id: string,
+      name: string,
+      opts?: { isParent?: boolean }
+    ) => Promise<void>,
+    page?: Page // Playwright Page, for reload and UI assertion
   ): Promise<void> {
     // Ensure parent exists and get its ID
     const parentId = await this.ensureParentCategoryExists(

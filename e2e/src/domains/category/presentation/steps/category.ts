@@ -145,7 +145,9 @@ Given(
       icon,
       type,
       parent,
-      this.trackCreatedCategory ? this.trackCreatedCategory.bind(this) : undefined,
+      this.trackCreatedCategory
+        ? this.trackCreatedCategory.bind(this)
+        : undefined,
       this.page
     );
   }
