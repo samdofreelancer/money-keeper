@@ -194,8 +194,19 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
   }
 
   async deleteCategory(name: string): Promise<void> {
-    await this.page.click(`text=${name}`);
-    await this.page.click("button#delete-category");
+    logger.info(`Start delete category: ${name}`);
+    // Find the row/container that contains the category name
+    const categoryRow = this.page.locator('[data-testid="tree-node-content"]', {
+      has: this.page.getByTestId('category-name').filter({ hasText: name }),
+    });
+    // Find the delete button within that row
+    logger.info(`Find the delete button within that row: ${categoryRow}`)
+    const deleteButton = categoryRow.getByTestId("delete-category-button");
+    await deleteButton.click();
+    logger.info(`Confirming delete category`);
+    await this.page.getByTestId('button-confirm-delete').click();
+    logger.info(`Confirmed delete category`);
+    logger.info(`End delete category: ${name}`);
   }
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
@@ -317,5 +328,11 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     if (!isVisible) {
       throw new Error("Category Management page did not load correctly");
     }
+  }
+
+  async isErrorMessageVisibleInErrorBox(message: string): Promise<boolean> {
+    const errorLocator = this.page.getByTestId('error-message');
+    const errorText = await errorLocator.textContent();
+    return !!errorText && errorText.includes(message);
   }
 }

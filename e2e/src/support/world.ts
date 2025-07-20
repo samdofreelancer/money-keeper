@@ -221,6 +221,7 @@ export class CustomWorld extends World {
     categoryName: string,
     opts?: { isParent?: boolean }
   ): Promise<void> {
+    logger.info(`Tracking created category`)
     if (!this.createdCategoryIds) this.createdCategoryIds = [];
     if (!this.createdCategoryNames) this.createdCategoryNames = [];
     if (!this.createdParentCategoryIds) this.createdParentCategoryIds = [];
@@ -239,6 +240,9 @@ export class CustomWorld extends World {
         categoryId: categoryId ?? undefined,
       })
     );
+
+    logger.info(`Tracked create category: ${this.createdCategoryIds}`)
+    logger.info(`Tracked create parent category: ${this.createdParentCategoryIds}`)
   }
 
   /**

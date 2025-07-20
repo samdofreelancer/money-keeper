@@ -103,16 +103,22 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string,
     parent?: string,
-    expectError = false
+    expectError = false,
+    trackCreatedCategory?: (id: string, name: string) => void
   ): Promise<string | void> {
     await this.categoryUiPort.navigateToCategoryPage();
-    return await this.categoryUiPort.createCategory(
+    const result = await this.categoryUiPort.createCategory(
       name,
       icon,
       type,
       parent,
       expectError
     );
+    // If a category was created and a tracker is provided, call it
+    if (!expectError && result && typeof result === 'string' && trackCreatedCategory) {
+      trackCreatedCategory(result, name);
+    }
+    return result;
   }
 
   async createUniqueCategory(
@@ -133,8 +139,13 @@ export class CategoryUseCasesFactory {
       parent,
       expectError
     );
-    if (trackCreatedCategory && categoryId && typeof categoryId === "string") {
-      await trackCreatedCategory(categoryId, name);
+
+    logger.info(`Category created: ${categoryId} and trackCreatedCategory: ${trackCreatedCategory}`)
+    if (trackCreatedCategory && categoryId) {
+      logger.info(`call trackCreatedCategory`)
+      await trackCreatedCategory(categoryId.toString(), name);
+    } else {
+      logger.info(`Don't call trackCreatedCategory`)
     }
     return categoryId;
   }
@@ -183,6 +194,10 @@ export class CategoryUseCasesFactory {
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
     return await this.categoryUiPort.isErrorMessageVisible(message);
+  }
+
+  async isErrorMessageVisibleInErrorBox(message: string): Promise<boolean> {
+    return await this.categoryUiPort.isErrorMessageVisibleInErrorBox(message);
   }
 
   async waitForToastMessage(

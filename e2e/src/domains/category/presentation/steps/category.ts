@@ -20,7 +20,13 @@ Given("the user is on the Category Management page", async function () {
 When(
   "I create a category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createCategoryExpectingError(name, icon, type);
+    await categoryUseCases.createUniqueCategory(
+      name,
+      icon,
+      type,
+      undefined,
+      this.trackCreatedCategory?.bind(this)
+    );
   }
 );
 
@@ -213,7 +219,8 @@ When(
       icon,
       type,
       undefined,
-      false // expectError: false (happy case)
+      false, // expectError: false (happy case)
+      this.trackCreatedCategory.bind(this)
     );
   }
 );
@@ -228,7 +235,8 @@ When(
       icon,
       type,
       undefined,
-      true // expectError: true (error case)
+      true, // expectError: true (error case)
+      this.trackCreatedCategory.bind(this)
     );
   }
 );
@@ -256,21 +264,11 @@ When("I delete the category {string}", async function (name: string) {
 Then(
   "the deletion should fail with error {string}",
   async function (errorMessage: string) {
-    // Wait for the toast message to appear
-    const toastVisible = await categoryUseCases.waitForToastMessage(
-      errorMessage,
-      10000
-    );
-    if (!toastVisible) {
-      // Fallback to checking for any error message
-      const errorVisible = await categoryUseCases.isErrorMessageVisible(
-        errorMessage
+    const errorVisible = await categoryUseCases.isErrorMessageVisibleInErrorBox(errorMessage);
+    if (!errorVisible) {
+      throw new Error(
+        `Expected error message "${errorMessage}" was not visible in the category page error-message element.`
       );
-      if (!errorVisible) {
-        throw new Error(
-          `Expected error message "${errorMessage}" was not visible in toast or form`
-        );
-      }
     }
   }
 );
@@ -317,3 +315,17 @@ When(
     await categoryUseCases.updateCategoryNameAndIcon(oldName, newName, newIcon);
   }
 );
+
+After(async function () {
+  // Clean up all tracked categories after each scenario
+  if (this.createdCategoryIds && this.createdCategoryIds.length > 0) {
+    for (const { id } of this.createdCategoryIds) {
+      try {
+        await categoryUseCases.deleteCategory(id);
+      } catch (e) {
+        // Ignore errors if the category does not exist
+      }
+    }
+    this.createdCategoryIds = [];
+  }
+});

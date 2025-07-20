@@ -32,6 +32,7 @@ export interface CategoryUiPort {
   ): Promise<void>;
   deleteCategory(name: string): Promise<void>;
   isErrorMessageVisible(message: string): Promise<boolean>;
+  isErrorMessageVisibleInErrorBox(message: string): Promise<boolean>;
   waitForToastMessage(message: string, timeout?: number): Promise<boolean>;
   listCategories(): Promise<string[]>;
   assertOnCategoryPage(): Promise<void>;
