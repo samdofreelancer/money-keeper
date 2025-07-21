@@ -28,7 +28,8 @@ export class GetAccountListQuery
       return {
         success: true,
         accounts: accounts.map((account) => ({
-          id: account.id,
+          // Using accountName as a unique identifier since Account has no id property
+          id: account.accountName,
           accountName: account.accountName,
           accountType: account.accountType,
           balance: account.initialBalance,

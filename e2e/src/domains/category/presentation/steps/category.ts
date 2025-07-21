@@ -264,7 +264,9 @@ When("I delete the category {string}", async function (name: string) {
 Then(
   "the deletion should fail with error {string}",
   async function (errorMessage: string) {
-    const errorVisible = await categoryUseCases.isErrorMessageVisibleInErrorBox(errorMessage);
+    const errorVisible = await categoryUseCases.isErrorMessageVisibleInErrorBox(
+      errorMessage
+    );
     if (!errorVisible) {
       throw new Error(
         `Expected error message "${errorMessage}" was not visible in the category page error-message element.`

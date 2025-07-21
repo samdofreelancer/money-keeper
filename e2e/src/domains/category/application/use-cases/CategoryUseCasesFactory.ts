@@ -140,12 +140,14 @@ export class CategoryUseCasesFactory {
       expectError
     );
 
-    logger.info(`Category created: ${categoryId} and trackCreatedCategory: ${trackCreatedCategory}`)
+    logger.info(
+      `Category created: ${categoryId} and trackCreatedCategory: ${trackCreatedCategory}`
+    );
     if (trackCreatedCategory && categoryId) {
-      logger.info(`call trackCreatedCategory`)
+      logger.info(`call trackCreatedCategory`);
       await trackCreatedCategory(categoryId.toString(), name);
     } else {
-      logger.info(`Don't call trackCreatedCategory`)
+      logger.info(`Don't call trackCreatedCategory`);
     }
     return categoryId;
   }
