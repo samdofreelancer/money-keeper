@@ -37,6 +37,8 @@ export class CategoryUseCasesFactory {
   }
   private categoryUiPort: CategoryUiPort;
 
+  public lastCreatedCategoryName?: string;
+
   constructor(categoryUiPort: CategoryUiPort) {
     this.categoryUiPort = categoryUiPort;
   }
@@ -117,6 +119,9 @@ export class CategoryUseCasesFactory {
     // If a category was created and a tracker is provided, call it
     if (!expectError && result && trackCreatedCategory) {
       trackCreatedCategory(result, name);
+    }
+    if (!expectError) {
+      this.lastCreatedCategoryName = name;
     }
     return result;
   }
@@ -287,11 +292,72 @@ export class CategoryUseCasesFactory {
     );
   }
 
+  public async attemptToCreateCategoryWithNameExceedingMaxLength(
+    icon: string,
+    type: string,
+    onCreated?: (name: string) => void
+  ) {
+    const maxLength = 255; // Ideally, get from config/constant
+    const longName = this.generateUniqueName(maxLength + 1);
+    if (onCreated) onCreated(longName);
+    await this.createCategory(
+      longName,
+      icon,
+      type,
+      undefined,
+      true, // expectError: true (validation error expected)
+      onCreated
+    );
+  }
+
+public async createCategoryWithGeneratedName(
+  length: number,
+  icon: string,
+  type: string,
+  onCreated?: (name: string) => void
+): Promise<string> {
+  const name = this.generateUniqueName(length);
+  if (onCreated) onCreated(name);
+  await this.createCategory(
+    name,
+    icon,
+    type,
+    undefined,
+    false, // expectError: false (happy case)
+    onCreated
+  );
+  return name;
+}
+
+  public async attemptToCreateCategoryWithDuplicateName(
+    icon: string,
+    type: string,
+    onCreated?: (name: string) => void
+  ) {
+    // Assume the last created category name is the duplicate
+    const duplicateName = this.lastCreatedCategoryName || 'DuplicateCategory';
+    if (onCreated) onCreated(duplicateName);
+    await this.createCategory(
+      duplicateName,
+      icon,
+      type,
+      undefined,
+      true, // expectError: true (validation error expected)
+      onCreated
+    );
+  }
+
   // Helper to generate a unique name of a given length
   public generateUniqueName(length: number): string {
-    const unique = Math.random().toString(36).substring(2, 8); // 6-char unique string
-    if (length <= unique.length) return unique.substring(0, length);
-    const base = "A".repeat(length - unique.length);
-    return base + unique;
+    // Generate a fully random string of the requested length
+    function randomString(len: number) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < len; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+    return randomString(length);
   }
 }

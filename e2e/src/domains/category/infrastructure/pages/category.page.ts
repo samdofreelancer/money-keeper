@@ -47,19 +47,17 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
       logger.info(`Submitting category creation for: ${name}`);
       if (expectError) {
         logger.info(`Submit category with expect error`);
-        await this.page.getByTestId("button-submit").click();
-        logger.info(`Submitted category and expect error`);
-        // Wait for a failed POST /categories response (status 400-499)
-        logger.info(
-          `Wait for a failed POST /categories response (status 400-499)`
-        );
-        const response = await this.page.waitForResponse(
-          (resp) =>
-            resp.url().includes("/categories") &&
-            resp.request().method() === "POST" &&
-            resp.status() >= 400 &&
-            resp.status() < 500
-        );
+        logger.info(`Wait for a failed POST /categories response (status 400-499)`);
+        const [response] = await Promise.all([
+          this.page.waitForResponse(
+            (resp) =>
+              resp.url().includes("/categories") &&
+              resp.request().method() === "POST" &&
+              resp.status() >= 400 &&
+              resp.status() < 500
+          ),
+          this.page.getByTestId("button-submit").click(),
+        ]);
         logger.info(
           `Received expected error response for category creation: status ${response.status()}`
         );
@@ -143,17 +141,36 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     await this.assertOnCategoryPage();
 
     // Find the row/container that contains the category name
-    const categoryRow = this.page.locator('[data-testid="tree-node-content"]', {
-      has: this.page
-        .getByTestId("category-name")
-        .filter({ hasText: categoryName }),
-    });
+    const categoryRows = this.page.locator(
+      '[data-testid="tree-node-content"]',
+      {
+        has: this.page
+          .getByTestId("category-name")
+          .filter({ hasText: categoryName }),
+      }
+    );
+    const rowCount = await categoryRows.count();
+    logger.info(
+      `[DEBUG] Found ${rowCount} category rows for name: ${categoryName}`
+    );
+    for (let i = 0; i < rowCount; i++) {
+      const rowText = await categoryRows.nth(i).textContent();
+      logger.info(`[DEBUG] Row ${i} text:`, rowText);
+    }
 
     // Find the edit button within that row
-    const editButton = categoryRow.getByTestId("edit-category-button");
+    const editButtons = categoryRows.getByTestId("edit-category-button");
+    const editButtonCount = await editButtons.count();
+    logger.info(
+      `[DEBUG] Found ${editButtonCount} edit buttons for category: ${categoryName}`
+    );
+    for (let i = 0; i < editButtonCount; i++) {
+      const btnText = await editButtons.nth(i).textContent();
+      logger.info(`[DEBUG] Edit button ${i} text:`, btnText);
+    }
 
     // Click the edit button
-    await editButton.click();
+    await editButtons.first().click();
 
     // Open the parent dropdown
     await this.page
@@ -167,26 +184,28 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     logger.info(`Selected parent "${newParentName}"`);
 
     // Submit the update and wait for any response (success or error)
-    await this.page.getByTestId("button-submit").click();
-    await this.page.waitForResponse(
-      (resp) => {
-        const isCategoryPut =
-          resp.url().includes("/categories/") &&
-          resp.request().method() === "PUT";
-        logger.info(
-          `Response intercepted: url=${resp.url()}, method=${resp
-            .request()
-            .method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`
-        );
-        if (isCategoryPut) {
+    const [putResponse] = await Promise.all([
+      this.page.waitForResponse(
+        (resp) => {
+          const isCategoryPut =
+            resp.url().includes("/categories/") &&
+            resp.request().method() === "PUT";
           logger.info(
-            `Received PUT response for categories: ${resp.status()} - ${resp.url()}`
+            `Response intercepted: url=${resp.url()}, method=${resp
+              .request()
+              .method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`
           );
-        }
-        return isCategoryPut;
-      },
-      { timeout: 10000 }
-    );
+          if (isCategoryPut) {
+            logger.info(
+              `Received PUT response for categories: ${resp.status()} - ${resp.url()}`
+            );
+          }
+          return isCategoryPut;
+        },
+        { timeout: 10000 }
+      ),
+      this.page.getByTestId("button-submit").click(),
+    ]);
 
     logger.info(
       `Ending updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`

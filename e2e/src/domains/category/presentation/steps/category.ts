@@ -204,24 +204,21 @@ Then(
 When(
   "I create a category with a name longer than the maximum allowed length",
   async function () {
-    const longName = "A".repeat(256); // Assuming 255 is max length
-    await categoryUseCases.createCategory(longName, "X", "expense");
+    // Call a use case method that handles long name generation internally
+    await categoryUseCases.attemptToCreateCategoryWithNameExceedingMaxLength("default-icon", "expense");
   }
 );
 
 When(
   "I create a category with a name of {int} characters, icon {string}, and type {string}",
   async function (length: number, icon: string, type: string) {
-    const name = categoryUseCases.generateUniqueName(length);
-    this.generatedCategoryName = name;
-    await categoryUseCases.createCategory(
-      name,
+    const name = await categoryUseCases.createCategoryWithGeneratedName(
+      length,
       icon,
       type,
-      undefined,
-      false, // expectError: false (happy case)
       this.trackCreatedCategory.bind(this)
     );
+    this.generatedCategoryName = name;
   }
 );
 
@@ -331,3 +328,14 @@ After(async function () {
     this.createdCategoryIds = [];
   }
 });
+
+When(
+  "I attempt to create a category with a name that is too long, icon {string}, and type {string}",
+  async function (icon: string, type: string) {
+    await categoryUseCases.attemptToCreateCategoryWithNameExceedingMaxLength(
+      icon,
+      type,
+      this.trackCreatedCategory?.bind(this)
+    );
+  }
+);

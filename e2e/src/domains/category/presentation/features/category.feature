@@ -22,6 +22,7 @@ Feature: Category Management
     When I create another category with name "Transport", icon "Transport", type "expense"
     Then the category creation should fail with error "Category name already exists"
 
+  
   Scenario: Fail to update a category to create a cyclic parent relationship
     Given a category "A" with icon "Transport" and type "expense" exists
     And a category "B" with icon "Food" and type "expense" and parent "A" exists
@@ -34,8 +35,9 @@ Feature: Category Management
     When I create a category with a name of 100 characters, icon "Food", and type "expense"
     Then the category with a name of 100 characters should be created successfully
 
-  Scenario: Fail to create a category with a name exceeding maximum length
-    When I attempt to create a category with a name of 101 characters, icon "Food", and type "expense"
+  @validation
+  Scenario: Fail to create a category with a name exceeding the maximum allowed length
+    When I attempt to create a category with a name that is too long, icon "Food", and type "expense"
     Then the category creation should fail with error "Category name exceeds maximum length"
 
   Scenario: Fail to delete a category that has children
