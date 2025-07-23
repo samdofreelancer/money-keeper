@@ -3,16 +3,18 @@ import { Page } from "@playwright/test";
 import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../support/logger";
+import { config } from "../../../../shared/config/env.config";
 
 export class CategoryPage extends BasePage implements CategoryUiPort {
+  private categoryUrl: string;
+
   constructor(public page: Page) {
     super(page);
+    this.categoryUrl = config.browser.baseUrl + "/categories";
   }
 
   async navigateToCategoryPage(): Promise<void> {
-    // Use full URL or base URL from environment config
-    const baseUrl = process.env.BASE_URL || "http://localhost:5173";
-    await this.page.goto(`${baseUrl}/categories`);
+    await this.page.goto(this.categoryUrl);
   }
 
   async createCategory(
