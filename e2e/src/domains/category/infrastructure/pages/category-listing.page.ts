@@ -38,4 +38,30 @@ export class CategoryListingPage extends BasePage {
     // Simple check: child should be visually below parent and horizontally aligned
     return childBox.y > parentBox.y && Math.abs(childBox.x - parentBox.x) < 50;
   }
+
+  async assertOnCategoryPage(): Promise<void> {
+    const url = this.page.url();
+    this.logger.info(`url: ${url}`);
+
+    if (!(await url).includes("/categories")) {
+      throw new Error("User is not on the Category Management page");
+    }
+    // Wait for network to be idle
+    await this.page.waitForLoadState("networkidle");
+    // Wait for loading overlay to disappear if it exists
+    try {
+      await this.page.waitForSelector("[data-test=loading-overlay]", {
+        state: "detached",
+        timeout: 5000,
+      });
+    } catch (e) {
+      // If overlay never appears, that's fine
+    }
+    const isVisible = await this.page.isVisible(
+      "[data-testid=add-category-button]"
+    );
+    if (!isVisible) {
+      throw new Error("Category Management page did not load correctly");
+    }
+  }
 }

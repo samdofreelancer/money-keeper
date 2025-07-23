@@ -1,14 +1,14 @@
 import { Given, When, Then, After } from "@cucumber/cucumber";
 
 import { CategoryUseCasesFactory } from "../../application/use-cases/CategoryUseCasesFactory";
-import { CategoryPage } from "../../infrastructure/pages/category.page";
+import { CategoryUiDriver } from "../../infrastructure/pages/category-ui-driver";
 
 let categoryUseCases: CategoryUseCasesFactory;
 let createdCategoryName: string | null = null;
 
 Given("the system has no categories", async function () {
-  const categoryPage = new CategoryPage(this.page);
-  categoryUseCases = new CategoryUseCasesFactory(categoryPage);
+  const categoryUiDriver = new CategoryUiDriver(this.page);
+  categoryUseCases = new CategoryUseCasesFactory(categoryUiDriver);
   // Implement logic to clear all categories if needed
 });
 

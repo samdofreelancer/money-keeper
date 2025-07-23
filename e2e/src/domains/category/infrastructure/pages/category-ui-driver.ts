@@ -9,7 +9,7 @@ import { UiFeedbackHelper } from "./category-ui-feedback.helper";
 
 const CATEGORY_PATH = "/categories";
 
-export class CategoryPage extends BasePage implements CategoryUiPort {
+export class CategoryUiDriver extends BasePage implements CategoryUiPort {
   private readonly categoryUrl: string;
   private categoryCreationPage: CategoryCreationPage;
   private categoryUpdatingPage: CategoryUpdatingPage;
@@ -124,7 +124,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
   }
 
   async assertOnCategoryPage(): Promise<void> {
-    await this.categoryUpdatingPage.assertOnCategoryPage();
+    await this.categoryListingPage.assertOnCategoryPage();
   }
 
   async isErrorMessageVisibleInErrorBox(message: string): Promise<boolean> {
