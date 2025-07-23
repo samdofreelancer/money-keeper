@@ -2,19 +2,24 @@ import { Page } from "@playwright/test";
 
 import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
-import { logger } from "../../../../support/logger";
-import { config } from "../../../../shared/config/env.config";
+
+const CATEGORY_PATH = "/categories";
 
 export class CategoryPage extends BasePage implements CategoryUiPort {
-  private categoryUrl: string;
+  private readonly categoryUrl: string;
 
   constructor(public page: Page) {
     super(page);
-    this.categoryUrl = config.browser.baseUrl + "/categories";
+    this.categoryUrl = this.baseUrl + CATEGORY_PATH;
   }
 
   async navigateToCategoryPage(): Promise<void> {
-    await this.page.goto(this.categoryUrl);
+    try {
+      await this.page.goto(this.categoryUrl);
+    } catch (error) {
+      this.logger.error(`Failed to navigate to Category page: ${error}`);
+      throw error;
+    }
   }
 
   async createCategory(
@@ -25,31 +30,31 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     expectError = false
   ): Promise<string | void> {
     try {
-      logger.info(
+      this.logger.info(
         `Creating category with name: ${name}, icon: ${icon}, type: ${type}, parent: ${parent}, expectError: ${expectError}`
       );
       await this.page.getByTestId("add-category-button").click();
       await this.page.getByTestId("input-category-name").click();
       await this.page.getByTestId("input-category-name").fill(name);
-      logger.info(`Filled category name: ${name}`);
+      this.logger.info(`Filled category name: ${name}`);
       await this.page.getByTestId("select-icon").locator("div").nth(3).click();
-      logger.info(`Selected icon: ${icon}`);
+      this.logger.info(`Selected icon: ${icon}`);
       await this.page.getByRole("option", { name: "Grid" }).click();
-      logger.info(`Selected type: ${type}`);
+      this.logger.info(`Selected type: ${type}`);
       if (parent) {
-        logger.info(`Setting parent category: ${parent}`);
+        this.logger.info(`Setting parent category: ${parent}`);
         await this.page.getByTestId("select-parent-category").click();
-        logger.info("Parent category dropdown opened");
+        this.logger.info("Parent category dropdown opened");
         const parentOption = this.page.getByRole("option", { name: parent });
         await parentOption.waitFor({ state: "visible", timeout: 10000 });
-        logger.info(`Parent option '${parent}' is visible`);
+        this.logger.info(`Parent option '${parent}' is visible`);
         await parentOption.click();
-        logger.info(`Selected parent category: ${parent}`);
+        this.logger.info(`Selected parent category: ${parent}`);
       }
-      logger.info(`Submitting category creation for: ${name}`);
+      this.logger.info(`Submitting category creation for: ${name}`);
       if (expectError) {
-        logger.info(`Submit category with expect error`);
-        logger.info(`Wait for a failed POST /categories response (status 400-499)`);
+        this.logger.info(`Submit category with expect error`);
+        this.logger.info(`Wait for a failed POST /categories response (status 400-499)`);
         const [response] = await Promise.all([
           this.page.waitForResponse(
             (resp) =>
@@ -60,7 +65,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
           ),
           this.page.getByTestId("button-submit").click(),
         ]);
-        logger.info(
+        this.logger.info(
           `Received expected error response for category creation: status ${response.status()}`
         );
         return;
@@ -75,13 +80,13 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
           this.page.getByTestId("button-submit").click(),
         ]);
         const data = await response.json();
-        logger.info(
+        this.logger.info(
           `Category ${name} created successfully with id: ${data.id}`
         );
         return data.id;
       }
     } catch (error) {
-      logger.error(`Failed to create category ${name}: ${error}`);
+      this.logger.error(`Failed to create category ${name}: ${error}`);
       throw error;
     }
   }
@@ -136,98 +141,98 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     categoryName: string,
     newParentName: string
   ): Promise<void> {
-    logger.info(
-      `Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`
-    );
-    // Ensure on Category Management page
-    await this.assertOnCategoryPage();
+      this.logger.info(
+        `Starting updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`
+      );
+      // Ensure on Category Management page
+      await this.assertOnCategoryPage();
 
-    // Find the row/container that contains the category name
-    const categoryRows = this.page.locator(
-      '[data-testid="tree-node-content"]',
-      {
-        has: this.page
-          .getByTestId("category-name")
-          .filter({ hasText: categoryName }),
+      // Find the row/container that contains the category name
+      const categoryRows = this.page.locator(
+        '[data-testid="tree-node-content"]',
+        {
+          has: this.page
+            .getByTestId("category-name")
+            .filter({ hasText: categoryName }),
+        }
+      );
+      const rowCount = await categoryRows.count();
+      this.logger.info(
+        `[DEBUG] Found ${rowCount} category rows for name: ${categoryName}`
+      );
+      for (let i = 0; i < rowCount; i++) {
+        const rowText = await categoryRows.nth(i).textContent();
+        this.logger.info(`[DEBUG] Row ${i} text:`, rowText);
       }
-    );
-    const rowCount = await categoryRows.count();
-    logger.info(
-      `[DEBUG] Found ${rowCount} category rows for name: ${categoryName}`
-    );
-    for (let i = 0; i < rowCount; i++) {
-      const rowText = await categoryRows.nth(i).textContent();
-      logger.info(`[DEBUG] Row ${i} text:`, rowText);
-    }
 
-    // Find the edit button within that row
-    const editButtons = categoryRows.getByTestId("edit-category-button");
-    const editButtonCount = await editButtons.count();
-    logger.info(
-      `[DEBUG] Found ${editButtonCount} edit buttons for category: ${categoryName}`
-    );
-    for (let i = 0; i < editButtonCount; i++) {
-      const btnText = await editButtons.nth(i).textContent();
-      logger.info(`[DEBUG] Edit button ${i} text:`, btnText);
-    }
+      // Find the edit button within that row
+      const editButtons = categoryRows.getByTestId("edit-category-button");
+      const editButtonCount = await editButtons.count();
+      this.logger.info(
+        `[DEBUG] Found ${editButtonCount} edit buttons for category: ${categoryName}`
+      );
+      for (let i = 0; i < editButtonCount; i++) {
+        const btnText = await editButtons.nth(i).textContent();
+        this.logger.info(`[DEBUG] Edit button ${i} text:`, btnText);
+      }
 
-    // Click the edit button
-    await editButtons.first().click();
+      // Click the edit button
+      await editButtons.first().click();
 
-    // Open the parent dropdown
-    await this.page
-      .getByTestId("select-parent-category")
-      .locator("div")
-      .nth(3)
-      .click();
+      // Open the parent dropdown
+      await this.page
+        .getByTestId("select-parent-category")
+        .locator("div")
+        .nth(3)
+        .click();
 
-    // Select the new parent by name
-    await this.page.getByRole("option", { name: newParentName }).click();
-    logger.info(`Selected parent "${newParentName}"`);
+      // Select the new parent by name
+      await this.page.getByRole("option", { name: newParentName }).click();
+      this.logger.info(`Selected parent "${newParentName}"`);
 
-    // Submit the update and wait for any response (success or error)
-    const [putResponse] = await Promise.all([
-      this.page.waitForResponse(
-        (resp) => {
-          const isCategoryPut =
-            resp.url().includes("/categories/") &&
-            resp.request().method() === "PUT";
-          logger.info(
-            `Response intercepted: url=${resp.url()}, method=${resp
-              .request()
-              .method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`
-          );
-          if (isCategoryPut) {
-            logger.info(
-              `Received PUT response for categories: ${resp.status()} - ${resp.url()}`
+      // Submit the update and wait for any response (success or error)
+      const [putResponse] = await Promise.all([
+        this.page.waitForResponse(
+          (resp) => {
+            const isCategoryPut =
+              resp.url().includes("/categories/") &&
+              resp.request().method() === "PUT";
+            this.logger.info(
+              `Response intercepted: url=${resp.url()}, method=${resp
+                .request()
+                .method()}, status=${resp.status()}, isCategoryPut=${isCategoryPut}`
             );
-          }
-          return isCategoryPut;
-        },
-        { timeout: 10000 }
-      ),
-      this.page.getByTestId("button-submit").click(),
-    ]);
+            if (isCategoryPut) {
+              this.logger.info(
+                `Received PUT response for categories: ${resp.status()} - ${resp.url()}`
+              );
+            }
+            return isCategoryPut;
+          },
+          { timeout: 10000 }
+        ),
+        this.page.getByTestId("button-submit").click(),
+      ]);
 
-    logger.info(
-      `Ending updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`
-    );
+      this.logger.info(
+        `Ending updateCategoryParent with categoryName: '${categoryName}', newParentName: '${newParentName}'`
+      );
   }
 
   async deleteCategory(name: string): Promise<void> {
-    logger.info(`Start delete category: ${name}`);
+    this.logger.info(`Start delete category: ${name}`);
     // Find the row/container that contains the category name
     const categoryRow = this.page.locator('[data-testid="tree-node-content"]', {
       has: this.page.getByTestId("category-name").filter({ hasText: name }),
     });
     // Find the delete button within that row
-    logger.info(`Find the delete button within that row: ${categoryRow}`);
+    this.logger.info(`Find the delete button within that row: ${categoryRow}`);
     const deleteButton = categoryRow.getByTestId("delete-category-button");
     await deleteButton.click();
-    logger.info(`Confirming delete category`);
+    this.logger.info(`Confirming delete category`);
     await this.page.getByTestId("button-confirm-delete").click();
-    logger.info(`Confirmed delete category`);
-    logger.info(`End delete category: ${name}`);
+    this.logger.info(`Confirmed delete category`);
+    this.logger.info(`End delete category: ${name}`);
   }
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
@@ -327,7 +332,7 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
 
   async assertOnCategoryPage(): Promise<void> {
     const url = this.page.url();
-    logger.info(`url: ${url}`);
+    this.logger.info(`url: ${url}`);
 
     if (!(await url).includes("/categories")) {
       throw new Error("User is not on the Category Management page");
