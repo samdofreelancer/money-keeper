@@ -32,13 +32,13 @@ export class CategoryPage extends BasePage implements CategoryUiPort {
     parent?: string,
     expectError = false
   ): Promise<string | void> {
-    return await this.categoryCreationPage.createCategory(
+    return await this.categoryCreationPage.createCategory({
       name,
       icon,
       type,
       parent,
-      expectError
-    );
+      expectError,
+    });
   }
 
   async createUniqueCategory(
