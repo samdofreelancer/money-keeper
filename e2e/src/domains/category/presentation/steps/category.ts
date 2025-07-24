@@ -205,7 +205,10 @@ When(
   "I create a category with a name longer than the maximum allowed length",
   async function () {
     // Call a use case method that handles long name generation internally
-    await categoryUseCases.attemptToCreateCategoryWithNameExceedingMaxLength("default-icon", "expense");
+    await categoryUseCases.attemptToCreateCategoryWithNameExceedingMaxLength(
+      "default-icon",
+      "expense"
+    );
   }
 );
 

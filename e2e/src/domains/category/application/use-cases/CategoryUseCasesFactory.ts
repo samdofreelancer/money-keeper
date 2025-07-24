@@ -2,12 +2,24 @@ import { Page } from "@playwright/test";
 
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../shared";
-import {
-  CategoryApiClient,
-  Category,
-} from "../../infrastructure/api/category-api.client";
+import { CategoryApiClient } from "../../infrastructure/api/category-api.client";
+import { CategoryApiPort } from "../../domain/ports/category-api.port";
+import { Category } from "../../domain/models/category-vo";
 
 export class CategoryUseCasesFactory {
+  private categoryUiPort: CategoryUiPort;
+
+  private categoryApiPort: CategoryApiPort;
+
+  public lastCreatedCategoryName?: string;
+
+  constructor(categoryUiPort: CategoryUiPort) {
+    this.categoryUiPort = categoryUiPort;
+    this.categoryApiPort = new CategoryApiClient({
+      baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
+    });
+  }
+
   /**
    * Coordinates: ensure parent exists (API), track it, then create and track child (UI)
    */
@@ -35,13 +47,6 @@ export class CategoryUseCasesFactory {
       trackCreatedCategory
     );
   }
-  private categoryUiPort: CategoryUiPort;
-
-  public lastCreatedCategoryName?: string;
-
-  constructor(categoryUiPort: CategoryUiPort) {
-    this.categoryUiPort = categoryUiPort;
-  }
 
   /**
    * Ensures a parent category exists via backend API, returns its id
@@ -57,11 +62,7 @@ export class CategoryUseCasesFactory {
       opts?: { isParent?: boolean }
     ) => Promise<void>
   ): Promise<string> {
-    const categoryApiClient = new CategoryApiClient({
-      baseURL:
-        apiBaseUrl || process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
-    });
-    const categories = await categoryApiClient.getAllCategories();
+    const categories = await this.categoryApiPort.getAllCategories();
     const parentCat = categories.find(
       (cat: Category) => cat.name === parentName
     );
@@ -76,7 +77,7 @@ export class CategoryUseCasesFactory {
       }
       return parentCat.id;
     } else {
-      const resp = await categoryApiClient.createCategory({
+      const resp = await this.categoryApiPort.createCategory({
         name: parentName,
         icon: normalizedIcon,
         type: normalizedType,
@@ -86,7 +87,7 @@ export class CategoryUseCasesFactory {
       }
 
       // Fetch all categories to verify creation
-      const allCategories = await categoryApiClient.getAllCategories();
+      const allCategories = await this.categoryApiPort.getAllCategories();
       logger.info(`allCategories: ${JSON.stringify(allCategories)}`);
       const createdCat = allCategories.find(
         (cat: Category) => cat.name === parentName
@@ -251,10 +252,7 @@ export class CategoryUseCasesFactory {
     const normalizedType = (type || "EXPENSE").toUpperCase();
     const normalizedIcon = icon || "default";
     // Create the child category via backend API
-    const categoryApiClient = new CategoryApiClient({
-      baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
-    });
-    const resp = await categoryApiClient.createCategory({
+    const resp = await this.categoryApiPort.createCategory({
       name: name,
       icon: normalizedIcon,
       type: normalizedType,
@@ -310,24 +308,24 @@ export class CategoryUseCasesFactory {
     );
   }
 
-public async createCategoryWithGeneratedName(
-  length: number,
-  icon: string,
-  type: string,
-  onCreated?: (name: string) => void
-): Promise<string> {
-  const name = this.generateUniqueName(length);
-  if (onCreated) onCreated(name);
-  await this.createCategory(
-    name,
-    icon,
-    type,
-    undefined,
-    false, // expectError: false (happy case)
-    onCreated
-  );
-  return name;
-}
+  public async createCategoryWithGeneratedName(
+    length: number,
+    icon: string,
+    type: string,
+    onCreated?: (name: string) => void
+  ): Promise<string> {
+    const name = this.generateUniqueName(length);
+    if (onCreated) onCreated(name);
+    await this.createCategory(
+      name,
+      icon,
+      type,
+      undefined,
+      false, // expectError: false (happy case)
+      onCreated
+    );
+    return name;
+  }
 
   public async attemptToCreateCategoryWithDuplicateName(
     icon: string,
@@ -335,7 +333,7 @@ public async createCategoryWithGeneratedName(
     onCreated?: (name: string) => void
   ) {
     // Assume the last created category name is the duplicate
-    const duplicateName = this.lastCreatedCategoryName || 'DuplicateCategory';
+    const duplicateName = this.lastCreatedCategoryName || "DuplicateCategory";
     if (onCreated) onCreated(duplicateName);
     await this.createCategory(
       duplicateName,
@@ -351,8 +349,9 @@ public async createCategoryWithGeneratedName(
   public generateUniqueName(length: number): string {
     // Generate a fully random string of the requested length
     function randomString(len: number) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
+      const chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let result = "";
       for (let i = 0; i < len; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
       }

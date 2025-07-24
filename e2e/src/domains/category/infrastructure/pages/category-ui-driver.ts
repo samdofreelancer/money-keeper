@@ -1,4 +1,5 @@
 import { Page } from "@playwright/test";
+
 import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { CategoryCreationPage } from "./category-creation.page";
@@ -77,7 +78,10 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
     childName: string,
     parentName: string
   ): Promise<boolean> {
-    return await this.categoryListingPage.isCategoryChildOf(childName, parentName);
+    return await this.categoryListingPage.isCategoryChildOf(
+      childName,
+      parentName
+    );
   }
 
   async createCategoryWithDuplicateName(
@@ -92,7 +96,10 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
     categoryName: string,
     newParentName: string
   ): Promise<void> {
-    await this.categoryUpdatingPage.updateCategoryParent(categoryName, newParentName);
+    await this.categoryUpdatingPage.updateCategoryParent(
+      categoryName,
+      newParentName
+    );
   }
 
   async deleteCategory(name: string): Promise<void> {
@@ -120,7 +127,11 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
     newName: string,
     newIcon: string
   ): Promise<void> {
-    await this.categoryUpdatingPage.updateCategoryNameAndIcon(oldName, newName, newIcon);
+    await this.categoryUpdatingPage.updateCategoryNameAndIcon(
+      oldName,
+      newName,
+      newIcon
+    );
   }
 
   async assertOnCategoryPage(): Promise<void> {

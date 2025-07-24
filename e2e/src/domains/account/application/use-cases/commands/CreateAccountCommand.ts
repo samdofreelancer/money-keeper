@@ -8,6 +8,7 @@ import {
   CreateAccountRequest,
   CreateAccountResponse,
 } from "../dto/CreateAccountDto";
+import { RawFormInput } from "../../../domain/value-objects/account-form-data.vo";
 import {
   ValidationError,
   DomainError,
@@ -50,7 +51,7 @@ export class CreateAccountCommand
   private validateInput(request: CreateAccountRequest): AccountFormValue {
     try {
       // Cast request to RawFormInput
-      return AccountFormValue.fromRawInput(request as any);
+      return AccountFormValue.fromRawInput(request as unknown as RawFormInput);
     } catch (error) {
       throw new ValidationError(
         "Invalid account form data",

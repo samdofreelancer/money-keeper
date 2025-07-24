@@ -1,15 +1,11 @@
 import { logger } from "../../../../support/logger";
-
-// Interface for dependency inversion
-export interface ICategoryApiClient {
-  deleteCategory(categoryId: string): Promise<void>;
-}
+import { CategoryApiPort } from "../../domain/ports/category-api.port";
 
 export class CategoryCleanupService {
-  private readonly categoryApiClient: ICategoryApiClient;
+  private readonly categoryApiPort: CategoryApiPort;
 
-  constructor(categoryApiClient: ICategoryApiClient) {
-    this.categoryApiClient = categoryApiClient;
+  constructor(categoryApiPort: CategoryApiPort) {
+    this.categoryApiPort = categoryApiPort;
   }
 
   /**
@@ -33,7 +29,7 @@ export class CategoryCleanupService {
     logger.info(`Cleaning up ${ids.length} ${type}categories via API (by ID)`);
     const deletePromises = ids.map(async (categoryId: string) => {
       try {
-        await this.categoryApiClient.deleteCategory(categoryId);
+        await this.categoryApiPort.deleteCategory(categoryId);
         logger.info(
           `Successfully cleaned up ${type}category ID: ${categoryId}`
         );

@@ -1,6 +1,10 @@
 import { Page } from "@playwright/test";
+
 import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
-import { CategoryFormComponent, CategoryFormParams } from "./category-form.component";
+import {
+  CategoryFormComponent,
+  CategoryFormParams,
+} from "./category-form.component";
 
 interface CreateCategoryParams extends CategoryFormParams {
   expectError?: boolean;

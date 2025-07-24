@@ -1,6 +1,7 @@
 import { Page } from "@playwright/test";
+
 import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
-import { CategoryFormComponent, CategoryFormParams } from "./category-form.component";
+import { CategoryFormComponent } from "./category-form.component";
 
 export class CategoryUpdatingPage extends BasePage {
   private categoryForm: CategoryFormComponent;
@@ -15,7 +16,9 @@ export class CategoryUpdatingPage extends BasePage {
     newName: string,
     newIcon: string
   ): Promise<void> {
-    this.logger.info(`Updating category name from '${oldName}' to '${newName}' and icon to '${newIcon}'`);
+    this.logger.info(
+      `Updating category name from '${oldName}' to '${newName}' and icon to '${newIcon}'`
+    );
     // Click the category to edit
     await this.page.click(`text=${oldName}`);
 
@@ -78,7 +81,7 @@ export class CategoryUpdatingPage extends BasePage {
     this.logger.info(`Selected parent "${newParentName}"`);
 
     // Submit the update and wait for any response (success or error)
-    const [putResponse] = await Promise.all([
+    await Promise.all([
       this.page.waitForResponse(
         (resp) => {
           const isCategoryPut =

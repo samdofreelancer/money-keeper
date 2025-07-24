@@ -3,16 +3,13 @@ import {
   ApiClientConfig,
 } from "../../../../shared/infrastructure/api/base-api-client";
 import { logger } from "../../../../support/logger";
+import { Category } from "../../domain/models/category-vo";
+import { CategoryApiPort } from "../../domain/ports/category-api.port";
 
-export interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  type: string;
-  parentId?: string | null;
-}
-
-export class CategoryApiClient extends BaseApiClient {
+export class CategoryApiClient
+  extends BaseApiClient
+  implements CategoryApiPort
+{
   constructor(config: ApiClientConfig) {
     super(config);
   }

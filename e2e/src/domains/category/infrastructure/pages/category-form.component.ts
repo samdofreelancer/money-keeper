@@ -1,4 +1,5 @@
 import { Page } from "@playwright/test";
+
 import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 
 export interface CategoryFormParams {
@@ -13,15 +14,23 @@ export class CategoryFormComponent extends BasePage {
     super(page);
   }
 
-  async fillCategoryForm(name: string, icon: string, type: string): Promise<void> {
+  async fillCategoryForm(
+    name: string,
+    icon: string,
+    type: string
+  ): Promise<void> {
     await this.page.getByTestId("input-category-name").click();
     await this.page.getByTestId("input-category-name").fill(name);
     this.logger.info(`Filled category name: ${name}`);
 
     // Select icon dynamically by matching icon name or attribute
-    const iconOption = this.page.getByTestId("select-icon").locator(`div[aria-label="${icon}"]`);
+    const iconOption = this.page
+      .getByTestId("select-icon")
+      .locator(`div[aria-label="${icon}"]`);
     if ((await iconOption.count()) === 0) {
-      this.logger.warn(`Icon option '${icon}' not found, selecting default icon`);
+      this.logger.warn(
+        `Icon option '${icon}' not found, selecting default icon`
+      );
       await this.page.getByTestId("select-icon").locator("div").first().click();
     } else {
       await iconOption.click();
@@ -31,7 +40,9 @@ export class CategoryFormComponent extends BasePage {
     // Select type dynamically by role option name matching the type parameter
     const typeOption = this.page.getByRole("option", { name: type });
     if ((await typeOption.count()) === 0) {
-      this.logger.warn(`Type option '${type}' not found, selecting default type 'Grid'`);
+      this.logger.warn(
+        `Type option '${type}' not found, selecting default type 'Grid'`
+      );
       await this.page.getByRole("option", { name: "Grid" }).click();
     } else {
       await typeOption.click();
@@ -50,8 +61,12 @@ export class CategoryFormComponent extends BasePage {
       await parentOption.click();
       this.logger.info(`Selected parent category: ${parent}`);
     } catch (error) {
-      this.logger.error(`Parent category option '${parent}' not found or not visible: ${error}`);
-      throw new Error(`Parent category option '${parent}' not found or not visible`);
+      this.logger.error(
+        `Parent category option '${parent}' not found or not visible: ${error}`
+      );
+      throw new Error(
+        `Parent category option '${parent}' not found or not visible`
+      );
     }
   }
 
@@ -67,7 +82,9 @@ export class CategoryFormComponent extends BasePage {
       ),
       this.page.getByTestId("button-submit").click(),
     ]);
-    this.logger.info(`Received expected error response: status ${response.status()}`);
+    this.logger.info(
+      `Received expected error response: status ${response.status()}`
+    );
   }
 
   async submitCategoryExpectSuccess(): Promise<string> {

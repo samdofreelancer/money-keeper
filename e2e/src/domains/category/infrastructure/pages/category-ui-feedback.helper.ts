@@ -1,9 +1,7 @@
 import { Page } from "@playwright/test";
 
 export class UiFeedbackHelper {
-  constructor(
-    private readonly page: Page
-  ) {}
+  constructor(private readonly page: Page) {}
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
     // First check for form validation errors

@@ -6,12 +6,15 @@ import { AccountApiClient } from "../../../domains/account/infrastructure/api/ac
 import { CategoryApiClient } from "../../../domains/category/infrastructure/api/category-api.client";
 import { CategoryCleanupService } from "../../../domains/category/application/services/cleanup.service";
 import { AccountCleanupService } from "../../../domains/account/application/services/cleanup.service";
+import { CategoryApiPort } from "../../../domains/category/domain/ports/category-api.port";
 
 After({ tags: "not @no-cleanup" }, async function (this: CustomWorld) {
   try {
     const baseURL = process.env.API_BASE_URL || "http://127.0.0.1:8080/api";
     const accountApiClient = new AccountApiClient({ baseURL });
-    const categoryApiClient = new CategoryApiClient({ baseURL });
+    const categoryApiClient: CategoryApiPort = new CategoryApiClient({
+      baseURL,
+    });
     const accountCleanupService = new AccountCleanupService(accountApiClient);
     const categoryCleanupService = new CategoryCleanupService(
       categoryApiClient
