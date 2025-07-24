@@ -1,10 +1,9 @@
 import { Page } from "@playwright/test";
-import { BasePage } from "../../../../shared/infrastructure/pages/base.page";
 
-export class UiFeedbackHelper extends BasePage {
-  constructor(public page: Page) {
-    super(page);
-  }
+export class UiFeedbackHelper {
+  constructor(
+    private readonly page: Page
+  ) {}
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
     // First check for form validation errors

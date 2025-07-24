@@ -24,7 +24,7 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
     this.categoryUpdatingPage = new CategoryUpdatingPage(page);
     this.categoryDeletionPage = new CategoryDeletionPage(page);
     this.categoryListingPage = new CategoryListingPage(page);
-    this.uiFeedbackHelper = new UiFeedbackHelper(page);
+    this.uiFeedbackHelper = new UiFeedbackHelper(this.page);
   }
 
   async navigateToCategoryPage(): Promise<void> {
