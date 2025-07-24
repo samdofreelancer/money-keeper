@@ -4,7 +4,7 @@ import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../shared";
 import { CategoryApiClient } from "../../infrastructure/api/category-api.client";
 import { CategoryApiPort } from "../../domain/ports/category-api.port";
-import { CategoryFormInput } from "../../domain/models/category-form-input";
+import { Category } from "../../domain/models/category";
 
 export class CategoryUseCasesFactory {
   private categoryUiPort: CategoryUiPort;
@@ -64,7 +64,7 @@ export class CategoryUseCasesFactory {
   ): Promise<string> {
     const categories = await this.categoryApiPort.getAllCategories();
     const parentCat = categories.find(
-      (cat: CategoryFormInput) => cat.name === parentName
+      (cat: Category) => cat.name === parentName
     );
     // Normalize type to match backend enum (EXPENSE/INCOME)
     const normalizedType = (type || "EXPENSE").toUpperCase();
@@ -91,7 +91,7 @@ export class CategoryUseCasesFactory {
       const allCategories = await this.categoryApiPort.getAllCategories();
       logger.info(`allCategories: ${JSON.stringify(allCategories)}`);
       const createdCat = allCategories.find(
-        (cat: CategoryFormInput) => cat.name === parentName
+        (cat: Category) => cat.name === parentName
       );
       if (!createdCat) {
         throw new Error(
@@ -253,7 +253,7 @@ export class CategoryUseCasesFactory {
     const normalizedType = (type || "EXPENSE").toUpperCase();
     const normalizedIcon = icon || "default";
     // Create the child category via backend API
-    const categoryInput: CategoryFormInput = {
+    const categoryInput: Category = {
       id: "",
       name: name,
       icon: normalizedIcon,
