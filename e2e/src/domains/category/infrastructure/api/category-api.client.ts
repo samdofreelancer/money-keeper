@@ -15,37 +15,44 @@ export class CategoryApiClient
     super(config);
   }
 
-  async deleteCategory(categoryId: string): Promise<void> {
+  private async handleApiCall<T>(operation: () => Promise<T>, message: string): Promise<T> {
     try {
-      await this.client.delete(`/categories/${categoryId}`);
+      return await operation();
     } catch (error) {
-      logger.error(`Failed to delete category ${categoryId}: ${error}`);
+      logger.error(`${message}: ${error}`);
       throw error;
     }
   }
 
+  async deleteCategory(categoryId: string): Promise<void> {
+    return this.handleApiCall(
+      () => this.client.delete(`/categories/${categoryId}`),
+      `Failed to delete category ${categoryId}`
+    );
+  }
+
   async getAllCategories(): Promise<Category[]> {
-    try {
-      const dtos = await this.retry(async () => {
-        const response = await this.client.get("/categories");
-        return response.data;
-      }, 3, 500);
-      return dtos.map(toDomain);
-    } catch (error) {
-      logger.error(`Failed to get all categories: ${error}`);
-      throw error;
-    }
+    return this.handleApiCall(
+      async () => {
+        const dtos = await this.retry(async () => {
+          const response = await this.client.get("/categories");
+          return response.data;
+        }, 3, 500);
+        return dtos.map(toDomain);
+      },
+      "Failed to get all categories"
+    );
   }
 
   async createCategory(category: Category): Promise<Category> {
     logger.info(`Creating category: ${category.name}`);
-    try {
-      const dto = toDto(category);
-      const response = await this.client.post("/categories", dto);
-      return toDomain(response.data);
-    } catch (error) {
-      logger.error(`Failed to create category: ${error}`);
-      throw error;
-    }
+    return this.handleApiCall(
+      async () => {
+        const dto = toDto(category);
+        const response = await this.client.post("/categories", dto);
+        return toDomain(response.data);
+      },
+      "Failed to create category"
+    );
   }
 }
