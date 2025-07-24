@@ -1,4 +1,4 @@
-export interface Category {
+export interface CategoryFormInput {
   id: string;
   name: string;
   icon: string;

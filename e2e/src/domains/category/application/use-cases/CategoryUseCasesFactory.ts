@@ -4,7 +4,7 @@ import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../shared";
 import { CategoryApiClient } from "../../infrastructure/api/category-api.client";
 import { CategoryApiPort } from "../../domain/ports/category-api.port";
-import { Category } from "../../domain/models/category-vo";
+import { CategoryFormInput } from "../../domain/models/category-form-input";
 
 export class CategoryUseCasesFactory {
   private categoryUiPort: CategoryUiPort;
@@ -64,7 +64,7 @@ export class CategoryUseCasesFactory {
   ): Promise<string> {
     const categories = await this.categoryApiPort.getAllCategories();
     const parentCat = categories.find(
-      (cat: Category) => cat.name === parentName
+      (cat: CategoryFormInput) => cat.name === parentName
     );
     // Normalize type to match backend enum (EXPENSE/INCOME)
     const normalizedType = (type || "EXPENSE").toUpperCase();
@@ -78,6 +78,7 @@ export class CategoryUseCasesFactory {
       return parentCat.id;
     } else {
       const resp = await this.categoryApiPort.createCategory({
+        id: "",
         name: parentName,
         icon: normalizedIcon,
         type: normalizedType,
@@ -90,7 +91,7 @@ export class CategoryUseCasesFactory {
       const allCategories = await this.categoryApiPort.getAllCategories();
       logger.info(`allCategories: ${JSON.stringify(allCategories)}`);
       const createdCat = allCategories.find(
-        (cat: Category) => cat.name === parentName
+        (cat: CategoryFormInput) => cat.name === parentName
       );
       if (!createdCat) {
         throw new Error(
@@ -252,12 +253,14 @@ export class CategoryUseCasesFactory {
     const normalizedType = (type || "EXPENSE").toUpperCase();
     const normalizedIcon = icon || "default";
     // Create the child category via backend API
-    const resp = await this.categoryApiPort.createCategory({
+    const categoryInput: CategoryFormInput = {
+      id: "",
       name: name,
       icon: normalizedIcon,
       type: normalizedType,
       parentId,
-    });
+    };
+    const resp = await this.categoryApiPort.createCategory(categoryInput);
 
     if (trackCreatedCategory) {
       await trackCreatedCategory(resp.id, name, { isParent: false });

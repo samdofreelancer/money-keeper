@@ -3,7 +3,7 @@ import {
   ApiClientConfig,
 } from "../../../../shared/infrastructure/api/base-api-client";
 import { logger } from "../../../../support/logger";
-import { Category } from "../../domain/models/category-vo";
+import { CategoryFormInput } from "../../domain/models/category-form-input";
 import { CategoryApiPort } from "../../domain/ports/category-api.port";
 
 export class CategoryApiClient
@@ -15,20 +15,25 @@ export class CategoryApiClient
   }
 
   async deleteCategory(categoryId: string): Promise<void> {
-    await this.client.delete(`/categories/${categoryId}`);
+    try {
+      await this.client.delete(`/categories/${categoryId}`);
+    } catch (error) {
+      logger.error(`Failed to delete category ${categoryId}: ${error}`);
+      throw error;
+    }
   }
 
-  async getAllCategories(): Promise<Category[]> {
-    const response = await this.client.get("/categories");
-    return response.data;
+  async getAllCategories(): Promise<CategoryFormInput[]> {
+    try {
+      const response = await this.client.get("/categories");
+      return response.data;
+    } catch (error) {
+      logger.error(`Failed to get all categories: ${error}`);
+      throw error;
+    }
   }
 
-  async createCategory(data: {
-    name: string;
-    icon: string;
-    type: string;
-    parentId?: string | null;
-  }): Promise<Category> {
+  async createCategory(data: CategoryFormInput): Promise<CategoryFormInput> {
     logger.info(`Creating category with data: ${JSON.stringify(data)}`);
     try {
       const response = await this.client.post("/categories", data);

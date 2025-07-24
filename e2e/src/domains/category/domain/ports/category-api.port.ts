@@ -1,12 +1,7 @@
-import { Category } from "../models/category-vo";
+import { CategoryFormInput } from "../models/category-form-input";
 
 export interface CategoryApiPort {
-  getAllCategories(): Promise<Category[]>;
-  createCategory(data: {
-    name: string;
-    icon: string;
-    type: string;
-    parentId?: string | null;
-  }): Promise<Category>;
+  getAllCategories(): Promise<CategoryFormInput[]>;
+  createCategory(categoryInput: CategoryFormInput): Promise<CategoryFormInput>;
   deleteCategory(categoryId: string): Promise<void>;
 }
