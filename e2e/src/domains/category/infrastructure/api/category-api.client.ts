@@ -5,7 +5,6 @@ import {
 import { logger } from "../../../../support/logger";
 import { CategoryApiPort } from "../../domain/ports/category-api.port";
 import { Category } from "../../domain/models/category";
-import { CategoryFormInput } from "../dto/category-form-input";
 import { toDomain, toDto } from "../dto/category-mapper";
 
 export class CategoryApiClient
@@ -14,18 +13,6 @@ export class CategoryApiClient
 {
   constructor(config: ApiClientConfig) {
     super(config);
-  }
-
-  private async retry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (e) {
-        if (i === retries - 1) throw e;
-        await new Promise((res) => setTimeout(res, 500));
-      }
-    }
-    throw new Error("Retries exhausted");
   }
 
   async deleteCategory(categoryId: string): Promise<void> {
@@ -42,7 +29,7 @@ export class CategoryApiClient
       const dtos = await this.retry(async () => {
         const response = await this.client.get("/categories");
         return response.data;
-      });
+      }, 3, 500);
       return dtos.map(toDomain);
     } catch (error) {
       logger.error(`Failed to get all categories: ${error}`);
