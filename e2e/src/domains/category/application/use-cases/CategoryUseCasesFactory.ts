@@ -9,6 +9,8 @@ import { CATEGORY_CONFIG } from "../config/category.config";
 
 // Custom Error Types
 export class CategoryCreationError extends Error {
+  public readonly cause?: Error;
+
   constructor(categoryName: string, cause?: Error) {
     super(`Failed to create category '${categoryName}'`);
     this.name = "CategoryCreationError";
