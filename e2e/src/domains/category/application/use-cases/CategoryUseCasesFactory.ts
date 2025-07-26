@@ -5,26 +5,268 @@ import { logger } from "../../../../shared";
 import { CategoryApiClient } from "../../infrastructure/api/category-api.client";
 import { CategoryApiPort } from "../../domain/ports/category-api.port";
 import { Category } from "../../domain/models/category";
+import { CATEGORY_CONFIG } from "../config/category.config";
+
+// Custom Error Types
+export class CategoryCreationError extends Error {
+  constructor(categoryName: string, cause?: Error) {
+    super(`Failed to create category '${categoryName}'`);
+    this.name = 'CategoryCreationError';
+    this.cause = cause;
+  }
+}
+
+export class CategoryNotFoundError extends Error {
+  constructor(categoryName: string) {
+    super(`Category '${categoryName}' was not found`);
+    this.name = 'CategoryNotFoundError';
+  }
+}
+
+export class CategoryValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CategoryValidationError';
+  }
+}
+
+// Interfaces for better type safety
+export interface CreateCategoryOptions {
+  parent?: string;
+  expectError?: boolean;
+  trackCreatedCategory?: (id: string, name: string, opts?: { isParent?: boolean }) => Promise<void>;
+}
+
+export interface ApiConfig {
+  baseURL: string;
+}
+
+export interface TrackingCallback {
+  (id: string, name: string, opts?: { isParent?: boolean }): Promise<void>;
+}
 
 export class CategoryUseCasesFactory {
   private categoryUiPort: CategoryUiPort;
-
   private categoryApiPort: CategoryApiPort;
-
   public lastCreatedCategoryName?: string;
 
-  constructor(categoryUiPort: CategoryUiPort) {
+  constructor(
+    categoryUiPort: CategoryUiPort,
+    categoryApiPort?: CategoryApiPort,
+    apiConfig?: ApiConfig
+  ) {
     this.categoryUiPort = categoryUiPort;
-    this.categoryApiPort = new CategoryApiClient({
-      baseURL: process.env.API_BASE_URL || "http://127.0.0.1:8080/api",
-    });
+    this.categoryApiPort = categoryApiPort || new CategoryApiClient(
+      apiConfig || { baseURL: process.env.API_BASE_URL || CATEGORY_CONFIG.DEFAULT_API_URL }
+    );
+  }
+
+  // Utility methods for normalization and validation
+  private normalizeType(type: string): string {
+    return (type || CATEGORY_CONFIG.DEFAULT_TYPE).toUpperCase();
+  }
+
+  private normalizeIcon(icon: string): string {
+    return icon || CATEGORY_CONFIG.DEFAULT_ICON;
+  }
+
+  private validateCategoryName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new CategoryValidationError("Category name cannot be empty");
+    }
+    if (name.length > CATEGORY_CONFIG.MAX_NAME_LENGTH) {
+      throw new CategoryValidationError(
+        `Category name exceeds maximum length of ${CATEGORY_CONFIG.MAX_NAME_LENGTH} characters`
+      );
+    }
+  }
+
+  private async findCategoryByName(name: string): Promise<Category | null> {
+    try {
+      const categories = await this.categoryApiPort.getAllCategories();
+      return categories.find((cat: Category) => cat.name === name) || null;
+    } catch (error) {
+      logger.error(`Failed to search for category '${name}'`, { error });
+      throw error;
+    }
+  }
+
+  private async createParentCategoryViaApi(
+    parentName: string,
+    icon: string,
+    type: string
+  ): Promise<Category> {
+    const normalizedType = this.normalizeType(type);
+    const normalizedIcon = this.normalizeIcon(icon);
+
+    const categoryInput: Category = {
+      id: "",
+      name: parentName,
+      icon: normalizedIcon,
+      type: normalizedType,
+    };
+
+    try {
+      return await this.categoryApiPort.createCategory(categoryInput);
+    } catch (error) {
+      throw new CategoryCreationError(parentName, error as Error);
+    }
+  }
+
+  private async verifyCreation(categoryName: string): Promise<Category> {
+    const createdCategory = await this.findCategoryByName(categoryName);
+    if (!createdCategory) {
+      throw new CategoryNotFoundError(categoryName);
+    }
+    return createdCategory;
+  }
+
+  /**
+   * Ensures a parent category exists via backend API, returns its id
+   * @param parentName - Name of the parent category
+   * @param icon - Icon for the parent category
+   * @param type - Type of the parent category
+   * @param trackCreatedCategory - Optional callback to track created categories
+   * @returns Promise resolving to the parent category ID
+   */
+  async ensureParentCategoryExists(
+    parentName: string,
+    icon: string,
+    type: string,
+    trackCreatedCategory?: TrackingCallback
+  ): Promise<string> {
+    logger.debug(`Ensuring parent category exists`, { parentName, icon, type });
+
+    try {
+      // Check if parent already exists
+      const existingParent = await this.findCategoryByName(parentName);
+      
+      if (existingParent) {
+        logger.debug(`Parent category already exists`, { parentName, id: existingParent.id });
+        if (trackCreatedCategory) {
+          await trackCreatedCategory(existingParent.id, parentName, { isParent: true });
+        }
+        return existingParent.id;
+      }
+
+      // Create parent category
+      logger.info(`Creating parent category via API`, { parentName });
+      const createdParent = await this.createParentCategoryViaApi(parentName, icon, type);
+      
+      // Track creation if callback provided
+      if (trackCreatedCategory) {
+        await trackCreatedCategory(createdParent.id, parentName, { isParent: true });
+      }
+
+      // Verify creation
+      await this.verifyCreation(parentName);
+      
+      logger.info(`Parent category created successfully`, { 
+        parentName, 
+        id: createdParent.id 
+      });
+      
+      return createdParent.id;
+
+    } catch (error) {
+      logger.error(`Failed to ensure parent category exists`, { parentName, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Creates a category with comprehensive options
+   * @param name - Category name
+   * @param icon - Category icon
+   * @param type - Category type
+   * @param options - Additional options for creation
+   * @returns Promise resolving to category ID or void if expectError is true
+   */
+  async createCategory(
+    name: string,
+    icon: string,
+    type: string,
+    options: CreateCategoryOptions = {}
+  ): Promise<string | void> {
+    const { parent, expectError = false, trackCreatedCategory } = options;
+    
+    logger.debug(`Creating category via UI`, { name, icon, type, parent, expectError });
+
+    try {
+      this.validateCategoryName(name);
+      
+      await this.categoryUiPort.navigateToCategoryPage();
+      const result = await this.categoryUiPort.createCategory(
+        name,
+        icon,
+        type,
+        parent,
+        expectError
+      );
+
+      if (!expectError && result && trackCreatedCategory) {
+        await trackCreatedCategory(result, name);
+      }
+
+      if (!expectError) {
+        this.lastCreatedCategoryName = name;
+        logger.info(`Category created successfully via UI`, { name, id: result });
+      }
+
+      return result;
+    } catch (error) {
+      logger.error(`Failed to create category via UI`, { name, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Creates a unique category with validation and tracking
+   * @param name - Category name
+   * @param icon - Category icon
+   * @param type - Category type
+   * @param options - Additional options for creation
+   * @returns Promise resolving to category ID or void if expectError is true
+   */
+  async createUniqueCategory(
+    name: string,
+    icon: string,
+    type: string,
+    options: CreateCategoryOptions = {}
+  ): Promise<string | void> {
+    const { parent, expectError = false, trackCreatedCategory } = options;
+    
+    logger.debug(`Creating unique category`, { name, icon, type, parent, expectError });
+
+    try {
+      this.validateCategoryName(name);
+      
+      const categoryId = await this.categoryUiPort.createUniqueCategory(
+        name,
+        icon,
+        type,
+        parent,
+        expectError
+      );
+
+      if (trackCreatedCategory && categoryId) {
+        logger.debug(`Tracking created category`, { name, id: categoryId });
+        await trackCreatedCategory(categoryId.toString(), name);
+      }
+
+      if (!expectError) {
+        logger.info(`Unique category created successfully`, { name, id: categoryId });
+      }
+
+      return categoryId;
+    } catch (error) {
+      logger.error(`Failed to create unique category`, { name, error });
+      throw error;
+    }
   }
 
   /**
    * Coordinates: ensure parent exists (API), track it, then create and track child (UI)
-   */
-  /**
-   * Coordinates: ensure parent exists (API), track parent and child separately, then create and track child (UI)
    * When cleaning up, child should be deleted before parent.
    */
   async createCategoryWithParentWorkflow(
@@ -32,142 +274,109 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string,
     parent: string,
-    trackCreatedCategory: (
-      id: string,
-      name: string,
-      opts?: { isParent?: boolean }
-    ) => Promise<void>
+    trackCreatedCategory: TrackingCallback
   ): Promise<void> {
-    // Create and track child
-    await this.createUniqueCategory(
-      name,
-      icon,
-      type,
-      parent,
-      trackCreatedCategory
-    );
+    logger.info(`Starting category with parent workflow`, { name, parent });
+
+    try {
+      // Ensure parent exists first
+      await this.ensureParentCategoryExists(parent, icon, type, trackCreatedCategory);
+      
+      // Create and track child
+      await this.createUniqueCategory(name, icon, type, {
+        parent,
+        trackCreatedCategory
+      });
+      
+      logger.info(`Category with parent workflow completed`, { name, parent });
+    } catch (error) {
+      logger.error(`Category with parent workflow failed`, { name, parent, error });
+      throw error;
+    }
   }
 
   /**
-   * Ensures a parent category exists via backend API, returns its id
+   * Creates a child category via API with parent verification
+   * @param name - Child category name
+   * @param icon - Child category icon
+   * @param type - Child category type
+   * @param parent - Parent category name
+   * @param trackCreatedCategory - Optional tracking callback
+   * @param page - Optional Playwright page for UI verification
    */
-  async ensureParentCategoryExists(
-    parentName: string,
+  async createChildCategory(
+    name: string,
     icon: string,
     type: string,
-    apiBaseUrl?: string,
-    trackCreatedCategory?: (
-      id: string,
-      name: string,
-      opts?: { isParent?: boolean }
-    ) => Promise<void>
-  ): Promise<string> {
-    const categories = await this.categoryApiPort.getAllCategories();
-    const parentCat = categories.find(
-      (cat: Category) => cat.name === parentName
-    );
-    // Normalize type to match backend enum (EXPENSE/INCOME)
-    const normalizedType = (type || "EXPENSE").toUpperCase();
-    const normalizedIcon = icon || "default";
-    if (parentCat) {
-      if (trackCreatedCategory) {
-        await trackCreatedCategory(parentCat.id, parentName, {
-          isParent: true,
-        });
-      }
-      return parentCat.id;
-    } else {
-      const resp = await this.categoryApiPort.createCategory({
-        id: "",
-        name: parentName,
-        icon: normalizedIcon,
-        type: normalizedType,
-      });
-      if (trackCreatedCategory) {
-        await trackCreatedCategory(resp.id, parentName, { isParent: true });
-      }
+    parent: string,
+    trackCreatedCategory?: TrackingCallback,
+    page?: Page
+  ): Promise<void> {
+    logger.info(`Creating child category via API`, { name, parent });
 
-      // Fetch all categories to verify creation
-      const allCategories = await this.categoryApiPort.getAllCategories();
-      logger.info(`allCategories: ${JSON.stringify(allCategories)}`);
-      const createdCat = allCategories.find(
-        (cat: Category) => cat.name === parentName
+    try {
+      this.validateCategoryName(name);
+      
+      // Ensure parent exists and get its ID
+      const parentId = await this.ensureParentCategoryExists(
+        parent,
+        icon,
+        type,
+        trackCreatedCategory
       );
-      if (!createdCat) {
-        throw new Error(
-          `Category '${parentName}' was not found after creation via API.`
-        );
+
+      // Create the child category via backend API
+      const categoryInput: Category = {
+        id: "",
+        name: name,
+        icon: this.normalizeIcon(icon),
+        type: this.normalizeType(type),
+        parentId,
+      };
+      
+      const createdCategory = await this.categoryApiPort.createCategory(categoryInput);
+
+      if (trackCreatedCategory) {
+        await trackCreatedCategory(createdCategory.id, name, { isParent: false });
       }
-      return resp.id;
+
+      // Reload the page to ensure the UI reflects the new backend data
+      if (page) {
+        await page.reload();
+        
+        // Assert the new category is visible on the UI
+        const isVisible = await this.isCategoryCreated(name);
+        if (!isVisible) {
+          throw new CategoryNotFoundError(
+            `Category '${name}' was not found on the UI after backend creation and reload`
+          );
+        }
+      }
+
+      logger.info(`Child category created successfully`, { name, parent, id: createdCategory.id });
+    } catch (error) {
+      logger.error(`Failed to create child category`, { name, parent, error });
+      throw error;
     }
   }
 
-  async createCategory(
-    name: string,
-    icon: string,
-    type: string,
-    parent?: string,
-    expectError = false,
-    trackCreatedCategory?: (id: string, name: string) => void
-  ): Promise<string | void> {
-    await this.categoryUiPort.navigateToCategoryPage();
-    const result = await this.categoryUiPort.createCategory(
-      name,
-      icon,
-      type,
-      parent,
-      expectError
-    );
-    // If a category was created and a tracker is provided, call it
-    if (!expectError && result && trackCreatedCategory) {
-      trackCreatedCategory(result, name);
-    }
-    if (!expectError) {
-      this.lastCreatedCategoryName = name;
-    }
-    return result;
-  }
-
-  async createUniqueCategory(
-    name: string,
-    icon: string,
-    type: string,
-    parent?: string,
-    trackCreatedCategory?: (id: string, name: string) => Promise<void>,
-    expectError = false
-  ): Promise<string | void> {
-    logger.info(
-      `Creating unique category with icon: ${icon}, type: ${type}, parent: ${parent}, expectError: ${expectError}`
-    );
-    const categoryId = await this.categoryUiPort.createUniqueCategory(
-      name,
-      icon,
-      type,
-      parent,
-      expectError
-    );
-
-    logger.info(
-      `Category created: ${categoryId} and trackCreatedCategory: ${trackCreatedCategory}`
-    );
-    if (trackCreatedCategory && categoryId) {
-      logger.info(`call trackCreatedCategory`);
-      await trackCreatedCategory(categoryId.toString(), name);
-    } else {
-      logger.info(`Don't call trackCreatedCategory`);
-    }
-    return categoryId;
-  }
-
+  // Simplified methods with better error handling
   async isCategoryCreated(name: string): Promise<boolean> {
-    return await this.categoryUiPort.isCategoryCreated(name);
+    try {
+      return await this.categoryUiPort.isCategoryCreated(name);
+    } catch (error) {
+      logger.error(`Failed to check if category exists`, { name, error });
+      throw error;
+    }
   }
 
-  async isCategoryChildOf(
-    childName: string,
-    parentName: string
-  ): Promise<boolean> {
-    return await this.categoryUiPort.isCategoryChildOf(childName, parentName);
+  async isCategoryChildOf(childName: string, parentName: string): Promise<boolean> {
+    try {
+      return await this.categoryUiPort.isCategoryChildOf(childName, parentName);
+    } catch (error) {
+      logger.error(`Failed to check parent-child relationship`, { childName, parentName, error });
+      throw error;
+    }
   }
 
   async createCategoryWithDuplicateName(
@@ -175,14 +384,18 @@ export class CategoryUseCasesFactory {
     icon: string,
     type: string
   ): Promise<void> {
+    logger.debug(`Creating category with duplicate name (expecting error)`, { name });
     await this.categoryUiPort.createCategory(name, icon, type, undefined, true);
   }
 
-  async updateCategoryParent(
-    categoryName: string,
-    newParentName: string
-  ): Promise<void> {
-    await this.categoryUiPort.updateCategoryParent(categoryName, newParentName);
+  async updateCategoryParent(categoryName: string, newParentName: string): Promise<void> {
+    try {
+      await this.categoryUiPort.updateCategoryParent(categoryName, newParentName);
+      logger.info(`Category parent updated`, { categoryName, newParentName });
+    } catch (error) {
+      logger.error(`Failed to update category parent`, { categoryName, newParentName, error });
+      throw error;
+    }
   }
 
   async updateCategoryNameAndIcon(
@@ -190,17 +403,27 @@ export class CategoryUseCasesFactory {
     newName: string,
     newIcon: string
   ): Promise<void> {
-    await this.categoryUiPort.updateCategoryNameAndIcon(
-      oldName,
-      newName,
-      newIcon
-    );
+    try {
+      this.validateCategoryName(newName);
+      await this.categoryUiPort.updateCategoryNameAndIcon(oldName, newName, newIcon);
+      logger.info(`Category updated`, { oldName, newName, newIcon });
+    } catch (error) {
+      logger.error(`Failed to update category`, { oldName, newName, newIcon, error });
+      throw error;
+    }
   }
 
   async deleteCategory(name: string): Promise<void> {
-    await this.categoryUiPort.deleteCategory(name);
+    try {
+      await this.categoryUiPort.deleteCategory(name);
+      logger.info(`Category deleted`, { name });
+    } catch (error) {
+      logger.error(`Failed to delete category`, { name, error });
+      throw error;
+    }
   }
 
+  // Error checking methods
   async isErrorMessageVisible(message: string): Promise<boolean> {
     return await this.categoryUiPort.isErrorMessageVisible(message);
   }
@@ -209,15 +432,18 @@ export class CategoryUseCasesFactory {
     return await this.categoryUiPort.isErrorMessageVisibleInErrorBox(message);
   }
 
-  async waitForToastMessage(
-    message: string,
-    timeout?: number
-  ): Promise<boolean> {
+  async waitForToastMessage(message: string, timeout?: number): Promise<boolean> {
     return await this.categoryUiPort.waitForToastMessage(message, timeout);
   }
 
+  // Navigation and listing methods
   async listCategories(): Promise<string[]> {
-    return await this.categoryUiPort.listCategories();
+    try {
+      return await this.categoryUiPort.listCategories();
+    } catch (error) {
+      logger.error(`Failed to list categories`, { error });
+      throw error;
+    }
   }
 
   async navigateToCategoryPage(): Promise<void> {
@@ -228,90 +454,27 @@ export class CategoryUseCasesFactory {
     await this.categoryUiPort.assertOnCategoryPage();
   }
 
-  async createChildCategory(
-    name: string,
-    icon: string,
-    type: string,
-    parent: string,
-    trackCreatedCategory?: (
-      id: string,
-      name: string,
-      opts?: { isParent?: boolean }
-    ) => Promise<void>,
-    page?: Page // Playwright Page, for reload and UI assertion
-  ): Promise<void> {
-    // Ensure parent exists and get its ID
-    const parentId = await this.ensureParentCategoryExists(
-      parent,
-      icon, // Optionally, you may want to use a default or specific icon/type for the parent
-      type,
-      undefined,
-      trackCreatedCategory
-    );
-
-    // Normalize type to match backend enum (EXPENSE/INCOME)
-    const normalizedType = (type || "EXPENSE").toUpperCase();
-    const normalizedIcon = icon || "default";
-    // Create the child category via backend API
-    const categoryInput: Category = {
-      id: "",
-      name: name,
-      icon: normalizedIcon,
-      type: normalizedType,
-      parentId,
-    };
-    const resp = await this.categoryApiPort.createCategory(categoryInput);
-
-    if (trackCreatedCategory) {
-      await trackCreatedCategory(resp.id, name, { isParent: false });
-    }
-    // Reload the page to ensure the UI reflects the new backend data
-    if (page) {
-      await page.reload();
-      // Assert the new category is visible on the UI
-      const isVisible = await this.isCategoryCreated(name);
-      if (!isVisible) {
-        throw new Error(
-          `Category '${name}' was not found on the UI after backend creation and reload.`
-        );
-      }
-    }
-  }
-
+  // Specialized creation methods
   async createCategoryExpectingError(
     name: string,
     icon: string,
     type: string
   ): Promise<void> {
-    await this.createUniqueCategory(
-      name,
-      icon,
-      type,
-      undefined,
-      undefined,
-      true // expectError
-    );
+    await this.createUniqueCategory(name, icon, type, { expectError: true });
   }
 
-  public async attemptToCreateCategoryWithNameExceedingMaxLength(
+  async attemptToCreateCategoryWithNameExceedingMaxLength(
     icon: string,
     type: string,
     onCreated?: (name: string) => void
-  ) {
-    const maxLength = 255; // Ideally, get from config/constant
-    const longName = this.generateUniqueName(maxLength + 1);
+  ): Promise<void> {
+    const longName = this.generateUniqueName(CATEGORY_CONFIG.MAX_NAME_LENGTH + 1);
     if (onCreated) onCreated(longName);
-    await this.createCategory(
-      longName,
-      icon,
-      type,
-      undefined,
-      true, // expectError: true (validation error expected)
-      onCreated
-    );
+    
+    await this.createCategory(longName, icon, type, { expectError: true });
   }
 
-  public async createCategoryWithGeneratedName(
+  async createCategoryWithGeneratedName(
     length: number,
     icon: string,
     type: string,
@@ -319,47 +482,39 @@ export class CategoryUseCasesFactory {
   ): Promise<string> {
     const name = this.generateUniqueName(length);
     if (onCreated) onCreated(name);
-    await this.createCategory(
-      name,
-      icon,
-      type,
-      undefined,
-      false, // expectError: false (happy case)
-      onCreated
-    );
+    
+    await this.createCategory(name, icon, type);
     return name;
   }
 
-  public async attemptToCreateCategoryWithDuplicateName(
+  async attemptToCreateCategoryWithDuplicateName(
     icon: string,
     type: string,
     onCreated?: (name: string) => void
-  ) {
-    // Assume the last created category name is the duplicate
+  ): Promise<void> {
     const duplicateName = this.lastCreatedCategoryName || "DuplicateCategory";
     if (onCreated) onCreated(duplicateName);
-    await this.createCategory(
-      duplicateName,
-      icon,
-      type,
-      undefined,
-      true, // expectError: true (validation error expected)
-      onCreated
-    );
+    
+    await this.createCategory(duplicateName, icon, type, { expectError: true });
   }
 
-  // Helper to generate a unique name of a given length
+  /**
+   * Generates a unique name of a given length
+   * @param length - Desired length of the name
+   * @returns Generated unique name
+   */
   public generateUniqueName(length: number): string {
-    // Generate a fully random string of the requested length
-    function randomString(len: number) {
-      const chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let result = "";
-      for (let i = 0; i < len; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
+    if (length <= 0) {
+      throw new CategoryValidationError("Name length must be positive");
     }
-    return randomString(length);
+    
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return result;
   }
 }
