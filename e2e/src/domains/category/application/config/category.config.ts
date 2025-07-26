@@ -5,8 +5,8 @@ export const CATEGORY_CONFIG = {
   DEFAULT_API_URL: "http://127.0.0.1:8080/api",
   CATEGORY_TYPES: {
     EXPENSE: "EXPENSE",
-    INCOME: "INCOME"
-  } as const
+    INCOME: "INCOME",
+  } as const,
 } as const;
 
 export type CategoryType = keyof typeof CATEGORY_CONFIG.CATEGORY_TYPES;

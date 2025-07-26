@@ -15,7 +15,10 @@ export class CategoryApiClient
     super(config);
   }
 
-  private async handleApiCall<T>(operation: () => Promise<T>, message: string): Promise<T> {
+  private async handleApiCall<T>(
+    operation: () => Promise<T>,
+    message: string
+  ): Promise<T> {
     try {
       return await operation();
     } catch (error) {
@@ -32,27 +35,25 @@ export class CategoryApiClient
   }
 
   async getAllCategories(): Promise<Category[]> {
-    return this.handleApiCall(
-      async () => {
-        const dtos = await this.retry(async () => {
+    return this.handleApiCall(async () => {
+      const dtos = await this.retry(
+        async () => {
           const response = await this.client.get("/categories");
           return response.data;
-        }, 3, 500);
-        return dtos.map(toDomain);
-      },
-      "Failed to get all categories"
-    );
+        },
+        3,
+        500
+      );
+      return dtos.map(toDomain);
+    }, "Failed to get all categories");
   }
 
   async createCategory(category: Category): Promise<Category> {
     logger.info(`Creating category: ${category.name}`);
-    return this.handleApiCall(
-      async () => {
-        const dto = toDto(category);
-        const response = await this.client.post("/categories", dto);
-        return toDomain(response.data);
-      },
-      "Failed to create category"
-    );
+    return this.handleApiCall(async () => {
+      const dto = toDto(category);
+      const response = await this.client.post("/categories", dto);
+      return toDomain(response.data);
+    }, "Failed to create category");
   }
 }

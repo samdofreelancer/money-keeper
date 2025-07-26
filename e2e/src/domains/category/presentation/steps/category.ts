@@ -20,13 +20,9 @@ Given("the user is on the Category Management page", async function () {
 When(
   "I create a category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createUniqueCategory(
-      name,
-      icon,
-      type,
-      undefined,
-      this.trackCreatedCategory?.bind(this)
-    );
+    await categoryUseCases.createUniqueCategory(name, icon, type, {
+      trackCreatedCategory: this.trackCreatedCategory?.bind(this),
+    });
   }
 );
 
@@ -80,7 +76,6 @@ Given(
       name,
       icon,
       type,
-      undefined,
       this.trackCreatedCategory
         ? this.trackCreatedCategory.bind(this)
         : undefined
@@ -100,7 +95,7 @@ Given(
 When(
   "I create a category with name {string}, icon {string}, type {string}, and parent {string}",
   async function (name: string, icon: string, type: string, parent: string) {
-    await categoryUseCases.createCategory(name, icon, type, parent);
+    await categoryUseCases.createCategory(name, icon, type, { parent });
   }
 );
 
@@ -230,14 +225,10 @@ When(
   async function (length: number, icon: string, type: string) {
     const name = categoryUseCases.generateUniqueName(length);
     this.generatedCategoryName = name;
-    await categoryUseCases.createCategory(
-      name,
-      icon,
-      type,
-      undefined,
-      true, // expectError: true (error case)
-      this.trackCreatedCategory.bind(this)
-    );
+    await categoryUseCases.createCategory(name, icon, type, {
+      expectError: true,
+      trackCreatedCategory: this.trackCreatedCategory.bind(this),
+    });
   }
 );
 
@@ -278,16 +269,16 @@ Then(
 When(
   "I create a category with name {string}, icon {string}, and type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createCategory(name, icon, type);
+    await categoryUseCases.createCategory(name, icon, type, {});
   }
 );
 
 Given(
   "categories {string}, {string}, and {string} exist",
   async function (name1: string, name2: string, name3: string) {
-    await categoryUseCases.createCategory(name1, "", "expense");
-    await categoryUseCases.createCategory(name2, "", "income");
-    await categoryUseCases.createCategory(name3, "", "expense");
+    await categoryUseCases.createCategory(name1, "", "expense", {});
+    await categoryUseCases.createCategory(name2, "", "income", {});
+    await categoryUseCases.createCategory(name3, "", "expense", {});
   }
 );
 
