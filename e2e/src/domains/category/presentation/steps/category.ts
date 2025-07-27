@@ -4,7 +4,6 @@ import { CategoryUseCasesFactory } from "../../application/use-cases/CategoryUse
 import { CategoryUiDriver } from "../../infrastructure/pages/category-ui-driver";
 
 let categoryUseCases: CategoryUseCasesFactory;
-let createdCategoryName: string | null = null;
 
 Given("the system has no categories", async function () {
   const categoryUiDriver = new CategoryUiDriver(this.page);
@@ -54,21 +53,14 @@ Then(
 );
 
 Then("the unique category should be created successfully", async function () {
-  if (!createdCategoryName) {
+  if (!this.createdCategoryName) {
     throw new Error("No unique category was created");
   }
-  const created = await categoryUseCases.isCategoryCreated(createdCategoryName);
+  const created = await categoryUseCases.isCategoryCreated(this.createdCategoryName);
   if (!created) {
     throw new Error(
-      `Category ${createdCategoryName} was not created successfully`
+      `Category ${this.createdCategoryName} was not created successfully`
     );
-  }
-});
-
-After(async function () {
-  if (createdCategoryName) {
-    await categoryUseCases.deleteCategory(createdCategoryName);
-    createdCategoryName = null;
   }
 });
 
