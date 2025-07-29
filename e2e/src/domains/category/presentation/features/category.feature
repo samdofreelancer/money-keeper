@@ -5,8 +5,7 @@ Feature: Category Management
   So that I can organize my expenses and income efficiently
 
   Background:
-    Given the system has no categories
-    And the user is on the Category Management page
+    Given the user is on the Category Management page
 
   Scenario: Successfully create a new category
     When I create a category with name "Food", icon "Food", type "expense"

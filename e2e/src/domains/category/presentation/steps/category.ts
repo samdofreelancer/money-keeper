@@ -2,10 +2,6 @@ import { Given, When, Then, After } from "@cucumber/cucumber";
 
 import { CustomWorld } from "../../../../support/world";
 
-Given("the system has no categories", async function () {
-  // Implement logic to clear all categories if needed
-});
-
 Given("the user is on the Category Management page", async function (this: CustomWorld) {
   await this.getCategoryUseCase().navigateToCategoryPage();
   await this.getCategoryUseCase().assertOnCategoryPage();
