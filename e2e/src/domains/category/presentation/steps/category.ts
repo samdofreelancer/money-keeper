@@ -1,25 +1,20 @@
 import { Given, When, Then, After } from "@cucumber/cucumber";
 
-import { CategoryUseCasesFactory } from "../../application/use-cases/CategoryUseCasesFactory";
-import { CategoryUiDriver } from "../../infrastructure/pages/category-ui-driver";
-
-let categoryUseCases: CategoryUseCasesFactory;
+import { CustomWorld } from "../../../../support/world";
 
 Given("the system has no categories", async function () {
-  const categoryUiDriver = new CategoryUiDriver(this.page);
-  categoryUseCases = new CategoryUseCasesFactory(categoryUiDriver);
   // Implement logic to clear all categories if needed
 });
 
-Given("the user is on the Category Management page", async function () {
-  await categoryUseCases.navigateToCategoryPage();
-  await categoryUseCases.assertOnCategoryPage();
+Given("the user is on the Category Management page", async function (this: CustomWorld) {
+  await this.getCategoryUseCase().navigateToCategoryPage();
+  await this.getCategoryUseCase().assertOnCategoryPage();
 });
 
 When(
   "I create a category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createUniqueCategory(
+    await this.getCategoryUseCase().createUniqueCategory(
       name,
       icon,
       type,
@@ -32,7 +27,7 @@ When(
 When(
   "I create a category with name {string}, icon {string}, type {string} and parent {string}",
   async function (name: string, icon: string, type: string, parent: string) {
-    await categoryUseCases.createCategoryWithParentWorkflow(
+    await this.getCategoryUseCase().createCategoryWithParentWorkflow(
       name,
       icon,
       type,
@@ -45,7 +40,7 @@ When(
 Then(
   "the category {string} should be created successfully",
   async function (name: string) {
-    const created = await categoryUseCases.isCategoryCreated(name);
+    const created = await this.getCategoryUseCase().isCategoryCreated(name);
     if (!created) {
       throw new Error(`Category ${name} was not created successfully`);
     }
@@ -56,7 +51,7 @@ Then("the unique category should be created successfully", async function () {
   if (!this.createdCategoryName) {
     throw new Error("No unique category was created");
   }
-  const created = await categoryUseCases.isCategoryCreated(this.createdCategoryName);
+  const created = await this.getCategoryUseCase().isCategoryCreated(this.createdCategoryName);
   if (!created) {
     throw new Error(
       `Category ${this.createdCategoryName} was not created successfully`
@@ -68,7 +63,7 @@ Given(
   "a category {string} with icon {string} and type {string} exists",
   async function (name: string, icon: string, type: string) {
     // Use use case to ensure category exists via backend API and track it
-    await categoryUseCases.ensureParentCategoryExists(
+    await this.getCategoryUseCase().ensureParentCategoryExists(
       name,
       icon,
       type,
@@ -80,7 +75,7 @@ Given(
     // Reload the page to ensure the UI reflects the new backend data
     await this.page.reload();
     // Assert the new category is visible on the UI
-    const isVisible = await categoryUseCases.isCategoryCreated(name);
+    const isVisible = await this.getCategoryUseCase().isCategoryCreated(name);
     if (!isVisible) {
       throw new Error(
         `Category '${name}' was not found on the UI after backend creation and reload.`
@@ -92,14 +87,14 @@ Given(
 When(
   "I create a category with name {string}, icon {string}, type {string}, and parent {string}",
   async function (name: string, icon: string, type: string, parent: string) {
-    await categoryUseCases.createCategory(name, icon, type, parent);
+    await this.getCategoryUseCase().createCategory(name, icon, type, parent);
   }
 );
 
 Then(
   "the category {string} should be created as a child of {string}",
   async function (child: string, parent: string) {
-    const isChild = await categoryUseCases.isCategoryChildOf(child, parent);
+    const isChild = await this.getCategoryUseCase().isCategoryChildOf(child, parent);
     if (!isChild) {
       throw new Error(`Category ${child} is not a child of ${parent}`);
     }
@@ -109,7 +104,7 @@ Then(
 When(
   "I create another category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createCategoryWithDuplicateName(name, icon, type);
+    await this.getCategoryUseCase().createCategoryWithDuplicateName(name, icon, type);
   }
 );
 
@@ -117,13 +112,13 @@ Then(
   "the category creation should fail with error {string}",
   async function (errorMessage: string) {
     // Wait for the toast message to appear
-    const toastVisible = await categoryUseCases.waitForToastMessage(
+    const toastVisible = await this.getCategoryUseCase().waitForToastMessage(
       errorMessage,
       10000
     );
     if (!toastVisible) {
       // Fallback to checking for any error message
-      const errorVisible = await categoryUseCases.isErrorMessageVisible(
+      const errorVisible = await this.getCategoryUseCase().isErrorMessageVisible(
         errorMessage
       );
       if (!errorVisible) {
@@ -138,7 +133,7 @@ Then(
 Given(
   "a category {string} with icon {string} and type {string} and parent {string} exists",
   async function (name: string, icon: string, type: string, parent: string) {
-    await categoryUseCases.createChildCategory(
+    await this.getCategoryUseCase().createChildCategory(
       name,
       icon,
       type,
@@ -154,7 +149,7 @@ Given(
 When(
   "I update category {string} to have parent {string}",
   async function (name: string, newParent: string) {
-    await categoryUseCases.updateCategoryParent(name, newParent);
+    await this.getCategoryUseCase().updateCategoryParent(name, newParent);
   }
 );
 
@@ -162,13 +157,13 @@ Then(
   "the update should fail with error {string}",
   async function (errorMessage: string) {
     // Wait for the toast message to appear
-    const toastVisible = await categoryUseCases.waitForToastMessage(
+    const toastVisible = await this.getCategoryUseCase().waitForToastMessage(
       errorMessage,
       10000
     );
     if (!toastVisible) {
       // Fallback to checking for any error message
-      const errorVisible = await categoryUseCases.isErrorMessageVisible(
+      const errorVisible = await this.getCategoryUseCase().isErrorMessageVisible(
         errorMessage
       );
       if (!errorVisible) {
@@ -197,7 +192,7 @@ When(
   "I create a category with a name longer than the maximum allowed length",
   async function () {
     // Call a use case method that handles long name generation internally
-    await categoryUseCases.attemptToCreateCategoryWithNameExceedingMaxLength(
+    await this.getCategoryUseCase().attemptToCreateCategoryWithNameExceedingMaxLength(
       "default-icon",
       "expense"
     );
@@ -207,7 +202,7 @@ When(
 When(
   "I create a category with a name of {int} characters, icon {string}, and type {string}",
   async function (length: number, icon: string, type: string) {
-    const name = await categoryUseCases.createCategoryWithGeneratedName(
+    const name = await this.getCategoryUseCase().createCategoryWithGeneratedName(
       length,
       icon,
       type,
@@ -220,9 +215,9 @@ When(
 When(
   "I attempt to create a category with a name of {int} characters, icon {string}, and type {string}",
   async function (length: number, icon: string, type: string) {
-    const name = categoryUseCases.generateUniqueName(length);
+    const name = this.getCategoryUseCase().generateUniqueName(length);
     this.generatedCategoryName = name;
-    await categoryUseCases.createCategory(
+    await this.getCategoryUseCase().createCategory(
       name,
       icon,
       type,
@@ -240,7 +235,7 @@ Then(
     if (!name) {
       throw new Error("No generated category name found for assertion");
     }
-    const created = await categoryUseCases.isCategoryCreated(name);
+    const created = await this.getCategoryUseCase().isCategoryCreated(name);
     if (!created) {
       throw new Error(
         `Category with a name of ${length} characters was not created successfully (name: ${name})`
@@ -250,13 +245,13 @@ Then(
 );
 
 When("I delete the category {string}", async function (name: string) {
-  await categoryUseCases.deleteCategory(name);
+  await this.getCategoryUseCase().deleteCategory(name);
 });
 
 Then(
   "the deletion should fail with error {string}",
   async function (errorMessage: string) {
-    const errorVisible = await categoryUseCases.isErrorMessageVisibleInErrorBox(
+    const errorVisible = await this.getCategoryUseCase().isErrorMessageVisibleInErrorBox(
       errorMessage
     );
     if (!errorVisible) {
@@ -270,21 +265,21 @@ Then(
 When(
   "I create a category with name {string}, icon {string}, and type {string}",
   async function (name: string, icon: string, type: string) {
-    await categoryUseCases.createCategory(name, icon, type);
+    await this.getCategoryUseCase().createCategory(name, icon, type);
   }
 );
 
 Given(
   "categories {string}, {string}, and {string} exist",
   async function (name1: string, name2: string, name3: string) {
-    await categoryUseCases.createCategory(name1, "", "expense");
-    await categoryUseCases.createCategory(name2, "", "income");
-    await categoryUseCases.createCategory(name3, "", "expense");
+    await this.getCategoryUseCase().createCategory(name1, "", "expense");
+    await this.getCategoryUseCase().createCategory(name2, "", "income");
+    await this.getCategoryUseCase().createCategory(name3, "", "expense");
   }
 );
 
 When("I list all categories", async function () {
-  this.categories = await categoryUseCases.listCategories();
+  this.categories = await this.getCategoryUseCase().listCategories();
 });
 
 Then(
@@ -306,7 +301,7 @@ Then(
 When(
   "I update the category {string} to have name {string} and icon {string}",
   async function (oldName: string, newName: string, newIcon: string) {
-    await categoryUseCases.updateCategoryNameAndIcon(oldName, newName, newIcon);
+    await this.getCategoryUseCase().updateCategoryNameAndIcon(oldName, newName, newIcon);
   }
 );
 
@@ -315,7 +310,7 @@ After(async function () {
   if (this.createdCategoryIds && this.createdCategoryIds.length > 0) {
     for (const { id } of this.createdCategoryIds) {
       try {
-        await categoryUseCases.deleteCategory(id);
+        await this.getCategoryUseCase().deleteCategory(id);
       } catch (e) {
         // Ignore errors if the category does not exist
       }
@@ -327,7 +322,7 @@ After(async function () {
 When(
   "I attempt to create a category with a name that is too long, icon {string}, and type {string}",
   async function (icon: string, type: string) {
-    await categoryUseCases.attemptToCreateCategoryWithNameExceedingMaxLength(
+    await this.getCategoryUseCase().attemptToCreateCategoryWithNameExceedingMaxLength(
       icon,
       type,
       this.trackCreatedCategory?.bind(this)

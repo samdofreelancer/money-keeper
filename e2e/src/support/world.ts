@@ -23,6 +23,8 @@ import {
   CategoryCreatedEvent,
   CategoryDeletedEvent,
 } from "../shared/domain/events";
+import { CategoryUseCasesFactory } from "../domains/category/application/use-cases/CategoryUseCasesFactory";
+import { CategoryUiDriver } from "../domains/category/infrastructure/pages/category-ui-driver";
 
 /**
  * Unified World class with clean separation of concerns
@@ -48,6 +50,7 @@ export class CustomWorld extends World {
 
   // Use case factories (convenience)
   useCases?: AccountUseCasesFactory;
+  categoryUseCases?: CategoryUseCasesFactory;
 
   // Event handlers map
   private eventHandlers: Map<
@@ -139,9 +142,11 @@ export class CustomWorld extends World {
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
       this.currentPage = new BasePage(this.page);
-
       // Initialize account UI port
       this.accountUiPort = new CreateAccountPlaywrightPage(this.page);
+      // Initialize category use cases
+      const categoryUiDriver = new CategoryUiDriver(this.page);
+      this.categoryUseCases = new CategoryUseCasesFactory(categoryUiDriver);
 
       logger.info(`Browser launched: ${browserName} (headless: ${headless})`);
     } catch (error) {
@@ -331,6 +336,15 @@ export class CustomWorld extends World {
     }
     return this.useCases;
   }
+
+  getCategoryUseCase(): CategoryUseCasesFactory {
+    if (!this.categoryUseCases) {
+      throw new Error("categoryUseCases cannot initialize");
+    }
+    return this.categoryUseCases;
+  }
 }
+
+
 
 setWorldConstructor(CustomWorld);
