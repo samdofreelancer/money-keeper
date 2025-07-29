@@ -75,6 +75,8 @@ export class CategoryUseCasesFactory {
           isParent: true,
         });
       }
+      // Always reload the UI after backend change
+      await this.categoryUiPort.reloadCategoryPage();
       return parentCat.id;
     } else {
       const resp = await this.categoryApiPort.createCategory({
@@ -98,6 +100,8 @@ export class CategoryUseCasesFactory {
           `Category '${parentName}' was not found after creation via API.`
         );
       }
+      // Always reload the UI after backend change
+      await this.categoryUiPort.reloadCategoryPage();
       return resp.id;
     }
   }
@@ -237,8 +241,7 @@ export class CategoryUseCasesFactory {
       id: string,
       name: string,
       opts?: { isParent?: boolean }
-    ) => Promise<void>,
-    page?: Page // Playwright Page, for reload and UI assertion
+    ) => Promise<void>
   ): Promise<void> {
     // Ensure parent exists and get its ID
     const parentId = await this.ensureParentCategoryExists(
@@ -266,15 +269,13 @@ export class CategoryUseCasesFactory {
       await trackCreatedCategory(resp.id, name, { isParent: false });
     }
     // Reload the page to ensure the UI reflects the new backend data
-    if (page) {
-      await page.reload();
-      // Assert the new category is visible on the UI
-      const isVisible = await this.isCategoryCreated(name);
-      if (!isVisible) {
-        throw new Error(
-          `Category '${name}' was not found on the UI after backend creation and reload.`
-        );
-      }
+    await this.categoryUiPort.reloadCategoryPage();
+    // Assert the new category is visible on the UI
+    const isVisible = await this.isCategoryCreated(name);
+    if (!isVisible) {
+      throw new Error(
+        `Category '${name}' was not found on the UI after backend creation and reload.`
+      );
     }
   }
 

@@ -141,4 +141,9 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
   async isErrorMessageVisibleInErrorBox(message: string): Promise<boolean> {
     return await this.uiFeedbackHelper.isErrorMessageVisibleInErrorBox(message);
   }
+
+  async reloadCategoryPage(): Promise<void> {
+    await this.page.reload();
+    await this.page.waitForLoadState("networkidle");
+  }
 }

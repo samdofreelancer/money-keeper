@@ -36,4 +36,5 @@ export interface CategoryUiPort {
   waitForToastMessage(message: string, timeout?: number): Promise<boolean>;
   listCategories(): Promise<string[]>;
   assertOnCategoryPage(): Promise<void>;
+  reloadCategoryPage(): Promise<void>;
 }

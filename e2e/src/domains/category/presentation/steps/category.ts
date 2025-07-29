@@ -62,7 +62,6 @@ Then("the unique category should be created successfully", async function () {
 Given(
   "a category {string} with icon {string} and type {string} exists",
   async function (name: string, icon: string, type: string) {
-    // Use use case to ensure category exists via backend API and track it
     await this.getCategoryUseCase().ensureParentCategoryExists(
       name,
       icon,
@@ -72,13 +71,11 @@ Given(
         ? this.trackCreatedCategory.bind(this)
         : undefined
     );
-    // Reload the page to ensure the UI reflects the new backend data
-    await this.page.reload();
     // Assert the new category is visible on the UI
     const isVisible = await this.getCategoryUseCase().isCategoryCreated(name);
     if (!isVisible) {
       throw new Error(
-        `Category '${name}' was not found on the UI after backend creation and reload.`
+        `Category '${name}' was not found on the UI after backend creation.`
       );
     }
   }

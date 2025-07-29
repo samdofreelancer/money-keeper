@@ -76,9 +76,23 @@ export class CategoryUpdatingPage extends BasePage {
       .nth(3)
       .click();
 
-    // Select the new parent by name
-    await this.page.getByRole("option", { name: newParentName }).click();
-    this.logger.info(`Selected parent "${newParentName}"`);
+    // Select the new parent by unique id (data-testid or text content match)
+    const parentOptions = this.page.locator('[role="option"]');
+    const count = await parentOptions.count();
+    let found = false;
+    for (let i = 0; i < count; i++) {
+      const option = parentOptions.nth(i);
+      const text = await option.textContent();
+      if (text && text.trim() === newParentName) {
+        await option.click();
+        found = true;
+        this.logger.info(`Selected parent option with exact text: '${newParentName}'`);
+        break;
+      }
+    }
+    if (!found) {
+      throw new Error(`No unique parent option found with exact text: '${newParentName}'`);
+    }
 
     // Submit the update and wait for any response (success or error)
     await Promise.all([
