@@ -86,12 +86,16 @@ export class CategoryUpdatingPage extends BasePage {
       if (text && text.trim() === newParentName) {
         await option.click();
         found = true;
-        this.logger.info(`Selected parent option with exact text: '${newParentName}'`);
+        this.logger.info(
+          `Selected parent option with exact text: '${newParentName}'`
+        );
         break;
       }
     }
     if (!found) {
-      throw new Error(`No unique parent option found with exact text: '${newParentName}'`);
+      throw new Error(
+        `No unique parent option found with exact text: '${newParentName}'`
+      );
     }
 
     // Submit the update and wait for any response (success or error)

@@ -345,6 +345,4 @@ export class CustomWorld extends World {
   }
 }
 
-
-
 setWorldConstructor(CustomWorld);

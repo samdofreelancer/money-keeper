@@ -2,10 +2,13 @@ import { Given, When, Then, After } from "@cucumber/cucumber";
 
 import { CustomWorld } from "../../../../support/world";
 
-Given("the user is on the Category Management page", async function (this: CustomWorld) {
-  await this.getCategoryUseCase().navigateToCategoryPage();
-  await this.getCategoryUseCase().assertOnCategoryPage();
-});
+Given(
+  "the user is on the Category Management page",
+  async function (this: CustomWorld) {
+    await this.getCategoryUseCase().navigateToCategoryPage();
+    await this.getCategoryUseCase().assertOnCategoryPage();
+  }
+);
 
 When(
   "I create a category with name {string}, icon {string}, type {string}",
@@ -47,7 +50,9 @@ Then("the unique category should be created successfully", async function () {
   if (!this.createdCategoryName) {
     throw new Error("No unique category was created");
   }
-  const created = await this.getCategoryUseCase().isCategoryCreated(this.createdCategoryName);
+  const created = await this.getCategoryUseCase().isCategoryCreated(
+    this.createdCategoryName
+  );
   if (!created) {
     throw new Error(
       `Category ${this.createdCategoryName} was not created successfully`
@@ -87,7 +92,10 @@ When(
 Then(
   "the category {string} should be created as a child of {string}",
   async function (child: string, parent: string) {
-    const isChild = await this.getCategoryUseCase().isCategoryChildOf(child, parent);
+    const isChild = await this.getCategoryUseCase().isCategoryChildOf(
+      child,
+      parent
+    );
     if (!isChild) {
       throw new Error(`Category ${child} is not a child of ${parent}`);
     }
@@ -97,7 +105,11 @@ Then(
 When(
   "I create another category with name {string}, icon {string}, type {string}",
   async function (name: string, icon: string, type: string) {
-    await this.getCategoryUseCase().createCategoryWithDuplicateName(name, icon, type);
+    await this.getCategoryUseCase().createCategoryWithDuplicateName(
+      name,
+      icon,
+      type
+    );
   }
 );
 
@@ -111,9 +123,8 @@ Then(
     );
     if (!toastVisible) {
       // Fallback to checking for any error message
-      const errorVisible = await this.getCategoryUseCase().isErrorMessageVisible(
-        errorMessage
-      );
+      const errorVisible =
+        await this.getCategoryUseCase().isErrorMessageVisible(errorMessage);
       if (!errorVisible) {
         throw new Error(
           `Expected error message "${errorMessage}" was not visible in toast or form`
@@ -156,9 +167,8 @@ Then(
     );
     if (!toastVisible) {
       // Fallback to checking for any error message
-      const errorVisible = await this.getCategoryUseCase().isErrorMessageVisible(
-        errorMessage
-      );
+      const errorVisible =
+        await this.getCategoryUseCase().isErrorMessageVisible(errorMessage);
       if (!errorVisible) {
         throw new Error(
           `Expected error message "${errorMessage}" was not visible in toast or form`
@@ -195,12 +205,13 @@ When(
 When(
   "I create a category with a name of {int} characters, icon {string}, and type {string}",
   async function (length: number, icon: string, type: string) {
-    const name = await this.getCategoryUseCase().createCategoryWithGeneratedName(
-      length,
-      icon,
-      type,
-      this.trackCreatedCategory.bind(this)
-    );
+    const name =
+      await this.getCategoryUseCase().createCategoryWithGeneratedName(
+        length,
+        icon,
+        type,
+        this.trackCreatedCategory.bind(this)
+      );
     this.generatedCategoryName = name;
   }
 );
@@ -244,9 +255,10 @@ When("I delete the category {string}", async function (name: string) {
 Then(
   "the deletion should fail with error {string}",
   async function (errorMessage: string) {
-    const errorVisible = await this.getCategoryUseCase().isErrorMessageVisibleInErrorBox(
-      errorMessage
-    );
+    const errorVisible =
+      await this.getCategoryUseCase().isErrorMessageVisibleInErrorBox(
+        errorMessage
+      );
     if (!errorVisible) {
       throw new Error(
         `Expected error message "${errorMessage}" was not visible in the category page error-message element.`
@@ -294,7 +306,11 @@ Then(
 When(
   "I update the category {string} to have name {string} and icon {string}",
   async function (oldName: string, newName: string, newIcon: string) {
-    await this.getCategoryUseCase().updateCategoryNameAndIcon(oldName, newName, newIcon);
+    await this.getCategoryUseCase().updateCategoryNameAndIcon(
+      oldName,
+      newName,
+      newIcon
+    );
   }
 );
 

@@ -1,5 +1,3 @@
-import { Page } from "@playwright/test";
-
 import { CategoryUiPort } from "../../domain/ports/category-ui.port";
 import { logger } from "../../../../shared";
 import { CategoryApiClient } from "../../infrastructure/api/category-api.client";
