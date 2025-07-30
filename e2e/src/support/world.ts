@@ -66,6 +66,8 @@ export class CustomWorld extends World {
   createdAccountIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
 
+  public scenarioId: string | undefined;
+
   // Test state
   currentFormData?: AccountFormValue | Record<string, unknown>; // Allow form data for account and generic forms
   currentCategoryName?: string;
@@ -75,6 +77,7 @@ export class CustomWorld extends World {
 
   // Configuration
   config = config;
+  generatedCategoryName: any;
 
   constructor(
     options: IWorldOptions & {

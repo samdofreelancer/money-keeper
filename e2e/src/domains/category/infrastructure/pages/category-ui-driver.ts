@@ -53,23 +53,6 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
     });
   }
 
-  async createUniqueCategory(
-    name: string,
-    icon: string,
-    type: string,
-    parent?: string,
-    expectError = false
-  ): Promise<string | void> {
-    const uniqueName = `${name}-${Date.now()}`;
-    return await this.createCategory(
-      uniqueName,
-      icon,
-      type,
-      parent,
-      expectError
-    );
-  }
-
   async isCategoryCreated(name: string): Promise<boolean> {
     return await this.categoryListingPage.isCategoryCreated(name);
   }
@@ -145,5 +128,17 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
   async reloadCategoryPage(): Promise<void> {
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
+  }
+
+  createUniqueCategory(
+    name: string,
+    icon: string,
+    type: string,
+    parent?: string,
+    expectError = false
+  ): Promise<string | void> {
+    throw new Error(
+      "createUniqueCategory should be implemented in the application/test layer, not in the UI driver."
+    );
   }
 }

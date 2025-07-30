@@ -138,10 +138,7 @@ export class CategoryUseCasesFactory {
     trackCreatedCategory?: (id: string, name: string) => Promise<void>,
     expectError = false
   ): Promise<string | void> {
-    logger.info(
-      `Creating unique category with icon: ${icon}, type: ${type}, parent: ${parent}, expectError: ${expectError}`
-    );
-    const categoryId = await this.categoryUiPort.createUniqueCategory(
+    const categoryId = await this.categoryUiPort.createCategory(
       name,
       icon,
       type,
@@ -293,15 +290,14 @@ export class CategoryUseCasesFactory {
   }
 
   public async attemptToCreateCategoryWithNameExceedingMaxLength(
+    name: string,
     icon: string,
     type: string,
     onCreated?: (name: string) => void
   ) {
-    const maxLength = 255; // Ideally, get from config/constant
-    const longName = this.generateUniqueName(maxLength + 1);
-    if (onCreated) onCreated(longName);
+    if (onCreated) onCreated(name);
     await this.createCategory(
-      longName,
+      name,
       icon,
       type,
       undefined,
@@ -311,12 +307,11 @@ export class CategoryUseCasesFactory {
   }
 
   public async createCategoryWithGeneratedName(
-    length: number,
+    name: string,
     icon: string,
     type: string,
     onCreated?: (name: string) => void
   ): Promise<string> {
-    const name = this.generateUniqueName(length);
     if (onCreated) onCreated(name);
     await this.createCategory(
       name,
@@ -345,20 +340,5 @@ export class CategoryUseCasesFactory {
       true, // expectError: true (validation error expected)
       onCreated
     );
-  }
-
-  // Helper to generate a unique name of a given length
-  public generateUniqueName(length: number): string {
-    // Generate a fully random string of the requested length
-    function randomString(len: number) {
-      const chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      let result = "";
-      for (let i = 0; i < len; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    }
-    return randomString(length);
   }
 }

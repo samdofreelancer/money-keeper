@@ -21,7 +21,6 @@ Feature: Category Management
     When I create another category with name "Transport", icon "Transport", type "expense"
     Then the category creation should fail with error "Category name already exists"
 
-  
   Scenario: Fail to update a category to create a cyclic parent relationship
     Given a category "A" with icon "Transport" and type "expense" exists
     And a category "B" with icon "Food" and type "expense" and parent "A" exists
