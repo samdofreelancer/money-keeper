@@ -314,20 +314,6 @@ When(
   }
 );
 
-After(async function () {
-  // Clean up all tracked categories after each scenario
-  if (this.createdCategoryIds && this.createdCategoryIds.length > 0) {
-    for (const { id } of this.createdCategoryIds) {
-      try {
-        await this.getCategoryUseCase().deleteCategory(id);
-      } catch (e) {
-        // Ignore errors if the category does not exist
-      }
-    }
-    this.createdCategoryIds = [];
-  }
-});
-
 When(
   "I attempt to create a category with a name that is too long, icon {string}, and type {string}",
   async function (icon: string, type: string) {
