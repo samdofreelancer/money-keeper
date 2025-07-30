@@ -129,16 +129,4 @@ export class CategoryUiDriver extends BasePage implements CategoryUiPort {
     await this.page.reload();
     await this.page.waitForLoadState("networkidle");
   }
-
-  createUniqueCategory(
-    name: string,
-    icon: string,
-    type: string,
-    parent?: string,
-    expectError = false
-  ): Promise<string | void> {
-    throw new Error(
-      "createUniqueCategory should be implemented in the application/test layer, not in the UI driver."
-    );
-  }
 }

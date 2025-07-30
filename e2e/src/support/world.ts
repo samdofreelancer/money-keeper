@@ -77,7 +77,7 @@ export class CustomWorld extends World {
 
   // Configuration
   config = config;
-  generatedCategoryName: any;
+  generatedCategoryName: string | undefined;
 
   constructor(
     options: IWorldOptions & {
