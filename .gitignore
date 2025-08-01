@@ -4,3 +4,9 @@
 /frontend/node_modules
 backend/.factorypath
 /e2e/metadata
+/e2e/playwright
+/playwright
+/playwright-code-gen/node_modules
+/playwright-code-gen/test-results
+playwright-code-gen/package-lock.json
+*.html

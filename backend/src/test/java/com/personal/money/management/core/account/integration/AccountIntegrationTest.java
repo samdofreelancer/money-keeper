@@ -63,6 +63,8 @@ public class AccountIntegrationTest {
     void testUpdateAccount() {
         Account account = new Account("Old Account", BigDecimal.valueOf(100), AccountType.CASH, "USD", "desc");
         account = accountRepository.save(account);
+        // Ensure the ID is set before using it in the update URL
+        assertNotNull(account.getId(), "Saved account ID should not be null");
 
         AccountRequest updateRequest = new AccountRequest();
         updateRequest.setAccountName("Updated Account");
