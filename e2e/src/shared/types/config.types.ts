@@ -4,6 +4,7 @@ export interface EnvironmentConfig {
   // Screenshot configurations
   screenshotOnSuccess: boolean;
   screenshotOnFailure: boolean;
+  screenshotAllAfterStep?: boolean;
 
   // Report configurations
   reportsDir: string;

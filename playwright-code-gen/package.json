@@ -1,0 +1,24 @@
+{
+  "name": "playwright-codegen",
+  "version": "1.0.0",
+  "description": "Playwright tests with domain-driven structure",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:cucumber": "cucumber-js"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "cucumber",
+    "ddd"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cucumber/cucumber": "^9.5.1",
+    "@playwright/test": "^1.38.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}

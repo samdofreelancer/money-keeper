@@ -23,6 +23,8 @@ import {
   CategoryCreatedEvent,
   CategoryDeletedEvent,
 } from "../shared/domain/events";
+import { CategoryUseCasesFactory } from "../domains/category/application/use-cases/CategoryUseCasesFactory";
+import { CategoryUiDriver } from "../domains/category/infrastructure/pages/category-ui-driver";
 
 /**
  * Unified World class with clean separation of concerns
@@ -48,6 +50,7 @@ export class CustomWorld extends World {
 
   // Use case factories (convenience)
   useCases?: AccountUseCasesFactory;
+  categoryUseCases?: CategoryUseCasesFactory;
 
   // Event handlers map
   private eventHandlers: Map<
@@ -58,9 +61,12 @@ export class CustomWorld extends World {
   // Test data management
   createdCategoryNames: string[] = [];
   createdCategoryIds: string[] = [];
+  createdParentCategoryIds: string[] = [];
   createdAccountNames: string[] = [];
   createdAccountIds: string[] = [];
   uniqueData: Map<string, string> = new Map();
+
+  public scenarioId: string | undefined;
 
   // Test state
   currentFormData?: AccountFormValue | Record<string, unknown>; // Allow form data for account and generic forms
@@ -71,6 +77,7 @@ export class CustomWorld extends World {
 
   // Configuration
   config = config;
+  generatedCategoryName: string | undefined;
 
   constructor(
     options: IWorldOptions & {
@@ -108,7 +115,19 @@ export class CustomWorld extends World {
 
   async launchBrowser(browserName = config.browser.name) {
     try {
-      const { headless } = config.browser;
+      // Allow override via PW_HEADLESS env variable
+      let headless = config.browser.headless;
+      if (
+        typeof process !== "undefined" &&
+        process.env.PW_HEADLESS !== undefined
+      ) {
+        const envVal = process.env.PW_HEADLESS.trim().toLowerCase();
+        if (envVal === "false" || envVal === "0") {
+          headless = false;
+        } else if (envVal === "true" || envVal === "1") {
+          headless = true;
+        }
+      }
 
       switch (browserName) {
         case "chromium":
@@ -126,11 +145,13 @@ export class CustomWorld extends World {
       this.context = await this.browser.newContext();
       this.page = await this.context.newPage();
       this.currentPage = new BasePage(this.page);
-
       // Initialize account UI port
       this.accountUiPort = new CreateAccountPlaywrightPage(this.page);
+      // Initialize category use cases
+      const categoryUiDriver = new CategoryUiDriver(this.page);
+      this.categoryUseCases = new CategoryUseCasesFactory(categoryUiDriver);
 
-      logger.info(`Browser launched: ${browserName}`);
+      logger.info(`Browser launched: ${browserName} (headless: ${headless})`);
     } catch (error) {
       logger.error("Error launching browser:", error);
       throw error;
@@ -199,12 +220,26 @@ export class CustomWorld extends World {
   /**
    * Tracks a created category for cleanup
    */
+  /**
+   * Tracks a created category for cleanup, with support for parent/child distinction.
+   * If opts.isParent is true, stores in createdParentCategoryIds for correct cleanup order.
+   */
   async trackCreatedCategory(
     categoryId: string | null,
-    categoryName: string
+    categoryName: string,
+    opts?: { isParent?: boolean }
   ): Promise<void> {
+    logger.info(`Tracking created category`);
+    if (!this.createdCategoryIds) this.createdCategoryIds = [];
+    if (!this.createdCategoryNames) this.createdCategoryNames = [];
+    if (!this.createdParentCategoryIds) this.createdParentCategoryIds = [];
+
     if (categoryId) {
-      this.createdCategoryIds.push(categoryId);
+      if (opts?.isParent) {
+        this.createdParentCategoryIds.push(categoryId);
+      } else {
+        this.createdCategoryIds.push(categoryId);
+      }
     }
     this.createdCategoryNames.push(categoryName);
     await this.emit(
@@ -212,6 +247,11 @@ export class CustomWorld extends World {
         categoryName,
         categoryId: categoryId ?? undefined,
       })
+    );
+
+    logger.info(`Tracked create category: ${this.createdCategoryIds}`);
+    logger.info(
+      `Tracked create parent category: ${this.createdParentCategoryIds}`
     );
   }
 
@@ -298,6 +338,13 @@ export class CustomWorld extends World {
       );
     }
     return this.useCases;
+  }
+
+  getCategoryUseCase(): CategoryUseCasesFactory {
+    if (!this.categoryUseCases) {
+      throw new Error("categoryUseCases cannot initialize");
+    }
+    return this.categoryUseCases;
   }
 }
 

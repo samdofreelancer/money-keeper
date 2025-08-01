@@ -5,10 +5,21 @@ import * as path from "path";
 import { CustomWorld } from "../../../support/world";
 import { logger } from "../../../support/logger";
 
+function generateScenarioId(rawName: string): string {
+  return rawName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .substring(0, 40);
+}
+
 Before(async function (this: CustomWorld, { pickle }) {
   logger.info(
     `Before scenario: Launching browser for scenario "${pickle.name}"`
   );
+
+  this.scenarioId = generateScenarioId(pickle.name);
+  console.log("Scenario ID:", this.scenarioId);
 
   await this.launchBrowser();
 

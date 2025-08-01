@@ -8,6 +8,7 @@ import {
   CreateAccountRequest,
   CreateAccountResponse,
 } from "../dto/CreateAccountDto";
+import { RawFormInput } from "../../../domain/value-objects/account-form-data.vo";
 import {
   ValidationError,
   DomainError,
@@ -40,7 +41,6 @@ export class CreateAccountCommand
 
       return {
         success: true,
-        accountId: savedAccount.id,
         accountName: savedAccount.accountName,
       };
     } catch (error) {
@@ -50,7 +50,8 @@ export class CreateAccountCommand
 
   private validateInput(request: CreateAccountRequest): AccountFormValue {
     try {
-      return AccountFormValue.fromRawInput(request);
+      // Cast request to RawFormInput
+      return AccountFormValue.fromRawInput(request as unknown as RawFormInput);
     } catch (error) {
       throw new ValidationError(
         "Invalid account form data",
@@ -71,8 +72,9 @@ export class CreateAccountCommand
   }
 
   private createAccountEntity(accountFormValue: AccountFormValue): Account {
-    return Account.create({
-      accountName: accountFormValue.accountName,
+    // Map accountName to _accountName for constructor
+    return new Account({
+      _accountName: accountFormValue.accountName,
       accountType: accountFormValue.accountType,
       initialBalance: accountFormValue.initialBalance,
       currency: accountFormValue.currency,
@@ -84,7 +86,6 @@ export class CreateAccountCommand
     const event: DomainEvent = {
       type: "AccountCreated",
       payload: {
-        accountId: account.id,
         accountName: account.accountName,
         accountType: account.accountType,
         initialBalance: account.initialBalance,

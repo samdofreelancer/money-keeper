@@ -1,7 +1,15 @@
 import { Page } from "@playwright/test";
 
+import { config } from "../../../shared/config/env.config";
+import { logger } from "../../../support/logger";
+
 export class BasePage {
-  constructor(public page: Page) {}
+  protected baseUrl: string;
+  protected logger = logger;
+
+  constructor(public page: Page) {
+    this.baseUrl = config.browser.baseUrl;
+  }
 
   async getTitle(): Promise<string> {
     return await this.page.title();
