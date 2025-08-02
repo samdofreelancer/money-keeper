@@ -1,10 +1,10 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { TestData } from '../../../shared/utilities/testData';
-import { getAccountsPage, getAccountSteps } from '../../../shared/utilities/hooks';
+import { getAccountsPage, getAccountUsecase } from '../../../shared/utilities/hooks';
 
 Given('I am on the accounts page', async function() {
-  const accountSteps = getAccountSteps();
-  await accountSteps.navigateToAccountsPage();
+  const accountUsecase = getAccountUsecase();
+  await accountUsecase.navigateToAccountsPage();
 });
 
 When('I click on the {string} button', async function(buttonText: string) {
@@ -23,12 +23,12 @@ When('I fill in the account form with the following details:', async function(da
 });
 
 Then('I should see the account {string} in the accounts list', async function(accountName: string) {
-  const accountSteps = getAccountSteps();
-  await accountSteps.verifyAccountCreated(accountName);
+  const accountUsecase = getAccountUsecase();
+  await accountUsecase.verifyAccountCreated(accountName);
 });
 
 Then(/^the total balance should include \$?([\d,]+\.\d{2})$/, async function (amountStr: string) {
     const cleaned = parseFloat(amountStr.replace(/,/g, ''));
-    const accountSteps = getAccountSteps();
-    await accountSteps.verifyTotalBalance(cleaned);
+    const accountUsecase = getAccountUsecase();
+    await accountUsecase.verifyTotalBalance(cleaned);
   });

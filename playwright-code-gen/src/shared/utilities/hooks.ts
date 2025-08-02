@@ -14,10 +14,6 @@ export const getAccountsPage = (): World['accountsPage'] => {
   return (global as any).testWorld.accountsPage;
 };
 
-export const getAccountSteps = (): World['accountSteps'] => {
-  return (global as any).testWorld.accountSteps;
-};
-
 export const getAccountUsecase = (): World['accountUsecase'] => {
   return (global as any).testWorld.accountUsecase;
 };
