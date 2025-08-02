@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { AccountsPage } from '../pages/AccountsPage';
-import { Logger } from '@/shared/utilities/logger';
+import { Logger } from '../../../shared/utilities/logger';
 
 /**
  * Steps for account-related operations
