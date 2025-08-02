@@ -47,6 +47,13 @@ export class AccountUsecase {
   }
 
   /**
+   * Delete an account by name
+   */
+  async deleteAccount(name: string) {
+    await this.accountsPage.deleteAccount(name);
+  }
+
+  /**
    * Store the current total balance for later comparison
    */
   private initialTotalBalance: number = 0;

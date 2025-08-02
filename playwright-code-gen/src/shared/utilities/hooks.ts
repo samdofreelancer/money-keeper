@@ -5,6 +5,7 @@ import { BaseWorld } from './base-world';
 import { Environment } from '../config/environment';
 import { Logger } from './logger';
 import { Reporter } from './reporter';
+import { TestData } from './testData';
 
 // Set World constructor for Cucumber
 setWorldConstructor(World);
@@ -175,6 +176,14 @@ After(async function(scenario) {
     Logger.debug('Scenario teardown completed');
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
+  }
+  
+  // Cleanup test data
+  try {
+    TestData.cleanupTestData();
+    Logger.debug('Test data cleanup completed');
+  } catch (error) {
+    Logger.error('Error during test data cleanup', error);
   }
 });
 

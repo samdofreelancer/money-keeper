@@ -35,6 +35,9 @@ When('I fill in the account form with the following details:', async function(da
     dataTableHash['Currency'],
     dataTableHash['Description']
   );
+
+  // Track created account for cleanup
+  TestData.trackCreatedAccount(accountData.name);
   
   await accountUsecase.fillAccountForm(accountData);
 });
