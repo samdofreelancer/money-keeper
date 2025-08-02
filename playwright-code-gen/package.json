@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cucumber-js",
-    "test:report": "cucumber-js && open-cli cucumber-report.html"
+    "test:report": "cucumber-js && open-cli test-results/cucumber-report.html"
   },
   "keywords": [
     "playwright",
