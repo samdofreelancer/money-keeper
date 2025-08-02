@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { AccountData } from '../../../shared/types/account.types';
+import { AccountData } from '../types/account.types';
 
 /**
  * Page object for the Accounts page

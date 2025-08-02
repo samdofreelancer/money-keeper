@@ -1,11 +1,11 @@
 import { Given, When, Then } from '@cucumber/cucumber';
-import { getAccountUsecase } from '../../../shared/utilities/hooks';
+import { getAccountUsecase, getAccountsPage } from '../../../shared/utilities/hooks';
 import { TestData } from '../../../shared/utilities/testData';
-import { AccountData } from '../../../shared/types/account.types';
+import { AccountData } from '../types/account.types';
 
 Given('I am on the accounts page', async function() {
-  const accountUsecase = getAccountUsecase();
-  await accountUsecase.navigateToAccountsPage();
+  const accountsPage = getAccountsPage();
+  await accountsPage.navigate();
 });
 
 When('I click on the {string} button', async function(buttonText: string) {
