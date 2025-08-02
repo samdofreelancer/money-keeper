@@ -1,4 +1,4 @@
-import { AccountsPage } from '../pages/AccountsPage';
+import { AccountsPlaywrightPage } from '../pages/accounts.playwright.page';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountData } from '../types/account.types';
 import { AccountApiClient } from '../api/account-api.client';
@@ -8,7 +8,7 @@ import { AccountApiClient } from '../api/account-api.client';
  */
 export class AccountUsecase {
   constructor(
-    private accountsPage: AccountsPage,
+    private accountsPage: AccountsPlaywrightPage,
     private accountApiClient: AccountApiClient
   ) {}
 

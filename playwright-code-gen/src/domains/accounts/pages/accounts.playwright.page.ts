@@ -4,7 +4,7 @@ import { AccountData } from '../types/account.types';
 /**
  * Page object for the Accounts page
  */
-export class AccountsPage {
+export class AccountsPlaywrightPage {
   constructor(private page: Page) {}
 
   /**
