@@ -4,7 +4,8 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js"
+    "test": "cucumber-js",
+    "test:report": "cucumber-js && open-cli cucumber-report.html"
   },
   "keywords": [
     "playwright",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^9.5.1",
     "@playwright/test": "^1.38.0",
+    "open-cli": "^8.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
