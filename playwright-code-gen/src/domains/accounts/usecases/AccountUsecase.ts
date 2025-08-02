@@ -1,23 +1,10 @@
-import { expect } from '@playwright/test';
 import { AccountsPage } from '../pages/AccountsPage';
+import { expect } from '@playwright/test';
 
-/**
- * Steps for account-related operations
- */
-export class AccountSteps {
+export class AccountUsecase {
   constructor(private accountsPage: AccountsPage) {}
 
-  /**
-   * Navigate to the accounts page
-   */
-  async navigateToAccountsPage() {
-    await this.accountsPage.navigate();
-  }
-
-  /**
-   * Create a new account with the given details
-   */
-  async createNewAccount({
+  async createAccount({
     name,
     type,
     balance,
@@ -41,17 +28,11 @@ export class AccountSteps {
     await this.accountsPage.clickCreate();
   }
 
-  /**
-   * Verify that an account was created successfully
-   */
-  async verifyAccountCreated(name: string) {
+  async verifyAccountExists(name: string) {
     const exists = await this.accountsPage.verifyAccountExists(name);
     expect(exists).toBeTruthy();
   }
 
-  /**
-   * Verify that the total balance includes the new account balance
-   */
   async verifyTotalBalance(expectedAmount: number) {
     const totalBalanceText = await this.accountsPage.getTotalBalance();
     expect(totalBalanceText).toContain(`$${expectedAmount.toLocaleString()}`);
