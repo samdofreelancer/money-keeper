@@ -1,3 +1,7 @@
+// Load environment variables from .env file
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { Before, After, BeforeAll, AfterAll, setWorldConstructor, Status } from '@cucumber/cucumber';
 import { chromium, firefox, webkit, Page, BrowserType } from '@playwright/test';
 import { World } from './world';
