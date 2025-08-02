@@ -1,6 +1,5 @@
-import { Browser, BrowserContext, Page, BrowserType } from '@playwright/test';
+import { Browser, BrowserContext, Page } from '@playwright/test';
 import { Environment } from '../config/environment';
-import { chromium, firefox, webkit } from '@playwright/test';
 
 /**
  * BaseWorld class to provide a foundation for domain-specific World classes
@@ -13,8 +12,8 @@ export class BaseWorld {
     // Default implementation does nothing
     // Will be overridden by Cucumber's World
   };
-  // Browser instance (unique per scenario)
-  protected browser!: Browser;
+  // Browser instance (shared across all tests)
+  protected static browser: Browser;
   
   // Context and page (unique per scenario)
   protected context!: BrowserContext;
@@ -25,35 +24,25 @@ export class BaseWorld {
   }
 
   /**
-   * Get browser type based on environment configuration
+   * Set the browser instance
    */
-  private getBrowserType(): BrowserType {
-    const browserName = process.env.BROWSER || 'chromium';
-    
-    switch (browserName.toLowerCase()) {
-      case 'firefox':
-        return firefox;
-      case 'webkit':
-        return webkit;
-      case 'chromium':
-      default:
-        return chromium;
-    }
+  public static setBrowser(browser: Browser): void {
+    BaseWorld.browser = browser;
+  }
+
+  /**
+   * Get the browser instance
+   */
+  public static getBrowser(): Browser {
+    return BaseWorld.browser;
   }
 
   /**
    * Create a new browser context and page with environment configuration
    */
   public async initialize(): Promise<void> {
-    // Launch browser for this scenario
-    const browserType = this.getBrowserType();
-    this.browser = await browserType.launch({
-      headless: Environment.headless,
-      slowMo: Environment.slowMo
-    });
-    
     // Create context with environment configuration
-    this.context = await this.browser.newContext({
+    this.context = await BaseWorld.browser.newContext({
       viewport: { width: 1280, height: 720 },
       baseURL: Environment.baseUrl,
       recordVideo: process.env.RECORD_VIDEO === 'true' ? {
@@ -71,18 +60,10 @@ export class BaseWorld {
   }
 
   /**
-   * Close the browser context and browser
+   * Close the browser context
    */
   public async teardown(): Promise<void> {
-    // Close context
-    if (this.context) {
-      await this.context.close();
-    }
-    
-    // Close browser
-    if (this.browser) {
-      await this.browser.close();
-    }
+    await this.context.close();
   }
 
   /**

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError, AxiosResponse } from "axios";
-import { Logger } from "../../../../shared/utilities/logger";
+import { Logger } from "../../../shared/utilities/logger";
 
 export interface Account {
   id: string;

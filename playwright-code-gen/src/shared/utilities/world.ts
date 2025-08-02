@@ -1,7 +1,7 @@
 import { BaseWorld } from './base-world';
 import { AccountsPage } from '../../domains/accounts/pages/AccountsPage';
 import { AccountUsecase } from '../../domains/accounts/usecases/AccountUsecase';
-import { AccountApiClient } from '../../domains/accounts/infrastructure/api/account-api.client';
+import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
 
 /**
  * World class to encapsulate test context and state

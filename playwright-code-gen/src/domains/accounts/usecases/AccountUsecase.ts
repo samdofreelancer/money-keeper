@@ -1,7 +1,7 @@
 import { AccountsPage } from '../pages/AccountsPage';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountData } from '../../../shared/types/account.types';
-import { AccountApiClient } from '../infrastructure/api/account-api.client';
+import { AccountApiClient } from '../api/account-api.client';
 
 /**
  * Use case for account-related operations

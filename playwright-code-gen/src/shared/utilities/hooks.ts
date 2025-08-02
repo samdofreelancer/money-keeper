@@ -1,5 +1,5 @@
 import { Before, After, BeforeAll, AfterAll, setWorldConstructor, Status } from '@cucumber/cucumber';
-import { Page } from '@playwright/test';
+import { chromium, firefox, webkit, Page, BrowserType } from '@playwright/test';
 import { World } from './world';
 import { BaseWorld } from './base-world';
 import { Environment } from '../config/environment';
@@ -20,7 +20,24 @@ export const getAccountUsecase = (): World['accountUsecase'] => {
 };
 
 /**
- * Initialize reporter before all tests
+ * Get browser type based on environment configuration
+ */
+function getBrowserType(): BrowserType {
+  const browserName = process.env.BROWSER || 'chromium';
+  
+  switch (browserName.toLowerCase()) {
+    case 'firefox':
+      return firefox;
+    case 'webkit':
+      return webkit;
+    case 'chromium':
+    default:
+      return chromium;
+  }
+}
+
+/**
+ * Launch the browser before all tests
  */
 BeforeAll(async () => {
   // Initialize reporter
@@ -29,12 +46,35 @@ BeforeAll(async () => {
   Logger.info('Starting test execution');
   Logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   Logger.info(`Base URL: ${Environment.baseUrl}`);
+  
+  const browserType = getBrowserType();
+  Logger.info(`Browser: ${browserType.name()}`);
+  
+  try {
+    const browser = await browserType.launch({
+      headless: Environment.headless,
+      slowMo: Environment.slowMo
+    });
+    
+    BaseWorld.setBrowser(browser);
+    Logger.info('Browser launched successfully');
+  } catch (error) {
+    Logger.error('Failed to launch browser', error);
+    throw error;
+  }
 });
 
 /**
- * Generate report after all tests
+ * Close the browser after all tests
  */
 AfterAll(async () => {
+  try {
+    await BaseWorld.getBrowser().close();
+    Logger.info('Browser closed successfully');
+  } catch (error) {
+    Logger.error('Error closing browser', error);
+  }
+  
   // Generate report
   Reporter.generateReport();
   
@@ -56,7 +96,6 @@ Before(async function(scenario) {
   
   try {
     // 'this' refers to the World instance in Cucumber hooks
-    // Browser launch and context creation happens in World.initialize()
     await this.initialize();
     
     // Store the world instance globally for easy access
@@ -70,7 +109,7 @@ Before(async function(scenario) {
 });
 
 /**
- * Close the context and browser after each scenario
+ * Close the context after each scenario
  */
 After(async function(scenario) {
   // Log scenario result
@@ -133,7 +172,6 @@ After(async function(scenario) {
   
   try {
     // 'this' refers to the World instance in Cucumber hooks
-    // Browser and context closing happens in World.teardown()
     await this.teardown();
     Logger.debug('Scenario teardown completed');
   } catch (error) {
