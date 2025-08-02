@@ -18,6 +18,10 @@ export const getAccountSteps = (): World['accountSteps'] => {
   return (global as any).testWorld.accountSteps;
 };
 
+export const getAccountUsecase = (): World['accountUsecase'] => {
+  return (global as any).testWorld.accountUsecase;
+};
+
 /**
  * Get browser type based on environment configuration
  */
