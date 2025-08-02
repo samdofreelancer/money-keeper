@@ -1,55 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError, AxiosResponse } from "axios";
 import { Logger } from "../../../shared/utilities/logger";
-
-export interface Account {
-  id: string;
-  accountName: string;
-  type: string;
-  balance: number;
-  active: boolean;
-}
-
-export class AccountCreate {
-  public readonly accountName: string;
-  public readonly initBalance: number;
-  public readonly type: string;
-  public readonly currency: string;
-  public readonly description?: string;
-  public readonly active?: boolean;
-
-  constructor(data: {
-    accountName: string;
-    initBalance: number;
-    type: string;
-    currency: string;
-    description?: string;
-    active?: boolean;
-  }) {
-    if (!data.accountName || typeof data.accountName !== "string") {
-      throw new Error("Invalid or missing accountName");
-    }
-    if (
-      data.initBalance === undefined ||
-      data.initBalance === null ||
-      isNaN(Number(data.initBalance))
-    ) {
-      throw new Error("Invalid or missing initBalance");
-    }
-    if (!data.type || typeof data.type !== "string") {
-      throw new Error("Invalid or missing type");
-    }
-    if (!data.currency || typeof data.currency !== "string") {
-      throw new Error("Invalid or missing currency");
-    }
-
-    this.accountName = data.accountName;
-    this.initBalance = Number(data.initBalance);
-    this.type = data.type;
-    this.currency = data.currency;
-    this.description = data.description;
-    this.active = data.active;
-  }
-}
+import { AccountApiDto, AccountCreateDto} from "../types/account.dto";
 
 export class AccountApiClient {
   private client: AxiosInstance;
@@ -93,8 +44,8 @@ export class AccountApiClient {
     );
   }
 
-  async getAllAccounts(): Promise<Account[]> {
-    const response = await this.client.get<Account[]>("/");
+  async getAllAccounts(): Promise<AccountApiDto[]> {
+    const response = await this.client.get<AccountApiDto[]>("/");
     return response.data;
   }
 
@@ -103,7 +54,7 @@ export class AccountApiClient {
     Logger.info(`Account deleted successfully: ${id}`);
   }
 
-  async create(account: AccountCreate): Promise<Account> {
+  async create(account: AccountCreateDto): Promise<AccountApiDto> {
     try {
       Logger.info(`Creating account: ${account.accountName}`);
       // Convert class instance to plain object for API request
@@ -115,7 +66,7 @@ export class AccountApiClient {
         description: account.description,
         active: account.active,
       };
-      const response = await this.client.post<Account>("/", payload);
+      const response = await this.client.post<AccountApiDto>("/", payload);
       Logger.info(`Account created successfully: ${account.accountName}`);
       return response.data;
     } catch (error) {

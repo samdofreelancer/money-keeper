@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { AccountData } from '../types/account.types';
+import { AccountDto } from '../types/account.dto';
 
 /**
  * Page object for the Accounts page
@@ -24,7 +24,7 @@ export class AccountsPlaywrightPage {
   /**
    * Fill in the account form
    */
-  async fillAccountForm(accountData: AccountData) {
+  async fillAccountForm(accountData: AccountDto) {
     // Fill account name
     await this.page.fill('input[placeholder="Enter account name"]', accountData.name);
     
@@ -36,7 +36,7 @@ export class AccountsPlaywrightPage {
     await this.page.fill('input[type="number"]', accountData.balance.toString());
     
     // Fill description
-    await this.page.fill('input[placeholder="Enter description (optional)"]', accountData.description);
+    await this.page.fill('input[placeholder="Enter description (optional)"]', accountData.description || '');
   }
 
   /**

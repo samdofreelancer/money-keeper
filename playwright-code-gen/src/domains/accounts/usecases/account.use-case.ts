@@ -1,6 +1,6 @@
 import { AccountsPlaywrightPage } from '../pages/accounts.playwright.page';
 import { Logger } from '../../../shared/utilities/logger';
-import { AccountData } from '../types/account.types';
+import { AccountDto } from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
 
 /**
@@ -36,7 +36,7 @@ export class AccountUseCase {
   /**
    * Fill the account form with the given details
    */
-  async fillAccountForm(accountData: AccountData) {
+  async fillAccountForm(accountData: AccountDto) {
     await this.accountsPage.fillAccountForm(accountData);
   }
 
