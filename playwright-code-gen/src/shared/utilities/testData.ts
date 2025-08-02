@@ -1,5 +1,5 @@
 import { Logger } from './logger';
-import { AccountUsecase } from '../../domains/accounts/usecases/AccountUsecase';
+import { AccountUseCase } from '../../domains/accounts/usecases/account.use-case';
 import { getAccountUsecase } from './hooks';
 
 /**
@@ -56,7 +56,7 @@ export class TestData {
    * This method can be called after each test scenario to clean up any test data
    */
   static async cleanupTestData(): Promise<void> {
-    const accountUsecase: AccountUsecase = getAccountUsecase();
+    const accountUsecase: AccountUseCase = getAccountUsecase();
     for (const accountName of this.createdAccounts) {
       try {
         await accountUsecase.deleteAccount(accountName);

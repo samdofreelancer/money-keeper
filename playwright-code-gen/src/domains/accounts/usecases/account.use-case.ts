@@ -6,7 +6,7 @@ import { AccountApiClient } from '../api/account-api.client';
 /**
  * Use case for account-related operations
  */
-export class AccountUsecase {
+export class AccountUseCase {
   constructor(
     private accountsPage: AccountsPlaywrightPage,
     private accountApiClient: AccountApiClient

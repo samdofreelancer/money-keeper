@@ -1,5 +1,5 @@
 import { BaseWorld } from './base-world';
-import { AccountUsecase } from '../../domains/accounts/usecases/AccountUsecase';
+import { AccountUseCase } from '../../domains/accounts/usecases/account.use-case';
 import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
 import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
 
@@ -11,7 +11,7 @@ import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.pl
 export class World extends BaseWorld {
   // Domain-specific page objects and steps
   public accountsPage!: AccountsPlaywrightPage;
-  public accountUsecase!: AccountUsecase;
+  public accountUsecase!: AccountUseCase;
   public accountApiClient!: AccountApiClient;
 
   constructor() {
@@ -33,6 +33,6 @@ export class World extends BaseWorld {
     
     // Initialize domain-specific page objects and steps
     this.accountsPage = new AccountsPlaywrightPage(this.getPage());
-    this.accountUsecase = new AccountUsecase(this.accountsPage, this.accountApiClient);
+    this.accountUsecase = new AccountUseCase(this.accountsPage, this.accountApiClient);
   }
 }
