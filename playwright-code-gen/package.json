@@ -4,8 +4,7 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "test:cucumber": "cucumber-js"
+    "test": "cucumber-js"
   },
   "keywords": [
     "playwright",
@@ -20,5 +19,8 @@
     "@playwright/test": "^1.38.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.10.0"
   }
 }

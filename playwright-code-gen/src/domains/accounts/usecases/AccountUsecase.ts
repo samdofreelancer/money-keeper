@@ -1,12 +1,16 @@
 import { AccountsPage } from '../pages/AccountsPage';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountData } from '../../../shared/types/account.types';
+import { AccountApiClient } from '../infrastructure/api/account-api.client';
 
 /**
  * Use case for account-related operations
  */
 export class AccountUsecase {
-  constructor(private accountsPage: AccountsPage) {}
+  constructor(
+    private accountsPage: AccountsPage,
+    private accountApiClient: AccountApiClient
+  ) {}
 
   /**
    * Navigate to the accounts page
@@ -47,10 +51,16 @@ export class AccountUsecase {
   }
 
   /**
-   * Delete an account by name
+   * Delete an account by name using the backend API
    */
   async deleteAccount(name: string) {
-    await this.accountsPage.deleteAccount(name);
+    Logger.info(`Deleting account via API: ${name}`);
+    const result = await this.accountApiClient.deleteAccountByName(name);
+    if (!result) {
+      Logger.warn(`Failed to delete account via API: ${name}`);
+    } else {
+      Logger.info(`Successfully deleted account via API: ${name}`);
+    }
   }
 
   /**
