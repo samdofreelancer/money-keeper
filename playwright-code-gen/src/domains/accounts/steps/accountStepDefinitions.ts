@@ -1,6 +1,6 @@
 import { Given, When, Then } from '@cucumber/cucumber';
+import { getAccountUsecase } from '../../../shared/utilities/hooks';
 import { TestData } from '../../../shared/utilities/testData';
-import { getAccountsPage, getAccountUsecase } from '../../../shared/utilities/hooks';
 
 Given('I am on the accounts page', async function() {
   const accountUsecase = getAccountUsecase();
@@ -8,18 +8,34 @@ Given('I am on the accounts page', async function() {
 });
 
 When('I click on the {string} button', async function(buttonText: string) {
-  const accountsPage = getAccountsPage();
+  const accountUsecase = getAccountUsecase();
   if (buttonText === 'Add Account') {
-    await accountsPage.clickAddAccount();
+    await accountUsecase.clickAddAccountButton();
   } else if (buttonText === 'Create') {
-    await accountsPage.clickCreate();
+    await accountUsecase.clickCreateButton();
   }
 });
 
 When('I fill in the account form with the following details:', async function(dataTable) {
-  const accountsPage = getAccountsPage();
-  const testAccount = TestData.getTestAccount();
-  await accountsPage.fillAccountForm(testAccount);
+  const accountUsecase = getAccountUsecase();
+  
+  // Extract data from the dataTable
+  const dataTableHash = dataTable.rowsHash();
+  
+  // Get scenario name from context
+  const scenarioName = (this as any).scenarioName || 'unknown-scenario';
+  
+  // Generate unique account name using TestData utility
+  // Name should be unique by test case and formed by testId_actual name
+  const accountData = {
+    name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
+    type: dataTableHash['Type'],
+    balance: parseFloat(dataTableHash['Balance']),
+    currency: dataTableHash['Currency'],
+    description: dataTableHash['Description']
+  };
+  
+  await accountUsecase.fillAccountForm(accountData);
 });
 
 Then('I should see the account {string} in the accounts list', async function(accountName: string) {

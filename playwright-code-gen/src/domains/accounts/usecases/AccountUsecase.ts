@@ -15,6 +15,45 @@ export class AccountUsecase {
   }
 
   /**
+   * Click the Add Account button
+   */
+  async clickAddAccountButton() {
+    await this.accountsPage.clickAddAccount();
+  }
+
+  /**
+   * Click the Create button
+   */
+  async clickCreateButton() {
+    await this.accountsPage.clickCreate();
+  }
+
+  /**
+   * Fill the account form with the given details
+   */
+  async fillAccountForm({
+    name,
+    type,
+    balance,
+    currency,
+    description
+  }: {
+    name: string;
+    type: string;
+    balance: number;
+    currency: string;
+    description: string;
+  }) {
+    await this.accountsPage.fillAccountForm({
+      name,
+      type,
+      balance,
+      currency,
+      description
+    });
+  }
+
+  /**
    * Create a new account with the given details
    */
   async createNewAccount({
