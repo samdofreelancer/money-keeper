@@ -1,6 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { getAccountUsecase } from '../../../shared/utilities/hooks';
 import { TestData } from '../../../shared/utilities/testData';
+import { AccountData } from '../../../shared/types/account.types';
 
 Given('I am on the accounts page', async function() {
   const accountUsecase = getAccountUsecase();
@@ -27,13 +28,13 @@ When('I fill in the account form with the following details:', async function(da
   
   // Generate unique account name using TestData utility
   // Name should be unique by test case and formed by testId_actual name
-  const accountData = {
-    name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
-    type: dataTableHash['Type'],
-    balance: parseFloat(dataTableHash['Balance']),
-    currency: dataTableHash['Currency'],
-    description: dataTableHash['Description']
-  };
+  const accountData = new AccountData(
+    TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
+    dataTableHash['Type'],
+    parseFloat(dataTableHash['Balance']),
+    dataTableHash['Currency'],
+    dataTableHash['Description']
+  );
   
   await accountUsecase.fillAccountForm(accountData);
 });

@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { AccountData } from '../../../shared/types/account.types';
 
 /**
  * Page object for the Accounts page
@@ -23,31 +24,19 @@ export class AccountsPage {
   /**
    * Fill in the account form
    */
-  async fillAccountForm({
-    name,
-    type,
-    balance,
-    currency,
-    description
-  }: {
-    name: string;
-    type: string;
-    balance: number;
-    currency: string;
-    description: string;
-  }) {
+  async fillAccountForm(accountData: AccountData) {
     // Fill account name
-    await this.page.fill('input[placeholder="Enter account name"]', name);
+    await this.page.fill('input[placeholder="Enter account name"]', accountData.name);
     
     // Select account type
     await this.page.click('.el-select');
-    await this.page.click(`span:text('${type}')`);
+    await this.page.click(`span:text('${accountData.type}')`);
     
     // Fill balance
-    await this.page.fill('input[type="number"]', balance.toString());
+    await this.page.fill('input[type="number"]', accountData.balance.toString());
     
     // Fill description
-    await this.page.fill('input[placeholder="Enter description (optional)"]', description);
+    await this.page.fill('input[placeholder="Enter description (optional)"]', accountData.description);
   }
 
   /**

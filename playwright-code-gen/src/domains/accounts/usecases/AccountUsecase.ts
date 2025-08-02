@@ -1,5 +1,6 @@
 import { AccountsPage } from '../pages/AccountsPage';
 import { Logger } from '../../../shared/utilities/logger';
+import { AccountData } from '../../../shared/types/account.types';
 
 /**
  * Use case for account-related operations
@@ -31,57 +32,8 @@ export class AccountUsecase {
   /**
    * Fill the account form with the given details
    */
-  async fillAccountForm({
-    name,
-    type,
-    balance,
-    currency,
-    description
-  }: {
-    name: string;
-    type: string;
-    balance: number;
-    currency: string;
-    description: string;
-  }) {
-    await this.accountsPage.fillAccountForm({
-      name,
-      type,
-      balance,
-      currency,
-      description
-    });
-  }
-
-  /**
-   * Create a new account with the given details
-   */
-  async createNewAccount({
-    name,
-    type,
-    balance,
-    currency,
-    description
-  }: {
-    name: string;
-    type: string;
-    balance: number;
-    currency: string;
-    description: string;
-  }) {
-    // Store the initial balance before adding a new account
-    await this.storeInitialBalance();
-    Logger.info(`Initial total balance: $${this.initialTotalBalance}`);
-    
-    await this.accountsPage.clickAddAccount();
-    await this.accountsPage.fillAccountForm({
-      name,
-      type,
-      balance,
-      currency,
-      description
-    });
-    await this.accountsPage.clickCreate();
+  async fillAccountForm(accountData: AccountData) {
+    await this.accountsPage.fillAccountForm(accountData);
   }
 
   /**
