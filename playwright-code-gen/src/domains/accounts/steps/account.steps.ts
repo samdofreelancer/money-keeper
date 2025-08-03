@@ -4,7 +4,7 @@ import {
   getAccountsPage,
 } from '../../../shared/utilities/hooks';
 import { TestData } from '../../../shared/utilities/testData';
-import { AccountData } from '../types/account.types';
+import { AccountDto } from '../types/account.dto';
 
 Given('I am on the accounts page', async function () {
   const accountsPage = getAccountsPage();
@@ -34,13 +34,13 @@ When(
 
     // Generate unique account name using TestData utility
     // Name should be unique by test case and formed by testId_actual name
-    const accountData = new AccountData(
-      TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
-      dataTableHash['Type'],
-      parseFloat(dataTableHash['Balance']),
-      dataTableHash['Currency'],
-      dataTableHash['Description']
-    );
+    const accountData: AccountDto = {
+      name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
+      type: dataTableHash['Type'],
+      balance: parseFloat(dataTableHash['Balance']),
+      currency: dataTableHash['Currency'],
+      description: dataTableHash['Description']
+    };
 
     // Track created account for cleanup
     TestData.trackCreatedAccount(accountData.name);
