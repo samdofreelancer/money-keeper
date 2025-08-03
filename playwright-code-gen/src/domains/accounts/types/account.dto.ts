@@ -32,21 +32,21 @@ export class AccountCreateDto {
     description?: string;
     active?: boolean;
   }) {
-    if (!data.accountName || typeof data.accountName !== "string") {
-      throw new Error("Invalid or missing accountName");
+    if (!data.accountName || typeof data.accountName !== 'string') {
+      throw new Error('Invalid or missing accountName');
     }
     if (
       data.initBalance === undefined ||
       data.initBalance === null ||
       isNaN(Number(data.initBalance))
     ) {
-      throw new Error("Invalid or missing initBalance");
+      throw new Error('Invalid or missing initBalance');
     }
-    if (!data.type || typeof data.type !== "string") {
-      throw new Error("Invalid or missing type");
+    if (!data.type || typeof data.type !== 'string') {
+      throw new Error('Invalid or missing type');
     }
-    if (!data.currency || typeof data.currency !== "string") {
-      throw new Error("Invalid or missing currency");
+    if (!data.currency || typeof data.currency !== 'string') {
+      throw new Error('Invalid or missing currency');
     }
 
     this.accountName = data.accountName;
@@ -65,7 +65,7 @@ export class AccountCreateDto {
       type: accountDto.type,
       currency: accountDto.currency || 'US Dollar', // Default currency if not provided
       description: accountDto.description,
-      active: accountDto.active !== undefined ? accountDto.active : true // Default to active if not provided
+      active: accountDto.active !== undefined ? accountDto.active : true, // Default to active if not provided
     });
   }
 }
@@ -77,19 +77,19 @@ export function toAccountDto(apiDto: AccountApiDto): AccountDto {
     name: apiDto.accountName,
     type: apiDto.type,
     balance: apiDto.balance,
-    active: apiDto.active
+    active: apiDto.active,
   };
 }
 
 export function toAccountApiDto(accountDto: AccountDto): AccountApiDto {
   if (!accountDto.id) {
-    throw new Error("Cannot convert to AccountApiDto: missing id");
+    throw new Error('Cannot convert to AccountApiDto: missing id');
   }
   return {
     id: accountDto.id,
     accountName: accountDto.name,
     type: accountDto.type,
     balance: accountDto.balance,
-    active: accountDto.active !== undefined ? accountDto.active : true
+    active: accountDto.active !== undefined ? accountDto.active : true,
   };
 }

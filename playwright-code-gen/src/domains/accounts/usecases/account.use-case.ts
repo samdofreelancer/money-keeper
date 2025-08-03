@@ -75,8 +75,11 @@ export class AccountUseCase {
     const totalBalanceText = await this.accountsPage.getTotalBalance();
     // Extract the numeric value from the balance text (removing currency symbol and commas)
     const balanceMatch = totalBalanceText.match(/\$([\d,]+)/);
-    if (!balanceMatch) throw new Error(`Could not extract balance from text: ${totalBalanceText}`);
-    
+    if (!balanceMatch)
+      throw new Error(
+        `Could not extract balance from text: ${totalBalanceText}`
+      );
+
     // Convert the string to a number, removing commas
     return parseFloat(balanceMatch[1].replace(/,/g, ''));
   }
@@ -93,18 +96,24 @@ export class AccountUseCase {
    */
   async verifyTotalBalance(expectedAmount: number) {
     const currentBalance = await this.getTotalBalanceAsNumber();
-    
+
     // Verify the current balance is greater than or equal to the expected amount
     if (currentBalance < expectedAmount) {
-      throw new Error(`Current balance $${currentBalance} is less than expected amount $${expectedAmount}`);
+      throw new Error(
+        `Current balance $${currentBalance} is less than expected amount $${expectedAmount}`
+      );
     }
-    
+
     // If we have an initial balance stored, verify the current balance is greater than or equal to it
     if (this.initialTotalBalance > 0) {
       if (currentBalance < this.initialTotalBalance) {
-        throw new Error(`Current balance $${currentBalance} is less than initial balance $${this.initialTotalBalance}`);
+        throw new Error(
+          `Current balance $${currentBalance} is less than initial balance $${this.initialTotalBalance}`
+        );
       }
-      console.log(`Balance check: Initial: $${this.initialTotalBalance}, Current: $${currentBalance}, Expected: $${expectedAmount}`);
+      console.log(
+        `Balance check: Initial: $${this.initialTotalBalance}, Current: $${currentBalance}, Expected: $${expectedAmount}`
+      );
     }
   }
 }

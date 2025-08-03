@@ -26,17 +26,26 @@ export class AccountsPlaywrightPage {
    */
   async fillAccountForm(accountData: AccountDto) {
     // Fill account name
-    await this.page.fill('input[placeholder="Enter account name"]', accountData.name);
-    
+    await this.page.fill(
+      'input[placeholder="Enter account name"]',
+      accountData.name
+    );
+
     // Select account type
     await this.page.click('.el-select');
     await this.page.click(`span:text('${accountData.type}')`);
-    
+
     // Fill balance
-    await this.page.fill('input[type="number"]', accountData.balance.toString());
-    
+    await this.page.fill(
+      'input[type="number"]',
+      accountData.balance.toString()
+    );
+
     // Fill description
-    await this.page.fill('input[placeholder="Enter description (optional)"]', accountData.description || '');
+    await this.page.fill(
+      'input[placeholder="Enter description (optional)"]',
+      accountData.description || ''
+    );
   }
 
   /**
@@ -57,11 +66,13 @@ export class AccountsPlaywrightPage {
    * Get the total balance text
    */
   async getTotalBalance(): Promise<string> {
-    const balance = await this.page.textContent('text=Total Balance of Active Accounts:');
+    const balance = await this.page.textContent(
+      'text=Total Balance of Active Accounts:'
+    );
     if (!balance) throw new Error('Total balance element not found');
     return balance;
   }
-  
+
   /**
    * Delete an account by name
    * @param accountName The name of the account to delete

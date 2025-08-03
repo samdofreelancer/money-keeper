@@ -26,13 +26,16 @@ export class World extends BaseWorld {
   public async initialize(): Promise<void> {
     // Initialize browser context and page from BaseWorld
     await super.initialize();
-    
+
     // Initialize API client
     const apiBaseUrl = process.env.API_BASE_URL || 'http://127.0.0.1:8080/api';
     this.accountApiClient = new AccountApiClient({ baseURL: apiBaseUrl });
-    
+
     // Initialize domain-specific page objects and steps
     this.accountsPage = new AccountsPlaywrightPage(this.getPage());
-    this.accountUsecase = new AccountUseCase(this.accountsPage, this.accountApiClient);
+    this.accountUsecase = new AccountUseCase(
+      this.accountsPage,
+      this.accountApiClient
+    );
   }
 }

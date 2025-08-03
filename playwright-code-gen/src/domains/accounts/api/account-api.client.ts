@@ -1,6 +1,11 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError, AxiosResponse } from "axios";
-import { Logger } from "../../../shared/utilities/logger";
-import { AccountApiDto, AccountCreateDto} from "../types/account.dto";
+import axios, {
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+  AxiosError,
+  AxiosResponse,
+} from 'axios';
+import { Logger } from '../../../shared/utilities/logger';
+import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
 
 export class AccountApiClient {
   private client: AxiosInstance;
@@ -9,7 +14,7 @@ export class AccountApiClient {
     this.client = axios.create({
       baseURL: `${config.baseURL}/accounts`,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       timeout: 10000,
     });
@@ -23,7 +28,7 @@ export class AccountApiClient {
         return config;
       },
       (error: AxiosError) => {
-        Logger.error("API Request Error:", error);
+        Logger.error('API Request Error:', error);
         return Promise.reject(error);
       }
     );
@@ -45,7 +50,7 @@ export class AccountApiClient {
   }
 
   async getAllAccounts(): Promise<AccountApiDto[]> {
-    const response = await this.client.get<AccountApiDto[]>("/");
+    const response = await this.client.get<AccountApiDto[]>('/');
     return response.data;
   }
 
@@ -66,7 +71,7 @@ export class AccountApiClient {
         description: account.description,
         active: account.active,
       };
-      const response = await this.client.post<AccountApiDto>("/", payload);
+      const response = await this.client.post<AccountApiDto>('/', payload);
       Logger.info(`Account created successfully: ${account.accountName}`);
       return response.data;
     } catch (error) {
@@ -84,7 +89,7 @@ export class AccountApiClient {
 
       // Find account by name
       const accountToDelete = accounts.find(
-        (account) => account.accountName === accountName
+        account => account.accountName === accountName
       );
 
       if (!accountToDelete) {
