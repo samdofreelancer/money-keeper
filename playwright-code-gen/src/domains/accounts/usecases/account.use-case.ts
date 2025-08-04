@@ -13,10 +13,26 @@ export class AccountUseCase {
   ) {}
 
   /**
-   * Navigate to the accounts page
+   * Navigate to the categories page
    */
-  async navigateToAccountsPage() {
-    await this.accountsPage.navigate();
+  async navigateToCategoriesPage() {
+    await this.accountsPage.navigateToCategoriesPage();
+  }
+
+  /**
+   * Click the Accounts tab on categories page
+   */
+  async clickAccountsTab() {
+    await this.accountsPage.clickAccountsTab();
+  }
+
+  /**
+   * Create a new account by filling form and submitting
+   */
+  async createAccount(accountData: AccountDto) {
+    await this.clickAddAccountButton();
+    await this.accountsPage.fillAccountForm(accountData);
+    await this.clickCreateButton();
   }
 
   /**
@@ -31,13 +47,6 @@ export class AccountUseCase {
    */
   async clickCreateButton() {
     await this.accountsPage.clickCreate();
-  }
-
-  /**
-   * Fill the account form with the given details
-   */
-  async fillAccountForm(accountData: AccountDto) {
-    await this.accountsPage.fillAccountForm(accountData);
   }
 
   /**

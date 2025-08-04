@@ -6,6 +6,7 @@
   "scripts": {
     "test": "cucumber-js",
     "test:report": "cucumber-js && open-cli test-results/cucumber-report.html",
+    "test:report:enhanced": "cucumber-js && node -e \"require('cucumber-html-reporter').generate({theme: 'bootstrap', jsonFile: 'test-results/cucumber-report.json', output: 'test-results/cucumber-report.html', reportSuiteAsScenarios: true, launchReport: true, screenshotsDirectory: 'test-results/screenshots/step-screenshots', storeScreenshots: true, screenshots: true});\"",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "format": "npx prettier --write .",

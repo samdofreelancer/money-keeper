@@ -10,3 +10,4 @@ backend/.factorypath
 /playwright-code-gen/test-results
 playwright-code-gen/package-lock.json
 *.html
+/playwright-code-gen/playwright

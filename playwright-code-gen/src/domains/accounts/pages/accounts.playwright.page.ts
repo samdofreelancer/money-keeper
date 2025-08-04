@@ -8,6 +8,20 @@ export class AccountsPlaywrightPage {
   constructor(private page: Page) {}
 
   /**
+   * Navigate to the categories page
+   */
+  async navigateToCategoriesPage() {
+    await this.page.goto('/categories');
+  }
+
+  /**
+   * Click the "Accounts" tab or link on the categories page
+   */
+  async clickAccountsTab() {
+    await this.page.click('text=Accounts');
+  }
+
+  /**
    * Navigate to the accounts page
    */
   async navigate() {
@@ -60,6 +74,25 @@ export class AccountsPlaywrightPage {
    */
   async verifyAccountExists(name: string): Promise<boolean> {
     return await this.page.isVisible(`text=${name}`);
+  }
+
+  /**
+   * Check if success message is visible
+   */
+  async isSuccessMessageVisible(): Promise<boolean> {
+    try {
+      await this.page.waitForSelector('.el-message--success', { timeout: 5000, state: 'visible' });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if error message with specific text is visible
+   */
+  async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
+    return await this.page.isVisible(`text=${errorMessage}`);
   }
 
   /**

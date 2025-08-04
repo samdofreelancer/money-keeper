@@ -7,6 +7,7 @@ import {
   After,
   BeforeAll,
   AfterAll,
+  AfterStep,
   setWorldConstructor,
   Status,
 } from '@cucumber/cucumber';
@@ -215,6 +216,45 @@ After(async function (scenario) {
     Logger.debug('Test data cleanup completed');
   } catch (error) {
     Logger.error('Error during test data cleanup', error);
+  }
+});
+
+/**
+ * Capture screenshot after each step and attach to report
+ */
+AfterStep(async function (step) {
+  const scenarioName = (this as unknown as ScenarioContext).scenarioName || 'unknown-scenario';
+  const stepName = step.pickleStep?.text || 'unknown-step';
+  
+  try {
+    // Create screenshot directory if it doesn't exist
+    const fs = require('fs');
+    const path = require('path');
+    const screenshotDir = './test-results/screenshots/step-screenshots';
+    
+    if (!fs.existsSync(screenshotDir)) {
+      fs.mkdirSync(screenshotDir, { recursive: true });
+    }
+
+    // Create unique filename
+    const safeScenarioName = scenarioName.replace(/[^a-zA-Z0-9]/g, '-');
+    const safeStepName = stepName.replace(/[^a-zA-Z0-9]/g, '-');
+    const screenshotPath = path.join(screenshotDir, `${safeScenarioName}-${safeStepName}.png`);
+
+    // Take screenshot
+    await (this as unknown as CucumberWorld)
+      .getPage()
+      .screenshot({
+        path: screenshotPath,
+        fullPage: true,
+      });
+
+    // Attach screenshot file path string to Cucumber report (for cucumber-html-reporter compatibility)
+    await (this as unknown as CucumberWorld).attach(screenshotPath, 'text/plain');
+    
+    Logger.debug(`Screenshot captured for step: ${stepName}`);
+  } catch (error) {
+    Logger.error(`Failed to capture screenshot for step: ${stepName}`, error);
   }
 });
 

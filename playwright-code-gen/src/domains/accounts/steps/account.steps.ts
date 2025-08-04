@@ -6,62 +6,74 @@ import {
 import { TestData } from '../../../shared/utilities/testData';
 import { AccountDto } from '../types/account.dto';
 
-Given('I am on the accounts page', async function () {
+Given('I am on the categories page', async function () {
   const accountsPage = getAccountsPage();
-  await accountsPage.navigate();
+  await accountsPage.navigateToCategoriesPage();
 });
 
-When('I click on the {string} button', async function (buttonText: string) {
-  const accountUsecase = getAccountUsecase();
-  if (buttonText === 'Add Account') {
-    await accountUsecase.clickAddAccountButton();
-  } else if (buttonText === 'Create') {
-    await accountUsecase.clickCreateButton();
+When('I navigate to accounts via clicking {string}', async function (tabName: string) {
+  const accountsPage = getAccountsPage();
+  if (tabName === 'Accounts') {
+    await accountsPage.clickAccountsTab();
   }
 });
 
 When(
-  'I fill in the account form with the following details:',
+  'I create a new account with the following details:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {
     const accountUsecase = getAccountUsecase();
 
-    // Extract data from the dataTable
     const dataTableHash = dataTable.rowsHash();
 
-    // Get scenario name from context
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
 
-    // Generate unique account name using TestData utility
-    // Name should be unique by test case and formed by testId_actual name
     const accountData: AccountDto = {
       name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
       type: dataTableHash['Type'],
-      balance: parseFloat(dataTableHash['Balance']),
+      balance: Number(dataTableHash['Balance']) || 1000,
       currency: dataTableHash['Currency'],
       description: dataTableHash['Description']
     };
 
-    // Track created account for cleanup
     TestData.trackCreatedAccount(accountData.name);
 
-    await accountUsecase.fillAccountForm(accountData);
+    await accountUsecase.createAccount(accountData);
   }
 );
 
-Then(
-  'I should see the account {string} in the accounts list',
-  async function (accountName: string) {
+When(
+  'I try to create the same account again with the following details:',
+  async function (dataTable: { rowsHash: () => Record<string, string> }) {
     const accountUsecase = getAccountUsecase();
-    await accountUsecase.verifyAccountCreated(accountName);
+
+    const dataTableHash = dataTable.rowsHash();
+
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+
+    const accountData: AccountDto = {
+      name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
+      type: dataTableHash['Type'],
+      balance: Number(dataTableHash['Balance']) || 1000,
+      currency: dataTableHash['Currency'],
+      description: dataTableHash['Description']
+    };
+
+    await accountUsecase.createAccount(accountData);
   }
 );
 
-Then(
-  /^the total balance should include \$?([\d,]+\.\d{2})$/,
-  async function (amountStr: string) {
-    const cleaned = parseFloat(amountStr.replace(/,/g, ''));
-    const accountUsecase = getAccountUsecase();
-    await accountUsecase.verifyTotalBalance(cleaned);
+Then('I should see a success message', async function () {
+  const accountsPage = getAccountsPage();
+  if (!(await accountsPage.isSuccessMessageVisible())) {
+    throw new Error('Success message not visible');
   }
-);
+});
+
+Then('I should see the error message {string}', async function (errorMessage: string) {
+  const accountsPage = getAccountsPage();
+  if (!(await accountsPage.isErrorMessageVisible(errorMessage))) {
+    throw new Error(`Error message "${errorMessage}" not visible`);
+  }
+});

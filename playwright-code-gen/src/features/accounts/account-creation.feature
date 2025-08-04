@@ -1,19 +1,19 @@
-Feature: Account Creation
+Feature: Account Creation with Duplicate Name Handling
 
-  As a user
-  I want to create a new account
-  So that I can manage my finances
-
-  Scenario: Create a new bank account
-    Given I am on the accounts page
-    When I click on the "Add Account" button
-    And I fill in the account form with the following details:
-      | Field       | Value                    |
-      | Name        | Test Account             |
-      | Type        | Bank Account             |
-      | Balance     | 1000                     |
-      | Currency    | US Dollar                |
-      | Description | Test account description |
-    And I click on the "Create" button
-    Then I should see the account "Test Account" in the accounts list
-    And the total balance should include $1,000.00
+  Scenario: Create a new account and handle duplicate account name error
+    Given I am on the categories page
+    When I navigate to accounts via clicking "Accounts"
+    When I create a new account with the following details:
+      | Name        | test          |
+      | Type        | Bank Account  |
+      | Balance     | 1000          |
+      | Currency    | US Dollar     |
+      | Description | test          |
+    Then I should see a success message
+    When I try to create the same account again with the following details:
+      | Name        | test          |
+      | Type        | Bank Account  |
+      | Balance     | 1000          |
+      | Currency    | US Dollar     |
+      | Description | test          |
+    Then I should see the error message "Account name already exists"
