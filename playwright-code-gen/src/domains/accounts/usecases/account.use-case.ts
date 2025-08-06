@@ -1,6 +1,6 @@
 import { AccountsPlaywrightPage } from '../pages/accounts.playwright.page';
 import { Logger } from '../../../shared/utilities/logger';
-import { AccountDto } from '../types/account.dto';
+import { AccountCreateDto, AccountDto } from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
 
 /**
@@ -70,6 +70,29 @@ export class AccountUseCase {
     } else {
       Logger.info(`Successfully deleted account via API: ${name}`);
     }
+  }
+
+  /**
+   * Create an account directly via backend API (bypassing UI)
+   */
+  async createAccountViaApi(accountData: AccountCreateDto) {
+    Logger.info(`Creating account via API: ${accountData.accountName}`);
+    try {
+      const result = await this.accountApiClient.create(accountData);
+      Logger.info(`Successfully created account via API: ${accountData.accountName}`);
+      return result;
+    } catch (error) {
+      Logger.error(`Failed to create account via API: ${accountData.accountName}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reload the accounts page to refresh the account list
+   */
+  async reloadAccountsPage() {
+    Logger.info('Reloading accounts page to refresh account list');
+    await this.accountsPage.reload();
   }
 
   /**

@@ -61,7 +61,7 @@ When('I attempt to create a new account without providing a name', async functio
   
   const accountData: AccountDto = {
     name: uniqueAccountName,
-    type: 'Checking',
+    type: 'BANK_ACCOUNT',
     balance: 1000,
     currency: 'USD',
     description: 'Test account'

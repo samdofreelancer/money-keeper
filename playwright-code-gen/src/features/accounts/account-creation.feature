@@ -8,7 +8,7 @@ Feature: Account Creation
     Given I am logged into the money management system
     And I have access to the accounts management section
 
-  @smoke @positive @focus
+  @smoke @positive
   Scenario: Successfully create a new account
     When I create a new account with:
       | name        | My Savings Account |
@@ -19,12 +19,12 @@ Feature: Account Creation
     Then I should see the account "My Savings Account" in my accounts list
     And the account should have a balance of "$5,000.00"
 
-  @negative
+  @negative @focus
   Scenario: Attempt to create account with duplicate name
     Given I have an existing account named "Main Checking"
     When I attempt to create another account with:
       | name        | Main Checking |
-      | type        | Checking      |
+      | type        | Bank Account      |
       | balance     | 1000          |
       | currency    | USD           |
     Then I should see an error message "Account name already exists"

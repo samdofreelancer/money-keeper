@@ -145,4 +145,11 @@ export class AccountsPlaywrightPage {
     const description = await this.page.textContent(descriptionSelector);
     return description || '';
   }
+
+  /**
+   * Reload the current page
+   */
+  async reload() {
+    await this.page.reload();
+  }
 }
