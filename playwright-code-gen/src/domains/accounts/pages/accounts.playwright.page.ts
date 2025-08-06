@@ -112,15 +112,37 @@ export class AccountsPlaywrightPage {
    */
   async deleteAccount(accountName: string): Promise<void> {
     // Find the account in the list and click the delete button
-    // This is a placeholder implementation - the actual selector would depend on the UI
     try {
       await this.page.click(`text=${accountName} >> .delete-account-button`);
       // Confirm deletion if there's a confirmation dialog
       await this.page.click('button:has-text("Confirm")');
     } catch (error) {
-      // If the specific delete button is not found, try alternative approach
-      // This might involve clicking on the account row and then a delete option
       console.warn(`Could not delete account ${accountName}:`, error);
     }
+  }
+
+  /**
+   * Get the count of accounts with a specific name
+   */
+  async getAccountCount(accountName: string): Promise<number> {
+    const elements = await this.page.locator(`text=${accountName}`).all();
+    return elements.length;
+  }
+
+  /**
+   * Get the total number of accounts
+   */
+  async getTotalAccountCount(): Promise<number> {
+    const rows = await this.page.locator('.account-row').all();
+    return rows.length;
+  }
+
+  /**
+   * Get the description of an account
+   */
+  async getAccountDescription(accountName: string): Promise<string> {
+    const descriptionSelector = `text=${accountName} >> .. >> .account-description`;
+    const description = await this.page.textContent(descriptionSelector);
+    return description || '';
   }
 }
