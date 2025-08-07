@@ -15,7 +15,7 @@ module.exports = [
     },
     plugins: {
       '@typescript-eslint': typescriptEslint,
-      'prettier': prettierPlugin,
+      prettier: prettierPlugin,
     },
     rules: {
       'prettier/prettier': 'error',
@@ -24,10 +24,6 @@ module.exports = [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
-    ignores: [
-      'dist/',
-      'node_modules/',
-      'test-results/',
-    ],
+    ignores: ['dist/', 'node_modules/', 'test-results/'],
   },
 ];

@@ -81,7 +81,10 @@ export class AccountsPlaywrightPage {
    */
   async isSuccessMessageVisible(): Promise<boolean> {
     try {
-      await this.page.waitForSelector('.el-message--success', { timeout: 5000, state: 'visible' });
+      await this.page.waitForSelector('.el-message--success', {
+        timeout: 5000,
+        state: 'visible',
+      });
       return true;
     } catch {
       return false;

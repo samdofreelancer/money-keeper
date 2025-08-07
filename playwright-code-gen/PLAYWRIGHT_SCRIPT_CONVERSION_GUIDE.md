@@ -1,6 +1,7 @@
 # Playwright Script Conversion Guide
 
 ## Overview
+
 This guide provides a comprehensive prompt template for converting raw Playwright scripts into the structured format used by the playwright-code-gen project.
 
 ## LLM Conversion Prompt
@@ -37,25 +38,27 @@ You are an expert test automation engineer. Convert the provided Playwright scri
 ### Current Project Structure
 
 ```
+
 playwright-code-gen/
 ├── src/
-│   ├── domains/
-│   │   └── accounts/
-│   │       ├── api/                    # API clients
-│   │       ├── pages/                  # Page objects
-│   │       ├── steps/                  # Step definitions
-│   │       ├── types/                  # DTOs and interfaces
-│   │       └── usecases/               # Business logic
-│   ├── features/
-│   │   └── accounts/
-│   │       ├── account-creation.feature
-│   │       └── readme.md
-│   └── shared/
-│       ├── utilities/
-│       └── types/
-├── cucumber.js                         # Cucumber configuration
-└── package.json                        # Dependencies
-```
+│ ├── domains/
+│ │ └── accounts/
+│ │ ├── api/ # API clients
+│ │ ├── pages/ # Page objects
+│ │ ├── steps/ # Step definitions
+│ │ ├── types/ # DTOs and interfaces
+│ │ └── usecases/ # Business logic
+│ ├── features/
+│ │ └── accounts/
+│ │ ├── account-creation.feature
+│ │ └── readme.md
+│ └── shared/
+│ ├── utilities/
+│ └── types/
+├── cucumber.js # Cucumber configuration
+└── package.json # Dependencies
+
+````
 
 ### Conversion Rules
 
@@ -69,13 +72,15 @@ test('create account', async ({ page }) => {
   await page.click('#save-button');
   await expect(page.locator('.success-message')).toBeVisible();
 });
-```
+````
 
 **Converted Structure:**
 
 1. **Feature File** (`src/features/accounts/account-creation.feature`):
+
 ```gherkin
 Feature: Account Creation
+
   Scenario: Create a new account
     Given I am on the accounts page
     When I create a new account with name "Test Account"
@@ -83,6 +88,7 @@ Feature: Account Creation
 ```
 
 2. **Page Object** (`src/domains/accounts/pages/accounts.playwright.page.ts`):
+
 ```typescript
 import { BasePage } from '../../shared/utilities/base-page';
 
@@ -107,6 +113,7 @@ export class AccountsPage extends BasePage {
 ```
 
 3. **Step Definitions** (`src/domains/accounts/steps/account.steps.ts`):
+
 ```typescript
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
@@ -117,10 +124,13 @@ Given('I am on the accounts page', async function () {
   await accountsPage.navigate();
 });
 
-When('I create a new account with name {string}', async function (accountName: string) {
-  const accountsPage = new AccountsPage(this.page);
-  await accountsPage.createAccount(accountName);
-});
+When(
+  'I create a new account with name {string}',
+  async function (accountName: string) {
+    const accountsPage = new AccountsPage(this.page);
+    await accountsPage.createAccount(accountName);
+  }
+);
 
 Then('I should see a success message', async function () {
   const accountsPage = new AccountsPage(this.page);
@@ -129,6 +139,7 @@ Then('I should see a success message', async function () {
 ```
 
 4. **Use Case** (`src/domains/accounts/usecases/account.use-case.ts`):
+
 ```typescript
 import { AccountDTO } from '../types/account.dto';
 
@@ -140,6 +151,7 @@ export class AccountUseCase {
 ```
 
 5. **Types** (`src/domains/accounts/types/account.dto.ts`):
+
 ```typescript
 export interface AccountDTO {
   name: string;
@@ -218,6 +230,7 @@ src/
 ### Common Patterns
 
 #### Navigation
+
 ```typescript
 // Raw
 await page.goto('/accounts');
@@ -230,6 +243,7 @@ async navigate(): Promise<void> {
 ```
 
 #### Form Interaction
+
 ```typescript
 // Raw
 await page.fill('#name', 'value');
@@ -242,6 +256,7 @@ async fillName(value: string): Promise<void> {
 ```
 
 #### Assertions
+
 ```typescript
 // Raw
 await expect(page.locator('.message')).toHaveText('Success');

@@ -79,10 +79,15 @@ export class AccountUseCase {
     Logger.info(`Creating account via API: ${accountData.accountName}`);
     try {
       const result = await this.accountApiClient.create(accountData);
-      Logger.info(`Successfully created account via API: ${accountData.accountName}`);
+      Logger.info(
+        `Successfully created account via API: ${accountData.accountName}`
+      );
       return result;
     } catch (error) {
-      Logger.error(`Failed to create account via API: ${accountData.accountName}`, error);
+      Logger.error(
+        `Failed to create account via API: ${accountData.accountName}`,
+        error
+      );
       throw error;
     }
   }

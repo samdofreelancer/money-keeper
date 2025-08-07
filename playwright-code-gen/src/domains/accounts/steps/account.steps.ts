@@ -11,12 +11,15 @@ Given('I am on the categories page', async function () {
   await accountsPage.navigateToCategoriesPage();
 });
 
-When('I navigate to accounts via clicking {string}', async function (tabName: string) {
-  const accountsPage = getAccountsPage();
-  if (tabName === 'Accounts') {
-    await accountsPage.clickAccountsTab();
+When(
+  'I navigate to accounts via clicking {string}',
+  async function (tabName: string) {
+    const accountsPage = getAccountsPage();
+    if (tabName === 'Accounts') {
+      await accountsPage.clickAccountsTab();
+    }
   }
-});
+);
 
 When(
   'I create a new account with the following details:',
@@ -29,11 +32,14 @@ When(
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
 
     const accountData: AccountDto = {
-      name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
+      name: TestData.generateUniqueAccountName(
+        scenarioName,
+        dataTableHash['Name']
+      ),
       type: dataTableHash['Type'],
       balance: Number(dataTableHash['Balance']) || 1000,
       currency: dataTableHash['Currency'],
-      description: dataTableHash['Description']
+      description: dataTableHash['Description'],
     };
 
     TestData.trackCreatedAccount(accountData.name);
@@ -53,11 +59,14 @@ When(
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
 
     const accountData: AccountDto = {
-      name: TestData.generateUniqueAccountName(scenarioName, dataTableHash['Name']),
+      name: TestData.generateUniqueAccountName(
+        scenarioName,
+        dataTableHash['Name']
+      ),
       type: dataTableHash['Type'],
       balance: Number(dataTableHash['Balance']) || 1000,
       currency: dataTableHash['Currency'],
-      description: dataTableHash['Description']
+      description: dataTableHash['Description'],
     };
 
     await accountUsecase.createAccount(accountData);
@@ -71,9 +80,12 @@ Then('I should see a success message', async function () {
   }
 });
 
-Then('I should see the error message {string}', async function (errorMessage: string) {
-  const accountsPage = getAccountsPage();
-  if (!(await accountsPage.isErrorMessageVisible(errorMessage))) {
-    throw new Error(`Error message "${errorMessage}" not visible`);
+Then(
+  'I should see the error message {string}',
+  async function (errorMessage: string) {
+    const accountsPage = getAccountsPage();
+    if (!(await accountsPage.isErrorMessageVisible(errorMessage))) {
+      throw new Error(`Error message "${errorMessage}" not visible`);
+    }
   }
-});
+);
