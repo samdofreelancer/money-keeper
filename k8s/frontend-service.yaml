@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: money-keeper-frontend-service
+  namespace: money-keeper
+  labels:
+    app: money-keeper-frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: money-keeper-frontend
