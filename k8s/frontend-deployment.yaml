@@ -20,7 +20,7 @@ spec:
         image: money-keeper-frontend:latest
         imagePullPolicy: Never
         ports:
-        - containerPort: 5173 # Port 5173 for the container
+        - containerPort: 80 # Port 5173 for the container
         env:
         - name: VITE_API_BASE_URL
           valueFrom:
@@ -37,12 +37,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 5173 # Liveness probe on port 5173
+            port: 80 # Liveness probe on port 5173
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /
-            port: 5173
+            port: 80
           initialDelaySeconds: 10
           periodSeconds: 5

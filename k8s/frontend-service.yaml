@@ -9,7 +9,7 @@ spec:
   type: ClusterIP
   ports:
   - port: 80
-    targetPort: 5173 # Port 80 for external access, target port 5173 for the container
+    targetPort: 80 # Port 80 for external access, target port 5173 for the container
     protocol: TCP
     name: http
   selector:
