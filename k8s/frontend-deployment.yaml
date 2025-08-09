@@ -18,7 +18,7 @@ spec:
       containers:
       - name: frontend
         image: money-keeper-frontend:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Never
         ports:
         - containerPort: 80
         env:
@@ -29,11 +29,11 @@ spec:
               key: VITE_API_BASE_URL
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "1Gi"
+            cpu: "500m"
           limits:
-            memory: "512Mi"
-            cpu: "200m"
+            memory: "2Gi"
+            cpu: "1"
         livenessProbe:
           httpGet:
             path: /
