@@ -7,7 +7,7 @@ echo "🚀 Starting Money Keeper deployment on k3s..."
 
 # Create namespace
 echo "📦 Creating namespace..."
-kubectl apply -f namespace.yaml
+kubectl apply -f namespace.yaml --validate=false
 
 # Create secrets (update with actual values)
 echo "🔐 Creating secrets..."
