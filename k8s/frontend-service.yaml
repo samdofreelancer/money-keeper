@@ -6,7 +6,7 @@ metadata:
   labels:
     app: money-keeper-frontend
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
   - port: 80
     targetPort: 80 # Port 80 for external access, target port 5173 for the container
