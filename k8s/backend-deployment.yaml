@@ -41,7 +41,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: money-keeper-secrets
-              key: oracle-password
+              key: oracle-system-password
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
