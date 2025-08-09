@@ -37,7 +37,7 @@ spec:
             configMapKeyRef:
               name: money-keeper-config
               key: SPRING_DATASOURCE_USERNAME
-        - name: SPRING_DATASOURCE_PASSWORD
+        - name: ORACLE_PASSWORD
           valueFrom:
             secretKeyRef:
               name: money-keeper-secrets
