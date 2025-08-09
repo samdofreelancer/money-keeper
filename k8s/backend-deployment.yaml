@@ -6,7 +6,7 @@ metadata:
   labels:
     app: money-keeper-backend
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: money-keeper-backend
@@ -32,16 +32,13 @@ spec:
             configMapKeyRef:
               name: money-keeper-config
               key: SPRING_DATASOURCE_URL
-        - name: SPRING_DATASOURCE_USERNAME
-          valueFrom:
-            configMapKeyRef:
-              name: money-keeper-config
-              key: SPRING_DATASOURCE_USERNAME
-        - name: ORACLE_PASSWORD
+        - name: APP_USER
+          value: "moneykeeper"
+        - name: APP_USER_PASSWORD
           valueFrom:
             secretKeyRef:
               name: money-keeper-secrets
-              key: oracle-system-password
+              key: oracle-password
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
