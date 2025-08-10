@@ -1,17 +1,23 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: money-keeper-frontend-ingress
+  name: money-keeper
   namespace: money-keeper
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
-  ingressClassName: nginx
+  ingressClassName: traefik
   rules:
   - host: money-keeper.local
     http:
       paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: money-keeper-backend        # <-- ĐÚNG tên Service backend của bạn
+            port:
+              number: 8080
       - path: /
         pathType: Prefix
         backend:

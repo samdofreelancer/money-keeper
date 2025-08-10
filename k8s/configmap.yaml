@@ -16,5 +16,5 @@ data:
   SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.Oracle12cDialect"
   
   # Frontend configuration
-  VITE_API_BASE_URL: "http://money-keeper-backend-service:8080"
+  VITE_API_BASE_URL: "/api"
   VITE_APP_TITLE: "Money Keeper"
