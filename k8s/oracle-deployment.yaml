@@ -1,3 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oracle-startup-scripts
+  namespace: money-keeper
+data:
+  001-open-pdb.sql: |
+    -- Mở tất cả PDB, lưu trạng thái và register listener mỗi lần start
+    ALTER PLUGGABLE DATABASE ALL OPEN;
+    ALTER PLUGGABLE DATABASE ALL SAVE STATE;
+    ALTER SYSTEM REGISTER;
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -15,44 +28,72 @@ spec:
         app: oracle
     spec:
       containers:
-      - name: oracle
-        image: gvenzl/oracle-xe:21-slim
-        ports:
-        - containerPort: 1521
-          name: oracle
-        env:
-        - name: ORACLE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: money-keeper-secrets
-              key: oracle-system-password
-        - name: ORACLE_DATABASE
-          value: "xe"
-        - name: APP_USER
-          value: "moneykeeper"
-        - name: APP_USER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: money-keeper-secrets
-              key: oracle-password
-        volumeMounts:
-        - name: oracle-data
-          mountPath: /opt/oracle/oradata
+        - name: oracle
+          image: gvenzl/oracle-xe:21-slim
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1521
+              name: oracle
+          env:
+            - name: ORACLE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: money-keeper-secrets
+                  key: oracle-system-password
+            # APP_USER* chỉ chạy khi khởi tạo DB lần đầu (init)
+            - name: APP_USER
+              value: "moneykeeper"
+            - name: APP_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: money-keeper-secrets
+                  key: oracle-password
+          volumeMounts:
+            - name: oracle-data
+              mountPath: /opt/oracle/oradata
+            - name: oracle-startup
+              mountPath: /container-entrypoint-startdb.d
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
+          # Cho DB đủ thời gian lên rồi mới bật liveness
+          startupProbe:
+            exec:
+              command: ["/bin/bash","-lc","pgrep -f pmon_XE >/dev/null"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 60   # ~10 phút tối đa
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -lc
+                - |
+                  echo 'select 1 from dual;' | sqlplus -s system/$ORACLE_PASSWORD@XEPDB1 | grep -q 1
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            exec:
+              command: ["/bin/bash","-lc","pgrep -f pmon_XE >/dev/null"]
+            initialDelaySeconds: 180
+            periodSeconds: 20
+      volumes:
+        - name: oracle-startup
+          configMap:
+            name: oracle-startup-scripts
+  volumeClaimTemplates:
+    - metadata:
+        name: oracle-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            memory: "2Gi"
-            cpu: "500m"
-          limits:
-            memory: "4Gi"
-            cpu: "1000m"
-  volumeClaimTemplates:
-  - metadata:
-      name: oracle-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 5Gi
+            storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
@@ -63,7 +104,7 @@ spec:
   selector:
     app: oracle
   ports:
-  - port: 1521
-    targetPort: 1521
-    name: oracle
+    - port: 1521
+      targetPort: 1521
+      name: oracle
   type: ClusterIP
