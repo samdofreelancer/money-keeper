@@ -60,28 +60,28 @@ spec:
             limits:
               memory: "4Gi"
               cpu: "1000m"
-          # Cho DB đủ thời gian lên rồi mới bật liveness
-          startupProbe:
-            exec:
-              command: ["/bin/bash","-lc","pgrep -f pmon_XE >/dev/null"]
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 60   # ~10 phút tối đa
+          # readiness: DB login vào XEPDB1 ok thì pod mới Ready
           readinessProbe:
             exec:
               command:
                 - /bin/bash
                 - -lc
                 - |
-                  echo 'select 1 from dual;' | sqlplus -s system/$ORACLE_PASSWORD@XEPDB1 | grep -q 1
+                  echo 'select 1 from dual;' | sqlplus -s -L system/$ORACLE_PASSWORD@XEPDB1 | grep -q 1
             initialDelaySeconds: 90
             periodSeconds: 10
             failureThreshold: 30
+          # liveness: DB còn trả lời truy vấn đơn giản
           livenessProbe:
             exec:
-              command: ["/bin/bash","-lc","pgrep -f pmon_XE >/dev/null"]
+              command:
+                - /bin/bash
+                - -lc
+                - |
+                  echo 'select 1 from dual;' | sqlplus -s -L system/$ORACLE_PASSWORD@XEPDB1 | grep -q 1
             initialDelaySeconds: 180
             periodSeconds: 20
+            failureThreshold: 6
       volumes:
         - name: oracle-startup
           configMap:
