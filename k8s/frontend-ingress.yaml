@@ -8,14 +8,13 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-  - host: money-keeper.local
-    http:
+  - http:
       paths:
       - path: /api
         pathType: Prefix
         backend:
           service:
-            name: money-keeper-backend        # <-- ĐÚNG tên Service backend của bạn
+            name: money-keeper-backend
             port:
               number: 8080
       - path: /
