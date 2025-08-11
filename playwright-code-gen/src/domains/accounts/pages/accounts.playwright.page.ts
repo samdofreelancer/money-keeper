@@ -63,30 +63,53 @@ export class AccountsPlaywrightPage {
   }
 
   /**
-   * Fill in the account form
+   * Fill in the account name field
    */
-  async fillAccountForm(accountData: AccountDto) {
-    // Fill account name
+  async fillAccountName(name: string) {
     await this.page.fill(
       this.selectors.inputs.accountName,
-      accountData.name
+      name
     );
+  }
 
-    // Select account type
+  /**
+   * Select the account type from dropdown
+   */
+  async selectAccountType(type: string) {
     await this.page.click(this.selectors.inputs.accountType);
-    await this.page.click(`span:text('${accountData.type}')`);
+    await this.page.click(`span:text('${type}')`);
+  }
 
-    // Fill balance
+  /**
+   * Fill in the balance field
+   */
+  async fillBalance(balance: number) {
     await this.page.fill(
       this.selectors.inputs.balance,
-      accountData.balance.toString()
+      balance.toString()
     );
+  }
 
-    // Fill description
+  /**
+   * Fill in the description field
+   */
+  async fillDescription(description: string) {
     await this.page.fill(
       this.selectors.inputs.description,
-      accountData.description || ''
+      description || ''
     );
+  }
+
+  /**
+   * Fill in the account form by orchestrating individual field methods
+   */
+  async fillAccountForm(accountData: AccountDto) {
+    await this.fillAccountName(accountData.name);
+    await this.selectAccountType(accountData.type);
+    await this.fillBalance(accountData.balance);
+    if (accountData.description) {
+      await this.fillDescription(accountData.description);
+    }
   }
 
   /**
