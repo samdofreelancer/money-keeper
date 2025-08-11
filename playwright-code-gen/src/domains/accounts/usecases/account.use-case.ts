@@ -2,6 +2,7 @@ import { AccountsPlaywrightPage } from '../pages/accounts.playwright.page';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountCreateDto, AccountDto } from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
+import { CurrencyConfig } from '../../../shared/config/currency.config';
 
 /**
  * Use case for account-related operations
@@ -110,15 +111,17 @@ export class AccountUseCase {
    */
   private async getTotalBalanceAsNumber(): Promise<number> {
     const totalBalanceText = await this.accountsPage.getTotalBalance();
-    // Extract the numeric value from the balance text (removing currency symbol and commas)
-    const balanceMatch = totalBalanceText.match(/\$([\d,]+)/);
-    if (!balanceMatch)
+    
+    // Use the currency parser utility for robust parsing
+    const balance = CurrencyConfig.parseCurrency(totalBalanceText, 'en-US');
+    
+    if (balance === null) {
       throw new Error(
         `Could not extract balance from text: ${totalBalanceText}`
       );
-
-    // Convert the string to a number, removing commas
-    return parseFloat(balanceMatch[1].replace(/,/g, ''));
+    }
+    
+    return balance;
   }
 
   /**
