@@ -12,7 +12,10 @@ module.exports = {
     publishQuiet: true,
     // After tests finish, generate the HTML report
     async onComplete() {
-      const jsonReport = path.resolve(__dirname, 'test-results/cucumber-report.json');
+      const jsonReport = path.resolve(
+        __dirname,
+        'test-results/cucumber-report.json'
+      );
       if (fs.existsSync(jsonReport)) {
         reporter.generate({
           theme: 'bootstrap',
@@ -21,11 +24,11 @@ module.exports = {
           reportSuiteAsScenarios: true,
           launchReport: false,
           metadata: {
-            "Test Environment": process.env.NODE_ENV || 'development',
-            "Browser": process.env.BROWSER || 'chromium',
-            "Platform": process.platform,
-            "Parallel": process.env.CUCUMBER_PARALLEL_WORKERS || '2',
-            "Executed": "Local"
+            'Test Environment': process.env.NODE_ENV || 'development',
+            Browser: process.env.BROWSER || 'chromium',
+            Platform: process.platform,
+            Parallel: process.env.CUCUMBER_PARALLEL_WORKERS || '2',
+            Executed: 'Local',
           },
           screenshotsDirectory: 'test-results/screenshots/step-screenshots',
           storeScreenshots: true,
@@ -33,6 +36,6 @@ module.exports = {
           screenshots: true,
         });
       }
-    }
-  }
+    },
+  },
 };
