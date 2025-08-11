@@ -1,5 +1,7 @@
 import { Page } from '@playwright/test';
 import { AccountDto } from '../types/account.dto';
+import { Logger } from '../../../shared/utilities/logger';
+
 
 /**
  * Page object for the Accounts page
@@ -160,17 +162,23 @@ export class AccountsPlaywrightPage {
   }
 
   /**
-   * Delete an account by name
+   * Delete an account by name with proper error handling and structured logging
    * @param accountName The name of the account to delete
    */
   async deleteAccount(accountName: string): Promise<void> {
-    // Find the account in the list and click the delete button
     try {
+      Logger.info(`Attempting to delete account: ${accountName}`);
+      
+      // Find the account in the list and click the delete button
       await this.page.click(`text=${accountName} >> ${this.selectors.accountElements.deleteButton}`);
+      
       // Confirm deletion if there's a confirmation dialog
       await this.page.click(this.selectors.buttons.confirm);
+      
+      Logger.info(`Successfully initiated deletion for account: ${accountName}`);
     } catch (error) {
-      console.warn(`Could not delete account ${accountName}:`, error);
+      Logger.error(`Failed to delete account: ${accountName}`, error as Error);
+      throw new Error(`Failed to delete account ${accountName}: ${(error as Error).message}`);
     }
   }
 
