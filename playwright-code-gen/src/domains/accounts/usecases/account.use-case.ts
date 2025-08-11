@@ -39,21 +39,21 @@ export class AccountUseCase {
    * Click the Add Account button
    */
   async clickAddAccountButton() {
-    await this.accountsPage.clickAddAccount();
+    await this.accountsPage.clickAddAccountButton();
   }
 
   /**
    * Click the Create button
    */
   async clickCreateButton() {
-    await this.accountsPage.clickCreate();
+    await this.accountsPage.clickCreateButton();
   }
 
   /**
    * Verify that an account was created successfully
    */
   async verifyAccountCreated(name: string) {
-    const exists = await this.accountsPage.verifyAccountExists(name);
+    const exists = await this.accountsPage.verifyAccountIsListed(name);
     if (!exists) {
       throw new Error(`Account ${name} was not found in the accounts list`);
     }

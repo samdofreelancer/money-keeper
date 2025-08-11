@@ -24,14 +24,14 @@ export class AccountsPlaywrightPage {
   /**
    * Navigate to the accounts page
    */
-  async navigate() {
+  async navigateToAccountsPage() {
     await this.page.goto('/accounts');
   }
 
   /**
    * Click the Add Account button
    */
-  async clickAddAccount() {
+  async clickAddAccountButton() {
     await this.page.click('button:has-text("Add Account")');
   }
 
@@ -65,14 +65,14 @@ export class AccountsPlaywrightPage {
   /**
    * Click the Create button to submit the form
    */
-  async clickCreate() {
+  async clickCreateButton() {
     await this.page.click('button:has-text("Create")');
   }
 
   /**
    * Verify that an account with the given name exists in the accounts list
    */
-  async verifyAccountExists(name: string): Promise<boolean> {
+  async verifyAccountIsListed(name: string): Promise<boolean> {
     return await this.page.isVisible(`text=${name}`);
   }
 

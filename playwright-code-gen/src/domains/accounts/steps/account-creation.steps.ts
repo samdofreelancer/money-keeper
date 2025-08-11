@@ -8,7 +8,7 @@ import { AccountDto } from '../types/account.dto';
 
 Given('I am logged into the money management system', async function () {
   const accountsPage = getAccountsPage();
-  await accountsPage.navigate();
+  await accountsPage.navigateToAccountsPage();
 });
 
 Given('I have access to the accounts management section', async function () {
@@ -75,7 +75,7 @@ Then('I should see the account {string} in my accounts list', async function (ac
   const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
   const uniqueAccountName = TestData.generateUniqueAccountName(scenarioName, accountName);
   
-  const exists = await accountsPage.verifyAccountExists(uniqueAccountName);
+  const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
   if (!exists) {
     throw new Error(`Account "${uniqueAccountName}" not found in accounts list`);
   }
