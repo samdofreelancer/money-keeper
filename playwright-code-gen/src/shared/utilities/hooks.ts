@@ -222,16 +222,17 @@ After(async function (scenario) {
 /**
  * Capture screenshot after each step and attach to report
  */
+import fs from 'fs';
+
 AfterStep(async function (step) {
   const scenarioName = (this as unknown as ScenarioContext).scenarioName || 'unknown-scenario';
   const stepName = step.pickleStep?.text || 'unknown-step';
-  
+
   try {
     // Create screenshot directory if it doesn't exist
-    const fs = require('fs');
     const path = require('path');
     const screenshotDir = './test-results/screenshots/step-screenshots';
-    
+
     if (!fs.existsSync(screenshotDir)) {
       fs.mkdirSync(screenshotDir, { recursive: true });
     }
@@ -249,9 +250,12 @@ AfterStep(async function (step) {
         fullPage: true,
       });
 
-    // Attach screenshot file path string to Cucumber report (for cucumber-html-reporter compatibility)
-    await (this as unknown as CucumberWorld).attach(screenshotPath, 'text/plain');
-    
+    // Read screenshot file as buffer
+    const screenshotBuffer = fs.readFileSync(screenshotPath);
+
+    // Attach screenshot buffer to report for inline display
+    await (this as unknown as CucumberWorld).attach(screenshotBuffer, 'image/png');
+
     Logger.debug(`Screenshot captured for step: ${stepName}`);
   } catch (error) {
     Logger.error(`Failed to capture screenshot for step: ${stepName}`, error);

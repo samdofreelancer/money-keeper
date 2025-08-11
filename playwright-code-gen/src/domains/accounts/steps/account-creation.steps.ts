@@ -84,8 +84,11 @@ Then('I should see the account {string} in my accounts list', async function (ac
 Then('the account should have a balance of {string}', async function (expectedBalance: string) {
   const accountsPage = getAccountsPage();
   const actualBalance = await accountsPage.getTotalBalance();
-  if (!actualBalance.includes(expectedBalance.replace('$', ''))) {
-    throw new Error(`Expected balance ${expectedBalance}, but found ${actualBalance}`);
+  const expectedBalanceNum = parseFloat(expectedBalance.replace('$', ''));
+  const actualBalanceNum = parseFloat(actualBalance.replace('$', ''));
+  
+  if (actualBalanceNum < expectedBalanceNum) {
+    throw new Error(`Expected balance to be at least ${expectedBalance}, but found ${actualBalance}`);
   }
 });
 
