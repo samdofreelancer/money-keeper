@@ -6,9 +6,9 @@ export const CurrencyConstants = {
     GBP: /£([\d,.]+)/,
     JPY: /¥([\d,]+)/,
     // Generic currency pattern that matches most formats
-    GENERIC: /([A-Z]{3})?\s?([\d,]+(?:\.\d{2})?)/
+    GENERIC: /([A-Z]{3})?\s?([\d,]+(?:\.\d{2})?)/,
   },
-  
+
   // Currency symbols
   SYMBOLS: {
     USD: '$',
@@ -16,16 +16,16 @@ export const CurrencyConstants = {
     GBP: '£',
     JPY: '¥',
     CAD: 'C$',
-    AUD: 'A$'
+    AUD: 'A$',
   },
-  
+
   // Default settings
   DEFAULT_CURRENCY: 'USD' as const,
   DEFAULT_LOCALE: 'en-US' as const,
-  
+
   // Decimal and thousand separators by locale
   THOUSAND_SEPARATOR: ',',
-  DECIMAL_SEPARATOR: '.'
+  DECIMAL_SEPARATOR: '.',
 } as const;
 
 export type CurrencyCode = keyof typeof CurrencyConstants.SYMBOLS;

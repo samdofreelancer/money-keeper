@@ -43,9 +43,26 @@ export const getAccountsPage = (): World['accountsPage'] => {
   return global.testWorld!.accountsPage;
 };
 
-export const getAccountUsecase = (): World['accountUsecase'] => {
-  return global.testWorld!.accountUsecase;
-};
+// New use case getter functions
+export const getAccountCreationApiUseCase =
+  (): World['accountCreationApiUseCase'] => {
+    return global.testWorld!.accountCreationApiUseCase;
+  };
+
+export const getAccountDeletionApiUseCase =
+  (): World['accountDeletionApiUseCase'] => {
+    return global.testWorld!.accountDeletionApiUseCase;
+  };
+
+export const getAccountBalanceUiUseCase =
+  (): World['accountBalanceUiUseCase'] => {
+    return global.testWorld!.accountBalanceUiUseCase;
+  };
+
+export const getAccountCreationUiUseCase =
+  (): World['accountCreationUiUseCase'] => {
+    return global.testWorld!.accountCreationUiUseCase;
+  };
 
 /**
  * Get browser type based on environment configuration
@@ -225,7 +242,8 @@ After(async function (scenario) {
 import fs from 'fs';
 
 AfterStep(async function (step) {
-  const scenarioName = (this as unknown as ScenarioContext).scenarioName || 'unknown-scenario';
+  const scenarioName =
+    (this as unknown as ScenarioContext).scenarioName || 'unknown-scenario';
   const stepName = step.pickleStep?.text || 'unknown-step';
 
   try {
@@ -240,21 +258,25 @@ AfterStep(async function (step) {
     // Create unique filename
     const safeScenarioName = scenarioName.replace(/[^a-zA-Z0-9]/g, '-');
     const safeStepName = stepName.replace(/[^a-zA-Z0-9]/g, '-');
-    const screenshotPath = path.join(screenshotDir, `${safeScenarioName}-${safeStepName}.png`);
+    const screenshotPath = path.join(
+      screenshotDir,
+      `${safeScenarioName}-${safeStepName}.png`
+    );
 
     // Take screenshot
-    await (this as unknown as CucumberWorld)
-      .getPage()
-      .screenshot({
-        path: screenshotPath,
-        fullPage: true,
-      });
+    await (this as unknown as CucumberWorld).getPage().screenshot({
+      path: screenshotPath,
+      fullPage: true,
+    });
 
     // Read screenshot file as buffer
     const screenshotBuffer = fs.readFileSync(screenshotPath);
 
     // Attach screenshot buffer to report for inline display
-    await (this as unknown as CucumberWorld).attach(screenshotBuffer, 'image/png');
+    await (this as unknown as CucumberWorld).attach(
+      screenshotBuffer,
+      'image/png'
+    );
 
     Logger.debug(`Screenshot captured for step: ${stepName}`);
   } catch (error) {

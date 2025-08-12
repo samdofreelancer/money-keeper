@@ -1,18 +1,21 @@
 import { Given } from '@cucumber/cucumber';
 import { TestData } from '../../../shared/utilities/testData';
 import { AccountCreateDto } from '../types/account.dto';
-import { getAccountUsecase } from '../../../shared/utilities/hooks';
+import {
+  getAccountCreationApiUseCase,
+  getAccountCreationUiUseCase,
+} from '../../../shared/utilities/hooks';
+
+const accountCreationApiUseCase = getAccountCreationApiUseCase();
+const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
 /**
  * Step definitions for account existence setup
  * These steps create prerequisite accounts via direct backend API calls
  */
-
 Given(
   'I have an existing account named {string}',
   async function (accountName: string) {
-    const accountUsecase = getAccountUsecase();
-
     // Get scenario name from context for unique naming
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
@@ -36,12 +39,14 @@ Given(
     TestData.trackCreatedAccount(accountData.accountName);
 
     // Create the account directly via backend API
-    await accountUsecase.createAccountViaApi(accountData);
+    await accountCreationApiUseCase.createAccount(accountData);
 
     // Reload the page to ensure the new account appears in the list
-    await accountUsecase.reloadAccountsPage();
+    await accountCreationUiUseCase.reloadAccountsPage();
 
     // Verify the newly created account is present in the account list
-    await accountUsecase.verifyAccountCreated(accountData.accountName);
+    await accountCreationUiUseCase.verifyAccountCreated(
+      accountData.accountName
+    );
   }
 );

@@ -1,7 +1,10 @@
 import { BaseWorld } from './base-world';
-import { AccountUseCase } from '../../domains/accounts/usecases/account.use-case';
 import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
 import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
+import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
+import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
+import { AccountBalanceUiUseCase } from '../../domains/accounts/usecases/ui/AccountBalanceUiUseCase';
+import { AccountCreationUiUseCase } from '../../domains/accounts/usecases/ui/AccountCreationUiUseCase';
 
 /**
  * World class to encapsulate test context and state
@@ -11,8 +14,12 @@ import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.pl
 export class World extends BaseWorld {
   // Domain-specific page objects and steps
   public accountsPage!: AccountsPlaywrightPage;
-  public accountUsecase!: AccountUseCase;
   public accountApiClient!: AccountApiClient;
+
+  public accountCreationApiUseCase!: AccountCreationApiUseCase;
+  public accountDeletionApiUseCase!: AccountDeletionApiUseCase;
+  public accountBalanceUiUseCase!: AccountBalanceUiUseCase;
+  public accountCreationUiUseCase!: AccountCreationUiUseCase;
 
   constructor() {
     super();
@@ -33,9 +40,19 @@ export class World extends BaseWorld {
 
     // Initialize domain-specific page objects and steps
     this.accountsPage = new AccountsPlaywrightPage(this.getPage());
-    this.accountUsecase = new AccountUseCase(
-      this.accountsPage,
+
+    // Initialize new use cases
+    this.accountCreationApiUseCase = new AccountCreationApiUseCase(
       this.accountApiClient
+    );
+    this.accountDeletionApiUseCase = new AccountDeletionApiUseCase(
+      this.accountApiClient
+    );
+    this.accountBalanceUiUseCase = new AccountBalanceUiUseCase(
+      this.accountsPage
+    );
+    this.accountCreationUiUseCase = new AccountCreationUiUseCase(
+      this.accountsPage
     );
   }
 }

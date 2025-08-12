@@ -1,6 +1,6 @@
 import { Logger } from './logger';
-import { AccountUseCase } from '../../domains/accounts/usecases/account.use-case';
-import { getAccountUsecase } from './hooks';
+import { getAccountDeletionApiUseCase } from './hooks';
+import { AccountDeletionApiUseCase } from '@/domains/accounts/usecases/api/AccountDeletionApiUseCase';
 
 /**
  * Test data utilities for generating test data
@@ -60,10 +60,11 @@ export class TestData {
    * This method can be called after each test scenario to clean up any test data
    */
   static async cleanupTestData(): Promise<void> {
-    const accountUsecase: AccountUseCase = getAccountUsecase();
+    const accountDeletionApiUseCase: AccountDeletionApiUseCase =
+      getAccountDeletionApiUseCase();
     for (const accountName of this.createdAccounts) {
       try {
-        await accountUsecase.deleteAccount(accountName);
+        await accountDeletionApiUseCase.deleteAccount(accountName);
         Logger.info(`Deleted test account: ${accountName}`);
       } catch (error) {
         Logger.error(`Failed to delete test account: ${accountName}`, error);

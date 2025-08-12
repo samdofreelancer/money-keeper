@@ -17,16 +17,16 @@ export class AccountBalanceUiUseCase {
    */
   private async getTotalBalanceAsNumber(): Promise<number> {
     const totalBalanceText = await this.accountsPage.getTotalBalance();
-    
+
     // Use the currency parser utility for robust parsing
     const balance = CurrencyConfig.parseCurrency(totalBalanceText, 'en-US');
-    
+
     if (balance === null) {
       throw new Error(
         `Could not extract balance from text: ${totalBalanceText}`
       );
     }
-    
+
     return balance;
   }
 

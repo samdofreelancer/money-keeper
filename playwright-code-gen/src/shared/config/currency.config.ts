@@ -51,20 +51,26 @@ export const CurrencyConfig: CurrencyConfigType = {
   },
 
   getLocaleConfig(locale: string): CurrencyLocaleConfig {
-    return this.supportedLocales[locale] || this.supportedLocales[CurrencyConfig.defaultLocale];
+    return (
+      this.supportedLocales[locale] ||
+      this.supportedLocales[CurrencyConfig.defaultLocale]
+    );
   },
 
-  parseCurrency(value: string, locale: string = CurrencyConfig.defaultLocale): number | null {
+  parseCurrency(
+    value: string,
+    locale: string = CurrencyConfig.defaultLocale
+  ): number | null {
     const config = this.getLocaleConfig(locale);
     const match = value.match(config.pattern);
-    
+
     if (!match) return null;
-    
+
     // Remove thousand separators and replace decimal separator
     const numericString = match[1]
       .replace(new RegExp(`\\${config.thousandSeparator}`, 'g'), '')
       .replace(config.decimalSeparator, '.');
-    
+
     return parseFloat(numericString);
   },
 };

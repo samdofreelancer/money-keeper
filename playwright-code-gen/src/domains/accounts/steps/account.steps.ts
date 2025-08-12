@@ -1,10 +1,12 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import {
-  getAccountUsecase,
+  getAccountCreationUiUseCase,
   getAccountsPage,
 } from '../../../shared/utilities/hooks';
 import { TestData } from '../../../shared/utilities/testData';
 import { AccountDto } from '../types/account.dto';
+
+const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
 Given('I am on the categories page', async function () {
   const accountsPage = getAccountsPage();
@@ -24,10 +26,7 @@ When(
 When(
   'I create a new account with the following details:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {
-    const accountUsecase = getAccountUsecase();
-
     const dataTableHash = dataTable.rowsHash();
-
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
 
@@ -44,15 +43,13 @@ When(
 
     TestData.trackCreatedAccount(accountData.name);
 
-    await accountUsecase.createAccount(accountData);
+    await accountCreationUiUseCase.createAccount(accountData);
   }
 );
 
 When(
   'I try to create the same account again with the following details:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {
-    const accountUsecase = getAccountUsecase();
-
     const dataTableHash = dataTable.rowsHash();
 
     const scenarioName =
@@ -69,7 +66,7 @@ When(
       description: dataTableHash['Description'],
     };
 
-    await accountUsecase.createAccount(accountData);
+    await accountCreationUiUseCase.createAccount(accountData);
   }
 );
 

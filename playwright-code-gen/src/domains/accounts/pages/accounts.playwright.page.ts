@@ -2,7 +2,6 @@ import { Page } from '@playwright/test';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
 
-
 /**
  * Page object for the Accounts page
  */
@@ -68,10 +67,7 @@ export class AccountsPlaywrightPage {
    * Fill in the account name field
    */
   async fillAccountName(name: string) {
-    await this.page.fill(
-      this.selectors.inputs.accountName,
-      name
-    );
+    await this.page.fill(this.selectors.inputs.accountName, name);
   }
 
   /**
@@ -86,20 +82,14 @@ export class AccountsPlaywrightPage {
    * Fill in the balance field
    */
   async fillBalance(balance: number) {
-    await this.page.fill(
-      this.selectors.inputs.balance,
-      balance.toString()
-    );
+    await this.page.fill(this.selectors.inputs.balance, balance.toString());
   }
 
   /**
    * Fill in the description field
    */
   async fillDescription(description: string) {
-    await this.page.fill(
-      this.selectors.inputs.description,
-      description || ''
-    );
+    await this.page.fill(this.selectors.inputs.description, description || '');
   }
 
   /**
@@ -168,17 +158,23 @@ export class AccountsPlaywrightPage {
   async deleteAccount(accountName: string): Promise<void> {
     try {
       Logger.info(`Attempting to delete account: ${accountName}`);
-      
+
       // Find the account in the list and click the delete button
-      await this.page.click(`text=${accountName} >> ${this.selectors.accountElements.deleteButton}`);
-      
+      await this.page.click(
+        `text=${accountName} >> ${this.selectors.accountElements.deleteButton}`
+      );
+
       // Confirm deletion if there's a confirmation dialog
       await this.page.click(this.selectors.buttons.confirm);
-      
-      Logger.info(`Successfully initiated deletion for account: ${accountName}`);
+
+      Logger.info(
+        `Successfully initiated deletion for account: ${accountName}`
+      );
     } catch (error) {
       Logger.error(`Failed to delete account: ${accountName}`, error as Error);
-      throw new Error(`Failed to delete account ${accountName}: ${(error as Error).message}`);
+      throw new Error(
+        `Failed to delete account ${accountName}: ${(error as Error).message}`
+      );
     }
   }
 
@@ -194,7 +190,9 @@ export class AccountsPlaywrightPage {
    * Get the total number of accounts
    */
   async getTotalAccountCount(): Promise<number> {
-    const rows = await this.page.locator(this.selectors.accountElements.accountRow).all();
+    const rows = await this.page
+      .locator(this.selectors.accountElements.accountRow)
+      .all();
     return rows.length;
   }
 

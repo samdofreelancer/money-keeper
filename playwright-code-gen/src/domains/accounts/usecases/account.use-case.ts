@@ -112,19 +112,19 @@ export class AccountUseCase {
    */
   private async getTotalBalanceAsNumber(): Promise<number> {
     const totalBalanceText = await this.accountsPage.getTotalBalance();
-    
+
     // Use the currency parser utility for robust parsing
     const balance = CurrencyConfig.parseCurrency(
-      totalBalanceText, 
+      totalBalanceText,
       CurrencyConstants.DEFAULT_LOCALE
     );
-    
+
     if (balance === null) {
       throw new Error(
         `Could not extract balance from text: ${totalBalanceText}`
       );
     }
-    
+
     return balance;
   }
 
