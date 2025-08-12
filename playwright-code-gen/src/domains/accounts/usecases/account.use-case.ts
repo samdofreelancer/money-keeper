@@ -3,6 +3,7 @@ import { Logger } from '../../../shared/utilities/logger';
 import { AccountCreateDto, AccountDto } from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
 import { CurrencyConfig } from '../../../shared/config/currency.config';
+import { CurrencyConstants } from '../../../shared/constants/currency.constants';
 
 /**
  * Use case for account-related operations
@@ -113,7 +114,10 @@ export class AccountUseCase {
     const totalBalanceText = await this.accountsPage.getTotalBalance();
     
     // Use the currency parser utility for robust parsing
-    const balance = CurrencyConfig.parseCurrency(totalBalanceText, 'en-US');
+    const balance = CurrencyConfig.parseCurrency(
+      totalBalanceText, 
+      CurrencyConstants.DEFAULT_LOCALE
+    );
     
     if (balance === null) {
       throw new Error(
@@ -140,7 +144,7 @@ export class AccountUseCase {
     // Verify the current balance is greater than or equal to the expected amount
     if (currentBalance < expectedAmount) {
       throw new Error(
-        `Current balance $${currentBalance} is less than expected amount $${expectedAmount}`
+        `Current balance ${CurrencyConstants.SYMBOLS.USD}${currentBalance} is less than expected amount ${CurrencyConstants.SYMBOLS.USD}${expectedAmount}`
       );
     }
 
@@ -148,11 +152,11 @@ export class AccountUseCase {
     if (this.initialTotalBalance > 0) {
       if (currentBalance < this.initialTotalBalance) {
         throw new Error(
-          `Current balance $${currentBalance} is less than initial balance $${this.initialTotalBalance}`
+          `Current balance ${CurrencyConstants.SYMBOLS.USD}${currentBalance} is less than initial balance ${CurrencyConstants.SYMBOLS.USD}${this.initialTotalBalance}`
         );
       }
-      console.log(
-        `Balance check: Initial: $${this.initialTotalBalance}, Current: $${currentBalance}, Expected: $${expectedAmount}`
+      Logger.info(
+        `Balance check: Initial: ${CurrencyConstants.SYMBOLS.USD}${this.initialTotalBalance}, Current: ${CurrencyConstants.SYMBOLS.USD}${currentBalance}, Expected: ${CurrencyConstants.SYMBOLS.USD}${expectedAmount}`
       );
     }
   }

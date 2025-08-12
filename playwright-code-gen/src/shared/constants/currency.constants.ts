@@ -1,73 +1,31 @@
-/**
- * Currency-related constants for parsing and formatting
- */
 export const CurrencyConstants = {
-  /**
-   * Regex patterns for currency parsing
-   */
+  // Currency parsing patterns
   PATTERNS: {
-    /**
-     * Pattern for USD currency format: $1,234.56
-     * Captures the numeric value including commas
-     */
     USD: /\$([\d,]+(?:\.\d{2})?)/,
-    
-    /**
-     * Pattern for EUR currency format: €1.234,56
-     * Captures the numeric value including dots as thousand separators
-     */
-    EUR: /€([\d.]+(?:,\d{2})?)/,
-    
-    /**
-     * Pattern for GBP currency format: £1,234.56
-     * Captures the numeric value including commas
-     */
-    GBP: /£([\d,]+(?:\.\d{2})?)/,
-    
-    /**
-     * Generic currency pattern that captures any currency symbol
-     * Format: [CurrencySymbol][Amount]
-     */
-    GENERIC: /([^\d\s])\s*([\d,.]+)/,
+    EUR: /€([\d,.]+)/,
+    GBP: /£([\d,.]+)/,
+    JPY: /¥([\d,]+)/,
+    // Generic currency pattern that matches most formats
+    GENERIC: /([A-Z]{3})?\s?([\d,]+(?:\.\d{2})?)/
   },
-
-  /**
-   * Currency symbols for different locales
-   */
+  
+  // Currency symbols
   SYMBOLS: {
     USD: '$',
     EUR: '€',
     GBP: '£',
     JPY: '¥',
     CAD: 'C$',
-    AUD: 'A$',
+    AUD: 'A$'
   },
-
-  /**
-   * Default currency format
-   */
+  
+  // Default settings
   DEFAULT_CURRENCY: 'USD' as const,
-
-  /**
-   * Thousand separators by locale
-   */
-  THOUSAND_SEPARATORS: {
-    US: ',',
-    EU: '.',
-    UK: ',',
-  },
-
-  /**
-   * Decimal separators by locale
-   */
-  DECIMAL_SEPARATORS: {
-    US: '.',
-    EU: ',',
-    UK: '.',
-  },
+  DEFAULT_LOCALE: 'en-US' as const,
+  
+  // Decimal and thousand separators by locale
+  THOUSAND_SEPARATOR: ',',
+  DECIMAL_SEPARATOR: '.'
 } as const;
 
-/**
- * Type for currency codes
- */
 export type CurrencyCode = keyof typeof CurrencyConstants.SYMBOLS;
