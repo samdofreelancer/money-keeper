@@ -3,10 +3,9 @@ import {
   getAccountCreationUiUseCase,
   getAccountsPage,
 } from '../../../shared/utilities/hooks';
-import { TestData } from '@/shared/utilities/testData';
+import { TestData } from '../../../shared/utilities/testData';
 import { AccountDto } from '../types/account.dto';
 
-const accountCreationUiUseCase = getAccountCreationUiUseCase();
 Given('I am logged into the money management system', async function () {
   const accountsPage = getAccountsPage();
   await accountsPage.navigateToAccountsPage();
@@ -21,6 +20,7 @@ When(
   'I create a new account with:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {
     const data = dataTable.rowsHash();
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
@@ -46,6 +46,7 @@ When(
   'I attempt to create another account with:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {
     const data = dataTable.rowsHash();
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
@@ -69,6 +70,7 @@ When(
 When(
   'I attempt to create a new account without providing a name',
   async function () {
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
     const uniqueAccountName = TestData.generateUniqueAccountName(

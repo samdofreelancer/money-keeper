@@ -43,25 +43,37 @@ export const getAccountsPage = (): World['accountsPage'] => {
   return global.testWorld!.accountsPage;
 };
 
-// New use case getter functions
+// New use case getter functions with null checks
 export const getAccountCreationApiUseCase =
   (): World['accountCreationApiUseCase'] => {
-    return global.testWorld!.accountCreationApiUseCase;
+    if (!global.testWorld) {
+      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    }
+    return global.testWorld.accountCreationApiUseCase;
   };
 
 export const getAccountDeletionApiUseCase =
   (): World['accountDeletionApiUseCase'] => {
-    return global.testWorld!.accountDeletionApiUseCase;
+    if (!global.testWorld) {
+      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    }
+    return global.testWorld.accountDeletionApiUseCase;
   };
 
 export const getAccountBalanceUiUseCase =
   (): World['accountBalanceUiUseCase'] => {
-    return global.testWorld!.accountBalanceUiUseCase;
+    if (!global.testWorld) {
+      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    }
+    return global.testWorld.accountBalanceUiUseCase;
   };
 
 export const getAccountCreationUiUseCase =
   (): World['accountCreationUiUseCase'] => {
-    return global.testWorld!.accountCreationUiUseCase;
+    if (!global.testWorld) {
+      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    }
+    return global.testWorld.accountCreationUiUseCase;
   };
 
 /**

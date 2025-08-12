@@ -6,9 +6,6 @@ import {
   getAccountCreationUiUseCase,
 } from '../../../shared/utilities/hooks';
 
-const accountCreationApiUseCase = getAccountCreationApiUseCase();
-const accountCreationUiUseCase = getAccountCreationUiUseCase();
-
 /**
  * Step definitions for account existence setup
  * These steps create prerequisite accounts via direct backend API calls
@@ -16,6 +13,9 @@ const accountCreationUiUseCase = getAccountCreationUiUseCase();
 Given(
   'I have an existing account named {string}',
   async function (accountName: string) {
+    const accountCreationApiUseCase = getAccountCreationApiUseCase();
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
+    
     // Get scenario name from context for unique naming
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';

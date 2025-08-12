@@ -6,8 +6,6 @@ import {
 import { TestData } from '../../../shared/utilities/testData';
 import { AccountDto } from '../types/account.dto';
 
-const accountCreationUiUseCase = getAccountCreationUiUseCase();
-
 Given('I am on the categories page', async function () {
   const accountsPage = getAccountsPage();
   await accountsPage.navigateToCategoriesPage();
@@ -43,6 +41,7 @@ When(
 
     TestData.trackCreatedAccount(accountData.name);
 
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
     await accountCreationUiUseCase.createAccount(accountData);
   }
 );
@@ -66,6 +65,7 @@ When(
       description: dataTableHash['Description'],
     };
 
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
     await accountCreationUiUseCase.createAccount(accountData);
   }
 );
