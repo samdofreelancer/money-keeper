@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
+import { AccountsSelectors } from '../constants/accounts-selectors.constants';
 
 /**
  * Page object for the Accounts page
@@ -8,88 +9,61 @@ import { Logger } from '../../../shared/utilities/logger';
 export class AccountsPlaywrightPage {
   constructor(private page: Page) {}
 
-  private selectors = {
-    buttons: {
-      addAccount: 'button:has-text("Add Account")',
-      create: 'button:has-text("Create")',
-      confirm: 'button:has-text("Confirm")',
-      accountsTab: 'text=Accounts',
-    },
-    inputs: {
-      accountName: 'input[placeholder="Enter account name"]',
-      accountType: '.el-select',
-      balance: 'input[type="number"]',
-      description: 'input[placeholder="Enter description (optional)"]',
-    },
-    messages: {
-      success: '.el-message--success',
-    },
-    accountElements: {
-      accountRow: '.account-row',
-      accountDescription: '.account-description',
-      deleteButton: '.delete-account-button',
-    },
-    navigation: {
-      categoriesPage: '/categories',
-      accountsPage: '/accounts',
-    },
-  };
-
   /**
    * Navigate to the categories page
    */
   async navigateToCategoriesPage() {
-    await this.page.goto(this.selectors.navigation.categoriesPage);
+    await this.page.goto(AccountsSelectors.navigation.categoriesPage);
   }
 
   /**
    * Click the "Accounts" tab or link on the categories page
    */
   async clickAccountsTab() {
-    await this.page.click(this.selectors.buttons.accountsTab);
+    await this.page.click(AccountsSelectors.buttons.accountsTab);
   }
 
   /**
    * Navigate to the accounts page
    */
   async navigateToAccountsPage() {
-    await this.page.goto(this.selectors.navigation.accountsPage);
+    await this.page.goto(AccountsSelectors.navigation.accountsPage);
   }
 
   /**
    * Click the Add Account button
    */
   async clickAddAccountButton() {
-    await this.page.click(this.selectors.buttons.addAccount);
+    await this.page.click(AccountsSelectors.buttons.addAccount);
   }
 
   /**
    * Fill in the account name field
    */
   async fillAccountName(name: string) {
-    await this.page.fill(this.selectors.inputs.accountName, name);
+    await this.page.fill(AccountsSelectors.inputs.accountName, name);
   }
 
   /**
    * Select the account type from dropdown
    */
   async selectAccountType(type: string) {
-    await this.page.click(this.selectors.inputs.accountType);
-    await this.page.click(`span:text('${type}')`);
+    await this.page.click(AccountsSelectors.inputs.accountType);
+    await this.page.click(AccountsSelectors.dynamic.accountTypeOption(type));
   }
 
   /**
    * Fill in the balance field
    */
   async fillBalance(balance: number) {
-    await this.page.fill(this.selectors.inputs.balance, balance.toString());
+    await this.page.fill(AccountsSelectors.inputs.balance, balance.toString());
   }
 
   /**
    * Fill in the description field
    */
   async fillDescription(description: string) {
-    await this.page.fill(this.selectors.inputs.description, description || '');
+    await this.page.fill(AccountsSelectors.inputs.description, description || '');
   }
 
   /**
@@ -108,14 +82,14 @@ export class AccountsPlaywrightPage {
    * Click the Create button to submit the form
    */
   async clickCreateButton() {
-    await this.page.click(this.selectors.buttons.create);
+    await this.page.click(AccountsSelectors.buttons.create);
   }
 
   /**
    * Verify that an account with the given name exists in the accounts list
    */
   async verifyAccountIsListed(name: string): Promise<boolean> {
-    return await this.page.isVisible(`text=${name}`);
+    return await this.page.isVisible(AccountsSelectors.dynamic.accountByName(name));
   }
 
   /**
@@ -123,7 +97,7 @@ export class AccountsPlaywrightPage {
    */
   async isSuccessMessageVisible(): Promise<boolean> {
     try {
-      await this.page.waitForSelector(this.selectors.messages.success, {
+      await this.page.waitForSelector(AccountsSelectors.messages.success, {
         timeout: 5000,
         state: 'visible',
       });
@@ -137,7 +111,7 @@ export class AccountsPlaywrightPage {
    * Check if error message with specific text is visible
    */
   async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
-    return await this.page.isVisible(`text=${errorMessage}`);
+    return await this.page.isVisible(AccountsSelectors.dynamic.accountByName(errorMessage));
   }
 
   /**
@@ -145,7 +119,7 @@ export class AccountsPlaywrightPage {
    */
   async getTotalBalance(): Promise<string> {
     const balance = await this.page.textContent(
-      'text=Total Balance of Active Accounts:'
+      AccountsSelectors.text.totalBalanceLabel
     );
     if (!balance) throw new Error('Total balance element not found');
     return balance;
@@ -161,11 +135,11 @@ export class AccountsPlaywrightPage {
 
       // Find the account in the list and click the delete button
       await this.page.click(
-        `text=${accountName} >> ${this.selectors.accountElements.deleteButton}`
+        AccountsSelectors.dynamic.deleteButtonForAccount(accountName)
       );
 
       // Confirm deletion if there's a confirmation dialog
-      await this.page.click(this.selectors.buttons.confirm);
+      await this.page.click(AccountsSelectors.buttons.confirm);
 
       Logger.info(
         `Successfully initiated deletion for account: ${accountName}`
@@ -182,7 +156,7 @@ export class AccountsPlaywrightPage {
    * Get the count of accounts with a specific name
    */
   async getAccountCount(accountName: string): Promise<number> {
-    const elements = await this.page.locator(`text=${accountName}`).all();
+    const elements = await this.page.locator(AccountsSelectors.dynamic.accountByName(accountName)).all();
     return elements.length;
   }
 
@@ -191,7 +165,7 @@ export class AccountsPlaywrightPage {
    */
   async getTotalAccountCount(): Promise<number> {
     const rows = await this.page
-      .locator(this.selectors.accountElements.accountRow)
+      .locator(AccountsSelectors.accountElements.accountRow)
       .all();
     return rows.length;
   }
@@ -200,7 +174,7 @@ export class AccountsPlaywrightPage {
    * Get the description of an account
    */
   async getAccountDescription(accountName: string): Promise<string> {
-    const descriptionSelector = `text=${accountName} >> .. >> ${this.selectors.accountElements.accountDescription}`;
+    const descriptionSelector = AccountsSelectors.dynamic.accountRowWithName(accountName);
     const description = await this.page.textContent(descriptionSelector);
     return description || '';
   }
