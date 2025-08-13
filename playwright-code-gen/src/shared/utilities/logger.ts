@@ -7,7 +7,7 @@ enum LogLevel {
   DEBUG = 0,
   INFO = 1,
   WARN = 2,
-  ERROR = 3
+  ERROR = 3,
 }
 
 export class Logger {
@@ -50,7 +50,7 @@ export class Logger {
    * @param message The message to log
    * @param args Additional arguments to log
    */
-  public static debug(message: string, ...args: any[]): void {
+  public static debug(message: string, ...args: unknown[]): void {
     if (Logger.logLevel <= LogLevel.DEBUG) {
       console.debug(`${Logger.prefix} [DEBUG] ${message}`, ...args);
     }
@@ -61,7 +61,7 @@ export class Logger {
    * @param message The message to log
    * @param args Additional arguments to log
    */
-  public static info(message: string, ...args: any[]): void {
+  public static info(message: string, ...args: unknown[]): void {
     if (Logger.logLevel <= LogLevel.INFO) {
       console.info(`${Logger.prefix} [INFO] ${message}`, ...args);
     }
@@ -72,7 +72,7 @@ export class Logger {
    * @param message The message to log
    * @param args Additional arguments to log
    */
-  public static warn(message: string, ...args: any[]): void {
+  public static warn(message: string, ...args: unknown[]): void {
     if (Logger.logLevel <= LogLevel.WARN) {
       console.warn(`${Logger.prefix} [WARN] ${message}`, ...args);
     }
@@ -83,7 +83,7 @@ export class Logger {
    * @param message The message to log
    * @param args Additional arguments to log
    */
-  public static error(message: string, ...args: any[]): void {
+  public static error(message: string, ...args: unknown[]): void {
     if (Logger.logLevel <= LogLevel.ERROR) {
       console.error(`${Logger.prefix} [ERROR] ${message}`, ...args);
     }
@@ -110,7 +110,10 @@ export class Logger {
    * @param testName The name of the test
    * @param status The status of the test
    */
-  public static testEnd(testName: string, status: 'PASSED' | 'FAILED' | 'SKIPPED'): void {
+  public static testEnd(
+    testName: string,
+    status: 'PASSED' | 'FAILED' | 'SKIPPED'
+  ): void {
     console.log(`${Logger.prefix} [TEST END] ${testName} - ${status}\n`);
   }
 }

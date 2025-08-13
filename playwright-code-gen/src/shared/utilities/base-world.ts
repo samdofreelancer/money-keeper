@@ -8,13 +8,14 @@ import { Environment } from '../config/environment';
 export class BaseWorld {
   // Method for attaching data to Cucumber reports
   // This will be implemented by Cucumber's World
-  public attach: (data: Buffer | string, mimeType: string) => Promise<void> = async () => {
-    // Default implementation does nothing
-    // Will be overridden by Cucumber's World
-  };
+  public attach: (data: Buffer | string, mimeType: string) => Promise<void> =
+    async () => {
+      // Default implementation does nothing
+      // Will be overridden by Cucumber's World
+    };
   // Browser instance (shared across all tests)
   protected static browser: Browser;
-  
+
   // Context and page (unique per scenario)
   protected context!: BrowserContext;
   protected page!: Page;
@@ -45,16 +46,19 @@ export class BaseWorld {
     this.context = await BaseWorld.browser.newContext({
       viewport: { width: 1280, height: 720 },
       baseURL: Environment.baseUrl,
-      recordVideo: process.env.RECORD_VIDEO === 'true' ? {
-        dir: './test-results/videos/',
-        size: { width: 1280, height: 720 }
-      } : undefined,
+      recordVideo:
+        process.env.RECORD_VIDEO === 'true'
+          ? {
+              dir: './test-results/videos/',
+              size: { width: 1280, height: 720 },
+            }
+          : undefined,
       // Add additional context options as needed
     });
-    
+
     // Set default timeout from environment
     this.context.setDefaultTimeout(Environment.timeout);
-    
+
     // Create page
     this.page = await this.context.newPage();
   }

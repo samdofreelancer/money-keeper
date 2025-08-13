@@ -1,0 +1,214 @@
+import { Page } from '@playwright/test';
+import { AccountDto } from '../types/account.dto';
+import { Logger } from '../../../shared/utilities/logger';
+
+/**
+ * Page object for the Accounts page
+ */
+export class AccountsPlaywrightPage {
+  constructor(private page: Page) {}
+
+  private selectors = {
+    buttons: {
+      addAccount: 'button:has-text("Add Account")',
+      create: 'button:has-text("Create")',
+      confirm: 'button:has-text("Confirm")',
+      accountsTab: 'text=Accounts',
+    },
+    inputs: {
+      accountName: 'input[placeholder="Enter account name"]',
+      accountType: '.el-select',
+      balance: 'input[type="number"]',
+      description: 'input[placeholder="Enter description (optional)"]',
+    },
+    messages: {
+      success: '.el-message--success',
+    },
+    accountElements: {
+      accountRow: '.account-row',
+      accountDescription: '.account-description',
+      deleteButton: '.delete-account-button',
+    },
+    navigation: {
+      categoriesPage: '/categories',
+      accountsPage: '/accounts',
+    },
+  };
+
+  /**
+   * Navigate to the categories page
+   */
+  async navigateToCategoriesPage() {
+    await this.page.goto(this.selectors.navigation.categoriesPage);
+  }
+
+  /**
+   * Click the "Accounts" tab or link on the categories page
+   */
+  async clickAccountsTab() {
+    await this.page.click(this.selectors.buttons.accountsTab);
+  }
+
+  /**
+   * Navigate to the accounts page
+   */
+  async navigateToAccountsPage() {
+    await this.page.goto(this.selectors.navigation.accountsPage);
+  }
+
+  /**
+   * Click the Add Account button
+   */
+  async clickAddAccountButton() {
+    await this.page.click(this.selectors.buttons.addAccount);
+  }
+
+  /**
+   * Fill in the account name field
+   */
+  async fillAccountName(name: string) {
+    await this.page.fill(this.selectors.inputs.accountName, name);
+  }
+
+  /**
+   * Select the account type from dropdown
+   */
+  async selectAccountType(type: string) {
+    await this.page.click(this.selectors.inputs.accountType);
+    await this.page.click(`span:text('${type}')`);
+  }
+
+  /**
+   * Fill in the balance field
+   */
+  async fillBalance(balance: number) {
+    await this.page.fill(this.selectors.inputs.balance, balance.toString());
+  }
+
+  /**
+   * Fill in the description field
+   */
+  async fillDescription(description: string) {
+    await this.page.fill(this.selectors.inputs.description, description || '');
+  }
+
+  /**
+   * Fill in the account form by orchestrating individual field methods
+   */
+  async fillAccountForm(accountData: AccountDto) {
+    await this.fillAccountName(accountData.name);
+    await this.selectAccountType(accountData.type);
+    await this.fillBalance(accountData.balance);
+    if (accountData.description) {
+      await this.fillDescription(accountData.description);
+    }
+  }
+
+  /**
+   * Click the Create button to submit the form
+   */
+  async clickCreateButton() {
+    await this.page.click(this.selectors.buttons.create);
+  }
+
+  /**
+   * Verify that an account with the given name exists in the accounts list
+   */
+  async verifyAccountIsListed(name: string): Promise<boolean> {
+    return await this.page.isVisible(`text=${name}`);
+  }
+
+  /**
+   * Check if success message is visible
+   */
+  async isSuccessMessageVisible(): Promise<boolean> {
+    try {
+      await this.page.waitForSelector(this.selectors.messages.success, {
+        timeout: 5000,
+        state: 'visible',
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if error message with specific text is visible
+   */
+  async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
+    return await this.page.isVisible(`text=${errorMessage}`);
+  }
+
+  /**
+   * Get the total balance text
+   */
+  async getTotalBalance(): Promise<string> {
+    const balance = await this.page.textContent(
+      'text=Total Balance of Active Accounts:'
+    );
+    if (!balance) throw new Error('Total balance element not found');
+    return balance;
+  }
+
+  /**
+   * Delete an account by name with proper error handling and structured logging
+   * @param accountName The name of the account to delete
+   */
+  async deleteAccount(accountName: string): Promise<void> {
+    try {
+      Logger.info(`Attempting to delete account: ${accountName}`);
+
+      // Find the account in the list and click the delete button
+      await this.page.click(
+        `text=${accountName} >> ${this.selectors.accountElements.deleteButton}`
+      );
+
+      // Confirm deletion if there's a confirmation dialog
+      await this.page.click(this.selectors.buttons.confirm);
+
+      Logger.info(
+        `Successfully initiated deletion for account: ${accountName}`
+      );
+    } catch (error) {
+      Logger.error(`Failed to delete account: ${accountName}`, error as Error);
+      throw new Error(
+        `Failed to delete account ${accountName}: ${(error as Error).message}`
+      );
+    }
+  }
+
+  /**
+   * Get the count of accounts with a specific name
+   */
+  async getAccountCount(accountName: string): Promise<number> {
+    const elements = await this.page.locator(`text=${accountName}`).all();
+    return elements.length;
+  }
+
+  /**
+   * Get the total number of accounts
+   */
+  async getTotalAccountCount(): Promise<number> {
+    const rows = await this.page
+      .locator(this.selectors.accountElements.accountRow)
+      .all();
+    return rows.length;
+  }
+
+  /**
+   * Get the description of an account
+   */
+  async getAccountDescription(accountName: string): Promise<string> {
+    const descriptionSelector = `text=${accountName} >> .. >> ${this.selectors.accountElements.accountDescription}`;
+    const description = await this.page.textContent(descriptionSelector);
+    return description || '';
+  }
+
+  /**
+   * Reload the current page
+   */
+  async reload() {
+    await this.page.reload();
+  }
+}
