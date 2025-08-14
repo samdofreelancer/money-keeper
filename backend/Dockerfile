@@ -1,5 +1,5 @@
 # ---------- Build stage (nhẹ, Alpine) ----------
-FROM maven:3.8.6-openjdk-17 as build
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 
 # cache deps
