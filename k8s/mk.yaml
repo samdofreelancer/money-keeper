@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: money-keeper-backend:latest
+          image: samdofreelancer/money-keeper-backend:latest
           ports:
             - containerPort: 8080
           env:
@@ -130,7 +130,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: money-keeper-frontend:latest
+          image: samdofreelancer/money-keeper-frontend:latest
           ports:
             - containerPort: 80
           # Nếu frontend cần biết URL backend ở runtime (ví dụ Nuxt/React):
