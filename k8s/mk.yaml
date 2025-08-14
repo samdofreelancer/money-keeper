@@ -1,0 +1,185 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: money-keeper
+---
+# Mật khẩu Oracle (đổi YOUR_STRONG_PASSWORD)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oracle-secret
+  namespace: money-keeper
+type: Opaque
+stringData:
+  ORACLE_PASSWORD: YOUR_STRONG_PASSWORD
+  SPRING_DATASOURCE_PASSWORD: YOUR_STRONG_PASSWORD
+---
+# Oracle XE
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracle
+  namespace: money-keeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: oracle }
+  template:
+    metadata:
+      labels: { app: oracle }
+    spec:
+      containers:
+        - name: oracle
+          image: gvenzl/oracle-xe:21-slim
+          ports:
+            - containerPort: 1521
+          env:
+            - name: ORACLE_PASSWORD
+              valueFrom: { secretKeyRef: { name: oracle-secret, key: ORACLE_PASSWORD } }
+          readinessProbe:
+            tcpSocket: { port: 1521 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: 1521 }
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources: {}
+      # Demo ephemeral: không cần PVC, dùng emptyDir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle
+  namespace: money-keeper
+spec:
+  selector: { app: oracle }
+  ports:
+    - name: sql
+      port: 1521
+      targetPort: 1521
+  type: ClusterIP
+---
+# Backend (Spring)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: money-keeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: backend }
+  template:
+    metadata:
+      labels: { app: backend }
+    spec:
+      containers:
+        - name: backend
+          image: money-keeper-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # JDBC URL chuẩn cho Oracle XE container (service name XEPDB1)
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:oracle:thin:@oracle.money-keeper.svc.cluster.local:1521/XEPDB1
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: oracle.jdbc.OracleDriver
+            - name: SPRING_DATASOURCE_USERNAME
+              value: system
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom: { secretKeyRef: { name: oracle-secret, key: SPRING_DATASOURCE_PASSWORD } }
+            # tuỳ app: nếu backend dùng ORACLE_PASSWORD env thì map thêm:
+            - name: ORACLE_PASSWORD
+              valueFrom: { secretKeyRef: { name: oracle-secret, key: ORACLE_PASSWORD } }
+          readinessProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            initialDelaySeconds: 45
+            periodSeconds: 20
+          resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: money-keeper
+spec:
+  selector: { app: backend }
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+# Frontend
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: money-keeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: frontend }
+  template:
+    metadata:
+      labels: { app: frontend }
+    spec:
+      containers:
+        - name: frontend
+          image: money-keeper-frontend:latest
+          ports:
+            - containerPort: 80
+          # Nếu frontend cần biết URL backend ở runtime (ví dụ Nuxt/React):
+          env:
+            - name: BACKEND_BASE_URL
+              value: http://backend.money-keeper.svc.cluster.local:8080
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: money-keeper
+spec:
+  selector: { app: frontend }
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Ingress: / -> frontend, /api -> backend
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: money-keeper
+  namespace: money-keeper
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port: { number: 8080 }
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port: { number: 80 }
