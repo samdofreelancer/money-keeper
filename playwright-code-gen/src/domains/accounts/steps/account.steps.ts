@@ -6,11 +6,6 @@ import {
 import { TestData } from '../../../shared/utilities/testData';
 import { AccountDto } from '../types/account.dto';
 
-Given('I am on the categories page', async function () {
-  const accountsPage = getAccountsPage();
-  await accountsPage.navigateToCategoriesPage();
-});
-
 When(
   'I navigate to accounts via clicking {string}',
   async function (tabName: string) {

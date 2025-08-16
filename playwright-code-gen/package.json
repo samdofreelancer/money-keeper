@@ -4,7 +4,9 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js",
+    "test": "cucumber-js --tags '@focus'",
+    "test:category": "cucumber-js src/features/categories/**/*.feature",
+    "test:category:report": "cucumber-js src/features/categories/**/*.feature && open-cli test-results/cucumber-report.html",
     "test:report": "cucumber-js && open-cli test-results/cucumber-report.html",
     "test:report:enhanced": "cucumber-js && node -e \"require('cucumber-html-reporter').generate({theme: 'bootstrap', jsonFile: 'test-results/cucumber-report.json', output: 'test-results/cucumber-report.html', reportSuiteAsScenarios: true, launchReport: true, screenshotsDirectory: 'test-results/screenshots/step-screenshots', storeScreenshots: true, screenshots: true});\"",
     "lint": "npx eslint .",
@@ -36,6 +38,7 @@
   },
   "dependencies": {
     "axios": "^1.10.0",
+    "cucumber-html-reporter": "^7.2.0",
     "dotenv": "^17.2.1"
   }
 }
