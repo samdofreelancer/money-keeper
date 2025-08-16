@@ -79,6 +79,13 @@ export const getAccountCreationUiUseCase =
     return global.testWorld.accountCreationUiUseCase;
   };
 
+export const getCategoryApiClient = (): World['categoryApiClient'] => {
+  if (!global.testWorld) {
+    throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+  }
+  return global.testWorld.categoryApiClient;
+};
+
 let _categoryDeletionApiUseCase: ReturnType<typeof makeCategoryDeletionApiUseCase> | null = null;
 
 function makeCategoryDeletionApiUseCase() {
@@ -185,6 +192,16 @@ Before(async function (scenario) {
  * Close the context after each scenario
  */
 After(async function (scenario) {
+  // Cleanup test data
+  try {
+    await TestData.cleanupAllViaApi(); // xóa Account + Category qua API
+  } catch (error) {
+    Logger.error('[Hooks] Error during API cleanup', error);
+  } finally {
+    TestData.clear();
+    Logger.debug('[Hooks] Test data cleanup completed');
+  }
+  
   // Log scenario result
   const scenarioName =
     (this as unknown as ScenarioContext).scenarioName || scenario.pickle.name;
@@ -253,16 +270,6 @@ After(async function (scenario) {
     Logger.debug('Scenario teardown completed');
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
-  }
-
-  // Cleanup test data
-  try {
-    await TestData.cleanupAllViaApi(); // xóa Account + Category qua API
-  } catch (error) {
-    Logger.error('[Hooks] Error during API cleanup', error);
-  } finally {
-    TestData.clear();
-    Logger.debug('[Hooks] Test data cleanup completed');
   }
 });
 

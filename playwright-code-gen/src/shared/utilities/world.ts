@@ -1,5 +1,6 @@
 import { BaseWorld } from './base-world';
 import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
+import { CategoryApiClient } from '../../domains/category/api/category-api.client';
 import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
 import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
@@ -15,6 +16,7 @@ export class World extends BaseWorld {
   // Domain-specific page objects and steps
   public accountsPage!: AccountsPlaywrightPage;
   public accountApiClient!: AccountApiClient;
+  public categoryApiClient!: CategoryApiClient;
 
   public accountCreationApiUseCase!: AccountCreationApiUseCase;
   public accountDeletionApiUseCase!: AccountDeletionApiUseCase;
@@ -37,6 +39,7 @@ export class World extends BaseWorld {
     // Initialize API client
     const apiBaseUrl = process.env.API_BASE_URL || 'http://127.0.0.1:8080/api';
     this.accountApiClient = new AccountApiClient({ baseURL: apiBaseUrl });
+    this.categoryApiClient = new CategoryApiClient(this.context.request);
 
     // Initialize domain-specific page objects and steps
     this.accountsPage = new AccountsPlaywrightPage(this.getPage());

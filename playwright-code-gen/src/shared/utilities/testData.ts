@@ -1,6 +1,6 @@
 // src/shared/utilities/test-data.ts
 import { Logger } from './logger';
-import { getAccountDeletionApiUseCase, getCategoryDeletionApiUseCase } from './hooks';
+import { getAccountDeletionApiUseCase, getCategoryDeletionApiUseCase, getCategoryApiClient } from './hooks';
 import { AccountDeletionApiUseCase } from '@/domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { CategoryDeletionApiUseCase } from '@/domains/category/usecases/api/CategoryDeletionApiUseCase';
 
@@ -73,8 +73,9 @@ export class TestData {
   }
 
   /** Lưu tên category đã tạo */
-  static trackCreatedCategory(categoryName: string): void {
-    if (categoryName) this.createdCategories.add(categoryName);
+  static trackCreatedCategory(name: string): void {
+    if (name) this.createdCategories.add(name);
+    Logger.info(`[TestData] Tracked category: ${name} with Name: ${name}`);
   }
 
   /** Lấy danh sách account đã tạo (copy) */
@@ -82,7 +83,7 @@ export class TestData {
     return Array.from(this.createdAccounts);
   }
 
-  /** Lấy danh sách category đã tạo (copy) */
+  /** Lấy danh sách categoryId đã tạo (copy) */
   static getCategories(): string[] {
     return Array.from(this.createdCategories);
   }
@@ -126,22 +127,38 @@ export class TestData {
    * Cleanup Categories qua API.
    */
   static async cleanupCategoriesViaApi(): Promise<void> {
-    const categories = this.getCategories();
-    if (!categories.length) {
+    const categoryNames = this.getCategories();
+    if (!categoryNames.length) {
       Logger.debug('[TestData] No categories to clean via API.');
       return;
     }
 
-    const categoryDeletionApiUseCase: CategoryDeletionApiUseCase = getCategoryDeletionApiUseCase();
-    Logger.info(`[TestData] Cleaning ${categories.length} category(ies) via API...`);
+    const categoryApiClient = getCategoryApiClient();
+    Logger.info(`[TestData] Cleaning ${categoryNames.length} category(ies) via API...`);
 
-    for (const categoryName of categories) {
-      try {
-        await categoryDeletionApiUseCase.deleteCategory(categoryName);
-        Logger.info(`[TestData] Deleted test category: ${categoryName}`);
-      } catch (error) {
-        Logger.error(`[TestData] Failed to delete test category: ${categoryName}`, error);
+    try {
+      // Get all categories from API
+      const allCategories = await categoryApiClient.getCategories();
+      Logger.info(`[TestData] Found ${allCategories.length} total categories in API`);
+
+      // Filter categories by the names we want to delete
+      const categoriesToDelete = allCategories.filter(category => 
+        categoryNames.includes(category.name)
+      );
+      
+      Logger.info(`[TestData] Found ${categoriesToDelete.length} categories to delete`);
+
+      // Delete each category by its actual ID
+      for (const category of categoriesToDelete) {
+        try {
+          await categoryApiClient.deleteCategory(category.id);
+          Logger.info(`[TestData] Deleted test category: ${category.name} (ID: ${category.id})`);
+        } catch (error) {
+          Logger.error(`[TestData] Failed to delete test category: ${category.name} (ID: ${category.id})`, error);
+        }
       }
+    } catch (error) {
+      Logger.error('[TestData] Failed to fetch categories from API', error);
     }
 
     this.createdCategories.clear();

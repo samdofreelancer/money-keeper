@@ -1,13 +1,13 @@
 // src/domains/category/usecases/api/CategoryDeletionApiUseCase.ts
 export interface CategoryDeletionApiUseCase {
-  deleteCategory(name: string): Promise<void>;
+  deleteCategory(categoryId: string): Promise<void>;
 }
 
 export class CategoryDeletionApiUseCaseImpl implements CategoryDeletionApiUseCase {
   constructor(private readonly baseUrl: string, private readonly token?: string) {}
 
-  async deleteCategory(name: string): Promise<void> {
-    const url = `${this.baseUrl}/api/categories?name=${encodeURIComponent(name)}`;
+  async deleteCategory(categoryId: string): Promise<void> {
+    const url = `${this.baseUrl}/api/categories/${encodeURIComponent(categoryId)}`;
     const res = await fetch(url, {
       method: 'DELETE',
       headers: {
