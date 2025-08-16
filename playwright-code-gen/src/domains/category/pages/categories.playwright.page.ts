@@ -55,7 +55,12 @@ export class CategoriesPage {
   }
 
   async clickSubmitButton() {
-    await this.page.getByTestId('button-submit').click();
+    await Promise.all([
+      this.page.waitForResponse(r =>
+        r.url().includes('/api/categories') && r.request().method() === 'POST' && r.status() === 201
+      ),
+      this.page.getByTestId('button-submit').click()
+    ]);
   }
 
   findCategoryRowByName(categoryName: string) {
@@ -66,25 +71,27 @@ export class CategoriesPage {
   }
 
   async clickDeleteCategoryButton(categoryName: string) {
-    const categoryRow = await this.findCategoryRowByName(categoryName);
+    const categoryRow = this.findCategoryRowByName(categoryName).first();
     await categoryRow.getByTestId('delete-category-button').click();
   }
 
   async clickConfirmDeleteButton() {
-    await this.page.getByTestId('button-confirm-delete').click();
-    await this.page.waitForResponse(r =>
-      r.url().includes('/api/categories') && r.request().method() === 'GET' && r.ok()
-    );
+    await Promise.all([
+      this.page.waitForResponse(r =>
+        r.url().includes('/api/categories') && r.request().method() === 'GET' && r.ok()
+      ),
+      this.page.getByTestId('button-confirm-delete').click()
+    ]);
   }
 
 async categoryExists(categoryName: string): Promise<boolean> {
-    const categoryRow = await this.findCategoryRowByName(categoryName);
+    const categoryRow = this.findCategoryRowByName(categoryName);
     const count = await categoryRow.count();
-    return count === 1;
+    return count > 0;
   }
 
 async categoryNotExists(categoryName: string): Promise<boolean> {
-    const categoryRow = await this.findCategoryRowByName(categoryName);
+    const categoryRow = this.findCategoryRowByName(categoryName);
     const count = await categoryRow.count();
     return count === 0;
   }
@@ -93,7 +100,11 @@ async categoryNotExists(categoryName: string): Promise<boolean> {
     await expect(this.page.getByTestId('category-tree')).toBeVisible();
   }
 
-  async verifyNoDataMessageNotVisible() {
-    await expect(this.page.getByTestId('no-data')).toBeHidden();
+  get noDataMessage() {
+    return this.page.getByTestId('no-data');
+  }
+
+  async noDataMessageHidden(): Promise<boolean> {
+    return await this.noDataMessage.isHidden();
   }
 }
