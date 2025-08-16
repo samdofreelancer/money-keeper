@@ -10,11 +10,11 @@ function slugify(name: string) {
 
 async function categoryVisibleByAny(thisWorld: any, name: string): Promise<boolean> {
   const slug = slugify(name);
-  // Ưu tiên data-testid nếu có
+  // Priority data-testid (if any)
   const byTestId = thisWorld.page.getByTestId(`category-node-${slug}`);
   if (await byTestId.isVisible().catch(() => false)) return true;
 
-  // Fallback: tìm theo role/treeitem hoặc text
+  // Fallback: find by role/treeitem or text
   const byRole = thisWorld.page.getByRole('treeitem', { name, exact: true });
   if (await byRole.isVisible().catch(() => false)) return true;
 
@@ -24,29 +24,29 @@ async function categoryVisibleByAny(thisWorld: any, name: string): Promise<boole
 
 async function deleteCategoryIfExists(thisWorld: any, name: string): Promise<void> {
   const pom = new CategoriesPage(thisWorld.page);
-  // Nếu POM có method xóa, dùng thẳng:
+  // if POM have method delete, then use it:
   if (typeof (pom as any).deleteCategory === 'function') {
     const existed = typeof (pom as any).categoryExists === 'function'
       ? await (pom as any).categoryExists(name)
       : await categoryVisibleByAny(thisWorld, name);
     if (existed) {
       await (pom as any).deleteCategory(name);
-      // chờ UI settle nhẹ
+      // wait UI settle light
       await pom.waitForIdle(100);
     }
     return;
   }
 
-  // Fallback xoá thô nếu chưa có method trong POM:
+  // Fallback delete if method does not exist in POM
   const slug = slugify(name);
-  // 1) tìm node
+  // 1) find node
   const node =
     thisWorld.page.getByTestId(`category-node-${slug}`)
       .or(thisWorld.page.getByRole('treeitem', { name, exact: true }))
       .or(thisWorld.page.locator(`text=${name}`));
   if (!(await node.isVisible().catch(() => false))) return;
 
-  // 2) mở menu xóa (tùy DOM của bạn: đổi testid cho khớp)
+  // 2) open manu delete
   const openMenuBtn =
     thisWorld.page.getByTestId(`btn-category-menu-${slug}`)
       .or(node.locator('[data-testid="btn-category-menu"]'))
@@ -55,14 +55,14 @@ async function deleteCategoryIfExists(thisWorld: any, name: string): Promise<voi
     await openMenuBtn.click().catch(() => {});
   }
 
-  // 3) bấm delete
+  // 3) click delete
   const deleteBtn =
     thisWorld.page.getByTestId(`btn-delete-category-${slug}`)
       .or(thisWorld.page.getByRole('menuitem', { name: /delete/i }))
       .or(thisWorld.page.getByRole('button', { name: /delete/i }));
   await deleteBtn.click().catch(() => {});
 
-  // 4) confirm nếu có dialog xác nhận
+  // 4) confirm if have dialog confirm
   const confirm =
     thisWorld.page.getByTestId('confirm-delete')
       .or(thisWorld.page.getByRole('button', { name: /confirm|ok|yes/i }));
@@ -88,7 +88,6 @@ When('I create a new category with:', async function (dataTable) {
   const obj = dataTable.rowsHash() as Record<string, string>;
   const name = obj.name ?? obj.Name ?? '';
   const icon = obj.icon ?? obj.Icon ?? undefined;
-  // type (Expense/Income) tạm bỏ qua nếu UI chưa có; bạn có thể extend Use Case để set type.
   expect(name, 'Missing "name" in DataTable').toBeTruthy();
 
   const pom = new CategoriesPage(this.page);
@@ -119,22 +118,16 @@ Then('the category {string} should appear in the category tree', async function 
 });
 
 Then('the category tree should not show {string}', async function (text: string) {
-  // Ưu tiên testid 'no-data' nếu có
   const byTestId = this.page.getByTestId('no-data').or(this.page.getByTestId('empty-state'));
   if (await byTestId.isVisible().catch(() => false)) {
     await expect(byTestId).not.toBeVisible();
     return;
   }
-  // Fallback: không thấy text "No Data"
+  
   const byText = this.page.getByText(text, { exact: false });
   await expect(byText).not.toBeVisible();
 });
 
 When('I delete the category {string}', async function (name: string) {
   await deleteCategoryIfExists(this, name);
-});
-
-Then('the category {string} should no longer appear in the category tree', async function (name: string) {
-  const pom = new CategoriesPage(this.page);
-  await pom.expectCategoryNotVisible(name);
 });

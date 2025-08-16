@@ -15,5 +15,3 @@ Feature: Category Management
       | type | Expense   |
     Then the category "Food_Test" should appear in the category tree
     And the category tree should not show "No Data"
-    # When I delete the category "Food_Test"
-    # Then the category "Food_Test" should no longer appear in the category tree
