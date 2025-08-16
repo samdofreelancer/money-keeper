@@ -27,7 +27,7 @@ When('I create a new category with:', async function (dataTable) {
 
 Then('the category {string} should appear in the category tree', async function (categoryName: string) {
   await categoryUseCase.waitForCategoryTreeToLoad();
-  const exists = await categoryUseCase.verifyCategoryExists(categoryName);
+  const exists = await categoryUseCase.categoryExists(categoryName);
   expect(exists).toBe(true);
 });
 
@@ -41,6 +41,6 @@ When('I delete the category {string}', async function (categoryName: string) {
 });
 
 Then('the category {string} should no longer appear in the category tree', async function (categoryName: string) {
-  const exists = await categoryUseCase.verifyCategoryNotExists(categoryName);
+  const exists = await categoryUseCase.categoryNotExists(categoryName);
   expect(exists).toBe(true);
 });

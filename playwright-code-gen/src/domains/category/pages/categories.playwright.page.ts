@@ -50,8 +50,11 @@ export class CategoriesPage {
     await this.page.getByTestId('button-submit').click();
   }
 
-  async findCategoryRowByName(categoryName: string) {
-    return this.page.getByTestId('category-tree').locator('div[data-testid="tree-node-content"]').filter({ hasText: categoryName });
+  findCategoryRowByName(categoryName: string) {
+    return this.page
+      .getByTestId('category-tree')
+      .getByTestId('tree-node-content')
+      .filter({ has: this.page.getByText(categoryName, { exact: true }) });
   }
 
   async clickDeleteCategoryButton(categoryName: string) {
@@ -63,13 +66,13 @@ export class CategoriesPage {
     await this.page.getByTestId('button-confirm-delete').click();
   }
 
-  async verifyCategoryExists(categoryName: string): Promise<boolean> {
+async categoryExists(categoryName: string): Promise<boolean> {
     const categoryRow = await this.findCategoryRowByName(categoryName);
     const count = await categoryRow.count();
     return count === 1;
   }
 
-  async verifyCategoryNotExists(categoryName: string): Promise<boolean> {
+async categoryNotExists(categoryName: string): Promise<boolean> {
     const categoryRow = await this.findCategoryRowByName(categoryName);
     const count = await categoryRow.count();
     return count === 0;

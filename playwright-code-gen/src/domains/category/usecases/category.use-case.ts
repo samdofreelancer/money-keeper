@@ -30,12 +30,12 @@ export class CategoryUseCase {
     }
   }
 
-  async verifyCategoryExists(categoryName: string): Promise<boolean> {
-    return this.categoriesPage.verifyCategoryExists(categoryName);
+  async categoryExists(categoryName: string): Promise<boolean> {
+    return this.categoriesPage.categoryExists(categoryName);
   }
 
-  async verifyCategoryNotExists(categoryName: string): Promise<boolean> {
-    return this.categoriesPage.verifyCategoryNotExists(categoryName);
+  async categoryNotExists(categoryName: string): Promise<boolean> {
+    return this.categoriesPage.categoryNotExists(categoryName);
   }
 
   async waitForCategoryTreeToLoad(): Promise<void> {

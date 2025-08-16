@@ -21,7 +21,7 @@ test.describe('Category Management Migration Test', () => {
     
     // Verify category display in the list
     await categoryUseCase.waitForCategoryTreeToLoad();
-    const categoryExists = await categoryUseCase.verifyCategoryExists(categoryData.name);
+    const categoryExists = await categoryUseCase.categoryExists(categoryData.name);
     expect(categoryExists).toBe(true);
     
     // Delete the category
@@ -29,7 +29,7 @@ test.describe('Category Management Migration Test', () => {
     await categoryUseCase.categoriesPage.clickConfirmDeleteButton();
     
     // Verify category is removed from the list
-    const categoryNotExists = await categoryUseCase.verifyCategoryNotExists(categoryData.name);
+    const categoryNotExists = await categoryUseCase.categoryNotExists(categoryData.name);
     expect(categoryNotExists).toBe(true);
   });
 });
