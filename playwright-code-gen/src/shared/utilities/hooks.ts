@@ -18,6 +18,9 @@ import { Environment } from '../config/environment';
 import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
+import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+
+import fs from 'fs';
 
 // Extend the global object type
 declare global {
@@ -75,6 +78,19 @@ export const getAccountCreationUiUseCase =
     }
     return global.testWorld.accountCreationUiUseCase;
   };
+
+let _categoryDeletionApiUseCase: ReturnType<typeof makeCategoryDeletionApiUseCase> | null = null;
+
+function makeCategoryDeletionApiUseCase() {
+  const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:8080';
+  const token = process.env.API_TOKEN;
+  return new CategoryDeletionApiUseCaseImpl(baseUrl, token);
+}
+
+export function getCategoryDeletionApiUseCase() {
+  if (!_categoryDeletionApiUseCase) _categoryDeletionApiUseCase = makeCategoryDeletionApiUseCase();
+  return _categoryDeletionApiUseCase;
+}
 
 /**
  * Get browser type based on environment configuration
@@ -241,17 +257,14 @@ After(async function (scenario) {
 
   // Cleanup test data
   try {
-    TestData.cleanupTestData();
-    Logger.debug('Test data cleanup completed');
+    await TestData.cleanupAllViaApi(); // xóa Account + Category qua API
   } catch (error) {
-    Logger.error('Error during test data cleanup', error);
+    Logger.error('[Hooks] Error during API cleanup', error);
+  } finally {
+    TestData.clear();
+    Logger.debug('[Hooks] Test data cleanup completed');
   }
 });
-
-/**
- * Capture screenshot after each step and attach to report
- */
-import fs from 'fs';
 
 AfterStep(async function (step) {
   const scenarioName =

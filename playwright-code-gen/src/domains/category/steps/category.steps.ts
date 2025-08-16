@@ -1,7 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CategoriesPage } from '../pages/categories.playwright.page';
-import { CreateCategoryUseCase } from '../usecases/category.use-case';
+import { CreateCategoryUseCase } from '../usecases/ui/category.use-case';
 
 // --- Helpers ---
 function slugify(name: string) {
@@ -114,8 +114,8 @@ When('I create a new category with:', async function (dataTable) {
 });
 
 Then('the category {string} should appear in the category tree', async function (name: string) {
-  const appeared = await categoryVisibleByAny(this, name);
-  expect(appeared, `Expected category "${name}" to appear in tree`).toBeTruthy();
+  const pom = new CategoriesPage(this.page);
+  await pom.expectCategoryVisible(name);
 });
 
 Then('the category tree should not show {string}', async function (text: string) {
@@ -135,11 +135,6 @@ When('I delete the category {string}', async function (name: string) {
 });
 
 Then('the category {string} should no longer appear in the category tree', async function (name: string) {
-  // Một chút retry tự nhiên bằng expect.not.toBeVisible với timeout mặc định
-  const slug = slugify(name);
-  const locator =
-    this.page.getByTestId(`category-node-${slug}`)
-      .or(this.page.getByRole('treeitem', { name, exact: true }))
-      .or(this.page.locator(`text=${name}`));
-  await expect(locator).not.toBeVisible();
+  const pom = new CategoriesPage(this.page);
+  await pom.expectCategoryNotVisible(name);
 });

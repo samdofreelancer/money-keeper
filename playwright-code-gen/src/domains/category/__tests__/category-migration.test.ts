@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { CategoryUseCase } from '../usecases/category.use-case';
+import { CategoryUseCase } from '../usecases/ui/category.use-case';
 import { generateTestName } from '../../../shared/utilities/category-test-helpers';
 
 test.describe('Category Management Migration Test', () => {

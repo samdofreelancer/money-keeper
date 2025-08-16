@@ -9,10 +9,14 @@ export class CategoriesPage {
   // --------- Test IDs (tập trung 1 chỗ để dễ đổi) ----------
   private readonly TID = {
     tree: 'category-tree',
+    categoryName: 'category-name',              // <span data-testid="category-name">Food_Test</span> trong TREE
+
     btnAdd: 'add-category-button',
     inputName: 'input-category-name',
-    iconTrigger: 'select-icon',
-    iconOption: (name: string) => `icon-option-${name}`, // khuyến nghị set data-testid cho từng option
+
+    iconTrigger: 'select-icon',                 // nút mở dropdown icon
+    optionIcon: 'option-icon',                  // testid chung cho mỗi item trong dropdown (nếu có)
+
     btnSave: 'button-submit',
   } as const;
 
@@ -20,22 +24,46 @@ export class CategoriesPage {
   private get categoryTree(): Locator {
     return this.page.getByTestId(this.TID.tree);
   }
+
   private get addCategoryButton(): Locator {
-    return this.page.getByTestId(this.TID.btnAdd);
+    return this.page
+      .getByTestId(this.TID.btnAdd)
+      .or(this.page.getByRole('button', { name: /^(add|new|create)\s+category/i }))
+      .or(this.page.getByText(/^(add|new|create)\s+category/i));
   }
+
   private get nameInput(): Locator {
+    // CHỈ nhắm đúng input tên, tránh bắt cả search-input
     return this.page.getByTestId(this.TID.inputName);
   }
+
   private get iconPickerTrigger(): Locator {
-    return this.page.getByTestId(this.TID.iconTrigger);
+    return this.page
+      .getByTestId(this.TID.iconTrigger)
+      .or(this.page.getByRole('button', { name: /icon/i }));
   }
-  private iconOption(name: string): Locator {
-    // Ưu tiên data-testid; fallback role nếu bạn chưa gắn testid cho option
-    const byTestId = this.page.getByTestId(this.TID.iconOption(name));
-    return byTestId.or(this.page.getByRole('option', { name, exact: true }));
+
+  private iconListbox(): Locator {
+    // UI thường render dropdown dưới dạng listbox; chọn cái MỚI mở (last)
+    return this.page.getByRole('listbox').last();
   }
+
+  private iconOption(iconName: string): Locator {
+    const listbox = this.iconListbox();
+
+    // Ưu tiên testid chung cho item rồi filter theo text
+    const byTid = listbox.getByTestId(this.TID.optionIcon).filter({ hasText: iconName });
+
+    // Fallback role=option theo name (đã scope trong listbox)
+    const byRole = listbox.getByRole('option', { name: iconName, exact: true });
+
+    return byTid.or(byRole);
+  }
+
   private get saveButton(): Locator {
-    return this.page.getByTestId(this.TID.btnSave);
+    return this.page
+      .getByTestId(this.TID.btnSave)
+      .or(this.page.getByRole('button', { name: /save|create|submit/i }));
   }
 
   // --------- Page Contract ----------
@@ -44,44 +72,43 @@ export class CategoriesPage {
     await this.assertLoaded(timeout);
   }
 
-  /**
-   * Page contract: trang đã sẵn sàng để tương tác.
-   * Giữ các expect kỹ thuật ở đây (KHÔNG assert nghiệp vụ).
-   */
   async assertLoaded(timeout?: TimeoutMs) {
     await expect(this.page).toHaveURL(/\/categories\b/, { timeout });
     await expect(this.categoryTree).toBeVisible({ timeout });
   }
 
-  // --------- Helpers “kỹ thuật” dùng lại ----------
-  private async fillInput(testId: string, value: string, timeout?: TimeoutMs) {
-    const input = this.page.getByTestId(testId);
-    await expect(input).toBeEditable({ timeout }); // guard kỹ thuật: hợp lệ trong POM
-    // Clear chắc ăn: select-all rồi fill trống
+  // --------- Helpers kỹ thuật ----------
+  private async fillInputByLocator(input: Locator, value: string, timeout?: TimeoutMs) {
+    await expect(input).toBeEditable({ timeout });
     await input.click({ timeout });
     await this.page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
     await input.fill('', { timeout });
     await input.fill(value, { timeout });
   }
 
-  // --------- Atomic actions (không chứa nghiệp vụ) ----------
+  // --------- Atomic actions ----------
   async clickAddCategoryButton(timeout?: TimeoutMs) {
     await expect(this.addCategoryButton).toBeVisible({ timeout });
     await this.addCategoryButton.click({ timeout });
   }
 
   async fillCategoryName(name: string, timeout?: TimeoutMs) {
-    await this.fillInput(this.TID.inputName, name, timeout);
+    await this.fillInputByLocator(this.nameInput, name, timeout);
   }
 
   async openIconPicker(timeout?: TimeoutMs) {
     await expect(this.iconPickerTrigger).toBeVisible({ timeout });
     await this.iconPickerTrigger.click({ timeout });
+
+    // chờ dropdown hiển thị để tránh click sớm
+    await expect(this.iconListbox()).toBeVisible({ timeout });
   }
 
   async chooseIcon(iconName: string, timeout?: TimeoutMs) {
     const option = this.iconOption(iconName);
     await expect(option).toBeVisible({ timeout });
+    await expect(option).toHaveCount(1, { timeout });      // tránh strict mode
+    await option.scrollIntoViewIfNeeded().catch(() => {});
     await option.click({ timeout });
   }
 
@@ -90,13 +117,26 @@ export class CategoriesPage {
     await this.saveButton.click({ timeout });
   }
 
-  // --------- tiện ích: chờ UI settle sau action (không phải assert nghiệp vụ) ----------
-  /**
-   * Ví dụ: chờ request idle hoặc network quiet sau khi bấm lưu.
-   * Tùy app, bạn có thể đổi sang waitForResponse theo API/route cụ thể.
-   */
+  // --------- tiện ích ----------
   async waitForIdle(afterMs = 50) {
-    // tránh toHaveURL/toHaveText ở đây (đó là nghiệp vụ/đầu ra), chỉ “kỹ thuật” cho UI yên vị.
     await this.page.waitForTimeout(afterMs);
+  }
+
+  // --------- VERIFY TRONG TREE (tránh dính dropdown/overlay) ----------
+  private categoryItemsByName(name: string): Locator {
+    // CHỈ tìm trong TREE và đúng testid hiển thị tên
+    return this.categoryTree.getByTestId(this.TID.categoryName).filter({ hasText: name });
+  }
+
+  async categoryExists(name: string): Promise<boolean> {
+    return this.categoryItemsByName(name).isVisible().catch(() => false);
+  }
+
+  async expectCategoryVisible(name: string) {
+    await expect(this.categoryItemsByName(name)).toBeVisible();
+  }
+
+  async expectCategoryNotVisible(name: string) {
+    await expect(this.categoryItemsByName(name)).toHaveCount(0);
   }
 }

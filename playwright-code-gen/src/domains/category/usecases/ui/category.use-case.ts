@@ -4,8 +4,9 @@
 // - Không truy cập page/locator trực tiếp
 // - Xử lý lỗi nghiệp vụ, retry nhẹ, và trả kết quả rõ ràng
 
-import { Logger } from '../../../shared/utilities/logger';
-import { CategoriesPage } from '../pages/categories.playwright.page';
+import { Logger } from '../../../../shared/utilities/logger';
+import { CategoriesPage } from '../../pages/categories.playwright.page';
+import { TestData } from '../../../../shared/utilities/testData';
 
 export type CreateCategoryParams = {
   name: string;
@@ -90,6 +91,9 @@ export class CreateCategoryUseCase {
         }
       }
 
+      // Track the created category for cleanup
+      TestData.trackCreatedCategory(name);
+      Logger.info(`[CreateCategory] tracked category for cleanup: ${name}`);
       return { ok: true, createdName: name };
     } catch (e: any) {
       const msg = this.stringifyError(e);
