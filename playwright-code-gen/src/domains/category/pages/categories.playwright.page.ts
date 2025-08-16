@@ -1,10 +1,13 @@
+import { Logger } from '../../../shared/utilities/logger';
 import { Page, expect } from '@playwright/test';
 
 export class CategoriesPage {
   constructor(private page: Page) {}
 
   async goto() {
+    Logger.info('Navigating to categories page');
     await this.page.goto('/categories');
+    Logger.info('Categories page loaded');
   }
 
   async clickAddCategoryButton() {
@@ -17,8 +20,26 @@ export class CategoriesPage {
   }
 
   async selectIcon(iconName: string) {
-    await this.page.getByTestId('select-icon').locator('div').nth(3).click();
-    await this.page.getByText(iconName).click();
+    // Use stable trigger with test ID
+    const trigger = this.page.getByTestId('select-icon');
+    await trigger.click();
+
+    // Try to find by role first (most stable)
+    const byRole = this.page.getByRole('option', { name: iconName, exact: true });
+    if (await byRole.count()) {
+      await byRole.first().click();
+      return;
+    }
+
+    // Fallback to test ID per option
+    const iconOption = this.page.getByTestId(`icon-option-${iconName}`);
+    if (await iconOption.count()) {
+      await iconOption.click();
+      return;
+    }
+
+    // Last resort: use exact text match
+    await this.page.getByText(iconName, { exact: true }).click();
   }
 
   async selectType(type: 'Expense' | 'Income') {

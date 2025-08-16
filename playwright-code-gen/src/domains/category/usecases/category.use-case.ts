@@ -16,7 +16,6 @@ export class CategoryUseCase {
     icon: string;
     type: 'Expense' | 'Income';
   }): Promise<void> {
-    await this.categoriesPage.goto();
     await this.categoriesPage.clickAddCategoryButton();
     await this.categoriesPage.fillCategoryName(categoryData.name);
     await this.categoriesPage.selectIcon(categoryData.icon);

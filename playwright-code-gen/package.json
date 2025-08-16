@@ -4,7 +4,7 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js --tags '@focus'",
+    "test": "cucumber-js",
     "test:category": "cucumber-js src/features/categories/**/*.feature",
     "test:category:report": "cucumber-js src/features/categories/**/*.feature && open-cli test-results/cucumber-report.html",
     "test:report": "cucumber-js && open-cli test-results/cucumber-report.html",
