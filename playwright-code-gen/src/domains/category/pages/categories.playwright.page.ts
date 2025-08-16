@@ -1,5 +1,5 @@
 import { Logger } from '../../../shared/utilities/logger';
-import { Page, expect } from '@playwright/test';
+import { Page, expect, Locator } from '@playwright/test';
 
 export class CategoriesPage {
   constructor(private page: Page) {}
@@ -8,41 +8,45 @@ export class CategoriesPage {
     Logger.info('Navigating to categories page');
     await this.page.goto('/categories');
     await expect(this.page).toHaveURL(/\/categories\b/);
-    await expect(this.page.getByTestId('category-tree')).toBeVisible();
+    await expect(this.categoryTree).toBeVisible();
     Logger.info('Categories page loaded');
   }
 
   async clickAddCategoryButton() {
-    await this.page.getByTestId('add-category-button').click();
+    await this.addCategoryButton.click();
   }
 
   async fillCategoryName(name: string) {
     const input = this.page.getByTestId('input-category-name');
+    await expect(input).toBeEditable();
     await input.fill(''); // clear first
     await input.fill(name);
   }
 
   async selectIcon(iconName: string) {
-    // Use stable trigger with test ID
     const trigger = this.page.getByTestId('select-icon');
     await trigger.click();
 
-    // Try to find by role first (most stable)
-    const byRole = this.page.getByRole('option', { name: iconName, exact: true });
+    const panel = this.page
+      .getByRole('listbox')
+      .or(this.page.getByRole('menu'))
+      .or(this.page.getByTestId('icon-list'));
+    
+    await panel.first().waitFor();
+
+    const byRole = panel.getByRole('option', { name: iconName, exact: true });
     if (await byRole.count()) {
       await byRole.first().click();
       return;
     }
 
-    // Fallback to test ID per option
-    const iconOption = this.page.getByTestId(`icon-option-${iconName}`);
+    const iconOption = panel.getByTestId(`icon-option-${iconName}`);
     if (await iconOption.count()) {
-      await iconOption.click();
+      await iconOption.first().click();
       return;
     }
 
-    // Last resort: use exact text match
-    await this.page.getByText(iconName, { exact: true }).click();
+    await panel.getByText(iconName, { exact: true }).first().click();
   }
 
   async selectType(type: 'Expense' | 'Income') {
@@ -55,15 +59,11 @@ export class CategoriesPage {
   }
 
   async clickSubmitButton() {
-    await Promise.all([
-      this.page.waitForResponse(r =>
-        r.url().includes('/api/categories') && r.request().method() === 'POST' && r.status() === 201
-      ),
-      this.page.getByTestId('button-submit').click()
-    ]);
+    await expect(this.submitButton).toBeEnabled();
+    await this.submitButton.click();
   }
 
-  findCategoryRowByName(categoryName: string) {
+  findCategoryRowByName(categoryName: string): Locator {
     return this.page
       .getByTestId('category-tree')
       .getByTestId('tree-node-content')
@@ -72,32 +72,45 @@ export class CategoriesPage {
 
   async clickDeleteCategoryButton(categoryName: string) {
     const categoryRow = this.findCategoryRowByName(categoryName).first();
+    await expect(categoryRow).toBeVisible();
     await categoryRow.getByTestId('delete-category-button').click();
   }
 
   async clickConfirmDeleteButton() {
-    await Promise.all([
-      this.page.waitForResponse(r =>
-        r.url().includes('/api/categories') && r.request().method() === 'GET' && r.ok()
-      ),
-      this.page.getByTestId('button-confirm-delete').click()
-    ]);
+    await expect(this.confirmDeleteButton).toBeEnabled();
+    await this.confirmDeleteButton.click();
   }
 
-async categoryExists(categoryName: string): Promise<boolean> {
+  async categoryExists(categoryName: string): Promise<boolean> {
     const categoryRow = this.findCategoryRowByName(categoryName);
     const count = await categoryRow.count();
     return count > 0;
   }
 
-async categoryNotExists(categoryName: string): Promise<boolean> {
+  async categoryNotExists(categoryName: string): Promise<boolean> {
     const categoryRow = this.findCategoryRowByName(categoryName);
     const count = await categoryRow.count();
     return count === 0;
   }
 
   async waitForCategoryTreeToLoad() {
-    await expect(this.page.getByTestId('category-tree')).toBeVisible();
+    await expect(this.categoryTree).toBeVisible();
+  }
+
+  get categoryTree() {
+    return this.page.getByTestId('category-tree');
+  }
+
+  get addCategoryButton() {
+    return this.page.getByTestId('add-category-button');
+  }
+
+  get submitButton() {
+    return this.page.getByTestId('button-submit');
+  }
+
+  get confirmDeleteButton() {
+    return this.page.getByTestId('button-confirm-delete');
   }
 
   get noDataMessage() {

@@ -12,34 +12,58 @@ export class CategoryUseCase {
     this.categoryApiClient = new CategoryApiClient(page.request);
   }
 
-  async createCategoryWithoutParent(categoryData: {
-    name: string;
-    icon: string;
-    type: 'Expense' | 'Income';
-  }): Promise<void> {
-    Logger.info(`Starting category creation with data: ${JSON.stringify(categoryData)}`);
+  async createCategoryAndWait(name: string, type: 'Expense' | 'Income', icon: string): Promise<void> {
+    Logger.info(`Starting category creation with data: ${JSON.stringify({ name, type, icon })}`);
     
     Logger.debug('Clicking add category button...');
     await this.categoriesPage.clickAddCategoryButton();
     Logger.debug('Add category button clicked successfully');
     
-    Logger.debug(`Filling category name: ${categoryData.name}`);
-    await this.categoriesPage.fillCategoryName(categoryData.name);
+    Logger.debug(`Filling category name: ${name}`);
+    await this.categoriesPage.fillCategoryName(name);
     Logger.debug('Category name filled successfully');
     
-    Logger.debug(`Selecting icon: ${categoryData.icon}`);
-    await this.categoriesPage.selectIcon(categoryData.icon);
+    Logger.debug(`Selecting icon: ${icon}`);
+    await this.categoriesPage.selectIcon(icon);
     Logger.debug('Icon selected successfully');
     
-    Logger.debug(`Selecting type: ${categoryData.type}`);
-    await this.categoriesPage.selectType(categoryData.type);
+    Logger.debug(`Selecting type: ${type}`);
+    await this.categoriesPage.selectType(type);
     Logger.debug('Type selected successfully');
     
     Logger.debug('Submitting category form...');
-    await this.categoriesPage.clickSubmitButton();
+    await Promise.all([
+      this.page.waitForResponse(r =>
+        r.url().includes('/api/categories') && r.request().method() === 'POST' && r.ok()
+      ),
+      this.categoriesPage.clickSubmitButton()
+    ]);
     Logger.debug('Category form submitted successfully');
     
-    Logger.debug(`Category creation completed for: ${categoryData.name}`);
+    await expect(this.categoriesPage.findCategoryRowByName(name)).toBeVisible();
+    Logger.debug(`Category creation completed for: ${name}`);
+  }
+
+  async confirmDeleteAndWait(name: string): Promise<void> {
+    Logger.debug(`Confirming deletion for category: ${name}`);
+    
+    await Promise.all([
+      this.page.waitForResponse(r =>
+        r.url().includes('/api/categories') && r.request().method() === 'GET' && r.ok()
+      ),
+      this.categoriesPage.clickConfirmDeleteButton()
+    ]);
+    
+    await expect(this.categoriesPage.findCategoryRowByName(name)).toHaveCount(0);
+    Logger.debug(`Category deletion confirmed for: ${name}`);
+  }
+
+  async createCategoryWithoutParent(categoryData: {
+    name: string;
+    icon: string;
+    type: 'Expense' | 'Income';
+  }): Promise<void> {
+    await this.createCategoryAndWait(categoryData.name, categoryData.type, categoryData.icon);
   }
 
   async deleteCategoryIfExists(categoryName: string): Promise<void> {
