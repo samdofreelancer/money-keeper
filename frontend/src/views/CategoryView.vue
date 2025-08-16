@@ -75,6 +75,37 @@
           </div>
         </template>
       </el-tree>
+
+      <!-- Empty State -->
+      <div 
+        v-if="nestedCategories.length === 0 && !categoryStore.loading" 
+        class="empty-state" 
+        data-testid="no-data"
+      >
+        <div 
+          v-if="nestedCategories.length === 0 && !categoryStore.loading" 
+          class="empty-state" 
+          data-testid="no-data"
+        >
+          <div 
+            v-if="nestedCategories.length === 0 && !categoryStore.loading" 
+            class="empty-state" 
+            data-testid="no-data"
+          >
+            <el-empty 
+              image-size="100"
+              data-testid="empty-state"
+            >
+              <el-button 
+                type="primary" 
+                @click="showCreateDialog"
+              >
+                Add Your First Category
+              </el-button>
+            </el-empty>
+          </div>
+        </div>
+      </div>
     </el-card>
 
     <!-- Create/Edit Category Dialog -->

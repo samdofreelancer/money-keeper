@@ -7,6 +7,8 @@ export class CategoriesPage {
   async goto() {
     Logger.info('Navigating to categories page');
     await this.page.goto('/categories');
+    await expect(this.page).toHaveURL(/\/categories\b/);
+    await expect(this.page.getByTestId('category-tree')).toBeVisible();
     Logger.info('Categories page loaded');
   }
 
@@ -15,8 +17,9 @@ export class CategoriesPage {
   }
 
   async fillCategoryName(name: string) {
-    await this.page.getByTestId('input-category-name').click();
-    await this.page.getByTestId('input-category-name').fill(name);
+    const input = this.page.getByTestId('input-category-name');
+    await input.fill(''); // clear first
+    await input.fill(name);
   }
 
   async selectIcon(iconName: string) {
@@ -43,7 +46,12 @@ export class CategoriesPage {
   }
 
   async selectType(type: 'Expense' | 'Income') {
-    await this.page.getByTestId(`radio-${type.toLowerCase()}`).getByText(type).click();
+    const radio = this.page.getByRole('radio', { name: type });
+    if (await radio.count()) {
+      await radio.first().check();
+    } else {
+      await this.page.getByTestId(`radio-${type.toLowerCase()}`).click();
+    }
   }
 
   async clickSubmitButton() {
@@ -64,6 +72,9 @@ export class CategoriesPage {
 
   async clickConfirmDeleteButton() {
     await this.page.getByTestId('button-confirm-delete').click();
+    await this.page.waitForResponse(r =>
+      r.url().includes('/api/categories') && r.request().method() === 'GET' && r.ok()
+    );
   }
 
 async categoryExists(categoryName: string): Promise<boolean> {
@@ -83,6 +94,6 @@ async categoryNotExists(categoryName: string): Promise<boolean> {
   }
 
   async verifyNoDataMessageNotVisible() {
-    await expect(this.page.getByTestId('category-tree')).not.toContainText('No Data');
+    await expect(this.page.getByTestId('no-data')).toBeHidden();
   }
 }
