@@ -2,6 +2,7 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { CategoriesPage } from '../pages/categories.playwright.page';
 import { CreateCategoryUseCase } from '../usecases/ui/category.use-case';
+import { parseCategoryType } from '../types/category-type';
 
 // --- Helpers ---
 function slugify(name: string) {
@@ -88,10 +89,24 @@ When('I create a new category with:', async function (dataTable) {
   const obj = dataTable.rowsHash() as Record<string, string>;
   const name = obj.name ?? obj.Name ?? '';
   const icon = obj.icon ?? obj.Icon ?? undefined;
+  const typeStr = obj.type ?? obj.Type ?? '';
+  
   expect(name, 'Missing "name" in DataTable').toBeTruthy();
+  
+  // Validate category type with proper error handling
+  let type;
+  try {
+    type = parseCategoryType(typeStr);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid category type in DataTable: ${errorMessage}`);
+  }
 
   const pom = new CategoriesPage(this.page);
   const usecase = new CreateCategoryUseCase(pom);
+
+  // Store the validated type for potential use in the use case
+  this.validatedCategoryType = type;
 
   const result = await usecase.run(
     { name, icon, timeoutMs: 15000 },
