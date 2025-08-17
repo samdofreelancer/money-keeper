@@ -119,10 +119,16 @@ export class CreateCategoryUseCase {
       return this.retry(async () => verifier(name), retries, intervalMs);
     }
 
-    // Fallback: nếu POM có method categoryExists(name)
-    const maybeExistsFn = (this.categoriesPage as any).categoryExists as ((n: string) => Promise<boolean>) | undefined;
+    // Fallback: nếu POM có method hasCategory(name)
+    const maybeExistsFn = (this.categoriesPage as any).hasCategory as ((n: string) => Promise<boolean>) | undefined;
     if (typeof maybeExistsFn === 'function') {
       return this.retry(async () => maybeExistsFn.call(this.categoriesPage, name), retries, intervalMs);
+    }
+    
+    // Also check for deprecated categoryExists for backward compatibility
+    const deprecatedExistsFn = (this.categoriesPage as any).categoryExists as ((n: string) => Promise<boolean>) | undefined;
+    if (typeof deprecatedExistsFn === 'function') {
+      return this.retry(async () => deprecatedExistsFn.call(this.categoriesPage, name), retries, intervalMs);
     }
 
     // Không có cách verify → không fail ở Use Case

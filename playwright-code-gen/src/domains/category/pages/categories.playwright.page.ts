@@ -122,21 +122,34 @@ export class CategoriesPage {
     await this.page.waitForTimeout(afterMs);
   }
 
-  // --------- VERIFY TRONG TREE (tránh dính dropdown/overlay) ----------
+  // --------- Business data accessors ----------
   private categoryItemsByName(name: string): Locator {
     // CHỈ tìm trong TREE và đúng testid hiển thị tên
     return this.categoryTree.getByTestId(this.TID.categoryName).filter({ hasText: name });
   }
 
-  async categoryExists(name: string): Promise<boolean> {
+  /**
+   * Returns a locator for the category row by name
+   * @param name - The category name to find
+   */
+  async categoryRow(name: string): Promise<Locator> {
+    return this.categoryItemsByName(name);
+  }
+
+  /**
+   * Checks if a category exists in the tree
+   * @param name - The category name to check
+   * @returns Promise<boolean> - true if category exists, false otherwise
+   */
+  async hasCategory(name: string): Promise<boolean> {
     return this.categoryItemsByName(name).isVisible().catch(() => false);
   }
 
-  async expectCategoryVisible(name: string) {
-    await expect(this.categoryItemsByName(name)).toBeVisible();
-  }
-
-  async expectCategoryNotVisible(name: string) {
-    await expect(this.categoryItemsByName(name)).toHaveCount(0);
+  /**
+   * @deprecated Use hasCategory() instead for boolean checks
+   * Business assertions should be made in step/use-case layers
+   */
+  async categoryExists(name: string): Promise<boolean> {
+    return this.hasCategory(name);
   }
 }

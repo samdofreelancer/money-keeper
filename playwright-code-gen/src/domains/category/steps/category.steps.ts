@@ -114,7 +114,8 @@ When('I create a new category with:', async function (dataTable) {
 
 Then('the category {string} should appear in the category tree', async function (name: string) {
   const pom = new CategoriesPage(this.page);
-  await pom.expectCategoryVisible(name);
+  const exists = await pom.hasCategory(name);
+  expect(exists, `Expected category "${name}" to appear in the category tree`).toBe(true);
 });
 
 Then('the category tree should not show {string}', async function (text: string) {
