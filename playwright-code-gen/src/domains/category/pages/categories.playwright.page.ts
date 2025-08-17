@@ -137,12 +137,40 @@ export class CategoriesPage {
   }
 
   /**
-   * Checks if a category exists in the tree
+   * Checks if a category exists in the tree using multiple selector strategies
    * @param name - The category name to check
    * @returns Promise<boolean> - true if category exists, false otherwise
    */
   async hasCategory(name: string): Promise<boolean> {
-    return this.categoryItemsByName(name).isVisible().catch(() => false);
+    const slug = this.slugify(name);
+    
+    // Priority data-testid (if any)
+    const byTestId = this.page.getByTestId(`category-node-${slug}`);
+    if (await byTestId.isVisible().catch(() => false)) return true;
+
+    // Fallback: find by role/treeitem or text
+    const byRole = this.page.getByRole('treeitem', { name, exact: true });
+    if (await byRole.isVisible().catch(() => false)) return true;
+
+    const byText = this.page.locator(`text=${name}`);
+    return byText.first().isVisible().catch(() => false);
+  }
+
+  /**
+   * Checks if the empty state is visible when no categories exist
+   * @returns Promise<boolean> - true if empty state is visible, false otherwise
+   */
+  async isEmptyStateVisible(): Promise<boolean> {
+    const emptyState = this.page.getByTestId('no-data').or(this.page.getByTestId('empty-state'));
+    return emptyState.isVisible().catch(() => false);
+  }
+
+  /**
+   * Checks if the empty state exists (helper method)
+   * @returns Promise<boolean> - true if empty state exists, false otherwise
+   */
+  async hasEmptyState(): Promise<boolean> {
+    return this.isEmptyStateVisible();
   }
 
   /**
@@ -151,5 +179,14 @@ export class CategoriesPage {
    */
   async categoryExists(name: string): Promise<boolean> {
     return this.hasCategory(name);
+  }
+
+  /**
+   * Helper method to slugify category names for test IDs
+   * @param name - The name to slugify
+   * @returns The slugified name
+   */
+  private slugify(name: string): string {
+    return name.trim().toLowerCase().replace(/\s+/g, '-');
   }
 }
