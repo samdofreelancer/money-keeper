@@ -1,8 +1,7 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
-import { CategoriesPage } from '../pages/categories.playwright.page';
-import { CreateCategoryUseCase } from '../usecases/ui/category.use-case';
-import { parseCategoryType } from '../types/category-type';
+import { CategoriesPage, CreateCategoryUseCase } from '..';
+import { parseCategoryType } from '..';
 
 // --- Helpers ---
 function slugify(name: string) {
