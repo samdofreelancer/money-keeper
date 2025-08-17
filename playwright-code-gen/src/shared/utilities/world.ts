@@ -2,10 +2,12 @@ import { BaseWorld } from './base-world';
 import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
 import { CategoryApiClient } from '../../domains/category/api/category-api.client';
 import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
+import { CategoriesPage } from '../../domains/category/pages/categories.playwright.page';
 import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { AccountBalanceUiUseCase } from '../../domains/accounts/usecases/ui/AccountBalanceUiUseCase';
 import { AccountCreationUiUseCase } from '../../domains/accounts/usecases/ui/AccountCreationUiUseCase';
+import { CreateCategoryUseCase } from '../../domains/category/usecases/ui/category.use-case';
 
 /**
  * World class to encapsulate test context and state
@@ -15,6 +17,7 @@ import { AccountCreationUiUseCase } from '../../domains/accounts/usecases/ui/Acc
 export class World extends BaseWorld {
   // Domain-specific page objects and steps
   public accountsPage!: AccountsPlaywrightPage;
+  public categoriesPage!: CategoriesPage;
   public accountApiClient!: AccountApiClient;
   public categoryApiClient!: CategoryApiClient;
 
@@ -22,6 +25,7 @@ export class World extends BaseWorld {
   public accountDeletionApiUseCase!: AccountDeletionApiUseCase;
   public accountBalanceUiUseCase!: AccountBalanceUiUseCase;
   public accountCreationUiUseCase!: AccountCreationUiUseCase;
+  public createCategoryUseCase!: CreateCategoryUseCase;
 
   constructor() {
     super();
@@ -43,6 +47,7 @@ export class World extends BaseWorld {
 
     // Initialize domain-specific page objects and steps
     this.accountsPage = new AccountsPlaywrightPage(this.getPage());
+    this.categoriesPage = new CategoriesPage(this.getPage());
 
     // Initialize new use cases
     this.accountCreationApiUseCase = new AccountCreationApiUseCase(
@@ -56,6 +61,9 @@ export class World extends BaseWorld {
     );
     this.accountCreationUiUseCase = new AccountCreationUiUseCase(
       this.accountsPage
+    );
+    this.createCategoryUseCase = new CreateCategoryUseCase(
+      this.categoriesPage
     );
   }
 }

@@ -1,11 +1,8 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
-import { CategoriesPage, CreateCategoryUseCase } from '..';
-import { parseCategoryType } from '..';
 
 Given('I am on the categories page', async function () {
-  const pom = new CategoriesPage(this.page);
-  await pom.goto('/categories');
+  this.categoriesPage.goto('/categories');
 });
 
 Given('I have no category with name {string}', async function (name: string) {
@@ -29,15 +26,12 @@ When('I create a new category with:', async function (dataTable) {
   
   expect(name, 'Missing "name" in DataTable').toBeTruthy();
 
-  const pom = new CategoriesPage(this.page);
-  const usecase = new CreateCategoryUseCase(pom);
-
-  const result = await usecase.run(
+  const result = await this.createCategoryUseCase.run(
     { name, icon, timeoutMs: 15000 },
     {
       verify: true,
-      verifier: async (n) => {
-        return pom.hasCategory(n);
+      verifier: async (n: string) => {
+        return this.categoriesPage.hasCategory(n);
       },
       settleAfterMs: 100,
       verifyRetries: 6,
@@ -49,7 +43,6 @@ When('I create a new category with:', async function (dataTable) {
 });
 
 Then('the category {string} should appear in the category list', async function (name: string) {
-  const pom = new CategoriesPage(this.page);
-  const exists = await pom.hasCategory(name);
-  expect(exists, `Expected category "${name}" to appear in the category tree`).toBe(true);
+  const exists = await this.categoriesPage.hasCategory(name);
+  expect(exists, `Expected category "${name}" to appear in the category list`).toBe(true);
 });

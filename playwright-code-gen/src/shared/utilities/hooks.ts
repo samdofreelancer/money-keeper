@@ -79,6 +79,20 @@ export const getAccountCreationUiUseCase =
     return global.testWorld.accountCreationUiUseCase;
   };
 
+export const getCategoriesPage = (): World['categoriesPage'] => {
+  if (!global.testWorld) {
+    throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+  }
+  return global.testWorld.categoriesPage;
+};
+
+export const getCreateCategoryUseCase = (): World['createCategoryUseCase'] => {
+  if (!global.testWorld) {
+    throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+  }
+  return global.testWorld.createCategoryUseCase;
+};
+
 export const getCategoryApiClient = (): World['categoryApiClient'] => {
   if (!global.testWorld) {
     throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
