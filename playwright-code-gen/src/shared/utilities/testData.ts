@@ -1,8 +1,7 @@
 // src/shared/utilities/test-data.ts
 import { Logger } from './logger';
-import { getAccountDeletionApiUseCase, getCategoryDeletionApiUseCase, getCategoryApiClient } from './hooks';
+import { getAccountDeletionApiUseCase, getCategoryApiClient } from './hooks';
 import { AccountDeletionApiUseCase } from '@/domains/accounts/usecases/api/AccountDeletionApiUseCase';
-import { CategoryDeletionApiUseCase } from '@/domains/category/usecases/api/CategoryDeletionApiUseCase';
 
 /**
  * TestData
@@ -28,7 +27,7 @@ export class TestData {
   static generateTestId(scenarioName: string): string {
     return scenarioName
       .toLowerCase()
-      .replace(/\s+/g, '-')       // spaces -> hyphens
+      .replace(/\s+/g, '-') // spaces -> hyphens
       .replace(/[^a-z0-9-]/g, '') // remove non-alnum & '-'
       .substring(0, 100);
   }
@@ -41,11 +40,17 @@ export class TestData {
     return `${testId}_${actualName}`;
   }
 
-  static generateUniqueAccountName(scenarioName: string, actualName: string): string {
+  static generateUniqueAccountName(
+    scenarioName: string,
+    actualName: string
+  ): string {
     return this.generateUniqueName(scenarioName, actualName);
   }
 
-  static generateUniqueCategoryName(scenarioName: string, actualName: string): string {
+  static generateUniqueCategoryName(
+    scenarioName: string,
+    actualName: string
+  ): string {
     return this.generateUniqueName(scenarioName, actualName);
   }
 
@@ -108,7 +113,8 @@ export class TestData {
       return;
     }
 
-    const accountDeletionApiUseCase: AccountDeletionApiUseCase = getAccountDeletionApiUseCase();
+    const accountDeletionApiUseCase: AccountDeletionApiUseCase =
+      getAccountDeletionApiUseCase();
     Logger.info(`[TestData] Cleaning ${accounts.length} account(s) via API...`);
 
     for (const accountName of accounts) {
@@ -116,7 +122,10 @@ export class TestData {
         await accountDeletionApiUseCase.deleteAccount(accountName);
         Logger.info(`[TestData] Deleted test account: ${accountName}`);
       } catch (error) {
-        Logger.error(`[TestData] Failed to delete test account: ${accountName}`, error);
+        Logger.error(
+          `[TestData] Failed to delete test account: ${accountName}`,
+          error
+        );
       }
     }
 
@@ -134,27 +143,38 @@ export class TestData {
     }
 
     const categoryApiClient = getCategoryApiClient();
-    Logger.info(`[TestData] Cleaning ${categoryNames.length} category(ies) via API...`);
+    Logger.info(
+      `[TestData] Cleaning ${categoryNames.length} category(ies) via API...`
+    );
 
     try {
       // Get all categories from API
       const allCategories = await categoryApiClient.getCategories();
-      Logger.info(`[TestData] Found ${allCategories.length} total categories in API`);
+      Logger.info(
+        `[TestData] Found ${allCategories.length} total categories in API`
+      );
 
       // Filter categories by the names we want to delete
-      const categoriesToDelete = allCategories.filter(category => 
+      const categoriesToDelete = allCategories.filter(category =>
         categoryNames.includes(category.name)
       );
-      
-      Logger.info(`[TestData] Found ${categoriesToDelete.length} categories to delete`);
+
+      Logger.info(
+        `[TestData] Found ${categoriesToDelete.length} categories to delete`
+      );
 
       // Delete each category by its actual ID
       for (const category of categoriesToDelete) {
         try {
           await categoryApiClient.deleteCategory(category.id);
-          Logger.info(`[TestData] Deleted test category: ${category.name} (ID: ${category.id})`);
+          Logger.info(
+            `[TestData] Deleted test category: ${category.name} (ID: ${category.id})`
+          );
         } catch (error) {
-          Logger.error(`[TestData] Failed to delete test category: ${category.name} (ID: ${category.id})`, error);
+          Logger.error(
+            `[TestData] Failed to delete test category: ${category.name} (ID: ${category.id})`,
+            error
+          );
         }
       }
     } catch (error) {

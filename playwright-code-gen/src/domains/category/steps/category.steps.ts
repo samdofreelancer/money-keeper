@@ -25,6 +25,9 @@ When('I create a new category with:', async function (dataTable) {
   expect(result.ok, result.ok ? '' : result.error).toBeTruthy();
 });
 
-Then('the category {string} should appear in the category list', async function (name: string) {
-  expect(await this.categoriesPage.hasCategory(name)).toBe(true);
-});
+Then(
+  'the category {string} should appear in the category list',
+  async function (name: string) {
+    expect(await this.categoriesPage.hasCategory(name)).toBe(true);
+  }
+);

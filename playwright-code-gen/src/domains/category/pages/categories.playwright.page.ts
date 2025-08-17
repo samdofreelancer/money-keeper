@@ -9,13 +9,13 @@ export class CategoriesPage {
   // --------- Test IDs (tập trung 1 chỗ để dễ đổi) ----------
   private readonly TID = {
     tree: 'category-tree',
-    categoryName: 'category-name',              // <span data-testid="category-name">Food_Test</span> trong TREE
+    categoryName: 'category-name', // <span data-testid="category-name">Food_Test</span> trong TREE
 
     btnAdd: 'add-category-button',
     inputName: 'input-category-name',
 
-    iconTrigger: 'select-icon',                 // nút mở dropdown icon
-    optionIcon: 'option-icon',                  // testid chung cho mỗi item trong dropdown (nếu có)
+    iconTrigger: 'select-icon', // nút mở dropdown icon
+    optionIcon: 'option-icon', // testid chung cho mỗi item trong dropdown (nếu có)
 
     btnSave: 'button-submit',
   } as const;
@@ -28,7 +28,9 @@ export class CategoriesPage {
   private get addCategoryButton(): Locator {
     return this.page
       .getByTestId(this.TID.btnAdd)
-      .or(this.page.getByRole('button', { name: /^(add|new|create)\s+category/i }))
+      .or(
+        this.page.getByRole('button', { name: /^(add|new|create)\s+category/i })
+      )
       .or(this.page.getByText(/^(add|new|create)\s+category/i));
   }
 
@@ -78,10 +80,16 @@ export class CategoriesPage {
   }
 
   // --------- Helpers kỹ thuật ----------
-  private async fillInputByLocator(input: Locator, value: string, timeout?: TimeoutMs) {
+  private async fillInputByLocator(
+    input: Locator,
+    value: string,
+    timeout?: TimeoutMs
+  ) {
     await expect(input).toBeEditable({ timeout });
     await input.click({ timeout });
-    await this.page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+    await this.page.keyboard.press(
+      process.platform === 'darwin' ? 'Meta+A' : 'Control+A'
+    );
     await input.fill('', { timeout });
     await input.fill(value, { timeout });
   }
@@ -107,7 +115,7 @@ export class CategoriesPage {
   async chooseIcon(iconName: string, timeout?: TimeoutMs) {
     const option = this.iconOption(iconName);
     await expect(option).toBeVisible({ timeout });
-    await expect(option).toHaveCount(1, { timeout });      // tránh strict mode
+    await expect(option).toHaveCount(1, { timeout }); // tránh strict mode
     await option.scrollIntoViewIfNeeded().catch(() => {});
     await option.click({ timeout });
   }
@@ -125,7 +133,9 @@ export class CategoriesPage {
   // --------- Business data accessors ----------
   private categoryItemsByName(name: string): Locator {
     // CHỈ tìm trong TREE và đúng testid hiển thị tên
-    return this.categoryTree.getByTestId(this.TID.categoryName).filter({ hasText: name });
+    return this.categoryTree
+      .getByTestId(this.TID.categoryName)
+      .filter({ hasText: name });
   }
 
   /**
@@ -143,7 +153,7 @@ export class CategoriesPage {
    */
   async hasCategory(name: string): Promise<boolean> {
     const slug = this.slugify(name);
-    
+
     // Priority data-testid (if any)
     const byTestId = this.page.getByTestId(`category-node-${slug}`);
     if (await byTestId.isVisible().catch(() => false)) return true;
@@ -153,7 +163,10 @@ export class CategoriesPage {
     if (await byRole.isVisible().catch(() => false)) return true;
 
     const byText = this.page.locator(`text=${name}`);
-    return byText.first().isVisible().catch(() => false);
+    return byText
+      .first()
+      .isVisible()
+      .catch(() => false);
   }
 
   /**
@@ -161,10 +174,11 @@ export class CategoriesPage {
    * @returns Promise<boolean> - true if empty state is visible, false otherwise
    */
   async isEmptyStateVisible(): Promise<boolean> {
-    const emptyState = this.page.getByTestId('no-data').or(this.page.getByTestId('empty-state'));
+    const emptyState = this.page
+      .getByTestId('no-data')
+      .or(this.page.getByTestId('empty-state'));
     return emptyState.isVisible().catch(() => false);
   }
-
 
   /**
    * @deprecated Use hasCategory() instead for boolean checks

@@ -50,7 +50,9 @@ export const getAccountsPage = (): World['accountsPage'] => {
 export const getAccountCreationApiUseCase =
   (): World['accountCreationApiUseCase'] => {
     if (!global.testWorld) {
-      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
     }
     return global.testWorld.accountCreationApiUseCase;
   };
@@ -58,7 +60,9 @@ export const getAccountCreationApiUseCase =
 export const getAccountDeletionApiUseCase =
   (): World['accountDeletionApiUseCase'] => {
     if (!global.testWorld) {
-      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
     }
     return global.testWorld.accountDeletionApiUseCase;
   };
@@ -66,7 +70,9 @@ export const getAccountDeletionApiUseCase =
 export const getAccountBalanceUiUseCase =
   (): World['accountBalanceUiUseCase'] => {
     if (!global.testWorld) {
-      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
     }
     return global.testWorld.accountBalanceUiUseCase;
   };
@@ -74,33 +80,43 @@ export const getAccountBalanceUiUseCase =
 export const getAccountCreationUiUseCase =
   (): World['accountCreationUiUseCase'] => {
     if (!global.testWorld) {
-      throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
     }
     return global.testWorld.accountCreationUiUseCase;
   };
 
 export const getCategoriesPage = (): World['categoriesPage'] => {
   if (!global.testWorld) {
-    throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
   }
   return global.testWorld.categoriesPage;
 };
 
 export const getCreateCategoryUseCase = (): World['createCategoryUseCase'] => {
   if (!global.testWorld) {
-    throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
   }
   return global.testWorld.createCategoryUseCase;
 };
 
 export const getCategoryApiClient = (): World['categoryApiClient'] => {
   if (!global.testWorld) {
-    throw new Error('World not initialized. Ensure tests are running in Cucumber context.');
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
   }
   return global.testWorld.categoryApiClient;
 };
 
-let _categoryDeletionApiUseCase: ReturnType<typeof makeCategoryDeletionApiUseCase> | null = null;
+let _categoryDeletionApiUseCase: ReturnType<
+  typeof makeCategoryDeletionApiUseCase
+> | null = null;
 
 function makeCategoryDeletionApiUseCase() {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:8080';
@@ -109,7 +125,8 @@ function makeCategoryDeletionApiUseCase() {
 }
 
 export function getCategoryDeletionApiUseCase() {
-  if (!_categoryDeletionApiUseCase) _categoryDeletionApiUseCase = makeCategoryDeletionApiUseCase();
+  if (!_categoryDeletionApiUseCase)
+    _categoryDeletionApiUseCase = makeCategoryDeletionApiUseCase();
   return _categoryDeletionApiUseCase;
 }
 
@@ -215,7 +232,7 @@ After(async function (scenario) {
     TestData.clear();
     Logger.debug('[Hooks] Test data cleanup completed');
   }
-  
+
   // Log scenario result
   const scenarioName =
     (this as unknown as ScenarioContext).scenarioName || scenario.pickle.name;

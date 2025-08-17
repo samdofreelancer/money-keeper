@@ -4,7 +4,7 @@
  */
 
 export const CategoryType = ['Expense', 'Income'] as const;
-export type CategoryType = typeof CategoryType[number];
+export type CategoryType = (typeof CategoryType)[number];
 
 /**
  * Validates and parses a string into a CategoryType
@@ -14,11 +14,11 @@ export type CategoryType = typeof CategoryType[number];
  */
 export function parseCategoryType(input: string): CategoryType {
   const normalizedInput = input.trim();
-  
+
   if ((CategoryType as readonly string[]).includes(normalizedInput)) {
     return normalizedInput as CategoryType;
   }
-  
+
   throw new Error(
     `Invalid category type: "${input}". Expected one of: ${CategoryType.join(', ')}`
   );
@@ -30,5 +30,8 @@ export function parseCategoryType(input: string): CategoryType {
  * @returns true if the value is a valid CategoryType
  */
 export function isValidCategoryType(value: unknown): value is CategoryType {
-  return typeof value === 'string' && (CategoryType as readonly string[]).includes(value);
+  return (
+    typeof value === 'string' &&
+    (CategoryType as readonly string[]).includes(value)
+  );
 }

@@ -62,8 +62,6 @@ export class World extends BaseWorld {
     this.accountCreationUiUseCase = new AccountCreationUiUseCase(
       this.accountsPage
     );
-    this.createCategoryUseCase = new CreateCategoryUseCase(
-      this.categoriesPage
-    );
+    this.createCategoryUseCase = new CreateCategoryUseCase(this.categoriesPage);
   }
 }
