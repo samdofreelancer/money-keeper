@@ -22,55 +22,6 @@ async function categoryVisibleByAny(thisWorld: any, name: string): Promise<boole
   return byText.first().isVisible().catch(() => false);
 }
 
-async function deleteCategoryIfExists(thisWorld: any, name: string): Promise<void> {
-  const pom = new CategoriesPage(thisWorld.page);
-  // if POM have method delete, then use it:
-  if (typeof (pom as any).deleteCategory === 'function') {
-    const existed = typeof (pom as any).categoryExists === 'function'
-      ? await (pom as any).categoryExists(name)
-      : await categoryVisibleByAny(thisWorld, name);
-    if (existed) {
-      await (pom as any).deleteCategory(name);
-      // wait UI settle light
-      await pom.waitForIdle(100);
-    }
-    return;
-  }
-
-  // Fallback delete if method does not exist in POM
-  const slug = slugify(name);
-  // 1) find node
-  const node =
-    thisWorld.page.getByTestId(`category-node-${slug}`)
-      .or(thisWorld.page.getByRole('treeitem', { name, exact: true }))
-      .or(thisWorld.page.locator(`text=${name}`));
-  if (!(await node.isVisible().catch(() => false))) return;
-
-  // 2) open manu delete
-  const openMenuBtn =
-    thisWorld.page.getByTestId(`btn-category-menu-${slug}`)
-      .or(node.locator('[data-testid="btn-category-menu"]'))
-      .or(node.locator('button[aria-label="More actions"]'));
-  if (await openMenuBtn.isVisible().catch(() => false)) {
-    await openMenuBtn.click().catch(() => {});
-  }
-
-  // 3) click delete
-  const deleteBtn =
-    thisWorld.page.getByTestId(`btn-delete-category-${slug}`)
-      .or(thisWorld.page.getByRole('menuitem', { name: /delete/i }))
-      .or(thisWorld.page.getByRole('button', { name: /delete/i }));
-  await deleteBtn.click().catch(() => {});
-
-  // 4) confirm if have dialog confirm
-  const confirm =
-    thisWorld.page.getByTestId('confirm-delete')
-      .or(thisWorld.page.getByRole('button', { name: /confirm|ok|yes/i }));
-  if (await confirm.isVisible().catch(() => false)) {
-    await confirm.click().catch(() => {});
-  }
-}
-
 // --- Step Definitions ---
 
 Given('I am on the categories page', async function () {
@@ -79,9 +30,17 @@ Given('I am on the categories page', async function () {
 });
 
 Given('I have no category with name {string}', async function (name: string) {
-  await deleteCategoryIfExists(this, name);
-  const exists = await categoryVisibleByAny(this, name);
-  expect(exists, `Expected category "${name}" to be absent before creation`).toBeFalsy();
+  // Check if category exists via API
+  const existingCategory = await this.categoryApiClient.getCategoryByName(name);
+  
+  // If exists, delete it via API
+  if (existingCategory) {
+    await this.categoryApiClient.deleteCategory(existingCategory.id);
+  }
+  
+  // Verify category no longer exists via API
+  const stillExists = await this.categoryApiClient.getCategoryByName(name);
+  expect(stillExists, `Expected category "${name}" to be absent before creation`).toBeNull();
 });
 
 When('I create a new category with:', async function (dataTable) {
@@ -141,8 +100,4 @@ Then('the category tree should not show {string}', async function (text: string)
   
   const byText = this.page.getByText(text, { exact: false });
   await expect(byText).not.toBeVisible();
-});
-
-When('I delete the category {string}', async function (name: string) {
-  await deleteCategoryIfExists(this, name);
 });
