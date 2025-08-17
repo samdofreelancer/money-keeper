@@ -6,7 +6,6 @@ Feature: Category Management
   Background:
     Given I am on the categories page
 
-  @focus
   Scenario: Create a category without parent successfully
     Given I have no category with name "Food_Test"
     When I create a new category with:

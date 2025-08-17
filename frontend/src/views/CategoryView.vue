@@ -134,7 +134,7 @@
               :key="icon.value"
               :label="icon.label"
               :value="icon.value"
-              data-testid="option-icon"
+              :data-testid="`icon-option-${icon.value}`"
             >
               <el-icon><component :is="icon.value" /></el-icon>
               <span class="ml-2">{{ icon.label }}</span>

@@ -51,13 +51,13 @@ export class CategoriesPage {
   private iconOption(iconName: string): Locator {
     const listbox = this.iconListbox();
 
-    // Ưu tiên testid chung cho item rồi filter theo text
-    const byTid = listbox.getByTestId(this.TID.optionIcon).filter({ hasText: iconName });
+    // Use new testid pattern for specific icon selection
+    const bySpecificTid = listbox.getByTestId(`icon-option-${iconName}`);
 
-    // Fallback role=option theo name (đã scope trong listbox)
+    // Fallback to role-based selection
     const byRole = listbox.getByRole('option', { name: iconName, exact: true });
 
-    return byTid.or(byRole);
+    return bySpecificTid.or(byRole);
   }
 
   private get saveButton(): Locator {
