@@ -45,4 +45,9 @@ export class CategoryApiClient {
     const categories = await this.getCategories();
     return categories.find(category => category.name === name) || null;
   }
+
+  async findByName(name: string): Promise<CategoryResponse[]> {
+    const categories = await this.getCategories();
+    return categories.filter(category => category.name === name);
+  }
 }
