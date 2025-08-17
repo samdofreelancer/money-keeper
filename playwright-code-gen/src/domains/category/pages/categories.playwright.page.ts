@@ -165,13 +165,6 @@ export class CategoriesPage {
     return emptyState.isVisible().catch(() => false);
   }
 
-  /**
-   * Checks if the empty state exists (helper method)
-   * @returns Promise<boolean> - true if empty state exists, false otherwise
-   */
-  async hasEmptyState(): Promise<boolean> {
-    return this.isEmptyStateVisible();
-  }
 
   /**
    * @deprecated Use hasCategory() instead for boolean checks

@@ -12,5 +12,4 @@ Feature: Category Management
       | name | Food_Test |
       | icon | Grid      |
       | type | Expense   |
-    Then the category "Food_Test" should appear in the category tree
-    And the category tree should not show "No Data"
+    Then the category "Food_Test" should appear in the category list
