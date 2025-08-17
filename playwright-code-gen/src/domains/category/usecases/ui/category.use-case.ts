@@ -17,7 +17,7 @@ export type CreateCategoryParams = {
 export type CreateCategoryOptions = {
   verify?: boolean; // true: sẽ chạy verify sau khi submit
   // Inject hàm verify từ Steps hoặc adapter nhỏ để tách cứng
-  // Nếu không truyền, Use Case sẽ thử gọi categoriesPage.categoryExists nếu có
+  // Nếu không truyền, Use Case sẽ thử gọi categoriesPage.hasCategory nếu có
   verifier?: (name: string) => Promise<boolean>;
   // Thời gian chờ UI settle sau submit (tùy app)
   settleAfterMs?: number;
@@ -41,7 +41,17 @@ export class CreateCategoryUseCase {
     params: CreateCategoryParams,
     options?: CreateCategoryOptions
   ): Promise<CreateCategoryResult> {
-    const { name, icon, timeoutMs = 15_000 } = params;
+    // Sanitize inputs
+    const name = params.name?.trim();
+    if (!name) {
+      return {
+        ok: false,
+        error: 'Category name is required',
+      };
+    }
+
+    const icon = params.icon?.trim() || undefined;
+    const timeoutMs = params.timeoutMs ?? 15_000;
 
     const {
       verify = false,
@@ -77,8 +87,14 @@ export class CreateCategoryUseCase {
       Logger.info(`[CreateCategory] submit form`);
       await this.categoriesPage.submitCategory(timeoutMs);
 
-      // 6) Chờ UI settle kỹ thuật (không phải assert nghiệp vụ)
-      await this.categoriesPage.waitForIdle(settleAfterMs);
+      // Track cleanup early - before verification
+      TestData.trackCreatedCategory(name);
+      Logger.info(`[CreateCategory] tracked category for cleanup: ${name}`);
+
+      // 6) Chờ UI settle kỹ thuật (chỉ khi settleAfterMs > 0)
+      if (settleAfterMs > 0) {
+        await this.categoriesPage.waitForIdle(settleAfterMs);
+      }
 
       // 7) Verify (nghiệp vụ) nếu bật
       if (verify) {
@@ -97,9 +113,6 @@ export class CreateCategoryUseCase {
         }
       }
 
-      // Track the created category for cleanup
-      TestData.trackCreatedCategory(name);
-      Logger.info(`[CreateCategory] tracked category for cleanup: ${name}`);
       return { ok: true, createdName: name };
     } catch (e: any) {
       const msg = this.stringifyError(e);
@@ -109,9 +122,38 @@ export class CreateCategoryUseCase {
   }
 
   /**
+   * Retry until predicate returns true
+   */
+  private async retryUntilTrue(
+    fn: () => Promise<boolean>,
+    attempts: number,
+    intervalMs: number
+  ): Promise<boolean> {
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const result = await fn();
+        if (result === true) {
+          Logger.info(`[CreateCategory] verify success after ${i + 1} attempts`);
+          return true;
+        }
+      } catch (e) {
+        // Swallow errors during attempts
+        Logger.debug(`[CreateCategory] verify attempt ${i + 1} failed: ${e}`);
+      }
+
+      if (i < attempts - 1) {
+        await this.sleep(intervalMs);
+      }
+    }
+    
+    Logger.info(`[CreateCategory] verify failed after ${attempts} attempts`);
+    return false;
+  }
+
+  /**
    * Thử verify tồn tại bằng:
    *  - verifier được inject (ưu tiên), hoặc
-   *  - method categoriesPage.categoryExists(name) nếu POM có
+   *  - method categoriesPage.hasCategory(name) nếu POM có
    *  - nếu cả hai không có, coi như không verify (trả true để không chặn flow)
    */
   private async verifyExists(
@@ -122,7 +164,11 @@ export class CreateCategoryUseCase {
   ): Promise<boolean> {
     // Prefer injected verifier
     if (verifier) {
-      return this.retry(async () => verifier(name), retries, intervalMs);
+      return this.retryUntilTrue(
+        () => verifier(name),
+        retries,
+        intervalMs
+      );
     }
 
     // Fallback: nếu POM có method hasCategory(name)
@@ -130,8 +176,8 @@ export class CreateCategoryUseCase {
       | ((n: string) => Promise<boolean>)
       | undefined;
     if (typeof maybeExistsFn === 'function') {
-      return this.retry(
-        async () => maybeExistsFn.call(this.categoriesPage, name),
+      return this.retryUntilTrue(
+        () => maybeExistsFn.call(this.categoriesPage, name),
         retries,
         intervalMs
       );
@@ -142,8 +188,8 @@ export class CreateCategoryUseCase {
       | ((n: string) => Promise<boolean>)
       | undefined;
     if (typeof deprecatedExistsFn === 'function') {
-      return this.retry(
-        async () => deprecatedExistsFn.call(this.categoriesPage, name),
+      return this.retryUntilTrue(
+        () => deprecatedExistsFn.call(this.categoriesPage, name),
         retries,
         intervalMs
       );
@@ -151,36 +197,12 @@ export class CreateCategoryUseCase {
 
     // Không có cách verify → không fail ở Use Case
     Logger.warn(
-      `[CreateCategory] no verifier provided and POM has no categoryExists(name). Skipping verify.`
+      `[CreateCategory] no verifier provided and POM has no hasCategory(name). Skipping verify.`
     );
     return true;
   }
 
-  private async retry<T>(
-    fn: () => Promise<T>,
-    retries: number,
-    intervalMs: number
-  ): Promise<T> {
-    let lastErr: unknown;
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (e) {
-        lastErr = e;
-      }
-
-      await this.sleep(intervalMs);
-    }
-    // Nếu fn trả boolean false thay vì throw, ta vẫn trả false
-    try {
-      return await fn();
-    } catch (e) {
-      lastErr = e;
-    }
-    throw lastErr ?? new Error('retry failed');
-  }
-
-  private sleep(ms: number) {
+  private async sleep(ms: number) {
     return new Promise(res => setTimeout(res, ms));
   }
 
