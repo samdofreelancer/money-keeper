@@ -19,7 +19,7 @@ Feature: Account Creation
     Then I should see the account "My Savings Account" in my accounts list
     And the account should have a balance of "$5,000.00"
 
-  @negative @focus
+  @negative
   Scenario: Attempt to create account with duplicate name
     Given I have an existing account named "Main Checking"
     When I attempt to create another account with:

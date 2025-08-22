@@ -15,7 +15,7 @@ Given(
   async function (accountName: string) {
     const accountCreationApiUseCase = getAccountCreationApiUseCase();
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
-    
+
     // Get scenario name from context for unique naming
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';

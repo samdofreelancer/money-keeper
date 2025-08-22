@@ -8,8 +8,7 @@ module.exports = {
     require: ['src/domains/**/steps/*.ts', 'src/shared/utilities/hooks.ts'],
     requireModule: ['ts-node/register'],
     format: ['progress-bar', 'json:test-results/cucumber-report.json'],
-    parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '2'),
-    publishQuiet: true,
+    parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '1'),
     // After tests finish, generate the HTML report
     async onComplete() {
       const jsonReport = path.resolve(

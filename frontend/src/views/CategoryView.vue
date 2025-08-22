@@ -75,6 +75,25 @@
           </div>
         </template>
       </el-tree>
+
+      <!-- Empty State -->
+      <div 
+        v-if="nestedCategories.length === 0 && !categoryStore.loading" 
+        class="empty-state" 
+        data-testid="no-data"
+      >
+        <el-empty 
+          image-size="100"
+          data-testid="empty-state"
+        >
+          <el-button 
+            type="primary" 
+            @click="showCreateDialog"
+          >
+            Add Your First Category
+          </el-button>
+        </el-empty>
+      </div>
     </el-card>
 
     <!-- Create/Edit Category Dialog -->
@@ -103,7 +122,7 @@
               :key="icon.value"
               :label="icon.label"
               :value="icon.value"
-              data-testid="option-icon"
+              :data-testid="`icon-option-${icon.value}`"
             >
               <el-icon><component :is="icon.value" /></el-icon>
               <span class="ml-2">{{ icon.label }}</span>

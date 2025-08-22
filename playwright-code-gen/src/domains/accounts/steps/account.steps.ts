@@ -1,15 +1,10 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { When, Then } from '@cucumber/cucumber';
 import {
   getAccountCreationUiUseCase,
   getAccountsPage,
 } from '../../../shared/utilities/hooks';
 import { TestData } from '../../../shared/utilities/testData';
 import { AccountDto } from '../types/account.dto';
-
-Given('I am on the categories page', async function () {
-  const accountsPage = getAccountsPage();
-  await accountsPage.navigateToCategoriesPage();
-});
 
 When(
   'I navigate to accounts via clicking {string}',
