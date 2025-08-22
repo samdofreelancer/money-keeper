@@ -7,7 +7,8 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { CategoriesPage } from '../../pages/categories.playwright.page';
 import { TestData } from '../../../../shared/utilities/testData';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { TOKENS } from '../../../../shared/di/nest-tokens';
 
 export type CreateCategoryParams = {
   name: string;
@@ -43,7 +44,7 @@ function hasPresence(x: unknown): x is CategoryPresence {
 
 @Injectable()
 export class CreateCategoryUseCase {
-  constructor(private readonly categoriesPage: CategoriesPage) {}
+  constructor(@Inject(TOKENS.CategoriesPage) private readonly categoriesPage: CategoriesPage) {}
 
   /**
    * Tạo category. Nếu `options.verify === true`, sẽ verify tồn tại sau khi submit.

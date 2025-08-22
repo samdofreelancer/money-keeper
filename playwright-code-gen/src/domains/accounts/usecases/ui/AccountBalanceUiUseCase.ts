@@ -1,13 +1,16 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { TOKENS } from '../../../../shared/di/nest-tokens';
 
 /**
  * Use case for account balance operations via UI
  */
 @Injectable()
 export class AccountBalanceUiUseCase {
-  constructor(private accountsPage: AccountsPlaywrightPage) {}
+  constructor(
+    @Inject(TOKENS.AccountsPlaywrightPage) private accountsPage: AccountsPlaywrightPage
+  ) {}
 
   /**
    * Store the current total balance for later comparison

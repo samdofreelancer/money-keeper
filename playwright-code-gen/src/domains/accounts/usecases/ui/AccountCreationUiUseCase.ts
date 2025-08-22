@@ -1,14 +1,15 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountDto } from '../../types/account.dto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { TOKENS } from '../../../../shared/di/nest-tokens';
 
 /**
  * Use case for account creation via UI interactions
  */
 @Injectable()
 export class AccountCreationUiUseCase {
-  constructor(private accountsPage: AccountsPlaywrightPage) {}
+  constructor(@Inject(TOKENS.AccountsPlaywrightPage) private accountsPage: AccountsPlaywrightPage) {}
 
   /**
    * Navigate to the categories page

@@ -5,23 +5,44 @@ import { AccountCreationApiUseCase } from './usecases/api/AccountCreationApiUseC
 import { AccountDeletionApiUseCase } from './usecases/api/AccountDeletionApiUseCase';
 import { AccountBalanceUiUseCase } from './usecases/ui/AccountBalanceUiUseCase';
 import { AccountCreationUiUseCase } from './usecases/ui/AccountCreationUiUseCase';
+import { SharedModule } from '../../shared/di/shared.module';
+import { TOKENS } from '../../shared/di/nest-tokens';
 
 @Module({
+  imports: [SharedModule],
   providers: [
-    AccountApiClient,
-    AccountsPlaywrightPage,
-    AccountCreationApiUseCase,
-    AccountDeletionApiUseCase,
-    AccountBalanceUiUseCase,
-    AccountCreationUiUseCase,
+    {
+      provide: TOKENS.AccountApiClient,
+      useClass: AccountApiClient,
+    },
+    {
+      provide: TOKENS.AccountsPlaywrightPage,
+      useClass: AccountsPlaywrightPage,
+    },
+    {
+      provide: TOKENS.AccountCreationApiUseCase,
+      useClass: AccountCreationApiUseCase,
+    },
+    {
+      provide: TOKENS.AccountDeletionApiUseCase,
+      useClass: AccountDeletionApiUseCase,
+    },
+    {
+      provide: TOKENS.AccountBalanceUiUseCase,
+      useClass: AccountBalanceUiUseCase,
+    },
+    {
+      provide: TOKENS.AccountCreationUiUseCase,
+      useClass: AccountCreationUiUseCase,
+    },
   ],
   exports: [
-    AccountApiClient,
-    AccountsPlaywrightPage,
-    AccountCreationApiUseCase,
-    AccountDeletionApiUseCase,
-    AccountBalanceUiUseCase,
-    AccountCreationUiUseCase,
+    TOKENS.AccountApiClient,
+    TOKENS.AccountsPlaywrightPage,
+    TOKENS.AccountCreationApiUseCase,
+    TOKENS.AccountDeletionApiUseCase,
+    TOKENS.AccountBalanceUiUseCase,
+    TOKENS.AccountCreationUiUseCase,
   ],
 })
 export class AccountModule {}
