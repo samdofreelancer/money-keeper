@@ -155,7 +155,7 @@ export class TestData {
       );
 
       // Filter categories by the names we want to delete
-      const categoriesToDelete = allCategories.filter(category =>
+      const categoriesToDelete = allCategories.filter((category: any) =>
         categoryNames.includes(category.name)
       );
 

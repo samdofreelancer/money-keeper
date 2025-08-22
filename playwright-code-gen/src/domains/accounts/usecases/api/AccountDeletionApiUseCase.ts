@@ -1,9 +1,11 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountApiClient } from '../../api/account-api.client';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Use case for account deletion via API
  */
+@Injectable()
 export class AccountDeletionApiUseCase {
   constructor(private accountApiClient: AccountApiClient) {}
 

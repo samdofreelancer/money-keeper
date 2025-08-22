@@ -1,8 +1,10 @@
 import { APIRequestContext } from '@playwright/test';
+import { Injectable, Inject } from '@nestjs/common';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 
+@Injectable()
 export class CategoryApiClient {
-  constructor(private request: APIRequestContext) {}
+  constructor(@Inject('REQUEST') private request: APIRequestContext) {}
 
   private async assertOk(res: any, action: string): Promise<void> {
     if (!res.ok()) {

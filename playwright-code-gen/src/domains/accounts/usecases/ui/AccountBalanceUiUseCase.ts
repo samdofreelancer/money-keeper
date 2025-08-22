@@ -1,9 +1,11 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Use case for account balance operations via UI
  */
+@Injectable()
 export class AccountBalanceUiUseCase {
   constructor(private accountsPage: AccountsPlaywrightPage) {}
 

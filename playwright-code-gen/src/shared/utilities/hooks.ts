@@ -43,7 +43,12 @@ setWorldConstructor(World);
 
 // Export page objects and steps for backward compatibility
 export const getAccountsPage = (): World['accountsPage'] => {
-  return global.testWorld!.accountsPage;
+  if (!global.testWorld) {
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
+  }
+  return global.testWorld.accountsPage;
 };
 
 // New use case getter functions with null checks

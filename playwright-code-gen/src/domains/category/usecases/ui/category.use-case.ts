@@ -7,6 +7,7 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { CategoriesPage } from '../../pages/categories.playwright.page';
 import { TestData } from '../../../../shared/utilities/testData';
+import { Injectable } from '@nestjs/common';
 
 export type CreateCategoryParams = {
   name: string;
@@ -40,6 +41,7 @@ function hasPresence(x: unknown): x is CategoryPresence {
      typeof (x as any).categoryExists === 'function');
 }
 
+@Injectable()
 export class CreateCategoryUseCase {
   constructor(private readonly categoriesPage: CategoriesPage) {}
 

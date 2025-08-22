@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cucumber-js",
+    "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "cucumber-js src/features/categories/**/*.feature",
     "test:category:report": "cucumber-js src/features/categories/**/*.feature && open-cli test-results/cucumber-report.html",
     "test:report": "cucumber-js && open-cli test-results/cucumber-report.html",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^9.5.1",
     "@playwright/test": "^1.38.0",
+    "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9.32.0",
@@ -37,8 +39,11 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
     "axios": "^1.10.0",
     "cucumber-html-reporter": "^7.2.0",
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "reflect-metadata": "^0.2.2"
   }
 }

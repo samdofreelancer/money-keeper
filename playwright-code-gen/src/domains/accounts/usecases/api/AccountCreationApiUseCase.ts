@@ -1,10 +1,12 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountCreateDto } from '../../types/account.dto';
 import { AccountApiClient } from '../../api/account-api.client';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Use case for account creation via API
  */
+@Injectable()
 export class AccountCreationApiUseCase {
   constructor(private accountApiClient: AccountApiClient) {}
 

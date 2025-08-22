@@ -1,10 +1,12 @@
 // src/domains/categories/pages/CategoriesPage.ts
 import { Page, Locator, expect } from '@playwright/test';
+import { Injectable, Inject } from '@nestjs/common';
 
 type TimeoutMs = number | undefined;
 
+@Injectable()
 export class CategoriesPage {
-  constructor(private readonly page: Page) {}
+  constructor(@Inject('PAGE') private readonly page: Page) {}
 
   // --------- Test IDs (tập trung 1 chỗ để dễ đổi) ----------
   private readonly TID = {

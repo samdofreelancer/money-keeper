@@ -1,10 +1,12 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountDto } from '../../types/account.dto';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Use case for account creation via UI interactions
  */
+@Injectable()
 export class AccountCreationUiUseCase {
   constructor(private accountsPage: AccountsPlaywrightPage) {}
 
