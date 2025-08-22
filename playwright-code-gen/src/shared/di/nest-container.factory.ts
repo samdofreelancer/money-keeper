@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { Page, APIRequestContext } from '@playwright/test';
 import { Logger } from '../utilities/logger';
 import { AppModule } from './app.module';
-import { Container } from './container';
 
 export class NestContainerFactory {
   private static app: any = null;
@@ -28,16 +27,40 @@ export class NestContainerFactory {
         logger: ['error', 'warn', 'debug'],
       });
       
-      // Register runtime instances
-      this.app.registerInstance('PAGE' as any, this.currentPage);
-      this.app.registerInstance('REQUEST' as any, this.currentRequest);
-
-      // Register API_BASE_URL
-      this.app.registerInstance('API_BASE_URL' as any, 
+      // For NestJS, we need to use a different approach since registerInstance doesn't exist
+      // We'll store the runtime instances as properties and use a custom get method
+      // that checks for overrides before delegating to the NestJS container
+      const overrides = new Map<any, any>();
+      
+      const containerWithOverrides = {
+        // Override the get method to check for runtime overrides first
+        get: <T>(token: any): T => {
+          // Check if we have a runtime override for this token
+          if (overrides.has(token)) {
+            return overrides.get(token);
+          }
+          
+          // Fall back to the NestJS container
+          return this.app.get(token);
+        },
+        
+        // Method to override providers at runtime
+        overrideProvider: (token: any, value: any) => {
+          overrides.set(token, value);
+        },
+        
+        // Delegate close method to the NestJS container
+        close: () => this.app.close()
+      };
+      
+      // Set up runtime overrides
+      containerWithOverrides.overrideProvider('PAGE', this.currentPage);
+      containerWithOverrides.overrideProvider('REQUEST', this.currentRequest);
+      containerWithOverrides.overrideProvider('API_BASE_URL', 
         process.env.API_BASE_URL || 'http://127.0.0.1:8080/api');
       
       Logger.debug('NestJS container created successfully');
-      return this.app;
+      return containerWithOverrides;
     } catch (error) {
       Logger.error('Failed to create NestJS container', error);
       throw error;
