@@ -10,4 +10,9 @@ export const TOKENS = {
   CreateCategoryUseCase: Symbol('CreateCategoryUseCase'),
   Page: Symbol('PAGE'),
   Request: Symbol('REQUEST'),
+  
+  // Transaction related tokens
+  TransactionsPage: Symbol('TransactionsPage'),
+  TransactionCreationUiUseCase: Symbol('TransactionCreationUiUseCase'),
+  TransactionCreationApiUseCase: Symbol('TransactionCreationApiUseCase'),
 } as const;

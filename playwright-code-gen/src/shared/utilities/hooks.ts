@@ -52,6 +52,25 @@ export const getAccountsPage = (): World['accountsPage'] => {
   return global.testWorld.accountsPage;
 };
 
+// Transaction related getters
+export const getTransactionsPage = (): World['transactionsPage'] => {
+  if (!global.testWorld) {
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
+  }
+  return global.testWorld.transactionsPage;
+};
+
+export const getTransactionCreationUiUseCase = (): World['transactionCreationUiUseCase'] => {
+  if (!global.testWorld) {
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
+  }
+  return global.testWorld.transactionCreationUiUseCase;
+};
+
 // New use case getter functions with null checks
 export const getAccountCreationApiUseCase =
   (): World['accountCreationApiUseCase'] => {

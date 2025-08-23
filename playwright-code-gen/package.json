@@ -4,10 +4,11 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js",
+    "test": "cucumber-js --tags \"not @wip\"",
     "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "npx cucumber-js src/features/categories/**/*.feature",
-    "test:report": "cucumber-js && open-cli test-results/cucumber-report.html",
+    "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",
+    "test:report": "cucumber-js --tags \"not @wip\" && open-cli test-results/cucumber-report.html",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "format": "npx prettier --write .",

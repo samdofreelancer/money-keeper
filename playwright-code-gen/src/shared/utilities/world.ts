@@ -41,6 +41,17 @@ export class World extends BaseWorld {
     return this.container.get(TOKENS.CreateCategoryUseCase);
   }
 
+  // Transaction related getters
+  public get transactionsPage() {
+    return this.container.get(TOKENS.TransactionsPage);
+  }
+  public get transactionCreationUiUseCase() {
+    return this.container.get(TOKENS.TransactionCreationUiUseCase);
+  }
+  public get transactionCreationApiUseCase() {
+    return this.container.get(TOKENS.TransactionCreationApiUseCase);
+  }
+
   constructor() {
     super();
   }
