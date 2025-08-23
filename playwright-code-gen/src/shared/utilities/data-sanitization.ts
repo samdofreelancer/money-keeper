@@ -7,9 +7,11 @@ export interface SanitizedCategoryData {
   icon?: string;
 }
 
-export function sanitizeCategoryData(data: Record<string, string>): SanitizedCategoryData {
+export function sanitizeCategoryData(
+  data: Record<string, string>
+): SanitizedCategoryData {
   const name = (data.name ?? data.Name ?? '').trim();
   const icon = (data.icon ?? data.Icon ?? '').trim() || undefined;
-  
+
   return { name, icon };
 }

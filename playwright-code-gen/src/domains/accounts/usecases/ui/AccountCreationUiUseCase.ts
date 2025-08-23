@@ -9,7 +9,10 @@ import { TOKENS } from '../../../../shared/di/nest-tokens';
  */
 @Injectable()
 export class AccountCreationUiUseCase {
-  constructor(@Inject(TOKENS.AccountsPlaywrightPage) private accountsPage: AccountsPlaywrightPage) {}
+  constructor(
+    @Inject(TOKENS.AccountsPlaywrightPage)
+    private accountsPage: AccountsPlaywrightPage
+  ) {}
 
   /**
    * Navigate to the categories page

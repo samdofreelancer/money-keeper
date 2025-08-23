@@ -9,7 +9,8 @@ import { TOKENS } from '../../../../shared/di/nest-tokens';
 @Injectable()
 export class AccountBalanceUiUseCase {
   constructor(
-    @Inject(TOKENS.AccountsPlaywrightPage) private accountsPage: AccountsPlaywrightPage
+    @Inject(TOKENS.AccountsPlaywrightPage)
+    private accountsPage: AccountsPlaywrightPage
   ) {}
 
   /**

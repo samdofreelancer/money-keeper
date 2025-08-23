@@ -12,20 +12,20 @@ import { TOKENS } from '../../../../shared/di/nest-tokens';
 
 export type CreateCategoryParams = {
   name: string;
-  icon?: string;         // ví dụ: "ShoppingBag", "Utensils"
-  timeoutMs?: number;    // timeout kỹ thuật cho từng step
+  icon?: string; // ví dụ: "ShoppingBag", "Utensils"
+  timeoutMs?: number; // timeout kỹ thuật cho từng step
 };
 
 export type CreateCategoryOptions = {
-  verify?: boolean;      // true: sẽ chạy verify sau khi submit
+  verify?: boolean; // true: sẽ chạy verify sau khi submit
   // Inject hàm verify từ Steps hoặc adapter nhỏ để tách cứng
   // Nếu không truyền, Use Case sẽ thử gọi categoriesPage.hasCategory nếu có
   verifier?: (name: string) => Promise<boolean>;
   // Thời gian chờ UI settle sau submit (tùy app)
-  settleAfterMs?: number;       // default 100ms (0 để bỏ qua)
+  settleAfterMs?: number; // default 100ms (0 để bỏ qua)
   // Tổng số lần THỬ verify (attempts), không phải "số lần re-try"
-  verifyRetries?: number;       // default 5
-  verifyIntervalMs?: number;    // default 300ms
+  verifyRetries?: number; // default 5
+  verifyIntervalMs?: number; // default 300ms
 };
 
 export type CreateCategoryResult =
@@ -37,14 +37,19 @@ type CategoryPresence = {
   categoryExists?: (n: string) => Promise<boolean>;
 };
 function hasPresence(x: unknown): x is CategoryPresence {
-  return !!x &&
-    (typeof (x as any).hasCategory === 'function' ||
-     typeof (x as any).categoryExists === 'function');
+  return (
+    !!x &&
+    (typeof (x as CategoryPresence).hasCategory === 'function' ||
+      typeof (x as CategoryPresence).categoryExists === 'function')
+  );
 }
 
 @Injectable()
 export class CreateCategoryUseCase {
-  constructor(@Inject(TOKENS.CategoriesPage) private readonly categoriesPage: CategoriesPage) {}
+  constructor(
+    @Inject(TOKENS.CategoriesPage)
+    private readonly categoriesPage: CategoriesPage
+  ) {}
 
   /**
    * Tạo category. Nếu `options.verify === true`, sẽ verify tồn tại sau khi submit.
@@ -87,7 +92,9 @@ export class CreateCategoryUseCase {
 
       // 4) Chọn icon (tuỳ chọn)
       if (icon) {
-        Logger.info(`[CreateCategory] open icon picker & choose icon = ${icon}`);
+        Logger.info(
+          `[CreateCategory] open icon picker & choose icon = ${icon}`
+        );
         await this.categoriesPage.openIconPicker(timeoutMs);
         await this.categoriesPage.chooseIcon(icon, timeoutMs);
       }
@@ -168,7 +175,9 @@ export class CreateCategoryUseCase {
       }
     }
 
-    Logger.warn('[CreateCategory] no verifier provided and POM has no hasCategory/categoryExists. Skipping verify.');
+    Logger.warn(
+      '[CreateCategory] no verifier provided and POM has no hasCategory/categoryExists. Skipping verify.'
+    );
     return true;
   }
 
@@ -186,7 +195,9 @@ export class CreateCategoryUseCase {
     for (let i = 0; i < max; i++) {
       try {
         if (await fn()) {
-          Logger.info(`[CreateCategory] verify success after ${i + 1} attempts`);
+          Logger.info(
+            `[CreateCategory] verify success after ${i + 1} attempts`
+          );
           return true;
         }
       } catch (e) {
@@ -204,6 +215,10 @@ export class CreateCategoryUseCase {
 
   private stringifyError(e: unknown): string {
     if (e instanceof Error) return `${e.message}\n${e.stack ?? ''}`;
-    try { return JSON.stringify(e); } catch { return String(e); }
+    try {
+      return JSON.stringify(e);
+    } catch {
+      return String(e);
+    }
   }
 }

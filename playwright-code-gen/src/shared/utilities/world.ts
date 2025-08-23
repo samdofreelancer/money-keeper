@@ -2,41 +2,42 @@ import { BaseWorld } from './base-world';
 import { Logger } from './logger';
 import { NestContainerFactory } from '../di/nest-container.factory';
 import { TOKENS } from '../di/nest-tokens';
+import { INestApplicationContext } from '@nestjs/common';
 
 /**
  * World per-scenario — browser/context/page từ BaseWorld
  * Uses NestJS DI container instead of custom container
  */
 export class World extends BaseWorld {
-  private container: any;
+  private container!: INestApplicationContext;
 
   // ==== API giữ nguyên: steps vẫn gọi world.xxx ====
-  public get accountsPage(): any {
+  public get accountsPage() {
     return this.container.get(TOKENS.AccountsPlaywrightPage);
   }
-  public get categoriesPage(): any {
+  public get categoriesPage() {
     return this.container.get(TOKENS.CategoriesPage);
   }
-  public get accountApiClient(): any {
+  public get accountApiClient() {
     return this.container.get(TOKENS.AccountApiClient);
   }
-  public get categoryApiClient(): any {
+  public get categoryApiClient() {
     return this.container.get(TOKENS.CategoryApiClient);
   }
 
-  public get accountCreationApiUseCase(): any {
+  public get accountCreationApiUseCase() {
     return this.container.get(TOKENS.AccountCreationApiUseCase);
   }
-  public get accountDeletionApiUseCase(): any {
+  public get accountDeletionApiUseCase() {
     return this.container.get(TOKENS.AccountDeletionApiUseCase);
   }
-  public get accountBalanceUiUseCase(): any {
+  public get accountBalanceUiUseCase() {
     return this.container.get(TOKENS.AccountBalanceUiUseCase);
   }
-  public get accountCreationUiUseCase(): any {
+  public get accountCreationUiUseCase() {
     return this.container.get(TOKENS.AccountCreationUiUseCase);
   }
-  public get createCategoryUseCase(): any {
+  public get createCategoryUseCase() {
     return this.container.get(TOKENS.CreateCategoryUseCase);
   }
 
@@ -52,7 +53,9 @@ export class World extends BaseWorld {
 
     // Initialize NestJS container with Playwright instances
     try {
-      this.container = await NestContainerFactory.createContainer(this.getPage());
+      this.container = await NestContainerFactory.createContainer(
+        this.getPage()
+      );
       Logger.info('World initialized successfully with NestJS DI container');
     } catch (error) {
       Logger.error('Failed to initialize NestJS container', error);

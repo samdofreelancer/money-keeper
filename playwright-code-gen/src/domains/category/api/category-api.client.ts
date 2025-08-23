@@ -1,4 +1,4 @@
-import { APIRequestContext } from '@playwright/test';
+import { APIRequestContext, APIResponse } from '@playwright/test';
 import { Injectable, Inject } from '@nestjs/common';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 import { TOKENS } from '../../../shared/di/nest-tokens';
@@ -7,7 +7,7 @@ import { TOKENS } from '../../../shared/di/nest-tokens';
 export class CategoryApiClient {
   constructor(@Inject(TOKENS.Request) private request: APIRequestContext) {}
 
-  private async assertOk(res: any, action: string): Promise<void> {
+  private async assertOk(res: APIResponse, action: string): Promise<void> {
     if (!res.ok()) {
       let body = '';
       try {
