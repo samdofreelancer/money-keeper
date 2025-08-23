@@ -7,7 +7,10 @@ module.exports = {
     paths: ['src/features/**/*.feature'],
     require: ['reflect-metadata','src/shared/utilities/hooks.ts','src/domains/**/steps/*.ts'],
     requireModule: ['ts-node/register'],
-    format: ['progress-bar','json:test-results/cucumber-report.json'],
+    format: [
+      'progress-bar',
+      'json:test-results/cucumber-report.json'
+    ],
     parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '1'),
     async onComplete() {
       const jsonReport = path.resolve(__dirname,'test-results/cucumber-report.json');

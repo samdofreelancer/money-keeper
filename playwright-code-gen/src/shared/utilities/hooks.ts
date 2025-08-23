@@ -19,6 +19,9 @@ import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
 import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { allureReporter } from './allure-reporter';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
 
 import fs from 'fs';
 import { NestContainerFactory } from '../di/nest-container.factory';
@@ -214,7 +217,27 @@ AfterAll(async () => {
   // Generate report
   Reporter.generateReport();
 
+  // Generate Allure environment info
+  const environmentInfo = {
+    framework: 'Playwright + Cucumber',
+    language: 'TypeScript',
+    platform: process.platform,
+    nodeVersion: process.version,
+    browser: process.env.BROWSER || 'chromium',
+    parallel: process.env.CUCUMBER_PARALLEL_WORKERS || '1'
+  };
+  
+  const envFile = join(process.cwd(), 'test-results', 'allure-results', 'environment.properties');
+  const envContent = Object.entries(environmentInfo)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+  
+  writeFileSync(envFile, envContent);
+
   Logger.info('Test execution completed');
+  Logger.info('📊 Allure results generated successfully!');
+  Logger.info('📁 Results location: test-results/allure-results');
+  Logger.info('🌐 To view report, run: npm run allure:report');
 });
 
 /**
@@ -229,6 +252,12 @@ Before(async function (scenario) {
   // Store scenario start time
   (this as ScenarioContext).scenarioStartTime = Date.now();
   (this as ScenarioContext).scenarioName = scenarioName;
+
+  // Initialize Allure test
+  allureReporter.startTest(scenarioName, `Feature: ${scenario.gherkinDocument?.feature?.name || 'Unknown Feature'}`);
+  allureReporter.addFeature(scenario.gherkinDocument?.feature?.name || 'Unknown Feature');
+  allureReporter.addEnvironmentInfo('Browser', process.env.BROWSER || 'chromium');
+  allureReporter.addEnvironmentInfo('Platform', process.platform);
 
   try {
     // 'this' refers to the World instance in Cucumber hooks
@@ -317,6 +346,23 @@ After(async function (scenario) {
     startTime: new Date(scenarioStartTime).toISOString(),
     endTime: new Date(scenarioEndTime).toISOString(),
   });
+
+  // End Allure test with appropriate status
+  let allureStatus: 'passed' | 'failed' | 'broken' | 'skipped' = 'passed';
+  switch (status) {
+    case Status.PASSED:
+      allureStatus = 'passed';
+      break;
+    case Status.FAILED:
+      allureStatus = 'failed';
+      break;
+    case Status.SKIPPED:
+      allureStatus = 'skipped';
+      break;
+    default:
+      allureStatus = 'broken';
+  }
+  allureReporter.endTest(allureStatus);
 
   Logger.testEnd(scenarioName, logStatus);
 
