@@ -1,6 +1,6 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { TOKENS } from '../../../../shared/di/nest-tokens';
 
 /**
@@ -62,7 +62,7 @@ export class AccountBalanceUiUseCase {
           `Current balance $${currentBalance} is less than initial balance $${this.initialTotalBalance}`
         );
       }
-      console.log(
+      Logger.log(
         `Balance check: Initial: $${this.initialTotalBalance}, Current: $${currentBalance}, Expected: $${expectedAmount}`
       );
     }
