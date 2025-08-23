@@ -4,7 +4,7 @@ import axios, {
   AxiosError,
   AxiosResponse,
 } from 'axios';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
 
@@ -12,7 +12,8 @@ import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
 export class AccountApiClient {
   private client: AxiosInstance;
 
-  constructor(@Inject('API_BASE_URL') baseURL: string) {
+  constructor() {
+    const baseURL = process.env.API_BASE_URL || 'http://127.0.0.1:8080/api';
     this.client = axios.create({
       baseURL: `${baseURL}/accounts`,
       headers: {

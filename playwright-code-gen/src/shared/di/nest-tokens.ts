@@ -8,4 +8,6 @@ export const TOKENS = {
   AccountBalanceUiUseCase: Symbol('AccountBalanceUiUseCase'),
   AccountCreationUiUseCase: Symbol('AccountCreationUiUseCase'),
   CreateCategoryUseCase: Symbol('CreateCategoryUseCase'),
+  Page: Symbol('PAGE'),
+  Request: Symbol('REQUEST'),
 } as const;

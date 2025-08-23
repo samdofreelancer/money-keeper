@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { Page, APIRequestContext } from '@playwright/test';
 import { Logger } from '../utilities/logger';
 import { AppModule } from './app.module';
+import { RuntimeProviders } from './shared.module';
 
 export class NestContainerFactory {
   private static app: any = null;
@@ -22,47 +23,24 @@ export class NestContainerFactory {
     try {
       Logger.debug('Creating new NestJS application instance...');
       
-      // Create the NestJS application with custom providers for runtime instances
-      this.app = await NestFactory.createApplicationContext(AppModule, {
-        logger: ['error', 'warn', 'debug'],
-      });
-      
-      // For NestJS, we need to use a different approach since registerInstance doesn't exist
-      // We'll store the runtime instances as properties and use a custom get method
-      // that checks for overrides before delegating to the NestJS container
-      const overrides = new Map<any, any>();
-      
-      const containerWithOverrides = {
-        // Override the get method to check for runtime overrides first
-        get: <T>(token: any): T => {
-          // Check if we have a runtime override for this token
-          if (overrides.has(token)) {
-            return overrides.get(token);
-          }
-          
-          // Fall back to the NestJS container
-          return this.app.get(token);
-        },
-        
-        // Method to override providers at runtime
-        overrideProvider: (token: any, value: any) => {
-          overrides.set(token, value);
-        },
-        
-        // Delegate close method to the NestJS container
-        close: () => this.app.close()
+      // Create runtime providers for the Playwright instances
+      const runtimeProviders: RuntimeProviders = {
+        page: this.currentPage,
+        request: this.currentRequest
       };
       
-      // Set up runtime overrides
-      containerWithOverrides.overrideProvider('PAGE', this.currentPage);
-      containerWithOverrides.overrideProvider('REQUEST', this.currentRequest);
-      containerWithOverrides.overrideProvider('API_BASE_URL', 
-        process.env.API_BASE_URL || 'http://127.0.0.1:8080/api');
+      // Create the NestJS application with runtime providers
+      this.app = await NestFactory.createApplicationContext(
+        AppModule.forRoot(runtimeProviders),
+        {
+          logger: ['error', 'warn', 'debug'],
+        }
+      );
       
-      Logger.debug('NestJS container created successfully');
-      return containerWithOverrides;
+      Logger.debug('NestJS container created successfully with PAGE injected');
+      return this.app;
     } catch (error) {
-      Logger.error('Failed to create NestJS container', error);
+      Logger.error('Failed to create NestJS container with injected PAGE', error);
       throw error;
     }
   }

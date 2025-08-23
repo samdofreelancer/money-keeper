@@ -12,7 +12,6 @@ export class World extends BaseWorld {
 
   // ==== API giữ nguyên: steps vẫn gọi world.xxx ====
   public get accountsPage(): any {
-    console.log('Accessing AccountsPlaywrightPage from World: ', this.container.get(TOKENS.AccountsPlaywrightPage));
     return this.container.get(TOKENS.AccountsPlaywrightPage);
   }
   public get categoriesPage(): any {

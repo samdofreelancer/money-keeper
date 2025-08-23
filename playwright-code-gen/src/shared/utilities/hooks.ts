@@ -21,6 +21,7 @@ import { TestData } from './testData';
 import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
 
 import fs from 'fs';
+import { NestContainerFactory } from '../di/nest-container.factory';
 
 // Extend the global object type
 declare global {
@@ -307,6 +308,8 @@ After(async function (scenario) {
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
   }
+
+  await NestContainerFactory.destroyContainer();
 });
 
 AfterStep(async function (step) {
