@@ -94,8 +94,10 @@ export class TransactionsPage {
     await this.page.fill(this.selectors.inputs.description, description);
     await this.page.fill(this.selectors.inputs.amount, amount.toString());
     await this.page.selectOption(this.selectors.inputs.type, type);
-    if (accountId) await this.page.selectOption(this.selectors.inputs.account, accountId);
-    if (categoryId) await this.page.selectOption(this.selectors.inputs.category, categoryId);
+    if (accountId)
+      await this.page.selectOption(this.selectors.inputs.account, accountId);
+    if (categoryId)
+      await this.page.selectOption(this.selectors.inputs.category, categoryId);
     if (date) await this.page.fill(this.selectors.inputs.date, date);
     if (notes) await this.page.fill(this.selectors.inputs.notes, notes);
   }
@@ -108,14 +110,14 @@ export class TransactionsPage {
       accountId: UiStateMockProvider.getFormField('accountId'),
       categoryId: UiStateMockProvider.getFormField('categoryId'),
       date: UiStateMockProvider.getFormField('date'),
-      notes: UiStateMockProvider.getFormField('notes')
+      notes: UiStateMockProvider.getFormField('notes'),
     };
 
     // Validate form data
     const validationErrors = TransactionMockProvider.validateTransaction({
       ...formData,
       amount: Number(formData.amount),
-      type: formData.type as 'INCOME' | 'EXPENSE'
+      type: formData.type as 'INCOME' | 'EXPENSE',
     });
 
     if (validationErrors.length > 0) {
@@ -126,17 +128,20 @@ export class TransactionsPage {
       const transaction = TransactionMockProvider.addTransaction({
         ...formData,
         amount: Number(formData.amount),
-        type: formData.type as 'INCOME' | 'EXPENSE'
+        type: formData.type as 'INCOME' | 'EXPENSE',
       });
 
       UiStateMockProvider.addTransaction({
         description: transaction.description,
-        amount: transaction.type === 'EXPENSE' ? `-$${transaction.amount.toFixed(2)}` : `$${transaction.amount.toFixed(2)}`,
+        amount:
+          transaction.type === 'EXPENSE'
+            ? `-$${transaction.amount.toFixed(2)}`
+            : `$${transaction.amount.toFixed(2)}`,
         type: transaction.type === 'EXPENSE' ? 'Expense' : 'Income',
         account: transaction.accountId,
         category: transaction.categoryId,
         date: transaction.date,
-        notes: transaction.notes
+        notes: transaction.notes,
       });
 
       UiStateMockProvider.hideTransactionForm();
@@ -160,15 +165,22 @@ export class TransactionsPage {
 
   async isErrorMessageVisible(message: string): Promise<boolean> {
     const errorMessage = UiStateMockProvider.getErrorMessage();
-    Logger.debug(`Checking error message. Expected: "${message}", Actual: "${errorMessage}"`);
+    Logger.debug(
+      `Checking error message. Expected: "${message}", Actual: "${errorMessage}"`
+    );
     return errorMessage === message;
   }
 
   async getTransactionCount(description: string): Promise<number> {
-    return UiStateMockProvider.getTransactions().filter(t => t.description === description).length;
+    return UiStateMockProvider.getTransactions().filter(
+      t => t.description === description
+    ).length;
   }
 
-  async getTransactionDetail(description: string, field: string): Promise<string> {
+  async getTransactionDetail(
+    description: string,
+    field: string
+  ): Promise<string> {
     const transaction = UiStateMockProvider.findTransaction(description);
     if (!transaction) {
       throw new Error(`Transaction not found: ${description}`);

@@ -17,12 +17,18 @@ Given(
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     // Generate a unique account name using the TestData utility
-    const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
-    const uniqueAccountName = TestData.generateUniqueAccountName(scenarioName, accountName);
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+    const uniqueAccountName = TestData.generateUniqueAccountName(
+      scenarioName,
+      accountName
+    );
 
     // Store both the original and unique names in world context for subsequent steps
-    (this as any).originalAccountName = accountName;
-    (this as any).uniqueAccountName = uniqueAccountName;
+    (this as { originalAccountName?: string }).originalAccountName =
+      accountName;
+    (this as { uniqueAccountName?: string }).uniqueAccountName =
+      uniqueAccountName;
 
     const accountData = new AccountCreateDto({
       accountName: uniqueAccountName, // Use the unique name for actual creation

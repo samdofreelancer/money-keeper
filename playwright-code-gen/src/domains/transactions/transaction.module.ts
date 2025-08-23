@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { Page } from 'playwright';
 import { TOKENS } from '../../shared/di/nest-tokens';
 import { TransactionsPage } from './pages/transactions.playwright.page';
 import { TransactionCreationUiUseCase } from './usecases/ui/TransactionCreationUiUseCase';
@@ -9,22 +10,22 @@ import { TransactionCreationApiUseCase } from './usecases/api/TransactionCreatio
     // Page Object
     {
       provide: TOKENS.TransactionsPage,
-      useFactory: (page: any) => new TransactionsPage(page),
+      useFactory: (page: Page) => new TransactionsPage(page),
       inject: [TOKENS.Page],
     },
-    
+
     // UI Usecases
     {
       provide: TOKENS.TransactionCreationUiUseCase,
-      useFactory: (transactionsPage: TransactionsPage) => 
+      useFactory: (transactionsPage: TransactionsPage) =>
         new TransactionCreationUiUseCase(transactionsPage),
       inject: [TOKENS.TransactionsPage],
     },
-    
+
     // API Usecases
     {
       provide: TOKENS.TransactionCreationApiUseCase,
-      useFactory: () => 
+      useFactory: () =>
         new TransactionCreationApiUseCase(
           process.env.API_BASE_URL ?? 'http://localhost:8080'
         ),

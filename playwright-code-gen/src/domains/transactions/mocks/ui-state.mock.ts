@@ -29,7 +29,7 @@ export class UiStateMockProvider {
     currentPage: '/',
     formVisible: false,
     formData: {},
-    transactions: []
+    transactions: [],
   };
 
   static resetState(): void {
@@ -37,7 +37,7 @@ export class UiStateMockProvider {
       currentPage: '/',
       formVisible: false,
       formData: {},
-      transactions: []
+      transactions: [],
     };
     Logger.info('UI state has been reset');
   }
@@ -85,7 +85,9 @@ export class UiStateMockProvider {
     return [...this.state.transactions];
   }
 
-  static findTransaction(description: string): UiState['transactions'][0] | undefined {
+  static findTransaction(
+    description: string
+  ): UiState['transactions'][0] | undefined {
     return this.state.transactions.find(t => t.description === description);
   }
 

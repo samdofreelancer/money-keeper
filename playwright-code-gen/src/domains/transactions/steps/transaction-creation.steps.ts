@@ -1,6 +1,8 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
-import { getTransactionCreationUiUseCase, getTransactionsPage } from '../../../shared/utilities/hooks';
-import { TestData } from '../../../shared/utilities/testData';
+import {
+  getTransactionCreationUiUseCase,
+  getTransactionsPage,
+} from '../../../shared/utilities/hooks';
 import { TransactionCreateDto } from '../types/transaction.dto';
 
 Before(async function () {
@@ -8,10 +10,13 @@ Before(async function () {
   transactionCreationUiUseCase.resetState();
 });
 
-Given('I have access to the transactions management section', async function () {
-  const transactionsPage = getTransactionsPage();
-  await transactionsPage.clickTransactionsTab();
-});
+Given(
+  'I have access to the transactions management section',
+  async function () {
+    const transactionsPage = getTransactionsPage();
+    await transactionsPage.clickTransactionsTab();
+  }
+);
 
 When(
   'I create a new transaction with:',
@@ -27,11 +32,12 @@ When(
       accountId: data['account'],
       categoryId: data['category'],
       date: data['date'],
-      notes: data['notes']
+      notes: data['notes'],
     });
 
     // Store the data in world context for later steps
-    (this as any).currentTransaction = transactionData;
+    (this as { currentTransaction?: TransactionCreateDto }).currentTransaction =
+      transactionData;
 
     await transactionCreationUiUseCase.createTransaction(transactionData);
   }
@@ -50,7 +56,7 @@ When(
       accountId: data['account'],
       categoryId: data['category'],
       date: data['date'],
-      notes: data['notes']
+      notes: data['notes'],
     });
 
     await transactionCreationUiUseCase.createTransaction(transactionData);
@@ -80,7 +86,9 @@ Then(
   async function (dataTable: { rowsHash: () => Record<string, string> }) {
     const data = dataTable.rowsHash();
     const transactionsPage = getTransactionsPage();
-    const currentTransaction = (this as any).currentTransaction;
+    const currentTransaction = (
+      this as { currentTransaction?: TransactionCreateDto }
+    ).currentTransaction;
 
     if (!currentTransaction) {
       throw new Error('No transaction data found in test context');
@@ -103,7 +111,9 @@ Then(
 
 Then('the transaction should not be created', async function () {
   const transactionsPage = getTransactionsPage();
-  const currentTransaction = (this as any).currentTransaction;
+  const currentTransaction = (
+    this as { currentTransaction?: TransactionCreateDto }
+  ).currentTransaction;
 
   if (!currentTransaction) {
     throw new Error('No transaction data found in test context');
@@ -117,21 +127,26 @@ Then('the transaction should not be created', async function () {
   }
 });
 
-Then('the transaction amount should be {string}', async function (expectedAmount: string) {
-  const transactionsPage = getTransactionsPage();
-  const currentTransaction = (this as any).currentTransaction;
+Then(
+  'the transaction amount should be {string}',
+  async function (expectedAmount: string) {
+    const transactionsPage = getTransactionsPage();
+    const currentTransaction = (
+      this as { currentTransaction?: TransactionCreateDto }
+    ).currentTransaction;
 
-  if (!currentTransaction) {
-    throw new Error('No transaction data found in test context');
-  }
+    if (!currentTransaction) {
+      throw new Error('No transaction data found in test context');
+    }
 
-  const actualAmount = await transactionsPage.getTransactionDetail(
-    currentTransaction.description,
-    'amount'
-  );
-  if (actualAmount !== expectedAmount) {
-    throw new Error(
-      `Expected transaction amount to be "${expectedAmount}", but found "${actualAmount}"`
+    const actualAmount = await transactionsPage.getTransactionDetail(
+      currentTransaction.description,
+      'amount'
     );
+    if (actualAmount !== expectedAmount) {
+      throw new Error(
+        `Expected transaction amount to be "${expectedAmount}", but found "${actualAmount}"`
+      );
+    }
   }
-});
+);

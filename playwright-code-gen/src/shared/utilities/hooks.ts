@@ -65,14 +65,15 @@ export const getTransactionsPage = (): World['transactionsPage'] => {
   return global.testWorld.transactionsPage;
 };
 
-export const getTransactionCreationUiUseCase = (): World['transactionCreationUiUseCase'] => {
-  if (!global.testWorld) {
-    throw new Error(
-      'World not initialized. Ensure tests are running in Cucumber context.'
-    );
-  }
-  return global.testWorld.transactionCreationUiUseCase;
-};
+export const getTransactionCreationUiUseCase =
+  (): World['transactionCreationUiUseCase'] => {
+    if (!global.testWorld) {
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
+    }
+    return global.testWorld.transactionCreationUiUseCase;
+  };
 
 // New use case getter functions with null checks
 export const getAccountCreationApiUseCase =
@@ -224,14 +225,19 @@ AfterAll(async () => {
     platform: process.platform,
     nodeVersion: process.version,
     browser: process.env.BROWSER || 'chromium',
-    parallel: process.env.CUCUMBER_PARALLEL_WORKERS || '1'
+    parallel: process.env.CUCUMBER_PARALLEL_WORKERS || '1',
   };
-  
-  const envFile = join(process.cwd(), 'test-results', 'allure-results', 'environment.properties');
+
+  const envFile = join(
+    process.cwd(),
+    'test-results',
+    'allure-results',
+    'environment.properties'
+  );
   const envContent = Object.entries(environmentInfo)
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');
-  
+
   writeFileSync(envFile, envContent);
 
   Logger.info('Test execution completed');
@@ -254,11 +260,19 @@ Before(async function (scenario) {
   (this as ScenarioContext).scenarioName = scenarioName;
 
   // Initialize Allure test
-  allureReporter.startTest(scenarioName, `Feature: ${scenario.gherkinDocument?.feature?.name || 'Unknown Feature'}`);
-  allureReporter.addFeature(scenario.gherkinDocument?.feature?.name || 'Unknown Feature');
-  allureReporter.addEnvironmentInfo('Browser', process.env.BROWSER || 'chromium');
+  allureReporter.startTest(
+    scenarioName,
+    `Feature: ${scenario.gherkinDocument?.feature?.name || 'Unknown Feature'}`
+  );
+  allureReporter.addFeature(
+    scenario.gherkinDocument?.feature?.name || 'Unknown Feature'
+  );
+  allureReporter.addEnvironmentInfo(
+    'Browser',
+    process.env.BROWSER || 'chromium'
+  );
   allureReporter.addEnvironmentInfo('Platform', process.platform);
-  
+
   // Add scenario description
   if (scenario.pickle.steps) {
     const stepDescriptions = scenario.pickle.steps.map(s => s.text).join('\n');
@@ -410,10 +424,12 @@ AfterStep(async function (step) {
     );
 
     // Take screenshot
-    const screenshotBuffer = await (this as unknown as CucumberWorld).getPage().screenshot({
-      path: screenshotPath,
-      fullPage: true,
-    });
+    const screenshotBuffer = await (this as unknown as CucumberWorld)
+      .getPage()
+      .screenshot({
+        path: screenshotPath,
+        fullPage: true,
+      });
 
     // Attach screenshot buffer to Cucumber report for inline display
     await (this as unknown as CucumberWorld).attach(
@@ -430,32 +446,42 @@ AfterStep(async function (step) {
     );
 
     // Add step description to Allure
-    allureReporter.addDescription(`Screenshot captured for step: ${stepName}`, 'text');
+    allureReporter.addDescription(
+      `Screenshot captured for step: ${stepName}`,
+      'text'
+    );
 
     // End Allure step as passed
     allureReporter.endStep('passed');
 
-    Logger.debug(`Screenshot captured and attached to Allure for step: ${stepName}`);
+    Logger.debug(
+      `Screenshot captured and attached to Allure for step: ${stepName}`
+    );
   } catch (error) {
     // End Allure step as failed
     allureReporter.endStep('failed');
     Logger.error(`Failed to capture screenshot for step: ${stepName}`, error);
-    
+
     // Try to capture error screenshot
     try {
-      const errorScreenshotBuffer = await (this as unknown as CucumberWorld).getPage().screenshot({
-        fullPage: true,
-      });
-      
+      const errorScreenshotBuffer = await (this as unknown as CucumberWorld)
+        .getPage()
+        .screenshot({
+          fullPage: true,
+        });
+
       allureReporter.addStepAttachment(
         `Error Screenshot: ${stepName}`,
         'image/png',
         errorScreenshotBuffer
       );
-      
+
       Logger.debug(`Error screenshot captured for step: ${stepName}`);
     } catch (screenshotError) {
-      Logger.error(`Failed to capture error screenshot for step: ${stepName}`, screenshotError);
+      Logger.error(
+        `Failed to capture error screenshot for step: ${stepName}`,
+        screenshotError
+      );
     }
   }
 });

@@ -18,16 +18,17 @@ export class TransactionCreationUiUseCase {
       accountId: transactionData.accountId,
       categoryId: transactionData.categoryId,
       date: transactionData.date,
-      notes: transactionData.notes
+      notes: transactionData.notes,
     });
     await this.transactionsPage.clickCreate();
-    
+
     // Validate and create mock transaction
-    const validationErrors = TransactionMockProvider.validateTransaction(transactionData);
+    const validationErrors =
+      TransactionMockProvider.validateTransaction(transactionData);
     if (validationErrors.length > 0) {
       throw new Error(validationErrors.join(', '));
     }
-    
+
     TransactionMockProvider.addTransaction(transactionData);
   }
 

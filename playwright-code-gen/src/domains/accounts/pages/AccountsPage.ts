@@ -5,13 +5,20 @@ import { Logger } from '../../../shared/utilities/logger';
 export class AccountsPage extends BasePage {
   // Selectors
   private readonly accountsTabSelector = '[data-testid="accounts-tab"]';
-  private readonly addAccountButtonSelector = '[data-testid="add-account-button"]';
-  private readonly accountNameInputSelector = '[data-testid="account-name-input"]';
-  private readonly accountTypeInputSelector = '[data-testid="account-type-input"]';
-  private readonly accountBalanceInputSelector = '[data-testid="account-balance-input"]';
-  private readonly accountCurrencyInputSelector = '[data-testid="account-currency-input"]';
-  private readonly accountDescriptionInputSelector = '[data-testid="account-description-input"]';
-  private readonly createButtonSelector = '[data-testid="create-account-button"]';
+  private readonly addAccountButtonSelector =
+    '[data-testid="add-account-button"]';
+  private readonly accountNameInputSelector =
+    '[data-testid="account-name-input"]';
+  private readonly accountTypeInputSelector =
+    '[data-testid="account-type-input"]';
+  private readonly accountBalanceInputSelector =
+    '[data-testid="account-balance-input"]';
+  private readonly accountCurrencyInputSelector =
+    '[data-testid="account-currency-input"]';
+  private readonly accountDescriptionInputSelector =
+    '[data-testid="account-description-input"]';
+  private readonly createButtonSelector =
+    '[data-testid="create-account-button"]';
   private readonly accountListSelector = '[data-testid="accounts-list"]';
   private readonly accountItemSelector = '[data-testid="account-item"]';
   private readonly accountBalanceSelector = '[data-testid="account-balance"]';
@@ -38,7 +45,7 @@ export class AccountsPage extends BasePage {
     type,
     balance,
     currency,
-    description
+    description,
   }: {
     name: string;
     type: string;
@@ -60,7 +67,9 @@ export class AccountsPage extends BasePage {
   async verifyAccountIsListed(accountName: string): Promise<boolean> {
     try {
       await this.page.waitForSelector(this.accountListSelector);
-      const accountElement = await this.page.locator(`${this.accountItemSelector}:has-text("${accountName}")`);
+      const accountElement = await this.page.locator(
+        `${this.accountItemSelector}:has-text("${accountName}")`
+      );
       return await accountElement.isVisible();
     } catch (error) {
       Logger.error(`Error verifying account existence: ${error}`);
@@ -76,10 +85,14 @@ export class AccountsPage extends BasePage {
   async isErrorMessageVisible(message: string): Promise<boolean> {
     try {
       // Wait for any error message to appear
-      await this.page.waitForSelector(this.errorMessageSelector, { timeout: 5000 });
-      
+      await this.page.waitForSelector(this.errorMessageSelector, {
+        timeout: 5000,
+      });
+
       // Check if the specific error message is present
-      const errorElement = await this.page.locator(`${this.errorMessageSelector}:has-text("${message}")`);
+      const errorElement = await this.page.locator(
+        `${this.errorMessageSelector}:has-text("${message}")`
+      );
       return await errorElement.isVisible();
     } catch (error) {
       Logger.error(`Error checking error message: ${error}`);
@@ -88,7 +101,9 @@ export class AccountsPage extends BasePage {
   }
 
   async getAccountCount(accountName: string): Promise<number> {
-    const elements = await this.page.locator(`${this.accountItemSelector}:has-text("${accountName}")`).all();
+    const elements = await this.page
+      .locator(`${this.accountItemSelector}:has-text("${accountName}")`)
+      .all();
     return elements.length;
   }
 
@@ -98,7 +113,9 @@ export class AccountsPage extends BasePage {
   }
 
   async getAccountDescription(accountName: string): Promise<string> {
-    const descriptionElement = await this.page.locator(`${this.accountItemSelector}:has-text("${accountName}") [data-testid="account-description"]`);
+    const descriptionElement = await this.page.locator(
+      `${this.accountItemSelector}:has-text("${accountName}") [data-testid="account-description"]`
+    );
     return await descriptionElement.innerText();
   }
 }

@@ -28,7 +28,7 @@ export class TransactionMockProvider {
       date: data.date,
       notes: data.notes,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     this.transactions.push(transaction);

@@ -14,7 +14,9 @@ export class AllureAnnotations {
   /**
    * Add a severity level to the current test
    */
-  static severity(level: 'blocker' | 'critical' | 'normal' | 'minor' | 'trivial'): void {
+  static severity(
+    level: 'blocker' | 'critical' | 'normal' | 'minor' | 'trivial'
+  ): void {
     allureReporter.addSeverity(level);
   }
 
@@ -70,7 +72,11 @@ export class AllureAnnotations {
   /**
    * Add an attachment to the current test
    */
-  static attachment(name: string, type: string, content: Buffer | string): void {
+  static attachment(
+    name: string,
+    type: string,
+    content: Buffer | string
+  ): void {
     allureReporter.addAttachment(name, type, content);
   }
 
@@ -84,7 +90,10 @@ export class AllureAnnotations {
   /**
    * Take and attach a screenshot from the current page
    */
-  static async takeScreenshot(name: string, page: any): Promise<void> {
+  static async takeScreenshot(
+    name: string,
+    page: { screenshot: (options: { fullPage: boolean }) => Promise<Buffer> }
+  ): Promise<void> {
     try {
       const screenshotBuffer = await page.screenshot({ fullPage: true });
       allureReporter.addAttachment(name, 'image/png', screenshotBuffer);
@@ -96,8 +105,12 @@ export class AllureAnnotations {
   /**
    * Add a JSON attachment
    */
-  static json(name: string, data: any): void {
-    allureReporter.addAttachment(name, 'application/json', JSON.stringify(data, null, 2));
+  static json(name: string, data: unknown): void {
+    allureReporter.addAttachment(
+      name,
+      'application/json',
+      JSON.stringify(data, null, 2)
+    );
   }
 
   /**
@@ -118,7 +131,7 @@ export class AllureAnnotations {
    * Add a step with automatic start/end tracking
    */
   static async step<T>(name: string, fn: () => Promise<T> | T): Promise<T> {
-    const step = allureReporter.startStep(name);
+    allureReporter.startStep(name);
     try {
       const result = await fn();
       allureReporter.endStep('passed');
@@ -147,5 +160,4 @@ export const {
   json,
   text,
   html,
-  step
-} = AllureAnnotations; 
+} = AllureAnnotations;

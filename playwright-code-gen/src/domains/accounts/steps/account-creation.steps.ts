@@ -23,17 +23,19 @@ When(
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     // Store original name for verification
-    (this as any).originalAccountName = data['name'];
-    
+    (this as { originalAccountName?: string }).originalAccountName =
+      data['name'];
+
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
     const uniqueAccountName = TestData.generateUniqueAccountName(
       scenarioName,
       data['name']
     );
-    
+
     // Store generated name for later steps
-    (this as any).uniqueAccountName = uniqueAccountName;
+    (this as { uniqueAccountName?: string }).uniqueAccountName =
+      uniqueAccountName;
 
     const accountData: AccountDto = {
       name: uniqueAccountName,
@@ -55,9 +57,12 @@ When(
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     // Get the unique account name that was generated and used in the previous step
-    const uniqueAccountName = (this as any).uniqueAccountName;
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
     if (!uniqueAccountName) {
-      throw new Error('No existing account name found in test context. Make sure "I have an existing account named" step was executed.');
+      throw new Error(
+        'No existing account name found in test context. Make sure "I have an existing account named" step was executed.'
+      );
     }
 
     const accountData: AccountDto = {
@@ -100,7 +105,8 @@ Then(
   async function (accountName: string) {
     const accountsPage = getAccountsPage();
     // Use the stored unique account name from previous steps
-    const uniqueAccountName = (this as any).uniqueAccountName || accountName;
+    const uniqueAccountName =
+      (this as { uniqueAccountName?: string }).uniqueAccountName || accountName;
 
     const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
     if (!exists) {
@@ -140,15 +146,16 @@ Then(
 
 Then(
   'the account {string} should appear only once in my accounts list',
-  async function (accountName: string) {
+  async function () {
     const accountsPage = getAccountsPage();
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
-    
+
     // Reload the page to ensure we have the latest state
     await accountCreationUiUseCase.reloadAccountsPage();
 
     // Get the stored unique account name from previous steps
-    const uniqueAccountName = (this as any).uniqueAccountName;
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
     if (!uniqueAccountName) {
       throw new Error('No existing account name found in test context');
     }
