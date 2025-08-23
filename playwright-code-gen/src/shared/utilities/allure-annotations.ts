@@ -82,6 +82,18 @@ export class AllureAnnotations {
   }
 
   /**
+   * Take and attach a screenshot from the current page
+   */
+  static async takeScreenshot(name: string, page: any): Promise<void> {
+    try {
+      const screenshotBuffer = await page.screenshot({ fullPage: true });
+      allureReporter.addAttachment(name, 'image/png', screenshotBuffer);
+    } catch (error) {
+      console.error(`Failed to take screenshot: ${name}`, error);
+    }
+  }
+
+  /**
    * Add a JSON attachment
    */
   static json(name: string, data: any): void {
@@ -131,6 +143,7 @@ export const {
   environment,
   attachment,
   screenshot,
+  takeScreenshot,
   json,
   text,
   html,

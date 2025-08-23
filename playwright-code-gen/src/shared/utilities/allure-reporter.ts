@@ -1,7 +1,7 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
-// Simple Allure reporter that creates JSON files compatible with Allure
+// Allure reporter that creates proper Allure format files
 export class AllureReporter {
   private resultsDir: string;
   private currentTest: any = null;
@@ -17,14 +17,19 @@ export class AllureReporter {
 
   startTest(name: string, description?: string): any {
     this.currentTest = {
+      uuid: this.generateUuid(),
       name,
       description,
       status: 'passed',
+      statusDetails: {},
+      stage: 'finished',
       start: Date.now(),
+      stop: null,
       steps: [],
-      labels: [],
+      attachments: [],
       parameters: [],
-      attachments: []
+      labels: [],
+      links: []
     };
     return this.currentTest;
   }
@@ -35,9 +40,8 @@ export class AllureReporter {
       this.currentTest.stop = Date.now();
       this.currentTest.duration = this.currentTest.stop - this.currentTest.start;
       
-      // Save test result to file
-      const testId = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const testFile = join(this.resultsDir, `${testId}-result.json`);
+      // Save test result to file in proper Allure format
+      const testFile = join(this.resultsDir, `${this.currentTest.uuid}-result.json`);
       writeFileSync(testFile, JSON.stringify(this.currentTest, null, 2));
       
       this.testResults.push(this.currentTest);
@@ -50,7 +54,11 @@ export class AllureReporter {
       this.currentStep = {
         name,
         status: 'passed',
-        start: Date.now()
+        statusDetails: {},
+        stage: 'finished',
+        start: Date.now(),
+        stop: null,
+        attachments: []
       };
       this.currentTest.steps.push(this.currentStep);
       return this.currentStep;
@@ -69,8 +77,9 @@ export class AllureReporter {
 
   addAttachment(name: string, type: string, content: Buffer | string): void {
     if (this.currentTest) {
-      const attachmentId = `attachment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const attachmentFile = join(this.resultsDir, `${attachmentId}-attachment`);
+      const attachmentId = this.generateUuid();
+      const extension = this.getExtensionForType(type);
+      const attachmentFile = join(this.resultsDir, `${attachmentId}-attachment${extension}`);
       
       if (Buffer.isBuffer(content)) {
         writeFileSync(attachmentFile, content);
@@ -81,7 +90,27 @@ export class AllureReporter {
       this.currentTest.attachments.push({
         name,
         type,
-        source: `${attachmentId}-attachment`
+        source: `${attachmentId}-attachment${extension}`
+      });
+    }
+  }
+
+  addStepAttachment(name: string, type: string, content: Buffer | string): void {
+    if (this.currentStep) {
+      const attachmentId = this.generateUuid();
+      const extension = this.getExtensionForType(type);
+      const attachmentFile = join(this.resultsDir, `${attachmentId}-attachment${extension}`);
+      
+      if (Buffer.isBuffer(content)) {
+        writeFileSync(attachmentFile, content);
+      } else {
+        writeFileSync(attachmentFile, content);
+      }
+      
+      this.currentStep.attachments.push({
+        name,
+        type,
+        source: `${attachmentId}-attachment${extension}`
       });
     }
   }
@@ -90,8 +119,7 @@ export class AllureReporter {
     if (this.currentTest) {
       this.currentTest.parameters.push({
         name: key,
-        value,
-        kind: 'environment'
+        value
       });
     }
   }
@@ -108,7 +136,7 @@ export class AllureReporter {
   addDescription(description: string, type: 'text' | 'html' | 'markdown' = 'text'): void {
     if (this.currentTest) {
       this.currentTest.description = description;
-      this.currentTest.descriptionType = type;
+      this.currentTest.descriptionHtml = type === 'html' ? description : undefined;
     }
   }
 
@@ -134,6 +162,26 @@ export class AllureReporter {
 
   addTestId(testId: string): void {
     this.addLabel('testId', testId);
+  }
+
+  private generateUuid(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  private getExtensionForType(type: string): string {
+    switch (type) {
+      case 'image/png': return '.png';
+      case 'image/jpeg':
+      case 'image/jpg': return '.jpg';
+      case 'application/json': return '.json';
+      case 'text/plain': return '.txt';
+      case 'text/html': return '.html';
+      default: return '';
+    }
   }
 }
 

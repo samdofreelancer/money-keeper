@@ -258,6 +258,12 @@ Before(async function (scenario) {
   allureReporter.addFeature(scenario.gherkinDocument?.feature?.name || 'Unknown Feature');
   allureReporter.addEnvironmentInfo('Browser', process.env.BROWSER || 'chromium');
   allureReporter.addEnvironmentInfo('Platform', process.platform);
+  
+  // Add scenario description
+  if (scenario.pickle.steps) {
+    const stepDescriptions = scenario.pickle.steps.map(s => s.text).join('\n');
+    allureReporter.addDescription(`Steps:\n${stepDescriptions}`, 'text');
+  }
 
   try {
     // 'this' refers to the World instance in Cucumber hooks
@@ -382,6 +388,9 @@ AfterStep(async function (step) {
     (this as unknown as ScenarioContext).scenarioName || 'unknown-scenario';
   const stepName = step.pickleStep?.text || 'unknown-step';
 
+  // Start Allure step
+  allureReporter.startStep(stepName);
+
   try {
     // Create screenshot directory if it doesn't exist
     const path = require('path');
@@ -391,32 +400,63 @@ AfterStep(async function (step) {
       fs.mkdirSync(screenshotDir, { recursive: true });
     }
 
-    // Create unique filename
+    // Create unique filename with timestamp to avoid conflicts
+    const timestamp = Date.now();
     const safeScenarioName = scenarioName.replace(/[^a-zA-Z0-9]/g, '-');
     const safeStepName = stepName.replace(/[^a-zA-Z0-9]/g, '-');
     const screenshotPath = path.join(
       screenshotDir,
-      `${safeScenarioName}-${safeStepName}.png`
+      `${safeScenarioName}-${safeStepName}-${timestamp}.png`
     );
 
     // Take screenshot
-    await (this as unknown as CucumberWorld).getPage().screenshot({
+    const screenshotBuffer = await (this as unknown as CucumberWorld).getPage().screenshot({
       path: screenshotPath,
       fullPage: true,
     });
 
-    // Read screenshot file as buffer
-    const screenshotBuffer = fs.readFileSync(screenshotPath);
-
-    // Attach screenshot buffer to report for inline display
+    // Attach screenshot buffer to Cucumber report for inline display
     await (this as unknown as CucumberWorld).attach(
       screenshotBuffer,
       'image/png'
     );
 
-    Logger.debug(`Screenshot captured for step: ${stepName}`);
+    // Attach screenshot to Allure report with descriptive name
+    const allureScreenshotName = `${stepName} - ${new Date().toLocaleTimeString()}`;
+    allureReporter.addStepAttachment(
+      allureScreenshotName,
+      'image/png',
+      screenshotBuffer
+    );
+
+    // Add step description to Allure
+    allureReporter.addDescription(`Screenshot captured for step: ${stepName}`, 'text');
+
+    // End Allure step as passed
+    allureReporter.endStep('passed');
+
+    Logger.debug(`Screenshot captured and attached to Allure for step: ${stepName}`);
   } catch (error) {
+    // End Allure step as failed
+    allureReporter.endStep('failed');
     Logger.error(`Failed to capture screenshot for step: ${stepName}`, error);
+    
+    // Try to capture error screenshot
+    try {
+      const errorScreenshotBuffer = await (this as unknown as CucumberWorld).getPage().screenshot({
+        fullPage: true,
+      });
+      
+      allureReporter.addStepAttachment(
+        `Error Screenshot: ${stepName}`,
+        'image/png',
+        errorScreenshotBuffer
+      );
+      
+      Logger.debug(`Error screenshot captured for step: ${stepName}`);
+    } catch (screenshotError) {
+      Logger.error(`Failed to capture error screenshot for step: ${stepName}`, screenshotError);
+    }
   }
 });
 
