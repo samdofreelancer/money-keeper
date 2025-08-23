@@ -146,7 +146,7 @@ Then(
 
 Then(
   'the account {string} should appear only once in my accounts list',
-  async function () {
+  async function (accountName: string) {
     const accountsPage = getAccountsPage();
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 

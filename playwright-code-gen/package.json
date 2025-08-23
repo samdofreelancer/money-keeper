@@ -8,7 +8,7 @@
     "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "npx cucumber-js src/features/categories/**/*.feature",
     "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",
-    "test:allure": "npm run allure:clean && npm run test && npm run allure:generate && npm run allure:report",
+    "test:allure": "node scripts/test-workflow.js",
     "allure:generate": "allure generate test-results/allure-results --clean -o test-results/allure-report",
     "allure:report": "allure open test-results/allure-report",
     "allure:serve": "allure serve test-results/allure-results",
