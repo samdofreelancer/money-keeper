@@ -14,6 +14,8 @@ export class AccountApiClient {
 
   constructor() {
     const baseURL = process.env.API_BASE_URL || 'http://127.0.0.1:8080/api';
+    if (!baseURL) throw new Error('API_BASE_URL is required for tests');
+
     this.client = axios.create({
       baseURL: `${baseURL}/accounts`,
       headers: {
