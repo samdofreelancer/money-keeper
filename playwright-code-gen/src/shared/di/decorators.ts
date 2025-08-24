@@ -9,7 +9,7 @@ export interface ServiceOptions {
 }
 
 export function Service(options: ServiceOptions = {}): ClassDecorator {
-  return (target: any) => {
+  return (target: Function) => {
     const metadata = {
       scope: options.scope || 'singleton',
       token: options.token || target,
@@ -27,7 +27,7 @@ export function Service(options: ServiceOptions = {}): ClassDecorator {
 
 export function Inject(token: symbol | string): ParameterDecorator {
   return (
-    target: any,
+    target: Object,
     propertyKey: string | symbol | undefined,
     parameterIndex: number
   ) => {
@@ -38,10 +38,12 @@ export function Inject(token: symbol | string): ParameterDecorator {
   };
 }
 
-export function getServiceMetadata(target: any): ServiceOptions | undefined {
+export function getServiceMetadata(
+  target: Function
+): ServiceOptions | undefined {
   return Reflect.getMetadata(SERVICE_METADATA_KEY, target);
 }
 
-export function getInjectMetadata(target: any): (symbol | string)[] {
+export function getInjectMetadata(target: Object): (symbol | string)[] {
   return Reflect.getMetadata(INJECT_METADATA_KEY, target) || [];
 }

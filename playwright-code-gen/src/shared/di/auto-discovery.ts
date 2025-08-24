@@ -1,5 +1,5 @@
 import { glob } from 'fast-glob';
-import { container } from './container';
+import { container, ServiceMetadata } from './container';
 import { Logger } from '../utilities/logger';
 
 export async function autoDiscover(
@@ -40,7 +40,7 @@ export async function autoDiscover(
         Logger.debug(`Successfully imported: ${file}`);
       } catch (error) {
         // Skip files that can't be imported (might be type definitions or non-service files)
-        if ((error as any).code !== 'ERR_MODULE_NOT_FOUND') {
+        if ((error as { code?: string }).code !== 'ERR_MODULE_NOT_FOUND') {
           Logger.warn(`Failed to import ${file}: ${(error as Error).message}`);
         } else {
           Logger.debug(`Skipping non-module file: ${file}`);
@@ -62,7 +62,7 @@ export async function autoDiscover(
   }
 }
 
-export function getDiscoveredServices(): Map<any, any> {
+export function getDiscoveredServices(): Map<symbol | string, ServiceMetadata> {
   // Return a copy of the service registry for inspection
   return new Map(container['serviceRegistry']);
 }

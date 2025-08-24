@@ -1,19 +1,24 @@
 import { ServiceOptions, getInjectMetadata } from './decorators';
 
 export interface ServiceMetadata extends ServiceOptions {
-  target: any;
+  target: new (...args: any[]) => unknown;
 }
 
 export class Container {
-  private serviceRegistry = new Map<any, ServiceMetadata>();
-  private instances = new Map<any, any>();
-  private instanceRegistry = new Map<symbol | string, any>();
+  private serviceRegistry = new Map<symbol | string, ServiceMetadata>();
+  private instances = new Map<symbol | string, unknown>();
+  private instanceRegistry = new Map<symbol | string, unknown>();
 
-  registerService(target: any, metadata: ServiceMetadata): void {
-    this.serviceRegistry.set(metadata.token || target, metadata);
+  registerService(
+    target: new (...args: unknown[]) => unknown,
+    metadata: ServiceMetadata
+  ): void {
+    const token =
+      metadata.token || (typeof target === 'function' ? target.name : target);
+    this.serviceRegistry.set(token, metadata);
   }
 
-  registerInstance(token: symbol | string, instance: any): void {
+  registerInstance<T>(token: symbol | string, instance: T): void {
     this.instanceRegistry.set(token, instance);
   }
 
@@ -26,15 +31,25 @@ export class Container {
       }
     }
 
+    // Handle constructor function tokens by converting them to their string representation
+    let lookupToken: symbol | string;
+    if (typeof token === 'function') {
+      lookupToken = token.name;
+    } else {
+      lookupToken = token;
+    }
+
     // Then check if we have a service registration
-    const serviceMetadata = this.serviceRegistry.get(token);
+    const serviceMetadata = this.serviceRegistry.get(lookupToken);
     if (!serviceMetadata) {
-      throw new Error(`No service registered for token: ${token.toString()}`);
+      throw new Error(
+        `No service registered for token: ${lookupToken.toString()}`
+      );
     }
 
     // Check if we have a singleton instance already
     if (serviceMetadata.scope === 'singleton') {
-      const existingInstance = this.instances.get(serviceMetadata.target);
+      const existingInstance = this.instances.get(lookupToken);
       if (existingInstance) {
         return existingInstance as T;
       }
@@ -45,18 +60,18 @@ export class Container {
 
     // Store singleton instances
     if (serviceMetadata.scope === 'singleton') {
-      this.instances.set(serviceMetadata.target, instance);
+      this.instances.set(lookupToken, instance);
     }
 
     return instance as T;
   }
 
-  private buildInstance<T>(target: new (...args: any[]) => T): T {
+  private buildInstance<T>(target: new (...args: unknown[]) => T): T {
     const injections = getInjectMetadata(target);
     const dependencies = injections.map(injectionToken => {
       const dep = this.instanceRegistry.has(injectionToken)
         ? this.instanceRegistry.get(injectionToken)
-        : this.resolve<any>(injectionToken);
+        : this.resolve<unknown>(injectionToken);
       if (dep == null) {
         throw new Error(
           `DI resolved ${String(injectionToken)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`
