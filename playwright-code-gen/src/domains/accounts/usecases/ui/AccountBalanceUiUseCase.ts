@@ -1,15 +1,14 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
-import { Injectable, Inject, Logger } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { Logger } from '@nestjs/common';
+import { AutoInjectable } from '../../../../shared/di/auto-injectable.decorator';
 
 /**
  * Use case for account balance operations via UI
  */
-@Injectable()
+@AutoInjectable()
 export class AccountBalanceUiUseCase {
   constructor(
-    @Inject(TOKENS.AccountsPlaywrightPage)
     private accountsPage: AccountsPlaywrightPage
   ) {}
 

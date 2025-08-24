@@ -1,11 +1,12 @@
 // src/domains/categories/pages/CategoriesPage.ts
 import { Page, Locator, expect } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { AutoInjectable } from '../../../shared/di/auto-injectable.decorator';
 import { TOKENS } from '../../../shared/di/nest-tokens';
 
 type TimeoutMs = number | undefined;
 
-@Injectable()
+@AutoInjectable()
 export class CategoriesPage {
   constructor(@Inject(TOKENS.Page) private readonly page: Page) {}
 

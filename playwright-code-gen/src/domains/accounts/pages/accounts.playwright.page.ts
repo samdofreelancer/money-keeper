@@ -3,11 +3,12 @@ import { Injectable, Inject } from '@nestjs/common';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
 import { TOKENS } from '../../../shared/di/nest-tokens';
+import { AutoInjectable } from '../../../shared/di/auto-injectable.decorator';
 
 /**
  * Page object for the Accounts page
  */
-@Injectable()
+@AutoInjectable()
 export class AccountsPlaywrightPage {
   constructor(@Inject(TOKENS.Page) private page: Page) {}
 

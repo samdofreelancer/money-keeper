@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
 import { TransactionsPage } from '../../pages/transactions.playwright.page';
 import { TransactionCreateDto } from '../../types/transaction.dto';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
 import { UiStateMockProvider } from '../../mocks/ui-state.mock';
+import { AutoInjectable } from '../../../../shared/di/auto-injectable.decorator';
 
-@Injectable()
+@AutoInjectable()
 export class TransactionCreationUiUseCase {
   constructor(private readonly transactionsPage: TransactionsPage) {}
 

@@ -1,10 +1,11 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 import { TOKENS } from '../../../shared/di/nest-tokens';
 import { Logger } from '../../../shared/utilities/logger';
+import { AutoInjectable } from '../../../shared/di/auto-injectable.decorator';
 
-@Injectable()
+@AutoInjectable()
 export class CategoryApiClient {
   private apiBaseUrl: string;
 

@@ -1,4 +1,5 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import {
   description,
   severity,
@@ -8,9 +9,11 @@ import {
   screenshot,
   json,
   text,
-  step,
   environment,
+  AllureAnnotations,
 } from '../utilities/allure-annotations';
+
+const { step } = AllureAnnotations;
 
 // Example step definitions with Allure annotations
 
@@ -127,7 +130,7 @@ Then('I should see an error message', async function () {
     screenshot('Error State Screenshot', screenshotBuffer);
 
     // Add error details
-    text('Error Details', error.message);
+    text('Error Details', (error as Error).message);
 
     throw error;
   }

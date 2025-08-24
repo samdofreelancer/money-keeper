@@ -9,33 +9,10 @@ import { SharedModule } from '../../shared/di/shared.module';
 @Module({
   imports: [SharedModule],
   providers: [
-    // Page Object
-    {
-      provide: TOKENS.TransactionsPage,
-      useFactory: (page: Page) => new TransactionsPage(page),
-      inject: [TOKENS.Page],
-    },
-
-    // UI Usecases
-    {
-      provide: TOKENS.TransactionCreationUiUseCase,
-      useFactory: (transactionsPage: TransactionsPage) =>
-        new TransactionCreationUiUseCase(transactionsPage),
-      inject: [TOKENS.TransactionsPage],
-    },
-
-    // API Usecases
-    {
-      provide: TOKENS.TransactionCreationApiUseCase,
-      useFactory: (baseUrl: string) =>
-        new TransactionCreationApiUseCase(baseUrl),
-      inject: [TOKENS.ApiBaseUrl],
-    },
+    // All services are now auto-registered via @AutoInjectable()
   ],
   exports: [
-    TOKENS.TransactionsPage,
-    TOKENS.TransactionCreationUiUseCase,
-    TOKENS.TransactionCreationApiUseCase,
+    // No exports needed since services are auto-registered
   ],
 })
 export class TransactionModule {}

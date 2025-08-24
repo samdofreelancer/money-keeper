@@ -1,17 +1,14 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountCreateDto } from '../../types/account.dto';
 import { AccountApiClient } from '../../api/account-api.client';
-import { Injectable, Inject } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { AutoInjectable } from '../../../../shared/di/auto-injectable.decorator';
 
 /**
  * Use case for account creation via API
  */
-@Injectable()
+@AutoInjectable()
 export class AccountCreationApiUseCase {
-  constructor(
-    @Inject(TOKENS.AccountApiClient) private accountApiClient: AccountApiClient
-  ) {}
+  constructor(private accountApiClient: AccountApiClient) {}
 
   /**
    * Create an account directly via backend API (bypassing UI)

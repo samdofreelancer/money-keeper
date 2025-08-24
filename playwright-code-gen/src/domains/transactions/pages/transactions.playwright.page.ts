@@ -4,8 +4,9 @@ import { Logger } from '../../../shared/utilities/logger';
 import { TOKENS } from '../../../shared/di/nest-tokens';
 import { TransactionMockProvider } from '../mocks/transaction.mock';
 import { UiStateMockProvider } from '../mocks/ui-state.mock';
+import { AutoInjectable } from '../../../shared/di/auto-injectable.decorator';
 
-@Injectable()
+@AutoInjectable()
 export class TransactionsPage {
   constructor(@Inject(TOKENS.Page) private page: Page) {}
 

@@ -1,16 +1,13 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountApiClient } from '../../api/account-api.client';
-import { Injectable, Inject } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { AutoInjectable } from '../../../../shared/di/auto-injectable.decorator';
 
 /**
  * Use case for account deletion via API
  */
-@Injectable()
+@AutoInjectable()
 export class AccountDeletionApiUseCase {
-  constructor(
-    @Inject(TOKENS.AccountApiClient) private accountApiClient: AccountApiClient
-  ) {}
+  constructor(private accountApiClient: AccountApiClient) {}
 
   /**
    * Delete an account by name using the backend API

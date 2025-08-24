@@ -1,16 +1,14 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountDto } from '../../types/account.dto';
-import { Injectable, Inject } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { AutoInjectable } from '../../../../shared/di/auto-injectable.decorator';
 
 /**
  * Use case for account creation via UI interactions
  */
-@Injectable()
+@AutoInjectable()
 export class AccountCreationUiUseCase {
   constructor(
-    @Inject(TOKENS.AccountsPlaywrightPage)
     private accountsPage: AccountsPlaywrightPage
   ) {}
 

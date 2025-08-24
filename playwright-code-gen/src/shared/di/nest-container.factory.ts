@@ -4,6 +4,9 @@ import { Page, APIRequestContext } from '@playwright/test';
 import { Logger } from '../utilities/logger';
 import { AppModule } from './app.module';
 import { RuntimeProviders } from './shared.module';
+import { AutoScanner } from './auto-scanner.util';
+import { isAutoInjectable } from './auto-injectable.decorator';
+import * as path from 'path'; // Importing path module
 
 export class NestContainerFactory {
   private static app: INestApplicationContext | null = null;
@@ -32,16 +35,24 @@ export class NestContainerFactory {
         request: this.currentRequest,
       };
 
-      // Create the NestJS application with runtime providers
+      // Scan for auto-injectable classes
+      Logger.debug('Scanning for auto-injectable classes...');
+      const autoInjectableClasses = await this.scanAutoInjectableClasses();
+      
+      if (autoInjectableClasses.length > 0) {
+        Logger.debug(`Found ${autoInjectableClasses.length} auto-injectable classes`);
+      }
+
+      // Create the NestJS application with runtime providers and auto-discovered classes
       this.app = await NestFactory.createApplicationContext(
-        AppModule.forRoot(runtimeProviders),
+        AppModule.forRoot(runtimeProviders, autoInjectableClasses),
         {
           logger: ['error', 'warn', 'debug'],
         }
       );
 
       Logger.debug(
-        'NestJS container created successfully with Page token injected'
+        'NestJS container created successfully with Page token injected and auto-registered services'
       );
       return this.app;
     } catch (error) {
@@ -75,5 +86,34 @@ export class NestContainerFactory {
   static async getService<T>(token: symbol | string | Function): Promise<T> {
     const container = await this.getContainer();
     return container.get(token);
+  }
+
+  /**
+   * Scans the project for classes decorated with @AutoInjectable()
+   */
+  private static async scanAutoInjectableClasses(): Promise<any[]> {
+    try {
+      // Define directories to scan for auto-injectable classes
+      const scanDirectories = [
+        path.join(__dirname, '../../domains'), // All domain directories
+        path.join(__dirname, '../../shared'),   // Shared utilities
+      ];
+
+      Logger.debug(`Scanning directories for auto-injectable classes: ${scanDirectories.join(', ')}`);
+      
+      const autoInjectableClasses = await AutoScanner.scanDirectories(scanDirectories);
+      
+      // Filter out any classes that might have been picked up but shouldn't be registered
+      const validClasses = autoInjectableClasses.filter(cls => 
+        typeof cls === 'function' && isAutoInjectable(cls)
+      );
+
+      Logger.debug(`Found ${validClasses.length} valid auto-injectable classes`);
+      
+      return validClasses;
+    } catch (error) {
+      Logger.error('Failed to scan for auto-injectable classes:', error);
+      return [];
+    }
   }
 }

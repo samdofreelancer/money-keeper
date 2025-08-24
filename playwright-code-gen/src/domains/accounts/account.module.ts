@@ -12,20 +12,8 @@ import { TOKENS } from '../../shared/di/nest-tokens';
   imports: [SharedModule],
   providers: [
     {
-      provide: TOKENS.AccountApiClient,
-      useClass: AccountApiClient,
-    },
-    {
       provide: TOKENS.AccountsPlaywrightPage,
       useClass: AccountsPlaywrightPage,
-    },
-    {
-      provide: TOKENS.AccountCreationApiUseCase,
-      useClass: AccountCreationApiUseCase,
-    },
-    {
-      provide: TOKENS.AccountDeletionApiUseCase,
-      useClass: AccountDeletionApiUseCase,
     },
     {
       provide: TOKENS.AccountBalanceUiUseCase,
@@ -37,10 +25,7 @@ import { TOKENS } from '../../shared/di/nest-tokens';
     },
   ],
   exports: [
-    TOKENS.AccountApiClient,
     TOKENS.AccountsPlaywrightPage,
-    TOKENS.AccountCreationApiUseCase,
-    TOKENS.AccountDeletionApiUseCase,
     TOKENS.AccountBalanceUiUseCase,
     TOKENS.AccountCreationUiUseCase,
   ],
