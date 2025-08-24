@@ -81,12 +81,18 @@ jobs:
       - name: Run playwright-code-gen tests
         run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
 
-      - name: Upload report for Github Pages
+      - name: Generate Allure report
+        if: always()
+        run: docker compose run --rm playwright-code-gen npm run allure:generate
+        working-directory: ./
+
+      - name: Upload Allure report for Github Pages
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'playwright-code-gen/reports/cucumber-html-report.html'
+          path: 'playwright-code-gen/test-results/allure-report'
           name: github-pages
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -94,8 +100,8 @@ jobs:
       - name: List files in deployed artifact
         if: always()
         run: |
-          echo "Files in playwright-code-gen/reports/cucumber-html-report.html:"
-          ls -l playwright-code-gen/reports/cucumber-html-report.html
+          echo "Files in playwright-code-gen/test-results/allure-report:"
+          ls -la playwright-code-gen/test-results/allure-report/
 
       - name: Stop containers
         if: always()
