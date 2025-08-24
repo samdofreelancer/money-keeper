@@ -26,9 +26,6 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
-import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
-import { autoDiscover } from '../di/auto-discovery';
-import { TOKENS } from '../di/tokens';
 
 // Extend the global object type
 declare global {
@@ -158,7 +155,8 @@ export function getCategoryDeletionApiUseCase() {
         'World not initialized. Cannot get CategoryDeletionApiUseCase'
       );
     }
-    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase as CategoryDeletionApiUseCaseImpl;
+    _categoryDeletionApiUseCase = global.testWorld
+      .categoryDeletionApiUseCase as CategoryDeletionApiUseCaseImpl;
   }
   return _categoryDeletionApiUseCase;
 }
@@ -402,7 +400,6 @@ After(async function (scenario) {
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
   }
-
 });
 
 AfterStep(async function (step) {

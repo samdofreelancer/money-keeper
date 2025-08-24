@@ -1,4 +1,4 @@
-import { ServiceOptions, getServiceMetadata, getInjectMetadata } from './decorators';
+import { ServiceOptions, getInjectMetadata } from './decorators';
 
 export interface ServiceMetadata extends ServiceOptions {
   target: any;
@@ -42,7 +42,7 @@ export class Container {
 
     // Create new instance
     const instance = this.buildInstance(serviceMetadata.target);
-    
+
     // Store singleton instances
     if (serviceMetadata.scope === 'singleton') {
       this.instances.set(serviceMetadata.target, instance);
@@ -54,9 +54,13 @@ export class Container {
   private buildInstance<T>(target: new (...args: any[]) => T): T {
     const injections = getInjectMetadata(target);
     const dependencies = injections.map(injectionToken => {
-      const dep = this.instanceRegistry.has(injectionToken) ? this.instanceRegistry.get(injectionToken) : this.resolve<any>(injectionToken);
+      const dep = this.instanceRegistry.has(injectionToken)
+        ? this.instanceRegistry.get(injectionToken)
+        : this.resolve<any>(injectionToken);
       if (dep == null) {
-        throw new Error(`DI resolved ${String(injectionToken)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`);
+        throw new Error(
+          `DI resolved ${String(injectionToken)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`
+        );
       }
       return dep;
     });

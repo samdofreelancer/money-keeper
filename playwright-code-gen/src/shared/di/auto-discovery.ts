@@ -15,16 +15,16 @@ export async function autoDiscover(
     '**/*.d.ts',
     '**/*.spec.*',
     '**/__tests__/**',
-    '**/test/**'
+    '**/test/**',
   ];
 
   try {
     Logger.debug('Starting auto-discovery of services...');
-    
+
     const files = await glob(patterns, {
       ignore: ignorePatterns,
       absolute: false,
-      cwd: process.cwd()
+      cwd: process.cwd(),
     });
 
     Logger.debug(`Found ${files.length} potential service files`);
@@ -52,8 +52,10 @@ export async function autoDiscover(
     if (opts?.eager) {
       container.buildAllFromRegistry();
     }
-    
-    Logger.info(`Auto-discovery completed. Registered ${container.getServiceCount()} services`);
+
+    Logger.info(
+      `Auto-discovery completed. Registered ${container.getServiceCount()} services`
+    );
   } catch (error) {
     Logger.error('Auto-discovery failed:', error);
     throw error;

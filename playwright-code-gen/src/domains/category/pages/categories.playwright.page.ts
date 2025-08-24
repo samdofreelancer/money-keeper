@@ -1,5 +1,5 @@
 // src/domains/categories/pages/CategoriesPage.ts
-import { Page as PlaywrightPage, Locator, expect, Page } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 import { Service, Inject } from '../../../shared/di/decorators';
 import { TOKENS } from '../../../shared/di/tokens';
 

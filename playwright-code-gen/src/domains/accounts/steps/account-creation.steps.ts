@@ -11,7 +11,6 @@ Given('I am logged into the money management system', async function () {
   await accountsPage.navigateToAccountsPage();
 });
 
-
 When(
   'I create a new account with:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {

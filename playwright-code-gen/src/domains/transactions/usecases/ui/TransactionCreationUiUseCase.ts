@@ -1,4 +1,4 @@
-import { Service, Inject } from '../../../../shared/di/decorators';
+import { Service } from '../../../../shared/di/decorators';
 import { TransactionsPage } from '../../pages/transactions.playwright.page';
 import { TransactionCreateDto } from '../../types/transaction.dto';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
@@ -7,8 +7,6 @@ import { TOKENS } from '../../../../shared/di/tokens';
 
 @Service({ scope: 'transient', token: TOKENS.TransactionCreationUiUseCase })
 export class TransactionCreationUiUseCase {
-  //constructor(@Inject(TOKENS.TransactionsPage) private readonly transactionsPage: TransactionsPage) {}
-
   constructor(private readonly transactionsPage: TransactionsPage) {}
 
   async createTransaction(transactionData: TransactionCreateDto) {

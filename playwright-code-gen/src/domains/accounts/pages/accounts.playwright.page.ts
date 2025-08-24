@@ -221,6 +221,8 @@ export class AccountsPlaywrightPage extends BasePage {
    * Verify that we're on the accounts page by checking for key elements
    */
   async verifyOnAccountsPage(): Promise<void> {
-    await this.page.waitForSelector(this.selectors.buttons.addAccount, { timeout: 10000 });
+    await this.page.waitForSelector(this.selectors.buttons.addAccount, {
+      timeout: 10000,
+    });
   }
 }

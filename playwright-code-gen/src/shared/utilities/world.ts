@@ -8,7 +8,7 @@ import { AccountApiClient } from '../../domains/accounts/api/account-api.client'
 import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { CategoryApiClient } from '../../domains/category/api/category-api.client';
-import { CategoryDeletionApiUseCase, CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { CategoryDeletionApiUseCase } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
 import { CategoriesPage } from '../../domains/category/pages/categories.playwright.page';
 import { AccountBalanceUiUseCase } from '../../domains/accounts/usecases/ui/AccountBalanceUiUseCase';
 import { CreateCategoryUseCase } from '../../domains/category/usecases/ui/category.use-case';
@@ -109,15 +109,25 @@ export class World extends BaseWorld {
       await autoDiscover();
 
       // Debug: log discovered services
-      const discoveredServices = (global as any).__di_registry?.map((c: any) => c?.name).sort();
-      Logger.debug(`[DI] discovered services: ${JSON.stringify(discoveredServices)}`);
+      const discoveredServices = (global as any).__di_registry
+        ?.map((c: any) => c?.name)
+        .sort();
+      Logger.debug(
+        `[DI] discovered services: ${JSON.stringify(discoveredServices)}`
+      );
 
       // Debug: log container state
-      Logger.debug(`[DI] Container has ${container.getServiceCount()} services registered`);
-      Logger.debug(`[DI] Container has ${container.getInstanceCount()} instances registered`);
+      Logger.debug(
+        `[DI] Container has ${container.getServiceCount()} services registered`
+      );
+      Logger.debug(
+        `[DI] Container has ${container.getInstanceCount()} instances registered`
+      );
 
       this.initialized = true;
-      Logger.info('World initialized successfully with auto-registration DI container');
+      Logger.info(
+        'World initialized successfully with auto-registration DI container'
+      );
     } catch (error) {
       Logger.error('Failed to initialize DI container', error);
       throw error;

@@ -20,8 +20,12 @@ export const TOKENS = {
 
   // Transaction domain tokens
   TransactionsPage: Symbol.for('transactions:TransactionsPage'),
-  TransactionCreationUiUseCase: Symbol.for('transactions:TransactionCreationUiUseCase'),
-  TransactionCreationApiUseCase: Symbol.for('transactions:TransactionCreationApiUseCase'),
+  TransactionCreationUiUseCase: Symbol.for(
+    'transactions:TransactionCreationUiUseCase'
+  ),
+  TransactionCreationApiUseCase: Symbol.for(
+    'transactions:TransactionCreationApiUseCase'
+  ),
 } as const;
 
 export type Token = (typeof TOKENS)[keyof typeof TOKENS];

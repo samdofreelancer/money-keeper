@@ -13,11 +13,11 @@ export function Service(options: ServiceOptions = {}): ClassDecorator {
     const metadata = {
       scope: options.scope || 'singleton',
       token: options.token || target,
-      target
+      target,
     };
-    
+
     Reflect.defineMetadata(SERVICE_METADATA_KEY, metadata, target);
-    
+
     // Auto-register the service
     if (typeof (globalThis as any).__DI_CONTAINER__ !== 'undefined') {
       (globalThis as any).__DI_CONTAINER__.registerService(target, metadata);
@@ -26,8 +26,13 @@ export function Service(options: ServiceOptions = {}): ClassDecorator {
 }
 
 export function Inject(token: symbol | string): ParameterDecorator {
-  return (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => {
-    const existingInjections = Reflect.getMetadata(INJECT_METADATA_KEY, target) || [];
+  return (
+    target: any,
+    propertyKey: string | symbol | undefined,
+    parameterIndex: number
+  ) => {
+    const existingInjections =
+      Reflect.getMetadata(INJECT_METADATA_KEY, target) || [];
     existingInjections[parameterIndex] = token;
     Reflect.defineMetadata(INJECT_METADATA_KEY, existingInjections, target);
   };
