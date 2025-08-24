@@ -1,4 +1,4 @@
-name: E2E Tests
+name: playwright-code-gen Tests
 
 on:
   workflow_call:
@@ -10,8 +10,8 @@ permissions:
   id-token: write
 
 jobs:
-  e2e-test:
-    name: Run E2E Tests
+  playwright-code-gen-test:
+    name: Run playwright-code-gen Tests
     runs-on: ubuntu-latest
     env:
       SPRING_PROFILES_ACTIVE: ci
@@ -32,22 +32,22 @@ jobs:
       - name: Cache node modules
         uses: actions/cache@v3
         with:
-          path: e2e/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('e2e/package-lock.json') }}
+          path: playwright-code-gen/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('playwright-code-gen/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install e2e dependencies
+      - name: Install playwright-code-gen dependencies
         run: npm install
-        working-directory: ./e2e
+        working-directory: ./playwright-code-gen
 
       - name: Run lint check and stop on error
         run: npm run lint
-        working-directory: ./e2e
+        working-directory: ./playwright-code-gen
 
       - name: Create .env file
         run: cp .env.example .env
-        working-directory: ./e2e
+        working-directory: ./playwright-code-gen
 
       - name: Run Flyway migration with retries
         run: |
@@ -82,14 +82,14 @@ jobs:
             sleep 10
           done
 
-      - name: Run e2e tests
-        run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api e2e npm run test:run-and-report
+      - name: Run playwright-code-gen tests
+        run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:run-and-report
 
       - name: Upload report for Github Pages
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'e2e/reports/cucumber-html-report.html'
+          path: 'playwright-code-gen/reports/cucumber-html-report.html'
           name: github-pages
       - name: Deploy to GitHub Pages
         id: deployment
@@ -98,8 +98,8 @@ jobs:
       - name: List files in deployed artifact
         if: always()
         run: |
-          echo "Files in e2e/reports/cucumber-html-report.html:"
-          ls -l e2e/reports/cucumber-html-report.html
+          echo "Files in playwright-code-gen/reports/cucumber-html-report.html:"
+          ls -l playwright-code-gen/reports/cucumber-html-report.html
 
       - name: Stop containers
         if: always()
