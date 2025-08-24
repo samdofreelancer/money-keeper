@@ -2,6 +2,7 @@
 import { Logger } from './logger';
 import { getAccountDeletionApiUseCase, getCategoryApiClient } from './hooks';
 import { AccountDeletionApiUseCase } from '@/domains/accounts/usecases/api/AccountDeletionApiUseCase';
+import { CategoryResponse } from '@/domains/category/types/category.dto';
 
 /**
  * TestData
@@ -33,11 +34,12 @@ export class TestData {
   }
 
   /**
-   * Tạo tên duy nhất: <testId>_<actualName>
+   * Tạo tên duy nhất: <testId>_<timestamp>_<actualName>
    */
   static generateUniqueName(scenarioName: string, actualName: string): string {
     const testId = this.generateTestId(scenarioName);
-    return `${testId}_${actualName}`;
+    const timestamp = Date.now(); // Add timestamp for uniqueness
+    return `${testId}_${timestamp}_${actualName}`;
   }
 
   static generateUniqueAccountName(
@@ -155,8 +157,8 @@ export class TestData {
       );
 
       // Filter categories by the names we want to delete
-      const categoriesToDelete = allCategories.filter(category =>
-        categoryNames.includes(category.name)
+      const categoriesToDelete = allCategories.filter(
+        (category: CategoryResponse) => categoryNames.includes(category.name)
       );
 
       Logger.info(

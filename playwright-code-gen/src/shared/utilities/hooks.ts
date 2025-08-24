@@ -19,8 +19,12 @@ import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
 import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { allureReporter } from './allure-reporter';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
 
 import fs from 'fs';
+import { NestContainerFactory } from '../di/nest-container.factory';
 
 // Extend the global object type
 declare global {
@@ -43,8 +47,33 @@ setWorldConstructor(World);
 
 // Export page objects and steps for backward compatibility
 export const getAccountsPage = (): World['accountsPage'] => {
-  return global.testWorld!.accountsPage;
+  if (!global.testWorld) {
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
+  }
+  return global.testWorld.accountsPage;
 };
+
+// Transaction related getters
+export const getTransactionsPage = (): World['transactionsPage'] => {
+  if (!global.testWorld) {
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
+  }
+  return global.testWorld.transactionsPage;
+};
+
+export const getTransactionCreationUiUseCase =
+  (): World['transactionCreationUiUseCase'] => {
+    if (!global.testWorld) {
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
+    }
+    return global.testWorld.transactionCreationUiUseCase;
+  };
 
 // New use case getter functions with null checks
 export const getAccountCreationApiUseCase =
@@ -114,19 +143,19 @@ export const getCategoryApiClient = (): World['categoryApiClient'] => {
   return global.testWorld.categoryApiClient;
 };
 
-let _categoryDeletionApiUseCase: ReturnType<
-  typeof makeCategoryDeletionApiUseCase
-> | null = null;
-
-function makeCategoryDeletionApiUseCase() {
-  const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:8080';
-  const token = process.env.API_TOKEN;
-  return new CategoryDeletionApiUseCaseImpl(baseUrl, token);
-}
+let _categoryDeletionApiUseCase: CategoryDeletionApiUseCaseImpl | null = null;
 
 export function getCategoryDeletionApiUseCase() {
-  if (!_categoryDeletionApiUseCase)
-    _categoryDeletionApiUseCase = makeCategoryDeletionApiUseCase();
+  if (!_categoryDeletionApiUseCase) {
+    // This function should be called within the context of a World instance
+    // where the DI container is available
+    if (!global.testWorld) {
+      throw new Error(
+        'World not initialized. Cannot get CategoryDeletionApiUseCase'
+      );
+    }
+    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase;
+  }
   return _categoryDeletionApiUseCase;
 }
 
@@ -189,7 +218,32 @@ AfterAll(async () => {
   // Generate report
   Reporter.generateReport();
 
+  // Generate Allure environment info
+  const environmentInfo = {
+    framework: 'Playwright + Cucumber',
+    language: 'TypeScript',
+    platform: process.platform,
+    nodeVersion: process.version,
+    browser: process.env.BROWSER || 'chromium',
+    parallel: process.env.CUCUMBER_PARALLEL_WORKERS || '1',
+  };
+
+  const envFile = join(
+    process.cwd(),
+    'test-results',
+    'allure-results',
+    'environment.properties'
+  );
+  const envContent = Object.entries(environmentInfo)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+
+  writeFileSync(envFile, envContent);
+
   Logger.info('Test execution completed');
+  Logger.info('📊 Allure results generated successfully!');
+  Logger.info('📁 Results location: test-results/allure-results');
+  Logger.info('🌐 To view report, run: npm run allure:report');
 });
 
 /**
@@ -204,6 +258,26 @@ Before(async function (scenario) {
   // Store scenario start time
   (this as ScenarioContext).scenarioStartTime = Date.now();
   (this as ScenarioContext).scenarioName = scenarioName;
+
+  // Initialize Allure test
+  allureReporter.startTest(
+    scenarioName,
+    `Feature: ${scenario.gherkinDocument?.feature?.name || 'Unknown Feature'}`
+  );
+  allureReporter.addFeature(
+    scenario.gherkinDocument?.feature?.name || 'Unknown Feature'
+  );
+  allureReporter.addEnvironmentInfo(
+    'Browser',
+    process.env.BROWSER || 'chromium'
+  );
+  allureReporter.addEnvironmentInfo('Platform', process.platform);
+
+  // Add scenario description
+  if (scenario.pickle.steps) {
+    const stepDescriptions = scenario.pickle.steps.map(s => s.text).join('\n');
+    allureReporter.addDescription(`Steps:\n${stepDescriptions}`, 'text');
+  }
 
   try {
     // 'this' refers to the World instance in Cucumber hooks
@@ -293,6 +367,23 @@ After(async function (scenario) {
     endTime: new Date(scenarioEndTime).toISOString(),
   });
 
+  // End Allure test with appropriate status
+  let allureStatus: 'passed' | 'failed' | 'broken' | 'skipped' = 'passed';
+  switch (status) {
+    case Status.PASSED:
+      allureStatus = 'passed';
+      break;
+    case Status.FAILED:
+      allureStatus = 'failed';
+      break;
+    case Status.SKIPPED:
+      allureStatus = 'skipped';
+      break;
+    default:
+      allureStatus = 'broken';
+  }
+  allureReporter.endTest(allureStatus);
+
   Logger.testEnd(scenarioName, logStatus);
 
   try {
@@ -302,12 +393,17 @@ After(async function (scenario) {
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
   }
+
+  await NestContainerFactory.destroyContainer();
 });
 
 AfterStep(async function (step) {
   const scenarioName =
     (this as unknown as ScenarioContext).scenarioName || 'unknown-scenario';
   const stepName = step.pickleStep?.text || 'unknown-step';
+
+  // Start Allure step
+  allureReporter.startStep(stepName);
 
   try {
     // Create screenshot directory if it doesn't exist
@@ -318,32 +414,75 @@ AfterStep(async function (step) {
       fs.mkdirSync(screenshotDir, { recursive: true });
     }
 
-    // Create unique filename
+    // Create unique filename with timestamp to avoid conflicts
+    const timestamp = Date.now();
     const safeScenarioName = scenarioName.replace(/[^a-zA-Z0-9]/g, '-');
     const safeStepName = stepName.replace(/[^a-zA-Z0-9]/g, '-');
     const screenshotPath = path.join(
       screenshotDir,
-      `${safeScenarioName}-${safeStepName}.png`
+      `${safeScenarioName}-${safeStepName}-${timestamp}.png`
     );
 
     // Take screenshot
-    await (this as unknown as CucumberWorld).getPage().screenshot({
-      path: screenshotPath,
-      fullPage: true,
-    });
+    const screenshotBuffer = await (this as unknown as CucumberWorld)
+      .getPage()
+      .screenshot({
+        path: screenshotPath,
+        fullPage: true,
+      });
 
-    // Read screenshot file as buffer
-    const screenshotBuffer = fs.readFileSync(screenshotPath);
-
-    // Attach screenshot buffer to report for inline display
+    // Attach screenshot buffer to Cucumber report for inline display
     await (this as unknown as CucumberWorld).attach(
       screenshotBuffer,
       'image/png'
     );
 
-    Logger.debug(`Screenshot captured for step: ${stepName}`);
+    // Attach screenshot to Allure report with descriptive name
+    const allureScreenshotName = `${stepName} - ${new Date().toLocaleTimeString()}`;
+    allureReporter.addStepAttachment(
+      allureScreenshotName,
+      'image/png',
+      screenshotBuffer
+    );
+
+    // Add step description to Allure
+    allureReporter.addDescription(
+      `Screenshot captured for step: ${stepName}`,
+      'text'
+    );
+
+    // End Allure step as passed
+    allureReporter.endStep('passed');
+
+    Logger.debug(
+      `Screenshot captured and attached to Allure for step: ${stepName}`
+    );
   } catch (error) {
+    // End Allure step as failed
+    allureReporter.endStep('failed');
     Logger.error(`Failed to capture screenshot for step: ${stepName}`, error);
+
+    // Try to capture error screenshot
+    try {
+      const errorScreenshotBuffer = await (this as unknown as CucumberWorld)
+        .getPage()
+        .screenshot({
+          fullPage: true,
+        });
+
+      allureReporter.addStepAttachment(
+        `Error Screenshot: ${stepName}`,
+        'image/png',
+        errorScreenshotBuffer
+      );
+
+      Logger.debug(`Error screenshot captured for step: ${stepName}`);
+    } catch (screenshotError) {
+      Logger.error(
+        `Failed to capture error screenshot for step: ${stepName}`,
+        screenshotError
+      );
+    }
   }
 });
 

@@ -1,12 +1,15 @@
 import { Page } from '@playwright/test';
+import { Injectable, Inject } from '@nestjs/common';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
+import { TOKENS } from '../../../shared/di/nest-tokens';
 
 /**
  * Page object for the Accounts page
  */
+@Injectable()
 export class AccountsPlaywrightPage {
-  constructor(private page: Page) {}
+  constructor(@Inject(TOKENS.Page) private page: Page) {}
 
   private selectors = {
     buttons: {

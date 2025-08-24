@@ -16,23 +16,26 @@ Given(
     const accountCreationApiUseCase = getAccountCreationApiUseCase();
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
-    // Get scenario name from context for unique naming
+    // Generate a unique account name using the TestData utility
     const scenarioName =
       (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
-
-    // Generate unique account name using the test data utility
     const uniqueAccountName = TestData.generateUniqueAccountName(
       scenarioName,
       accountName
     );
 
-    // Create account data with default values
+    // Store both the original and unique names in world context for subsequent steps
+    (this as { originalAccountName?: string }).originalAccountName =
+      accountName;
+    (this as { uniqueAccountName?: string }).uniqueAccountName =
+      uniqueAccountName;
+
     const accountData = new AccountCreateDto({
-      accountName: uniqueAccountName,
+      accountName: uniqueAccountName, // Use the unique name for actual creation
       initBalance: 1000,
       type: 'BANK_ACCOUNT',
       currency: 'USD',
-      description: `Test account created for scenario: ${scenarioName}`,
+      description: `Test account created for duplicate testing`,
     });
 
     // Track the created account for cleanup
