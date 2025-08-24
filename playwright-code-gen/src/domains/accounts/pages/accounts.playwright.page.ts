@@ -1,15 +1,14 @@
 import { Page } from '@playwright/test';
-import { Inject } from '@nestjs/common';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
 import { TOKENS } from '../../../shared/di/nest-tokens';
-import { Service } from '../../../shared/di/decorators';
+import { Service, Inject } from '../../../shared/di/decorators';
 import { BasePage } from '../../../shared/pages/base.page';
 
 /**
  * Page object for the Accounts page
  */
-@Service({ scope: 'transient' })
+@Service({ scope: 'transient', token: TOKENS.AccountsPlaywrightPage })
 export class AccountsPlaywrightPage extends BasePage {
   constructor(@Inject(TOKENS.Page) page: Page) {
     super(page);

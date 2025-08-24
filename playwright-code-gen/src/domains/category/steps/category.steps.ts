@@ -2,6 +2,7 @@ import { Given, When, Then, DataTable } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { poll } from '../../../shared/utilities/poll';
 import { sanitizeCategoryData } from '../../../shared/utilities/data-sanitization';
+import { getCategoriesPage } from '../../../shared/utilities/hooks';
 
 // Configuration constants for better maintainability
 const POLLING_CONFIG = {
@@ -16,7 +17,8 @@ const ERROR_MESSAGES = {
 } as const;
 
 Given('I am on the categories page', async function () {
-  await this.categoriesPage.goto('/categories');
+  const categoriesPage = getCategoriesPage();
+  await categoriesPage.goto('/categories');
 });
 
 Given('I have no category with name {string}', async function (name: string) {

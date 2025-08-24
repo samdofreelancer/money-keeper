@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 // Load environment variables from .env file
 import dotenv from 'dotenv';
 dotenv.config();
@@ -202,7 +203,7 @@ BeforeAll(async () => {
     BaseWorld.setBrowser(browser);
     Logger.info('Browser launched successfully');
 
-    await autoDiscover();
+    // No DI auto-discovery here. We will discover per-scenario after tokens are registered.
     Logger.info('[DI] auto-discovery ready');
   } catch (error) {
     Logger.error('Failed to launch browser', error);

@@ -7,9 +7,8 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { CategoriesPage } from '../../pages/categories.playwright.page';
 import { TestData } from '../../../../shared/utilities/testData';
-import { Injectable, Inject } from '@nestjs/common';
 import { TOKENS } from '../../../../shared/di/nest-tokens';
-import { Service } from '../../../../shared/di/decorators';
+import { Service, Inject } from '../../../../shared/di/decorators';
 
 export type CreateCategoryParams = {
   name: string;

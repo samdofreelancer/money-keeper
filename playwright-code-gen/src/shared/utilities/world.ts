@@ -94,7 +94,7 @@ export class World extends BaseWorld {
       // Clear previous container state
       container.clear();
 
-      // Register runtime instances
+      // Register runtime instances - await the real Page first
       const page = await this.getPage();
       container.registerInstance(TOKENS.Page, page);
 
@@ -105,7 +105,7 @@ export class World extends BaseWorld {
         process.env.API_BASE_URL || 'http://127.0.0.1:8080/api'
       );
 
-      // Auto-discover and register services
+      // Discover services AFTER tokens are registered (lazy resolve)
       await autoDiscover();
 
       // Debug: log discovered services

@@ -54,10 +54,11 @@ export class Container {
   private buildInstance<T>(target: new (...args: any[]) => T): T {
     const injections = getInjectMetadata(target);
     const dependencies = injections.map(injectionToken => {
-      if (this.instanceRegistry.has(injectionToken)) {
-        return this.instanceRegistry.get(injectionToken);
+      const dep = this.instanceRegistry.has(injectionToken) ? this.instanceRegistry.get(injectionToken) : this.resolve<any>(injectionToken);
+      if (dep == null) {
+        throw new Error(`DI resolved ${String(injectionToken)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`);
       }
-      return this.resolve<any>(injectionToken);
+      return dep;
     });
 
     return new target(...dependencies);

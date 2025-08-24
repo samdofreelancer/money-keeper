@@ -2,11 +2,14 @@ import { glob } from 'fast-glob';
 import { container } from './container';
 import { Logger } from '../utilities/logger';
 
-export async function autoDiscover(): Promise<void> {
-  const patterns = [
+export async function autoDiscover(
+  globs: string[] = [
     'src/domains/**/{pages,usecases,api,services}/**/*.{ts,tsx,js}',
-    'src/shared/**/{services,clients}/**/*.{ts,tsx,js}'
-  ];
+    'src/shared/**/{services,clients}/**/*.{ts,tsx,js}',
+  ],
+  opts?: { eager?: boolean }
+): Promise<void> {
+  const patterns = globs;
 
   const ignorePatterns = [
     '**/*.d.ts',
@@ -45,8 +48,10 @@ export async function autoDiscover(): Promise<void> {
       }
     }
 
-    // Build all singleton instances
-    container.buildAllFromRegistry();
+    // Only eager-build if explicitly requested (must be after tokens are registered!)
+    if (opts?.eager) {
+      container.buildAllFromRegistry();
+    }
     
     Logger.info(`Auto-discovery completed. Registered ${container.getServiceCount()} services`);
   } catch (error) {
