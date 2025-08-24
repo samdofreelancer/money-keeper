@@ -29,7 +29,8 @@ Allure reporting has been successfully integrated into your Playwright + Cucumbe
 ```json
 {
   "test:allure": "cucumber-js --tags \"not @wip\" && npm run allure:generate",
-  "allure:generate": "allure generate test-results/allure-results --clean -o test-results/allure-report",
+  "allure:generate": "allure generate test-results/allure-results --clean -o test-results/allure-report && npm run allure:update-title",
+  "allure:update-title": "node scripts/update-allure-title.js",
   "allure:report": "allure open test-results/allure-report",
   "allure:serve": "allure serve test-results/allure-results",
   "allure:clean": "rimraf test-results/allure-results test-results/allure-report"
