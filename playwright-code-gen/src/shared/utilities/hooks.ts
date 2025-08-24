@@ -26,6 +26,8 @@ import { join } from 'path';
 
 import fs from 'fs';
 import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
+import { autoDiscover } from '../di/auto-discovery';
+import { TOKENS } from '../di/tokens';
 
 // Extend the global object type
 declare global {
@@ -199,6 +201,9 @@ BeforeAll(async () => {
 
     BaseWorld.setBrowser(browser);
     Logger.info('Browser launched successfully');
+
+    await autoDiscover();
+    Logger.info('[DI] auto-discovery ready');
   } catch (error) {
     Logger.error('Failed to launch browser', error);
     throw error;
@@ -287,6 +292,19 @@ Before(async function (scenario) {
     // Store the world instance globally for easy access
     global.testWorld = this as unknown as World;
 
+    try {
+      const w = this as unknown as World;
+      const page = await (this as unknown as CucumberWorld).getPage();
+      (w as any).container?.registerInstance?.(TOKENS.Page, page);
+      (w as any).container?.registerInstance?.(
+        TOKENS.ApiBaseUrl,
+        process.env.API_BASE_URL ?? 'http://127.0.0.1:8080/api'
+      );
+      Logger.info('[DI] per-scenario tokens registered');
+    } catch (e) {
+      Logger.error('[DI] Failed to register per-scenario tokens', e);
+      throw e;
+    }
     Logger.debug('Scenario initialized successfully');
   } catch (error) {
     Logger.error(`Error initializing scenario: ${scenarioName}`, error);

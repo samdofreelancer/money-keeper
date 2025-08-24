@@ -8,7 +8,7 @@ import { AccountApiClient } from '../../domains/accounts/api/account-api.client'
 import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { CategoryApiClient } from '../../domains/category/api/category-api.client';
-import { CategoryDeletionApiUseCase } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { CategoryDeletionApiUseCase, CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
 import { CategoriesPage } from '../../domains/category/pages/categories.playwright.page';
 import { AccountBalanceUiUseCase } from '../../domains/accounts/usecases/ui/AccountBalanceUiUseCase';
 import { CreateCategoryUseCase } from '../../domains/category/usecases/ui/category.use-case';
@@ -70,18 +70,18 @@ export class World extends BaseWorld {
   }
 
   public get categoryDeletionApiUseCase(): CategoryDeletionApiUseCase {
-    return this.use(TOKENS.CategoryDeletionApiUseCase);
+    return this.use(CategoryDeletionApiUseCaseImpl);
   }
 
   // Transaction related getters
   public get transactionsPage(): TransactionsPage {
-    return this.use(TOKENS.TransactionsPage);
+    return this.use(TransactionsPage);
   }
   public get transactionCreationUiUseCase(): TransactionCreationUiUseCase {
     return this.use(TransactionCreationUiUseCase);
   }
   public get transactionCreationApiUseCase(): TransactionCreationApiUseCase {
-    return this.use(TOKENS.TransactionCreationApiUseCase);
+    return this.use(TransactionCreationApiUseCase);
   }
 
   /**
@@ -95,8 +95,11 @@ export class World extends BaseWorld {
       container.clear();
 
       // Register runtime instances
-      container.registerInstance(TOKENS.Page, this.getPage());
-      container.registerInstance(TOKENS.Request, this.getPage().request);
+      const page = await this.getPage();
+      container.registerInstance(TOKENS.Page, page);
+
+      container.registerInstance(TOKENS.Request, page.context().request);
+
       container.registerInstance(
         TOKENS.ApiBaseUrl,
         process.env.API_BASE_URL || 'http://127.0.0.1:8080/api'
