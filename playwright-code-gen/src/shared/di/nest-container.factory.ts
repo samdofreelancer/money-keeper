@@ -40,11 +40,13 @@ export class NestContainerFactory {
         }
       );
 
-      Logger.debug('NestJS container created successfully with PAGE injected');
+      Logger.debug(
+        'NestJS container created successfully with Page token injected'
+      );
       return this.app;
     } catch (error) {
       Logger.error(
-        'Failed to create NestJS container with injected PAGE',
+        'Failed to create NestJS container with injected Page token',
         error
       );
       throw error;
