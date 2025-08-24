@@ -1,9 +1,8 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 import { TOKENS } from '../../../shared/di/nest-tokens';
 import { Logger } from '../../../shared/utilities/logger';
-import { Service } from '../../../shared/di/decorators';
+import { Service, Inject } from '../../../shared/di/decorators';
 
 @Service({ scope: 'transient' })
 export class CategoryApiClient {
