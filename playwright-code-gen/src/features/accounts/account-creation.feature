@@ -6,7 +6,6 @@ Feature: Account Creation
 
   Background:
     Given I am logged into the money management system
-    And I have access to the accounts management section
 
   @smoke @positive
   Scenario: Successfully create a new account

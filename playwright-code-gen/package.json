@@ -4,7 +4,7 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js --tags \"not @wip\"",
+    "test": "cucumber-js src/features/**/**.feature --tags \"not @wip\"",
     "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "npx cucumber-js src/features/categories/**/*.feature",
     "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",

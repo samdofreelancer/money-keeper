@@ -20,7 +20,7 @@ import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
 import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
-import { AccountUseCase } from '../../domains/accounts/usecases/account.use-case';
+
 import { allureReporter } from './allure-reporter';
 import { writeFileSync } from 'fs';
 import { join } from 'path';

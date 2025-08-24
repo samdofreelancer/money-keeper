@@ -112,6 +112,10 @@ export class World extends BaseWorld {
       const discoveredServices = (global as any).__di_registry?.map((c: any) => c?.name).sort();
       Logger.debug(`[DI] discovered services: ${JSON.stringify(discoveredServices)}`);
 
+      // Debug: log container state
+      Logger.debug(`[DI] Container has ${container.getServiceCount()} services registered`);
+      Logger.debug(`[DI] Container has ${container.getInstanceCount()} instances registered`);
+
       this.initialized = true;
       Logger.info('World initialized successfully with auto-registration DI container');
     } catch (error) {

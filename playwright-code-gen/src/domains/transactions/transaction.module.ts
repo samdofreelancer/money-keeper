@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { Page } from 'playwright';
-import { TOKENS } from '../../shared/di/nest-tokens';
+import { TOKENS } from '../../shared/di/tokens';
 import { TransactionsPage } from './pages/transactions.playwright.page';
 import { TransactionCreationUiUseCase } from './usecases/ui/TransactionCreationUiUseCase';
 import { TransactionCreationApiUseCase } from './usecases/api/TransactionCreationApiUseCase';

@@ -1,7 +1,7 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountCreateDto } from '../../types/account.dto';
 import { AccountApiClient } from '../../api/account-api.client';
-import { Service } from '../../../../shared/di/decorators';
+import { Service, Inject } from '../../../../shared/di/decorators';
 import { TOKENS } from '../../../../shared/di/tokens';
 
 /**
@@ -10,6 +10,7 @@ import { TOKENS } from '../../../../shared/di/tokens';
 @Service({ scope: 'transient', token: TOKENS.AccountCreationApiUseCase })
 export class AccountCreationApiUseCase {
   constructor(
+    @Inject(TOKENS.AccountApiClient)
     private accountApiClient: AccountApiClient
   ) {}
 
