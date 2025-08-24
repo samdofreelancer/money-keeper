@@ -2,10 +2,17 @@ import { APIRequestContext, APIResponse } from '@playwright/test';
 import { Injectable, Inject } from '@nestjs/common';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 import { TOKENS } from '../../../shared/di/nest-tokens';
+import { Logger } from '../../../shared/utilities/logger';
 
 @Injectable()
 export class CategoryApiClient {
-  constructor(@Inject(TOKENS.Request) private request: APIRequestContext) {}
+  private apiBaseUrl: string;
+
+  constructor(@Inject(TOKENS.Request) private request: APIRequestContext) {
+    // Use API_BASE_URL from environment or default to localhost:8080
+    this.apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080';
+    Logger.debug(`CategoryApiClient initialized with API base URL: ${this.apiBaseUrl}`);
+  }
 
   private async assertOk(res: APIResponse, action: string): Promise<void> {
     if (!res.ok()) {
@@ -20,10 +27,24 @@ export class CategoryApiClient {
     }
   }
 
+  private getApiUrl(endpoint: string): string {
+    // If API_BASE_URL already includes '/api', don't duplicate it
+    const baseUrl = this.apiBaseUrl.endsWith('/api') 
+      ? this.apiBaseUrl 
+      : `${this.apiBaseUrl}/api`;
+    
+    // Remove any trailing slashes from baseUrl and ensure endpoint starts with /
+    const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    return `${cleanBaseUrl}${cleanEndpoint}`;
+  }
+
   async createCategory(
     categoryData: CreateCategoryRequest
   ): Promise<CategoryResponse> {
-    const response = await this.request.post('/api/categories', {
+    const apiUrl = this.getApiUrl('/categories');
+    const response = await this.request.post(apiUrl, {
       data: categoryData,
     });
 
@@ -32,14 +53,16 @@ export class CategoryApiClient {
   }
 
   async getCategories(): Promise<CategoryResponse[]> {
-    const response = await this.request.get('/api/categories');
+    const apiUrl = this.getApiUrl('/categories');
+    const response = await this.request.get(apiUrl);
 
     await this.assertOk(response, 'getCategories');
     return response.json();
   }
 
   async deleteCategory(categoryId: string): Promise<void> {
-    const response = await this.request.delete(`/api/categories/${categoryId}`);
+    const apiUrl = this.getApiUrl(`/categories/${categoryId}`);
+    const response = await this.request.delete(apiUrl);
 
     await this.assertOk(response, 'deleteCategory');
   }

@@ -8,7 +8,6 @@ module.exports = {
     require: ['reflect-metadata','src/shared/utilities/hooks.ts','src/domains/**/steps/*.ts'],
     requireModule: ['ts-node/register'],
     format: [
-      'progress-bar',
       'json:test-results/cucumber-report.json'
     ],
     parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '4'), // Enable parallel execution with 4 workers
