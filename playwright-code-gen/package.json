@@ -4,8 +4,23 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "test:cucumber": "cucumber-js"
+    "test": "cucumber-js --tags \"not @wip\"",
+    "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
+    "test:category": "npx cucumber-js src/features/categories/**/*.feature",
+    "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",
+    "test:allure": "node scripts/test-workflow.js",
+    "test:fast": "node scripts/test-workflow.js --fast --skip-clean --skip-report --skip-open",
+    "test:ci": "node scripts/test-workflow.js --skip-report --skip-open --workers=8",
+    "test:debug": "node scripts/test-workflow.js --skip-open",
+    "allure:generate": "allure generate test-results/allure-results --clean -o test-results/allure-report && npm run allure:update-title",
+    "allure:update-title": "node scripts/update-allure-title.js",
+    "allure:report": "allure open test-results/allure-report",
+    "allure:serve": "allure serve test-results/allure-results",
+    "allure:clean": "rimraf test-results/allure-results test-results/allure-report",
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint . --fix",
+    "format": "npx prettier --write .",
+    "format:check": "npx prettier --check ."
   },
   "keywords": [
     "playwright",
@@ -18,7 +33,28 @@
   "devDependencies": {
     "@cucumber/cucumber": "^9.5.1",
     "@playwright/test": "^1.38.0",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "allure-commandline": "^2.34.1",
+    "allure-js-commons": "^3.3.3",
+    "allure-playwright": "^3.3.3",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
+    "open-cli": "^8.0.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-gherkin": "^3.1.2",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "axios": "^1.10.0",
+    "cucumber-html-reporter": "^7.2.0",
+    "dotenv": "^17.2.1",
+    "reflect-metadata": "^0.2.2"
   }
 }

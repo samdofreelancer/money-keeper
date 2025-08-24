@@ -1,34 +1,51 @@
 import { Page } from '@playwright/test';
+import { BasePage } from '../../../shared/pages/base.page';
+import { Logger } from '../../../shared/utilities/logger';
 
-/**
- * Page object for the Accounts page
- */
-export class AccountsPage {
-  constructor(private page: Page) {}
+export class AccountsPage extends BasePage {
+  // Selectors
+  private readonly accountsTabSelector = '[data-testid="accounts-tab"]';
+  private readonly addAccountButtonSelector =
+    '[data-testid="add-account-button"]';
+  private readonly accountNameInputSelector =
+    '[data-testid="account-name-input"]';
+  private readonly accountTypeInputSelector =
+    '[data-testid="account-type-input"]';
+  private readonly accountBalanceInputSelector =
+    '[data-testid="account-balance-input"]';
+  private readonly accountCurrencyInputSelector =
+    '[data-testid="account-currency-input"]';
+  private readonly accountDescriptionInputSelector =
+    '[data-testid="account-description-input"]';
+  private readonly createButtonSelector =
+    '[data-testid="create-account-button"]';
+  private readonly accountListSelector = '[data-testid="accounts-list"]';
+  private readonly accountItemSelector = '[data-testid="account-item"]';
+  private readonly accountBalanceSelector = '[data-testid="account-balance"]';
+  private readonly errorMessageSelector = '[data-testid="error-message"]';
 
-  /**
-   * Navigate to the accounts page
-   */
-  async navigate() {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async navigateToAccountsPage() {
     await this.page.goto('/accounts');
   }
 
-  /**
-   * Click the Add Account button
-   */
-  async clickAddAccount() {
-    await this.page.click('button:has-text("Add Account")');
+  async clickAccountsTab() {
+    await this.page.click(this.accountsTabSelector);
   }
 
-  /**
-   * Fill in the account form
-   */
+  async clickAddAccount() {
+    await this.page.click(this.addAccountButtonSelector);
+  }
+
   async fillAccountForm({
     name,
     type,
     balance,
     currency,
-    description
+    description,
   }: {
     name: string;
     type: string;
@@ -36,40 +53,69 @@ export class AccountsPage {
     currency: string;
     description: string;
   }) {
-    // Fill account name
-    await this.page.fill('input[placeholder="Enter account name"]', name);
-    
-    // Select account type
-    await this.page.click('.el-select');
-    await this.page.click(`span:text('${type}')`);
-    
-    // Fill balance
-    await this.page.fill('input[type="number"]', balance.toString());
-    
-    // Fill description
-    await this.page.fill('input[placeholder="Enter description (optional)"]', description);
+    await this.page.fill(this.accountNameInputSelector, name);
+    await this.page.selectOption(this.accountTypeInputSelector, type);
+    await this.page.fill(this.accountBalanceInputSelector, balance.toString());
+    await this.page.selectOption(this.accountCurrencyInputSelector, currency);
+    await this.page.fill(this.accountDescriptionInputSelector, description);
   }
 
-  /**
-   * Click the Create button to submit the form
-   */
   async clickCreate() {
-    await this.page.click('button:has-text("Create")');
+    await this.page.click(this.createButtonSelector);
   }
 
-  /**
-   * Verify that an account with the given name exists in the accounts list
-   */
-  async verifyAccountExists(name: string): Promise<boolean> {
-    return await this.page.isVisible(`text=${name}`);
+  async verifyAccountIsListed(accountName: string): Promise<boolean> {
+    try {
+      await this.page.waitForSelector(this.accountListSelector);
+      const accountElement = await this.page.locator(
+        `${this.accountItemSelector}:has-text("${accountName}")`
+      );
+      return await accountElement.isVisible();
+    } catch (error) {
+      Logger.error(`Error verifying account existence: ${error}`);
+      return false;
+    }
   }
 
-  /**
-   * Get the total balance text
-   */
   async getTotalBalance(): Promise<string> {
-    const balance = await this.page.textContent('text=Total Balance of Active Accounts:');
-    if (!balance) throw new Error('Total balance element not found');
-    return balance;
+    await this.page.waitForSelector(this.accountBalanceSelector);
+    return await this.page.locator(this.accountBalanceSelector).innerText();
+  }
+
+  async isErrorMessageVisible(message: string): Promise<boolean> {
+    try {
+      // Wait for any error message to appear
+      await this.page.waitForSelector(this.errorMessageSelector, {
+        timeout: 5000,
+      });
+
+      // Check if the specific error message is present
+      const errorElement = await this.page.locator(
+        `${this.errorMessageSelector}:has-text("${message}")`
+      );
+      return await errorElement.isVisible();
+    } catch (error) {
+      Logger.error(`Error checking error message: ${error}`);
+      return false;
+    }
+  }
+
+  async getAccountCount(accountName: string): Promise<number> {
+    const elements = await this.page
+      .locator(`${this.accountItemSelector}:has-text("${accountName}")`)
+      .all();
+    return elements.length;
+  }
+
+  async getTotalAccountCount(): Promise<number> {
+    const elements = await this.page.locator(this.accountItemSelector).all();
+    return elements.length;
+  }
+
+  async getAccountDescription(accountName: string): Promise<string> {
+    const descriptionElement = await this.page.locator(
+      `${this.accountItemSelector}:has-text("${accountName}") [data-testid="account-description"]`
+    );
+    return await descriptionElement.innerText();
   }
 }

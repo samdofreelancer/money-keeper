@@ -66,11 +66,13 @@ services:
     networks:
       - money-keeper-net
 
-  e2e:
-    image: mcr.microsoft.com/playwright:v1.53.0-noble
+  playwright-code-gen:
+    build:
+      context: ./playwright-code-gen
+      dockerfile: Dockerfile
     volumes:
-      - ./e2e:/e2e
-    working_dir: /e2e
+      - ./playwright-code-gen:/playwright-code-gen
+    working_dir: /playwright-code-gen
     depends_on:
       backend:
         condition: service_healthy
