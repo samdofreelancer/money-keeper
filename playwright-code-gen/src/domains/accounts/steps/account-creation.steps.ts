@@ -11,11 +11,6 @@ Given('I am logged into the money management system', async function () {
   await accountsPage.navigateToAccountsPage();
 });
 
-Given('I have access to the accounts management section', async function () {
-  const accountsPage = getAccountsPage();
-  await accountsPage.clickAccountsTab();
-});
-
 When(
   'I create a new account with:',
   async function (dataTable: { rowsHash: () => Record<string, string> }) {

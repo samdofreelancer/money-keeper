@@ -1,16 +1,18 @@
 import { Page } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
-import { TOKENS } from '../../../shared/di/nest-tokens';
+import { TOKENS } from '../../../shared/di/tokens';
+import { Service, Inject } from '../../../shared/di/decorators';
+import { BasePage } from '../../../shared/pages/base.page';
 
 /**
  * Page object for the Accounts page
  */
-@Injectable()
-export class AccountsPlaywrightPage {
-  constructor(@Inject(TOKENS.Page) private page: Page) {}
-
+@Service({ scope: 'transient', token: TOKENS.AccountsPlaywrightPage })
+export class AccountsPlaywrightPage extends BasePage {
+  constructor(@Inject(TOKENS.Page) page: Page) {
+    super(page);
+  }
   private selectors = {
     buttons: {
       addAccount: 'button:has-text("Add Account")',
@@ -213,5 +215,14 @@ export class AccountsPlaywrightPage {
    */
   async reload() {
     await this.page.reload();
+  }
+
+  /**
+   * Verify that we're on the accounts page by checking for key elements
+   */
+  async verifyOnAccountsPage(): Promise<void> {
+    await this.page.waitForSelector(this.selectors.buttons.addAccount, {
+      timeout: 10000,
+    });
   }
 }

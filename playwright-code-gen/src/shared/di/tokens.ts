@@ -1,4 +1,5 @@
 export const TOKENS = {
+  // Core runtime tokens
   Page: Symbol.for('core:Page'),
   Request: Symbol.for('core:Request'),
   ApiBaseUrl: Symbol.for('core:ApiBaseUrl'),
@@ -26,4 +27,5 @@ export const TOKENS = {
     'transactions:TransactionCreationApiUseCase'
   ),
 } as const;
+
 export type Token = (typeof TOKENS)[keyof typeof TOKENS];

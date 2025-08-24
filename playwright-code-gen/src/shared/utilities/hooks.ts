@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 // Load environment variables from .env file
 import dotenv from 'dotenv';
 dotenv.config();
@@ -19,12 +20,12 @@ import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
 import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+
 import { allureReporter } from './allure-reporter';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
-import { NestContainerFactory } from '../di/nest-container.factory';
 
 // Extend the global object type
 declare global {
@@ -154,7 +155,8 @@ export function getCategoryDeletionApiUseCase() {
         'World not initialized. Cannot get CategoryDeletionApiUseCase'
       );
     }
-    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase;
+    _categoryDeletionApiUseCase = global.testWorld
+      .categoryDeletionApiUseCase as CategoryDeletionApiUseCaseImpl;
   }
   return _categoryDeletionApiUseCase;
 }
@@ -198,6 +200,9 @@ BeforeAll(async () => {
 
     BaseWorld.setBrowser(browser);
     Logger.info('Browser launched successfully');
+
+    // No DI auto-discovery here. We will discover per-scenario after tokens are registered.
+    Logger.info('[DI] auto-discovery ready');
   } catch (error) {
     Logger.error('Failed to launch browser', error);
     throw error;
@@ -286,6 +291,8 @@ Before(async function (scenario) {
     // Store the world instance globally for easy access
     global.testWorld = this as unknown as World;
 
+    // The World.initialize() method already handles DI container setup
+    // No need to manually register tokens here
     Logger.debug('Scenario initialized successfully');
   } catch (error) {
     Logger.error(`Error initializing scenario: ${scenarioName}`, error);
@@ -393,8 +400,6 @@ After(async function (scenario) {
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
   }
-
-  await NestContainerFactory.destroyContainer();
 });
 
 AfterStep(async function (step) {

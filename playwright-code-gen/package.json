@@ -4,7 +4,7 @@
   "description": "Playwright tests with domain-driven structure",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js --tags \"not @wip\"",
+    "test": "cucumber-js src/features/**/**.feature --tags \"not @wip\"",
     "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "npx cucumber-js src/features/categories/**/*.feature",
     "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",
@@ -42,6 +42,7 @@
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
+    "fast-glob": "^3.3.3",
     "open-cli": "^8.0.0",
     "prettier": "^3.6.2",
     "prettier-plugin-gherkin": "^3.1.2",
@@ -50,11 +51,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.6",
-    "@nestjs/core": "^11.1.6",
     "axios": "^1.10.0",
     "cucumber-html-reporter": "^7.2.0",
-    "dotenv": "^17.2.1",
-    "reflect-metadata": "^0.2.2"
+    "dotenv": "^17.2.1"
   }
 }
