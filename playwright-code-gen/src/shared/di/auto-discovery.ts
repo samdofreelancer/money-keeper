@@ -64,5 +64,5 @@ export async function autoDiscover(
 
 export function getDiscoveredServices(): Map<symbol | string, ServiceMetadata> {
   // Return a copy of the service registry for inspection
-  return new Map(container['serviceRegistry']);
+  return container.getServiceRegistry();
 }

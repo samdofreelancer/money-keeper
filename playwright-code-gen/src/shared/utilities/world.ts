@@ -32,7 +32,7 @@ export class World extends BaseWorld {
   /**
    * Resolve a service from the DI container
    */
-  public use<T>(token: symbol | string | (new (...args: any[]) => T)): T {
+  public use<T>(token: symbol | string | (new (...args: unknown[]) => T)): T {
     if (!this.initialized) {
       throw new Error('World not initialized. Call initialize() first.');
     }
@@ -109,8 +109,10 @@ export class World extends BaseWorld {
       await autoDiscover();
 
       // Debug: log discovered services
-      const discoveredServices = (global as any).__di_registry
-        ?.map((c: any) => c?.name)
+      const discoveredServices = (
+        global as { __di_registry?: Array<{ name?: string }> }
+      ).__di_registry
+        ?.map(c => c?.name)
         .sort();
       Logger.debug(
         `[DI] discovered services: ${JSON.stringify(discoveredServices)}`

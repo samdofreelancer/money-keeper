@@ -19,8 +19,13 @@ export function Service(options: ServiceOptions = {}): ClassDecorator {
     Reflect.defineMetadata(SERVICE_METADATA_KEY, metadata, target);
 
     // Auto-register the service
-    if (typeof (globalThis as any).__DI_CONTAINER__ !== 'undefined') {
-      (globalThis as any).__DI_CONTAINER__.registerService(target, metadata);
+    if (
+      typeof (globalThis as { __DI_CONTAINER__?: unknown }).__DI_CONTAINER__ !==
+      'undefined'
+    ) {
+      (
+        globalThis as { __DI_CONTAINER__?: { registerService: Function } }
+      ).__DI_CONTAINER__!.registerService(target, metadata);
     }
   };
 }

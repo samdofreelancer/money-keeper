@@ -1,7 +1,7 @@
 import { ServiceOptions, getInjectMetadata } from './decorators';
 
 export interface ServiceMetadata extends ServiceOptions {
-  target: new (...args: any[]) => unknown;
+  target: new (...args: unknown[]) => unknown;
 }
 
 export class Container {
@@ -22,7 +22,7 @@ export class Container {
     this.instanceRegistry.set(token, instance);
   }
 
-  resolve<T>(token: symbol | string | (new (...args: any[]) => T)): T {
+  resolve<T>(token: symbol | string | (new (...args: unknown[]) => T)): T {
     // First check if we have a registered instance
     if (typeof token === 'symbol' || typeof token === 'string') {
       const instance = this.instanceRegistry.get(token);
@@ -103,10 +103,14 @@ export class Container {
   getInstanceCount(): number {
     return this.instances.size + this.instanceRegistry.size;
   }
+
+  getServiceRegistry(): Map<symbol | string, ServiceMetadata> {
+    return new Map(this.serviceRegistry);
+  }
 }
 
 // Global container instance
 export const container = new Container();
 
 // Make container globally available for auto-registration
-(globalThis as any).__DI_CONTAINER__ = container;
+(globalThis as { __DI_CONTAINER__?: unknown }).__DI_CONTAINER__ = container;
