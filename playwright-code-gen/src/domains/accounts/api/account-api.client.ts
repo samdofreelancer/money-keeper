@@ -9,7 +9,7 @@ import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
 import { Service, Inject } from '../../../shared/di/decorators';
 import { TOKENS } from '../../../shared/di/tokens';
 
-@Service({ scope: 'transient' })
+@Service({ scope: 'transient', token: TOKENS.AccountApiClient })
 export class AccountApiClient {
   private client: AxiosInstance;
 

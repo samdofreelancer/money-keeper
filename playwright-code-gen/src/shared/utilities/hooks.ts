@@ -293,19 +293,8 @@ Before(async function (scenario) {
     // Store the world instance globally for easy access
     global.testWorld = this as unknown as World;
 
-    try {
-      const w = this as unknown as World;
-      const page = await (this as unknown as CucumberWorld).getPage();
-      (w as any).container?.registerInstance?.(TOKENS.Page, page);
-      (w as any).container?.registerInstance?.(
-        TOKENS.ApiBaseUrl,
-        process.env.API_BASE_URL ?? 'http://127.0.0.1:8080/api'
-      );
-      Logger.info('[DI] per-scenario tokens registered');
-    } catch (e) {
-      Logger.error('[DI] Failed to register per-scenario tokens', e);
-      throw e;
-    }
+    // The World.initialize() method already handles DI container setup
+    // No need to manually register tokens here
     Logger.debug('Scenario initialized successfully');
   } catch (error) {
     Logger.error(`Error initializing scenario: ${scenarioName}`, error);

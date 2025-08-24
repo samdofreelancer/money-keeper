@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { Logger } from '../../../shared/utilities/logger';
-import { TOKENS } from '../../../shared/di/nest-tokens';
+import { TOKENS } from '../../../shared/di/tokens';
 import { TransactionMockProvider } from '../mocks/transaction.mock';
 import { UiStateMockProvider } from '../mocks/ui-state.mock';
 import { Service, Inject } from '../../../shared/di/decorators';

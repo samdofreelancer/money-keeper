@@ -1,13 +1,13 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { TOKENS } from '../../../../shared/di/tokens';
 import { Service, Inject } from '../../../../shared/di/decorators';
 import { Logger } from '../../../../shared/utilities/logger';
 
 /**
  * Use case for account balance operations via UI
  */
-@Service({ scope: 'transient' })
+@Service({ scope: 'transient', token: TOKENS.AccountBalanceUiUseCase })
 export class AccountBalanceUiUseCase {
   constructor(
     @Inject(TOKENS.AccountsPlaywrightPage)

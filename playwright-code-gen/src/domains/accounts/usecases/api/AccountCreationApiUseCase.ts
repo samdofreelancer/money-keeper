@@ -2,11 +2,12 @@ import { Logger } from '../../../../shared/utilities/logger';
 import { AccountCreateDto } from '../../types/account.dto';
 import { AccountApiClient } from '../../api/account-api.client';
 import { Service } from '../../../../shared/di/decorators';
+import { TOKENS } from '../../../../shared/di/tokens';
 
 /**
  * Use case for account creation via API
  */
-@Service({ scope: 'transient' })
+@Service({ scope: 'transient', token: TOKENS.AccountCreationApiUseCase })
 export class AccountCreationApiUseCase {
   constructor(
     private accountApiClient: AccountApiClient

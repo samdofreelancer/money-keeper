@@ -5,7 +5,7 @@ import { TransactionMockProvider } from '../../mocks/transaction.mock';
 import { UiStateMockProvider } from '../../mocks/ui-state.mock';
 import { TOKENS } from '../../../../shared/di/tokens';
 
-@Service({ scope: 'transient' })
+@Service({ scope: 'transient', token: TOKENS.TransactionCreationUiUseCase })
 export class TransactionCreationUiUseCase {
   //constructor(@Inject(TOKENS.TransactionsPage) private readonly transactionsPage: TransactionsPage) {}
 

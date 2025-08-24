@@ -41,47 +41,47 @@ export class World extends BaseWorld {
 
   // ==== API giữ nguyên: steps vẫn gọi world.xxx ====
   public get accountsPage(): AccountsPlaywrightPage {
-    return this.use(AccountsPlaywrightPage);
+    return this.use(TOKENS.AccountsPlaywrightPage);
   }
   public get categoriesPage(): CategoriesPage {
-    return this.use(CategoriesPage);
+    return this.use(TOKENS.CategoriesPage);
   }
   public get accountApiClient(): AccountApiClient {
-    return this.use(AccountApiClient);
+    return this.use(TOKENS.AccountApiClient);
   }
   public get categoryApiClient(): CategoryApiClient {
-    return this.use(CategoryApiClient);
+    return this.use(TOKENS.CategoryApiClient);
   }
 
   public get accountCreationApiUseCase(): AccountCreationApiUseCase {
-    return this.use(AccountCreationApiUseCase);
+    return this.use(TOKENS.AccountCreationApiUseCase);
   }
   public get accountDeletionApiUseCase(): AccountDeletionApiUseCase {
-    return this.use(AccountDeletionApiUseCase);
+    return this.use(TOKENS.AccountDeletionApiUseCase);
   }
   public get accountBalanceUiUseCase(): AccountBalanceUiUseCase {
-    return this.use(AccountBalanceUiUseCase);
+    return this.use(TOKENS.AccountBalanceUiUseCase);
   }
   public get accountCreationUiUseCase(): AccountCreationUiUseCase {
-    return this.use(AccountCreationUiUseCase);
+    return this.use(TOKENS.AccountCreationUiUseCase);
   }
   public get createCategoryUseCase(): CreateCategoryUseCase {
-    return this.use(CreateCategoryUseCase);
+    return this.use(TOKENS.CreateCategoryUseCase);
   }
 
   public get categoryDeletionApiUseCase(): CategoryDeletionApiUseCase {
-    return this.use(CategoryDeletionApiUseCaseImpl);
+    return this.use(TOKENS.CategoryDeletionApiUseCase);
   }
 
   // Transaction related getters
   public get transactionsPage(): TransactionsPage {
-    return this.use(TransactionsPage);
+    return this.use(TOKENS.TransactionsPage);
   }
   public get transactionCreationUiUseCase(): TransactionCreationUiUseCase {
-    return this.use(TransactionCreationUiUseCase);
+    return this.use(TOKENS.TransactionCreationUiUseCase);
   }
   public get transactionCreationApiUseCase(): TransactionCreationApiUseCase {
-    return this.use(TransactionCreationApiUseCase);
+    return this.use(TOKENS.TransactionCreationApiUseCase);
   }
 
   /**
