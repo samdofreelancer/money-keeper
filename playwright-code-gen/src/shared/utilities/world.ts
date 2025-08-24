@@ -4,19 +4,19 @@ import { Logger } from './logger';
 import { container } from '../di/container';
 import { TOKENS } from '../di/tokens';
 import { autoDiscover } from '../di/auto-discovery';
-import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
 import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
 import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { CategoryApiClient } from '../../domains/category/api/category-api.client';
 import { CategoryDeletionApiUseCase } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
 import { CategoriesPage } from '../../domains/category/pages/categories.playwright.page';
-import { AccountBalanceUiUseCase } from '@/domains/accounts/usecases/ui/AccountBalanceUiUseCase';
+import { AccountBalanceUiUseCase } from '../../domains/accounts/usecases/ui/AccountBalanceUiUseCase';
 import { CreateCategoryUseCase } from '../../domains/category/usecases/ui/category.use-case';
 import { TransactionsPage } from '../../domains/transactions/pages/transactions.playwright.page';
 import { TransactionCreationUiUseCase } from '../../domains/transactions/usecases/ui/TransactionCreationUiUseCase';
 import { TransactionCreationApiUseCase } from '../../domains/transactions/usecases/api/TransactionCreationApiUseCase';
 import { AccountCreationUiUseCase } from '../../domains/accounts/usecases/ui/AccountCreationUiUseCase';
+import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
 
 /**
  * World per-scenario — browser/context/page từ BaseWorld
@@ -41,32 +41,32 @@ export class World extends BaseWorld {
 
   // ==== API giữ nguyên: steps vẫn gọi world.xxx ====
   public get accountsPage(): AccountsPlaywrightPage {
-    return this.use(TOKENS.AccountsPlaywrightPage);
+    return this.use(AccountsPlaywrightPage);
   }
   public get categoriesPage(): CategoriesPage {
-    return this.use(TOKENS.CategoriesPage);
+    return this.use(CategoriesPage);
   }
   public get accountApiClient(): AccountApiClient {
-    return this.use(TOKENS.AccountApiClient);
+    return this.use(AccountApiClient);
   }
   public get categoryApiClient(): CategoryApiClient {
-    return this.use(TOKENS.CategoryApiClient);
+    return this.use(CategoryApiClient);
   }
 
   public get accountCreationApiUseCase(): AccountCreationApiUseCase {
-    return this.use(TOKENS.AccountCreationApiUseCase);
+    return this.use(AccountCreationApiUseCase);
   }
   public get accountDeletionApiUseCase(): AccountDeletionApiUseCase {
-    return this.use(TOKENS.AccountDeletionApiUseCase);
+    return this.use(AccountDeletionApiUseCase);
   }
   public get accountBalanceUiUseCase(): AccountBalanceUiUseCase {
-    return this.use(TOKENS.AccountBalanceUiUseCase);
+    return this.use(AccountBalanceUiUseCase);
   }
   public get accountCreationUiUseCase(): AccountCreationUiUseCase {
-    return this.use(TOKENS.AccountCreationUiUseCase);
+    return this.use(AccountCreationUiUseCase);
   }
   public get createCategoryUseCase(): CreateCategoryUseCase {
-    return this.use(TOKENS.CreateCategoryUseCase);
+    return this.use(CreateCategoryUseCase);
   }
 
   public get categoryDeletionApiUseCase(): CategoryDeletionApiUseCase {
@@ -78,7 +78,7 @@ export class World extends BaseWorld {
     return this.use(TOKENS.TransactionsPage);
   }
   public get transactionCreationUiUseCase(): TransactionCreationUiUseCase {
-    return this.use(TOKENS.TransactionCreationUiUseCase);
+    return this.use(TransactionCreationUiUseCase);
   }
   public get transactionCreationApiUseCase(): TransactionCreationApiUseCase {
     return this.use(TOKENS.TransactionCreationApiUseCase);
@@ -104,6 +104,10 @@ export class World extends BaseWorld {
 
       // Auto-discover and register services
       await autoDiscover();
+
+      // Debug: log discovered services
+      const discoveredServices = (global as any).__di_registry?.map((c: any) => c?.name).sort();
+      Logger.debug(`[DI] discovered services: ${JSON.stringify(discoveredServices)}`);
 
       this.initialized = true;
       Logger.info('World initialized successfully with auto-registration DI container');

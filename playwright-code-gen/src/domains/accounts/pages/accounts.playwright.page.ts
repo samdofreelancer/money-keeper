@@ -1,16 +1,19 @@
 import { Page } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
 import { TOKENS } from '../../../shared/di/nest-tokens';
+import { Service } from '../../../shared/di/decorators';
+import { BasePage } from '../../../shared/pages/base.page';
 
 /**
  * Page object for the Accounts page
  */
-@Injectable()
-export class AccountsPlaywrightPage {
-  constructor(@Inject(TOKENS.Page) private page: Page) {}
-
+@Service({ scope: 'transient' })
+export class AccountsPlaywrightPage extends BasePage {
+  constructor(@Inject(TOKENS.Page) page: Page) {
+    super(page);
+  }
   private selectors = {
     buttons: {
       addAccount: 'button:has-text("Add Account")',

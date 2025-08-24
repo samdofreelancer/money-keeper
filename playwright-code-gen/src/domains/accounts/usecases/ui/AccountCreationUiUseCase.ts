@@ -3,11 +3,12 @@ import { Logger } from '../../../../shared/utilities/logger';
 import { AccountDto } from '../../types/account.dto';
 import { Injectable, Inject } from '@nestjs/common';
 import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { Service } from '../../../../shared/di/decorators';
 
 /**
  * Use case for account creation via UI interactions
  */
-@Injectable()
+@Service({ scope: 'transient' })
 export class AccountCreationUiUseCase {
   constructor(
     @Inject(TOKENS.AccountsPlaywrightPage)

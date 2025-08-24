@@ -4,7 +4,7 @@ import { Logger } from '../../../shared/utilities/logger';
 import { Service, Inject } from '../../../shared/di/decorators';
 import { TOKENS } from '../../../shared/di/tokens';
 
-@Service({ scope: 'singleton', token: TOKENS.AccountsPlaywrightPage })
+@Service({ scope: 'transient' })
 export class AccountsPage extends BasePage {
   // Selectors
   private readonly accountsTabSelector = '[data-testid="accounts-tab"]';

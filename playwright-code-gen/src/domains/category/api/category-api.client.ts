@@ -3,8 +3,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 import { TOKENS } from '../../../shared/di/nest-tokens';
 import { Logger } from '../../../shared/utilities/logger';
+import { Service } from '../../../shared/di/decorators';
 
-@Injectable()
+@Service({ scope: 'transient' })
 export class CategoryApiClient {
   private apiBaseUrl: string;
 

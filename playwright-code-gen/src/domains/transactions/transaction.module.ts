@@ -4,10 +4,9 @@ import { TOKENS } from '../../shared/di/nest-tokens';
 import { TransactionsPage } from './pages/transactions.playwright.page';
 import { TransactionCreationUiUseCase } from './usecases/ui/TransactionCreationUiUseCase';
 import { TransactionCreationApiUseCase } from './usecases/api/TransactionCreationApiUseCase';
-import { SharedModule } from '../../shared/di/shared.module';
 
 @Module({
-  imports: [SharedModule],
+  imports: [],
   providers: [
     // Page Object
     {
@@ -18,10 +17,10 @@ import { SharedModule } from '../../shared/di/shared.module';
 
     // UI Usecases
     {
-      provide: TOKENS.TransactionCreationUiUseCase,
+      provide: TransactionCreationUiUseCase,
       useFactory: (transactionsPage: TransactionsPage) =>
         new TransactionCreationUiUseCase(transactionsPage),
-      inject: [TOKENS.TransactionsPage],
+      inject: [TransactionsPage],
     },
 
     // API Usecases
@@ -34,7 +33,7 @@ import { SharedModule } from '../../shared/di/shared.module';
   ],
   exports: [
     TOKENS.TransactionsPage,
-    TOKENS.TransactionCreationUiUseCase,
+    TransactionCreationUiUseCase,
     TOKENS.TransactionCreationApiUseCase,
   ],
 })

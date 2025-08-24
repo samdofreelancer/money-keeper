@@ -2,11 +2,12 @@ import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { Service } from '../../../../shared/di/decorators';
 
 /**
  * Use case for account balance operations via UI
  */
-@Injectable()
+@Service({ scope: 'transient' })
 export class AccountBalanceUiUseCase {
   constructor(
     @Inject(TOKENS.AccountsPlaywrightPage)

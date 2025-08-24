@@ -2,11 +2,12 @@ import { Logger } from '../../../../shared/utilities/logger';
 import { AccountApiClient } from '../../api/account-api.client';
 import { Injectable, Inject } from '@nestjs/common';
 import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { Service } from '../../../../shared/di/decorators';
 
 /**
  * Use case for account deletion via API
  */
-@Injectable()
+@Service({ scope: 'transient' })
 export class AccountDeletionApiUseCase {
   constructor(
     @Inject(TOKENS.AccountApiClient) private accountApiClient: AccountApiClient
