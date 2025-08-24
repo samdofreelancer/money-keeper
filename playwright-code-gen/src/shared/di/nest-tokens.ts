@@ -15,10 +15,15 @@ export const TOKENS = {
   CategoriesPage: Symbol.for('category:CategoriesPage'),
   CategoryApiClient: Symbol.for('category:CategoryApiClient'),
   CreateCategoryUseCase: Symbol.for('category:CreateCategoryUseCase'),
+  CategoryDeletionApiUseCase: Symbol.for('category:CategoryDeletionApiUseCase'),
 
   // Transaction domain tokens
   TransactionsPage: Symbol.for('transactions:TransactionsPage'),
-  TransactionCreationUiUseCase: Symbol.for('transactions:TransactionCreationUiUseCase'),
-  TransactionCreationApiUseCase: Symbol.for('transactions:TransactionCreationApiUseCase'),
+  TransactionCreationUiUseCase: Symbol.for(
+    'transactions:TransactionCreationUiUseCase'
+  ),
+  TransactionCreationApiUseCase: Symbol.for(
+    'transactions:TransactionCreationApiUseCase'
+  ),
 } as const;
 export type Token = (typeof TOKENS)[keyof typeof TOKENS];

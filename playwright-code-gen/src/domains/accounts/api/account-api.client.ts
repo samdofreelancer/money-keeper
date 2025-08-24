@@ -4,20 +4,20 @@ import axios, {
   AxiosError,
   AxiosResponse,
 } from 'axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
+import { TOKENS } from '../../../shared/di/nest-tokens';
 
 @Injectable()
 export class AccountApiClient {
   private client: AxiosInstance;
 
-  constructor() {
-    const baseURL = process.env.API_BASE_URL || 'http://127.0.0.1:8080/api';
-    if (!baseURL) throw new Error('API_BASE_URL is required for tests');
+  constructor(@Inject(TOKENS.ApiBaseUrl) baseUrl: string) {
+    if (!baseUrl) throw new Error('API_BASE_URL is required for tests');
 
     this.client = axios.create({
-      baseURL: `${baseURL}/accounts`,
+      baseURL: `${baseUrl}/accounts`,
       headers: {
         'Content-Type': 'application/json',
       },

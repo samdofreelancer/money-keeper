@@ -17,8 +17,13 @@ export class RuntimeDiModule {
       providers: [
         { provide: TOKENS.Page, useValue: runtime.page },
         { provide: TOKENS.Request, useValue: runtime.request },
+        {
+          provide: TOKENS.ApiBaseUrl,
+          useFactory: () =>
+            process.env.API_BASE_URL || 'http://127.0.0.1:8080/api',
+        },
       ],
-      exports: [TOKENS.Page, TOKENS.Request],
+      exports: [TOKENS.Page, TOKENS.Request, TOKENS.ApiBaseUrl],
     };
   }
 }

@@ -143,19 +143,19 @@ export const getCategoryApiClient = (): World['categoryApiClient'] => {
   return global.testWorld.categoryApiClient;
 };
 
-let _categoryDeletionApiUseCase: ReturnType<
-  typeof makeCategoryDeletionApiUseCase
-> | null = null;
-
-function makeCategoryDeletionApiUseCase() {
-  const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:8080';
-  const token = process.env.API_TOKEN;
-  return new CategoryDeletionApiUseCaseImpl(baseUrl, token);
-}
+let _categoryDeletionApiUseCase: CategoryDeletionApiUseCaseImpl | null = null;
 
 export function getCategoryDeletionApiUseCase() {
-  if (!_categoryDeletionApiUseCase)
-    _categoryDeletionApiUseCase = makeCategoryDeletionApiUseCase();
+  if (!_categoryDeletionApiUseCase) {
+    // This function should be called within the context of a World instance
+    // where the DI container is available
+    if (!global.testWorld) {
+      throw new Error(
+        'World not initialized. Cannot get CategoryDeletionApiUseCase'
+      );
+    }
+    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase;
+  }
   return _categoryDeletionApiUseCase;
 }
 

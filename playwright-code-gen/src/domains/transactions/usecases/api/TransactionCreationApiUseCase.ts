@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { TransactionCreateDto } from '../../types/transaction.dto';
 import { Logger } from '../../../../shared/utilities/logger';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
+import { TOKENS } from '../../../../shared/di/nest-tokens';
 
 @Injectable()
 export class TransactionCreationApiUseCase {
   constructor(
-    private readonly baseUrl: string,
+    @Inject(TOKENS.ApiBaseUrl) private readonly baseUrl: string,
     private readonly token?: string
   ) {}
 

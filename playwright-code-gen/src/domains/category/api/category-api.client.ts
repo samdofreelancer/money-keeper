@@ -8,9 +8,11 @@ import { Logger } from '../../../shared/utilities/logger';
 export class CategoryApiClient {
   private apiBaseUrl: string;
 
-  constructor(@Inject(TOKENS.Request) private request: APIRequestContext) {
-    // Use API_BASE_URL from environment or default to localhost:8080
-    this.apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080';
+  constructor(
+    @Inject(TOKENS.Request) private request: APIRequestContext,
+    @Inject(TOKENS.ApiBaseUrl) baseUrl: string
+  ) {
+    this.apiBaseUrl = baseUrl;
     Logger.debug(
       `CategoryApiClient initialized with API base URL: ${this.apiBaseUrl}`
     );
