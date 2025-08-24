@@ -11,7 +11,9 @@ export class CategoryApiClient {
   constructor(@Inject(TOKENS.Request) private request: APIRequestContext) {
     // Use API_BASE_URL from environment or default to localhost:8080
     this.apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080';
-    Logger.debug(`CategoryApiClient initialized with API base URL: ${this.apiBaseUrl}`);
+    Logger.debug(
+      `CategoryApiClient initialized with API base URL: ${this.apiBaseUrl}`
+    );
   }
 
   private async assertOk(res: APIResponse, action: string): Promise<void> {
@@ -29,14 +31,14 @@ export class CategoryApiClient {
 
   private getApiUrl(endpoint: string): string {
     // If API_BASE_URL already includes '/api', don't duplicate it
-    const baseUrl = this.apiBaseUrl.endsWith('/api') 
-      ? this.apiBaseUrl 
+    const baseUrl = this.apiBaseUrl.endsWith('/api')
+      ? this.apiBaseUrl
       : `${this.apiBaseUrl}/api`;
-    
+
     // Remove any trailing slashes from baseUrl and ensure endpoint starts with /
     const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    
+
     return `${cleanBaseUrl}${cleanEndpoint}`;
   }
 

@@ -29,18 +29,6 @@ jobs:
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: playwright-code-gen/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('playwright-code-gen/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install playwright-code-gen dependencies
-        run: npm install
-        working-directory: ./playwright-code-gen
-
       - name: Run lint check and stop on error
         run: npm run lint
         working-directory: ./playwright-code-gen

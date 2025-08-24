@@ -67,7 +67,9 @@ services:
       - money-keeper-net
 
   playwright-code-gen:
-    image: mcr.microsoft.com/playwright:v1.55.0-noble
+    build:
+      context: ./playwright-code-gen
+      dockerfile: Dockerfile
     volumes:
       - ./playwright-code-gen:/playwright-code-gen
     working_dir: /playwright-code-gen
