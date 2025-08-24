@@ -11,7 +11,7 @@ module.exports = {
       'progress-bar',
       'json:test-results/cucumber-report.json'
     ],
-    parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '1'),
+    parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '4'), // Enable parallel execution with 4 workers
     async onComplete() {
       const jsonReport = path.resolve(__dirname,'test-results/cucumber-report.json');
       if (fs.existsSync(jsonReport)) {
