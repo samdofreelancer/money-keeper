@@ -67,7 +67,7 @@ services:
       - money-keeper-net
 
   playwright-code-gen:
-    image: mcr.microsoft.com/playwright:v1.53.0-noble
+    image: mcr.microsoft.com/playwright:v1.55.0-noble
     volumes:
       - ./playwright-code-gen:/playwright-code-gen
     working_dir: /playwright-code-gen
