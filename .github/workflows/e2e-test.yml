@@ -29,10 +29,6 @@ jobs:
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
-      - name: Run lint check and stop on error
-        run: npm run lint
-        working-directory: ./playwright-code-gen
-
       - name: Run Flyway migration with retries
         run: |
           ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway

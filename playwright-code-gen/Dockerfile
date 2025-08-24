@@ -14,6 +14,9 @@ COPY . .
 # Install dependencies
 RUN npm install
 
+# Run lint check
+RUN npm run lint
+
 # Set the working directory
 WORKDIR /playwright-code-gen
 
