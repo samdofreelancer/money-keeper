@@ -1,0 +1,65 @@
+name: Test & Publish Allure
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: playwright-code-gen   # adjust if your e2e folder differs
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+      - name: Run E2E (must generate ./allure-results)
+        run: npm run test:e2e
+
+      - name: Install Allure CLI
+        run: npx --yes allure-commandline --version
+
+      # Pull previous history to keep trend graphs
+      - name: Fetch previous gh-pages
+        run: |
+          git fetch origin gh-pages || true
+          mkdir -p ../old-pages
+          if git ls-remote --exit-code origin gh-pages; then
+            git worktree add ../old-pages gh-pages
+          fi
+
+      - name: Generate Allure report
+        run: |
+          npx allure generate ./allure-results --clean -o ./allure-report
+          if [ -d ../old-pages/history ]; then
+            cp -r ../old-pages/history ./allure-report/ || true
+          fi
+          touch ./allure-report/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./allure-report
+
+  deploy:
+    needs: test-and-report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
