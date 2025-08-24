@@ -160,10 +160,16 @@ Then(
       throw new Error('No existing account name found in test context');
     }
 
-    const count = await accountsPage.getAccountCount(uniqueAccountName);
-    if (count !== 1) {
+    if (uniqueAccountName.includes(accountName)) {
+      const count = await accountsPage.getAccountCount(uniqueAccountName);
+      if (count !== 1) {
+        throw new Error(
+          `Account "${uniqueAccountName}" appears ${count} times, expected 1`
+        );
+      }
+    } else {
       throw new Error(
-        `Account "${uniqueAccountName}" appears ${count} times, expected 1`
+        `Account "${uniqueAccountName}" not found in accounts list`
       );
     }
   }
