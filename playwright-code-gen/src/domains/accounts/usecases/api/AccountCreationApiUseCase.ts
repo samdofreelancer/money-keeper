@@ -1,16 +1,15 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountCreateDto } from '../../types/account.dto';
 import { AccountApiClient } from '../../api/account-api.client';
-import { Injectable, Inject } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { Service } from '../../../../shared/di/decorators';
 
 /**
  * Use case for account creation via API
  */
-@Injectable()
+@Service({ scope: 'transient' })
 export class AccountCreationApiUseCase {
   constructor(
-    @Inject(TOKENS.AccountApiClient) private accountApiClient: AccountApiClient
+    private accountApiClient: AccountApiClient
   ) {}
 
   /**

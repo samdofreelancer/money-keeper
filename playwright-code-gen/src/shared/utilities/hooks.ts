@@ -19,12 +19,13 @@ import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
 import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { AccountUseCase } from '../../domains/accounts/usecases/account.use-case';
 import { allureReporter } from './allure-reporter';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
-import { NestContainerFactory } from '../di/nest-container.factory';
+import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
 
 // Extend the global object type
 declare global {
@@ -154,7 +155,7 @@ export function getCategoryDeletionApiUseCase() {
         'World not initialized. Cannot get CategoryDeletionApiUseCase'
       );
     }
-    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase;
+    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase as CategoryDeletionApiUseCaseImpl;
   }
   return _categoryDeletionApiUseCase;
 }
@@ -394,7 +395,6 @@ After(async function (scenario) {
     Logger.error('Error during scenario teardown', error);
   }
 
-  await NestContainerFactory.destroyContainer();
 });
 
 AfterStep(async function (step) {

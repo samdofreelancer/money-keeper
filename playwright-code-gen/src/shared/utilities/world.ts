@@ -1,86 +1,122 @@
+import 'reflect-metadata';
 import { BaseWorld } from './base-world';
 import { Logger } from './logger';
-import { NestContainerFactory } from '../di/nest-container.factory';
-import { TOKENS } from '../di/nest-tokens';
-import { INestApplicationContext } from '@nestjs/common';
+import { container } from '../di/container';
+import { TOKENS } from '../di/tokens';
+import { autoDiscover } from '../di/auto-discovery';
+import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
+import { AccountApiClient } from '../../domains/accounts/api/account-api.client';
+import { AccountCreationApiUseCase } from '../../domains/accounts/usecases/api/AccountCreationApiUseCase';
+import { AccountDeletionApiUseCase } from '../../domains/accounts/usecases/api/AccountDeletionApiUseCase';
+import { CategoryApiClient } from '../../domains/category/api/category-api.client';
+import { CategoryDeletionApiUseCase } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { CategoriesPage } from '../../domains/category/pages/categories.playwright.page';
+import { AccountBalanceUiUseCase } from '@/domains/accounts/usecases/ui/AccountBalanceUiUseCase';
+import { CreateCategoryUseCase } from '../../domains/category/usecases/ui/category.use-case';
+import { TransactionsPage } from '../../domains/transactions/pages/transactions.playwright.page';
+import { TransactionCreationUiUseCase } from '../../domains/transactions/usecases/ui/TransactionCreationUiUseCase';
+import { TransactionCreationApiUseCase } from '../../domains/transactions/usecases/api/TransactionCreationApiUseCase';
+import { AccountCreationUiUseCase } from '../../domains/accounts/usecases/ui/AccountCreationUiUseCase';
 
 /**
  * World per-scenario — browser/context/page từ BaseWorld
- * Uses NestJS DI container instead of custom container
+ * Uses lightweight DI container with auto-registration
  */
 export class World extends BaseWorld {
-  private container!: INestApplicationContext;
-
-  // ==== API giữ nguyên: steps vẫn gọi world.xxx ====
-  public get accountsPage() {
-    return this.container.get(TOKENS.AccountsPlaywrightPage);
-  }
-  public get categoriesPage() {
-    return this.container.get(TOKENS.CategoriesPage);
-  }
-  public get accountApiClient() {
-    return this.container.get(TOKENS.AccountApiClient);
-  }
-  public get categoryApiClient() {
-    return this.container.get(TOKENS.CategoryApiClient);
-  }
-
-  public get accountCreationApiUseCase() {
-    return this.container.get(TOKENS.AccountCreationApiUseCase);
-  }
-  public get accountDeletionApiUseCase() {
-    return this.container.get(TOKENS.AccountDeletionApiUseCase);
-  }
-  public get accountBalanceUiUseCase() {
-    return this.container.get(TOKENS.AccountBalanceUiUseCase);
-  }
-  public get accountCreationUiUseCase() {
-    return this.container.get(TOKENS.AccountCreationUiUseCase);
-  }
-  public get createCategoryUseCase() {
-    return this.container.get(TOKENS.CreateCategoryUseCase);
-  }
-
-  public get categoryDeletionApiUseCase() {
-    return this.container.get(TOKENS.CategoryDeletionApiUseCase);
-  }
-
-  // Transaction related getters
-  public get transactionsPage() {
-    return this.container.get(TOKENS.TransactionsPage);
-  }
-  public get transactionCreationUiUseCase() {
-    return this.container.get(TOKENS.TransactionCreationUiUseCase);
-  }
-  public get transactionCreationApiUseCase() {
-    return this.container.get(TOKENS.TransactionCreationApiUseCase);
-  }
+  private initialized = false;
 
   constructor() {
     super();
   }
 
   /**
-   * Per-scenario providers using NestJS DI
+   * Resolve a service from the DI container
+   */
+  public use<T>(token: symbol | string | (new (...args: any[]) => T)): T {
+    if (!this.initialized) {
+      throw new Error('World not initialized. Call initialize() first.');
+    }
+    return container.resolve(token);
+  }
+
+  // ==== API giữ nguyên: steps vẫn gọi world.xxx ====
+  public get accountsPage(): AccountsPlaywrightPage {
+    return this.use(TOKENS.AccountsPlaywrightPage);
+  }
+  public get categoriesPage(): CategoriesPage {
+    return this.use(TOKENS.CategoriesPage);
+  }
+  public get accountApiClient(): AccountApiClient {
+    return this.use(TOKENS.AccountApiClient);
+  }
+  public get categoryApiClient(): CategoryApiClient {
+    return this.use(TOKENS.CategoryApiClient);
+  }
+
+  public get accountCreationApiUseCase(): AccountCreationApiUseCase {
+    return this.use(TOKENS.AccountCreationApiUseCase);
+  }
+  public get accountDeletionApiUseCase(): AccountDeletionApiUseCase {
+    return this.use(TOKENS.AccountDeletionApiUseCase);
+  }
+  public get accountBalanceUiUseCase(): AccountBalanceUiUseCase {
+    return this.use(TOKENS.AccountBalanceUiUseCase);
+  }
+  public get accountCreationUiUseCase(): AccountCreationUiUseCase {
+    return this.use(TOKENS.AccountCreationUiUseCase);
+  }
+  public get createCategoryUseCase(): CreateCategoryUseCase {
+    return this.use(TOKENS.CreateCategoryUseCase);
+  }
+
+  public get categoryDeletionApiUseCase(): CategoryDeletionApiUseCase {
+    return this.use(TOKENS.CategoryDeletionApiUseCase);
+  }
+
+  // Transaction related getters
+  public get transactionsPage(): TransactionsPage {
+    return this.use(TOKENS.TransactionsPage);
+  }
+  public get transactionCreationUiUseCase(): TransactionCreationUiUseCase {
+    return this.use(TOKENS.TransactionCreationUiUseCase);
+  }
+  public get transactionCreationApiUseCase(): TransactionCreationApiUseCase {
+    return this.use(TOKENS.TransactionCreationApiUseCase);
+  }
+
+  /**
+   * Per-scenario initialization with auto-discovery DI
    */
   public async initialize(): Promise<void> {
     await super.initialize(); // create browser/context/page
 
-    // Initialize NestJS container with Playwright instances
     try {
-      this.container = await NestContainerFactory.createContainer(
-        this.getPage()
+      // Clear previous container state
+      container.clear();
+
+      // Register runtime instances
+      container.registerInstance(TOKENS.Page, this.getPage());
+      container.registerInstance(TOKENS.Request, this.getPage().request);
+      container.registerInstance(
+        TOKENS.ApiBaseUrl,
+        process.env.API_BASE_URL || 'http://127.0.0.1:8080/api'
       );
-      Logger.info('World initialized successfully with NestJS DI container');
+
+      // Auto-discover and register services
+      await autoDiscover();
+
+      this.initialized = true;
+      Logger.info('World initialized successfully with auto-registration DI container');
     } catch (error) {
-      Logger.error('Failed to initialize NestJS container', error);
+      Logger.error('Failed to initialize DI container', error);
       throw error;
     }
   }
 
   public async teardown(): Promise<void> {
     await super.teardown();
-    await NestContainerFactory.destroyContainer();
+    container.clear();
+    this.initialized = false;
     Logger.info('World closed successfully');
   }
 }

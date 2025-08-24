@@ -1,7 +1,10 @@
 import { Page } from '@playwright/test';
 import { BasePage } from '../../../shared/pages/base.page';
 import { Logger } from '../../../shared/utilities/logger';
+import { Service, Inject } from '../../../shared/di/decorators';
+import { TOKENS } from '../../../shared/di/tokens';
 
+@Service({ scope: 'singleton', token: TOKENS.AccountsPlaywrightPage })
 export class AccountsPage extends BasePage {
   // Selectors
   private readonly accountsTabSelector = '[data-testid="accounts-tab"]';
@@ -24,7 +27,7 @@ export class AccountsPage extends BasePage {
   private readonly accountBalanceSelector = '[data-testid="account-balance"]';
   private readonly errorMessageSelector = '[data-testid="error-message"]';
 
-  constructor(page: Page) {
+  constructor(@Inject(TOKENS.Page) page: Page) {
     super(page);
   }
 

@@ -4,10 +4,12 @@ import { AccountCreateDto, AccountDto } from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
 import { CurrencyConfig } from '../../../shared/config/currency.config';
 import { CurrencyConstants } from '../../../shared/constants/currency.constants';
+import { Service } from '../../../shared/di/decorators';
 
 /**
  * Use case for account-related operations
  */
+@Service({ scope: 'transient' })
 export class AccountUseCase {
   constructor(
     private accountsPage: AccountsPlaywrightPage,

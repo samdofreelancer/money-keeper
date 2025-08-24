@@ -3,6 +3,7 @@ import { Logger } from './logger';
 import { getAccountDeletionApiUseCase, getCategoryApiClient } from './hooks';
 import { AccountDeletionApiUseCase } from '@/domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { CategoryResponse } from '@/domains/category/types/category.dto';
+import { CategoryApiClient } from '@/domains/category';
 
 /**
  * TestData
@@ -116,7 +117,7 @@ export class TestData {
     }
 
     const accountDeletionApiUseCase: AccountDeletionApiUseCase =
-      getAccountDeletionApiUseCase();
+      getAccountDeletionApiUseCase() as AccountDeletionApiUseCase;
     Logger.info(`[TestData] Cleaning ${accounts.length} account(s) via API...`);
 
     for (const accountName of accounts) {
@@ -144,7 +145,7 @@ export class TestData {
       return;
     }
 
-    const categoryApiClient = getCategoryApiClient();
+    const categoryApiClient = getCategoryApiClient() as CategoryApiClient;
     Logger.info(
       `[TestData] Cleaning ${categoryNames.length} category(ies) via API...`
     );
