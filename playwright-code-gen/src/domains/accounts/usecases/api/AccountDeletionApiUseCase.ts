@@ -1,7 +1,6 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountApiClient } from '../../api/account-api.client';
-import { TOKENS } from '../../../../shared/di/tokens';
-import { Inject, Transient } from '../../../../shared/di/decorators';
+import { Inject, Transient, TOKENS } from '../../../../shared/di';
 
 /**
  * Use case for account deletion via API

@@ -1,5 +1,4 @@
-import { Transient } from '../../../../shared/di/decorators';
-import { TOKENS } from '../../../../shared/di/tokens';
+import { Transient, TOKENS } from '../../../../shared/di';
 
 // src/domains/category/usecases/api/CategoryDeletionApiUseCase.ts
 export interface CategoryDeletionApiUseCase {

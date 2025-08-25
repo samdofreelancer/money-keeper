@@ -4,6 +4,11 @@ export interface ServiceMetadata extends ServiceOptions {
   target: new (...args: unknown[]) => unknown;
 }
 
+function normalizeToken(token: symbol | string | Function): symbol | string {
+  if (typeof token === 'function') return token.name;
+  return token;
+}
+
 export class Container {
   private serviceRegistry = new Map<symbol | string, ServiceMetadata>();
   private instances = new Map<symbol | string, unknown>();
@@ -13,13 +18,15 @@ export class Container {
     target: new (...args: unknown[]) => unknown,
     metadata: ServiceMetadata
   ): void {
-    const token =
+    const rawToken =
       metadata.token || (typeof target === 'function' ? target.name : target);
+    const token = normalizeToken(rawToken as symbol | string | Function);
     this.serviceRegistry.set(token, metadata);
   }
 
-  registerInstance<T>(token: symbol | string, instance: T): void {
-    this.instanceRegistry.set(token, instance);
+  registerInstance<T>(token: symbol | string | Function, instance: T): void {
+    const key = normalizeToken(token);
+    this.instanceRegistry.set(key, instance);
   }
 
   resolve<T>(token: symbol | string | (new (...args: unknown[]) => T)): T {
@@ -69,12 +76,13 @@ export class Container {
   private buildInstance<T>(target: new (...args: unknown[]) => T): T {
     const injections = getInjectMetadata(target);
     const dependencies = injections.map(injectionToken => {
-      const dep = this.instanceRegistry.has(injectionToken)
-        ? this.instanceRegistry.get(injectionToken)
-        : this.resolve<unknown>(injectionToken);
+      const key = normalizeToken(injectionToken as symbol | string | Function);
+      const dep = this.instanceRegistry.has(key)
+        ? this.instanceRegistry.get(key)
+        : this.resolve<unknown>(key);
       if (dep == null) {
         throw new Error(
-          `DI resolved ${String(injectionToken)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`
+          `DI resolved ${String(key)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`
         );
       }
       return dep;

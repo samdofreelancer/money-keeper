@@ -1,8 +1,7 @@
 import { Page } from '@playwright/test';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
-import { TOKENS } from '../../../shared/di/tokens';
-import { Inject, Transient } from '../../../shared/di/decorators';
+import { Inject, Transient, TOKENS } from '../../../shared/di';
 import { BasePage } from '../../../shared/pages/base.page';
 
 /**
