@@ -8,7 +8,7 @@ import { Logger } from '../../../../shared/utilities/logger';
 import { CategoriesPage } from '../../pages/categories.playwright.page';
 import { TestData } from '../../../../shared/utilities/testData';
 import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject, Transient } from '../../../../shared/di/decorators';
+import { Inject, Transient } from '../../../../shared/di/decorators';
 
 export type CreateCategoryParams = {
   name: string;

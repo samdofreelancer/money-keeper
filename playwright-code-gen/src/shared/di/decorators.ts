@@ -30,7 +30,9 @@ export function Service(options: ServiceOptions = {}): ClassDecorator {
   };
 }
 
-export function Transient(options: Omit<ServiceOptions, 'scope'> = {}): ClassDecorator {
+export function Transient(
+  options: Omit<ServiceOptions, 'scope'> = {}
+): ClassDecorator {
   return (target: Function) => {
     const metadata = {
       scope: 'transient' as const,

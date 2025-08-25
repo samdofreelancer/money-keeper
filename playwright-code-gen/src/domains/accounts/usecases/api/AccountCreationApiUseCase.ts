@@ -1,7 +1,7 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountCreateDto } from '../../types/account.dto';
 import { AccountApiClient } from '../../api/account-api.client';
-import { Service, Inject, Transient } from '../../../../shared/di/decorators';
+import { Inject, Transient } from '../../../../shared/di/decorators';
 import { TOKENS } from '../../../../shared/di/tokens';
 
 /**

@@ -6,7 +6,7 @@ import axios, {
 } from 'axios';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
-import { Service, Inject, Transient } from '../../../shared/di/decorators';
+import { Inject, Transient } from '../../../shared/di/decorators';
 import { TOKENS } from '../../../shared/di/tokens';
 
 @Transient({ token: TOKENS.AccountApiClient })

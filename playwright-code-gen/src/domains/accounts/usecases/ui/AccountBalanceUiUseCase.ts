@@ -1,7 +1,7 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { CurrencyConfig } from '../../../../shared/config/currency.config';
 import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject, Transient } from '../../../../shared/di/decorators';
+import { Inject, Transient } from '../../../../shared/di/decorators';
 import { Logger } from '../../../../shared/utilities/logger';
 
 /**

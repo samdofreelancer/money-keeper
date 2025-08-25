@@ -2,7 +2,7 @@ import { TransactionCreateDto } from '../../types/transaction.dto';
 import { Logger } from '../../../../shared/utilities/logger';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
 import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject, Transient } from '../../../../shared/di/decorators';
+import { Inject, Transient } from '../../../../shared/di/decorators';
 
 @Transient({ token: TOKENS.TransactionCreationApiUseCase })
 export class TransactionCreationApiUseCase {

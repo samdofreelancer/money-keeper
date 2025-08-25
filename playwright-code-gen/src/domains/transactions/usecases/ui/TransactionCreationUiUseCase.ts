@@ -1,4 +1,4 @@
-import { Service, Transient } from '../../../../shared/di/decorators';
+import { Transient } from '../../../../shared/di/decorators';
 import { TransactionsPage } from '../../pages/transactions.playwright.page';
 import { TransactionCreateDto } from '../../types/transaction.dto';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
