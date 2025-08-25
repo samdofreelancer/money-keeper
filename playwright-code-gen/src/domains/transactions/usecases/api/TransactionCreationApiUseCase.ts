@@ -1,10 +1,9 @@
 import { TransactionCreateDto } from '../../types/transaction.dto';
 import { Logger } from '../../../../shared/utilities/logger';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
-import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject } from '../../../../shared/di/decorators';
+import { Inject, Transient, TOKENS } from '../../../../shared/di';
 
-@Service({ scope: 'transient', token: TOKENS.TransactionCreationApiUseCase })
+@Transient({ token: TOKENS.TransactionCreationApiUseCase })
 export class TransactionCreationApiUseCase {
   constructor(
     @Inject(TOKENS.ApiBaseUrl) private readonly baseUrl: string,

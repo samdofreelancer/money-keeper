@@ -1,11 +1,10 @@
-import { Service } from '../../../../shared/di/decorators';
+import { Transient, TOKENS } from '../../../../shared/di';
 import { TransactionsPage } from '../../pages/transactions.playwright.page';
 import { TransactionCreateDto } from '../../types/transaction.dto';
 import { TransactionMockProvider } from '../../mocks/transaction.mock';
 import { UiStateMockProvider } from '../../mocks/ui-state.mock';
-import { TOKENS } from '../../../../shared/di/tokens';
 
-@Service({ scope: 'transient', token: TOKENS.TransactionCreationUiUseCase })
+@Transient({ token: TOKENS.TransactionCreationUiUseCase })
 export class TransactionCreationUiUseCase {
   constructor(private readonly transactionsPage: TransactionsPage) {}
 

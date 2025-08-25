@@ -1,13 +1,12 @@
 import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountDto } from '../../types/account.dto';
-import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject } from '../../../../shared/di/decorators';
+import { Inject, Transient, TOKENS } from '../../../../shared/di';
 
 /**
  * Use case for account creation via UI interactions
  */
-@Service({ scope: 'transient', token: TOKENS.AccountCreationUiUseCase })
+@Transient({ token: TOKENS.AccountCreationUiUseCase })
 export class AccountCreationUiUseCase {
   constructor(
     @Inject(TOKENS.AccountsPlaywrightPage)

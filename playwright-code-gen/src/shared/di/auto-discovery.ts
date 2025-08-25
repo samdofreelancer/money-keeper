@@ -1,5 +1,5 @@
 import { glob } from 'fast-glob';
-import { container, ServiceMetadata } from './container';
+import type { ServiceMetadata } from './container';
 import { Logger } from '../utilities/logger';
 
 export async function autoDiscover(
@@ -48,13 +48,23 @@ export async function autoDiscover(
       }
     }
 
+    const root = (
+      globalThis as {
+        __DI_CONTAINER__?: {
+          buildAllFromRegistry: () => void;
+          getServiceCount: () => number;
+        };
+      }
+    ).__DI_CONTAINER__;
+    if (!root) throw new Error('Root DI container is not initialized');
+
     // Only eager-build if explicitly requested (must be after tokens are registered!)
     if (opts?.eager) {
-      container.buildAllFromRegistry();
+      root.buildAllFromRegistry();
     }
 
     Logger.info(
-      `Auto-discovery completed. Registered ${container.getServiceCount()} services`
+      `Auto-discovery completed. Registered ${root.getServiceCount()} services`
     );
   } catch (error) {
     Logger.error('Auto-discovery failed:', error);
@@ -63,6 +73,14 @@ export async function autoDiscover(
 }
 
 export function getDiscoveredServices(): Map<symbol | string, ServiceMetadata> {
+  const root = (
+    globalThis as {
+      __DI_CONTAINER__?: {
+        getServiceRegistry: () => Map<symbol | string, ServiceMetadata>;
+      };
+    }
+  ).__DI_CONTAINER__;
+  if (!root) throw new Error('Root DI container is not initialized');
   // Return a copy of the service registry for inspection
-  return container.getServiceRegistry();
+  return root.getServiceRegistry();
 }

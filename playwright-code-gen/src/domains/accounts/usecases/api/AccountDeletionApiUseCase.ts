@@ -1,12 +1,11 @@
 import { Logger } from '../../../../shared/utilities/logger';
 import { AccountApiClient } from '../../api/account-api.client';
-import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject } from '../../../../shared/di/decorators';
+import { Inject, Transient, TOKENS } from '../../../../shared/di';
 
 /**
  * Use case for account deletion via API
  */
-@Service({ scope: 'transient', token: TOKENS.AccountDeletionApiUseCase })
+@Transient({ token: TOKENS.AccountDeletionApiUseCase })
 export class AccountDeletionApiUseCase {
   constructor(
     @Inject(TOKENS.AccountApiClient) private accountApiClient: AccountApiClient

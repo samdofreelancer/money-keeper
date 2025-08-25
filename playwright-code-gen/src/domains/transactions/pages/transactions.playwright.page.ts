@@ -3,9 +3,9 @@ import { Logger } from '../../../shared/utilities/logger';
 import { TOKENS } from '../../../shared/di/tokens';
 import { TransactionMockProvider } from '../mocks/transaction.mock';
 import { UiStateMockProvider } from '../mocks/ui-state.mock';
-import { Service, Inject } from '../../../shared/di/decorators';
+import { Inject, Transient } from '../../../shared/di/decorators';
 
-@Service({ scope: 'singleton', token: TOKENS.TransactionsPage })
+@Transient({ token: TOKENS.TransactionsPage })
 export class TransactionsPage {
   constructor(@Inject(TOKENS.Page) private page: Page) {}
 

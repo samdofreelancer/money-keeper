@@ -14,6 +14,21 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off"
   },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "excludedFiles": ["src/shared/di/decorators.ts"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "CallExpression[callee.name='Service']",
+            "message": "Use @Transient or @Singleton instead of @Service"
+          }
+        ]
+      }
+    }
+  ],
   "env": {
     "node": true,
     "jest": true

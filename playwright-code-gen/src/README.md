@@ -75,3 +75,9 @@ The project includes an example test for creating a new account:
 3. Fill in the account form with test data
 4. Submit the form
 5. Verify the account was created successfully
+
+## Lifecycle Guidelines
+
+- Page Objects & UI Use Cases: `@Transient` (không lưu state).
+- Container per-scenario: an toàn. Container global: vẫn `@Transient`, nhưng tuyệt đối không giữ state.
+- Dùng `@Singleton` cho cấu hình/clients stateless khi cần chia sẻ.
