@@ -26,6 +26,9 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
+import { autoDiscover } from '../di/auto-discovery';
+import { Container } from '../di/container';
+import { TOKENS } from '../di/tokens';
 
 // Extend the global object type
 declare global {
@@ -178,8 +181,10 @@ function getBrowserType(): BrowserType {
   }
 }
 
+let rootContainer: Container | undefined;
+
 /**
- * Launch the browser before all tests
+ * Launch the browser before all tests and initialize root DI container
  */
 BeforeAll(async () => {
   // Initialize reporter
@@ -201,8 +206,17 @@ BeforeAll(async () => {
     BaseWorld.setBrowser(browser);
     Logger.info('Browser launched successfully');
 
-    // No DI auto-discovery here. We will discover per-scenario after tokens are registered.
-    Logger.info('[DI] auto-discovery ready');
+    // Initialize root DI container and expose globally for decorators auto-register
+    rootContainer = new Container();
+    (globalThis as { __DI_CONTAINER__?: Container }).__DI_CONTAINER__ =
+      rootContainer;
+
+    // Auto-register all services once
+    await autoDiscover();
+
+    // Optional: warm-up selected singletons
+    // rootContainer.buildAllFromRegistry();
+    Logger.info('[DI] Root container initialized and services auto-registered');
   } catch (error) {
     Logger.error('Failed to launch browser', error);
     throw error;
@@ -288,12 +302,26 @@ Before(async function (scenario) {
     // 'this' refers to the World instance in Cucumber hooks
     await (this as unknown as World).initialize();
 
+    // Create DI scope for this scenario
+    if (!rootContainer) throw new Error('Root DI container not initialized');
+    const scope = rootContainer.createScope();
+
+    // Assign scope to world for lazy resolves in getters
+    (this as unknown as World).container = scope;
+
+    // Register runtime instances in the scope (Page/Request/ApiBaseUrl)
+    const page = await (this as unknown as World).getPage();
+    scope.registerInstance(TOKENS.Page, page);
+    scope.registerInstance(TOKENS.Request, page.context().request);
+    scope.registerInstance(
+      TOKENS.ApiBaseUrl,
+      process.env.API_BASE_URL || 'http://127.0.0.1:8080/api'
+    );
+
     // Store the world instance globally for easy access
     global.testWorld = this as unknown as World;
 
-    // The World.initialize() method already handles DI container setup
-    // No need to manually register tokens here
-    Logger.debug('Scenario initialized successfully');
+    Logger.debug('Scenario initialized successfully with DI scope');
   } catch (error) {
     Logger.error(`Error initializing scenario: ${scenarioName}`, error);
     throw error;
@@ -396,6 +424,13 @@ After(async function (scenario) {
   try {
     // 'this' refers to the World instance in Cucumber hooks
     await (this as unknown as CucumberWorld).teardown();
+
+    // Clear DI scope runtime instances (drop reference to allow GC)
+    if ((this as unknown as World).container) {
+      (this as unknown as World).container.clearRuntimeInstances();
+      (this as unknown as World).container = undefined as unknown as Container;
+    }
+
     Logger.debug('Scenario teardown completed');
   } catch (error) {
     Logger.error('Error during scenario teardown', error);

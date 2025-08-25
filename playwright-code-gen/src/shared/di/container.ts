@@ -10,9 +10,39 @@ function normalizeToken(token: symbol | string | Function): symbol | string {
 }
 
 export class Container {
-  private serviceRegistry = new Map<symbol | string, ServiceMetadata>();
-  private instances = new Map<symbol | string, unknown>();
-  private instanceRegistry = new Map<symbol | string, unknown>();
+  private readonly parent?: Container;
+  private readonly root: Container;
+
+  // Registry of service metadata is owned by root (shared for all scopes)
+  private readonly serviceRegistry: Map<symbol | string, ServiceMetadata>;
+
+  // Pre-compiled factories, owned by root
+  private readonly compiledFactories: Map<
+    symbol | string,
+    (scope: Container) => unknown
+  >;
+
+  // Singleton instances cache, owned by root
+  private readonly singletonInstances: Map<symbol | string, unknown>;
+
+  // Per-scope runtime instance registry (Page, Request, etc.)
+  private readonly instanceRegistry = new Map<symbol | string, unknown>();
+
+  constructor(parent?: Container) {
+    this.parent = parent;
+    this.root = parent ? parent.root : this;
+
+    // Share registries/factories/singletons with root
+    if (!parent) {
+      this.serviceRegistry = new Map();
+      this.compiledFactories = new Map();
+      this.singletonInstances = new Map();
+    } else {
+      this.serviceRegistry = parent.serviceRegistry;
+      this.compiledFactories = parent.compiledFactories;
+      this.singletonInstances = parent.singletonInstances;
+    }
+  }
 
   registerService(
     target: new (...args: unknown[]) => unknown,
@@ -21,7 +51,31 @@ export class Container {
     const rawToken =
       metadata.token || (typeof target === 'function' ? target.name : target);
     const token = normalizeToken(rawToken as symbol | string | Function);
-    this.serviceRegistry.set(token, metadata);
+
+    // Store metadata at root registry
+    this.root.serviceRegistry.set(token, { ...metadata, target });
+
+    // Compile factory once based on current decorator metadata
+    if (!this.root.compiledFactories.has(token)) {
+      // Extract constructor injection tokens once to avoid repeated Reflect lookups
+      const injectionTokens = getInjectMetadata(target);
+      const normalizedDeps = injectionTokens.map(t =>
+        normalizeToken(t as symbol | string | Function)
+      );
+
+      const factory = (scope: Container) => {
+        const resolvedDeps = normalizedDeps.map(depToken => {
+          const runtimeInstance = scope.getInstance(depToken);
+          if (runtimeInstance !== undefined) return runtimeInstance;
+          // Delegate to container resolution for nested services
+          return scope.resolve<unknown>(depToken);
+        });
+
+        return new target(...resolvedDeps);
+      };
+
+      this.root.compiledFactories.set(token, factory);
+    }
   }
 
   registerInstance<T>(token: symbol | string | Function, instance: T): void {
@@ -29,96 +83,82 @@ export class Container {
     this.instanceRegistry.set(key, instance);
   }
 
+  // Internal helper to read per-scope instance without falling back
+  private getInstance(key: symbol | string): unknown | undefined {
+    if (this.instanceRegistry.has(key)) return this.instanceRegistry.get(key);
+    // If not present in this scope, check parent scope for runtime tokens
+    if (this.parent) return this.parent.getInstance(key);
+    return undefined;
+  }
+
   resolve<T>(token: symbol | string | (new (...args: unknown[]) => T)): T {
-    // First check if we have a registered instance
-    if (typeof token === 'symbol' || typeof token === 'string') {
-      const instance = this.instanceRegistry.get(token);
-      if (instance !== undefined) {
-        return instance as T;
-      }
-    }
-
     // Handle constructor function tokens by converting them to their string representation
-    let lookupToken: symbol | string;
-    if (typeof token === 'function') {
-      lookupToken = token.name;
-    } else {
-      lookupToken = token;
-    }
+    const lookupToken: symbol | string =
+      typeof token === 'function' ? token.name : token;
 
-    // Then check if we have a service registration
-    const serviceMetadata = this.serviceRegistry.get(lookupToken);
+    // First: runtime instance in current scope chain
+    const runtimeInstance = this.getInstance(lookupToken);
+    if (runtimeInstance !== undefined) return runtimeInstance as T;
+
+    // Find service registration at root
+    const serviceMetadata = this.root.serviceRegistry.get(lookupToken);
     if (!serviceMetadata) {
       throw new Error(
         `No service registered for token: ${lookupToken.toString()}`
       );
     }
 
-    // Check if we have a singleton instance already
+    // Singletons are cached at root
     if (serviceMetadata.scope === 'singleton') {
-      const existingInstance = this.instances.get(lookupToken);
-      if (existingInstance) {
-        return existingInstance as T;
-      }
+      const existing = this.root.singletonInstances.get(lookupToken);
+      if (existing) return existing as T;
     }
 
-    // Create new instance
-    const instance = this.buildInstance(serviceMetadata.target);
+    // Build using compiled factory
+    const factory = this.root.compiledFactories.get(lookupToken);
+    if (!factory) {
+      throw new Error(
+        `Factory not compiled for token: ${lookupToken.toString()}`
+      );
+    }
+    const instance = factory(this);
 
-    // Store singleton instances
     if (serviceMetadata.scope === 'singleton') {
-      this.instances.set(lookupToken, instance);
+      this.root.singletonInstances.set(lookupToken, instance);
     }
 
     return instance as T;
   }
 
-  private buildInstance<T>(target: new (...args: unknown[]) => T): T {
-    const injections = getInjectMetadata(target);
-    const dependencies = injections.map(injectionToken => {
-      const key = normalizeToken(injectionToken as symbol | string | Function);
-      const dep = this.instanceRegistry.has(key)
-        ? this.instanceRegistry.get(key)
-        : this.resolve<unknown>(key);
-      if (dep == null) {
-        throw new Error(
-          `DI resolved ${String(key)} as ${dep} for ${target.name}. Check @Inject(...) and registerInstance() order.`
-        );
-      }
-      return dep;
-    });
-
-    return new target(...dependencies);
+  createScope(): Container {
+    return new Container(this);
   }
 
+  // Eagerly instantiate all singletons (optional warm-up)
   buildAllFromRegistry(): void {
-    for (const [token, metadata] of this.serviceRegistry) {
+    for (const [token, metadata] of this.root.serviceRegistry) {
       if (metadata.scope === 'singleton') {
         this.resolve(token);
       }
     }
   }
 
-  clear(): void {
-    this.instances.clear();
+  // Clear only runtime instances in this scope
+  clearRuntimeInstances(): void {
     this.instanceRegistry.clear();
   }
 
+  // Introspection helpers
   getServiceCount(): number {
-    return this.serviceRegistry.size;
+    return this.root.serviceRegistry.size;
   }
 
   getInstanceCount(): number {
-    return this.instances.size + this.instanceRegistry.size;
+    // runtime instances count for this scope only + total singleton count
+    return this.instanceRegistry.size + this.root.singletonInstances.size;
   }
 
   getServiceRegistry(): Map<symbol | string, ServiceMetadata> {
-    return new Map(this.serviceRegistry);
+    return new Map(this.root.serviceRegistry);
   }
 }
-
-// Global container instance
-export const container = new Container();
-
-// Make container globally available for auto-registration
-(globalThis as { __DI_CONTAINER__?: unknown }).__DI_CONTAINER__ = container;

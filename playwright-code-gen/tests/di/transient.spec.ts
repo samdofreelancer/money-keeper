@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { test, expect } from '@playwright/test';
 import { Container } from '../../src/shared/di/container';
-import { Transient, Inject } from '../../src/shared/di';
+import { Transient, Singleton, Inject } from '../../src/shared/di';
 
 const FOO = Symbol('Foo');
 
@@ -14,15 +14,17 @@ class Bar {
 
 test.describe('DI Transient', () => {
   test('resolve returns new instance each time', () => {
-    const c = new Container();
+    const root = new Container();
     (
       globalThis as unknown as { __DI_CONTAINER__?: Container }
-    ).__DI_CONTAINER__ = c;
+    ).__DI_CONTAINER__ = root;
 
-    const b1 = c.resolve<Bar>(
+    const scope = root.createScope();
+
+    const b1 = scope.resolve<Bar>(
       Bar as unknown as new (...args: unknown[]) => Bar
     );
-    const b2 = c.resolve<Bar>(
+    const b2 = scope.resolve<Bar>(
       Bar as unknown as new (...args: unknown[]) => Bar
     );
 
@@ -35,23 +37,106 @@ test.describe('DI Transient', () => {
     @Transient()
     class Baz {}
 
-    const c = new Container();
+    const root = new Container();
     (
       globalThis as unknown as { __DI_CONTAINER__?: Container }
-    ).__DI_CONTAINER__ = c;
+    ).__DI_CONTAINER__ = root;
 
     class Holder {
       constructor(@Inject(Baz) public baz: Baz) {}
     }
 
-    const h1 = c.resolve<Holder>(
+    const scope = root.createScope();
+
+    const h1 = scope.resolve<Holder>(
       Holder as unknown as new (...args: unknown[]) => Holder
     );
-    const h2 = c.resolve<Holder>(
+    const h2 = scope.resolve<Holder>(
       Holder as unknown as new (...args: unknown[]) => Holder
     );
     expect(h1.baz).toBeInstanceOf(Baz);
     expect(h2.baz).toBeInstanceOf(Baz);
     expect(h1.baz).not.toBe(h2.baz);
+  });
+});
+
+// Additional quick tests for scoped behavior and compiled factories
+test.describe('DI Scoped + Compiled Factories', () => {
+  test('singleton shared across scopes (root cached)', () => {
+    @Singleton()
+    class Svc {}
+
+    class NeedsSvc {
+      constructor(@Inject(Svc) public s: Svc) {}
+    }
+
+    const root = new Container();
+    (
+      globalThis as unknown as { __DI_CONTAINER__?: Container }
+    ).__DI_CONTAINER__ = root;
+
+    const scopeA = root.createScope();
+    const scopeB = root.createScope();
+
+    const a1 = scopeA.resolve<NeedsSvc>(
+      NeedsSvc as unknown as new (...args: unknown[]) => NeedsSvc
+    );
+    const b1 = scopeB.resolve<NeedsSvc>(
+      NeedsSvc as unknown as new (...args: unknown[]) => NeedsSvc
+    );
+
+    expect(a1.s).toBeInstanceOf(Svc);
+    expect(b1.s).toBeInstanceOf(Svc);
+    expect(a1.s).toBe(b1.s); // same singleton from root
+  });
+
+  test('factory compiled once (no repeated Reflect lookups)', () => {
+    let reflectCalls = 0;
+    const origGetMetadata = Reflect.getMetadata;
+    // Wrap Reflect.getMetadata to count only INJECT metadata reads
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Reflect as any).getMetadata = function (...args: unknown[]) {
+      if (args && args[0] && String(args[0]).includes('di:inject')) {
+        reflectCalls += 1;
+      }
+
+      return origGetMetadata.apply(
+        this,
+        arguments as unknown as Parameters<typeof Reflect.getMetadata>
+      );
+    } as unknown as typeof Reflect.getMetadata;
+
+    @Transient()
+    class Dep {}
+    class Target {
+      constructor(@Inject(Dep) public d: Dep) {}
+    }
+
+    const root = new Container();
+    (
+      globalThis as unknown as { __DI_CONTAINER__?: Container }
+    ).__DI_CONTAINER__ = root;
+    const scope = root.createScope();
+
+    // First resolve compiles factory and may read metadata once
+    scope.resolve<Target>(
+      Target as unknown as new (...args: unknown[]) => Target
+    );
+    const callsAfterFirst = reflectCalls;
+
+    // Subsequent resolves should NOT trigger additional metadata reads
+    scope.resolve<Target>(
+      Target as unknown as new (...args: unknown[]) => Target
+    );
+    scope.resolve<Target>(
+      Target as unknown as new (...args: unknown[]) => Target
+    );
+
+    expect(reflectCalls).toBe(callsAfterFirst);
+
+    // restore
+    (
+      Reflect as unknown as { getMetadata: typeof Reflect.getMetadata }
+    ).getMetadata = origGetMetadata;
   });
 });
