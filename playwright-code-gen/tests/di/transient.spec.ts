@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import { test, expect } from '@playwright/test';
-import { Container } from '../../src/shared/di/container';
-import { Transient, Singleton, Inject } from '../../src/shared/di';
+import { Container, Transient, Singleton, Inject } from '../../src/shared/di';
 
 const FOO = Symbol('Foo');
 
@@ -62,7 +61,7 @@ test.describe('DI Transient', () => {
 
 // Additional quick tests for scoped behavior and compiled factories
 test.describe('DI Scoped + Compiled Factories', () => {
-  test('singleton shared across scopes (root cached)', () => {
+  test('singleton scoped across containers (different scopes -> different instances)', () => {
     @Singleton()
     class Svc {}
 
@@ -87,24 +86,26 @@ test.describe('DI Scoped + Compiled Factories', () => {
 
     expect(a1.s).toBeInstanceOf(Svc);
     expect(b1.s).toBeInstanceOf(Svc);
-    expect(a1.s).toBe(b1.s); // same singleton from root
+    expect(a1.s).not.toBe(b1.s); // scoped singleton differs across scopes
   });
 
   test('factory compiled once (no repeated Reflect lookups)', () => {
     let reflectCalls = 0;
-    const origGetMetadata = Reflect.getMetadata;
-    // Wrap Reflect.getMetadata to count only INJECT metadata reads
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Reflect as any).getMetadata = function (...args: unknown[]) {
+
+    type GetMetadataFn = (...args: unknown[]) => unknown;
+    const originalGetMetadata: GetMetadataFn = (
+      Reflect as unknown as { getMetadata: GetMetadataFn }
+    ).getMetadata;
+
+    const wrappedGetMetadata: GetMetadataFn = (...args: unknown[]): unknown => {
       if (args && args[0] && String(args[0]).includes('di:inject')) {
         reflectCalls += 1;
       }
+      return originalGetMetadata(...args);
+    };
 
-      return origGetMetadata.apply(
-        this,
-        arguments as unknown as Parameters<typeof Reflect.getMetadata>
-      );
-    } as unknown as typeof Reflect.getMetadata;
+    (Reflect as unknown as { getMetadata: GetMetadataFn }).getMetadata =
+      wrappedGetMetadata;
 
     @Transient()
     class Dep {}
@@ -135,8 +136,7 @@ test.describe('DI Scoped + Compiled Factories', () => {
     expect(reflectCalls).toBe(callsAfterFirst);
 
     // restore
-    (
-      Reflect as unknown as { getMetadata: typeof Reflect.getMetadata }
-    ).getMetadata = origGetMetadata;
+    (Reflect as unknown as { getMetadata: GetMetadataFn }).getMetadata =
+      originalGetMetadata;
   });
 });

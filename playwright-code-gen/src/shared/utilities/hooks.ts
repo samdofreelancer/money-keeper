@@ -26,9 +26,9 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
-import { autoDiscover } from '../di/auto-discovery';
 import { Container } from '../di/container';
 import { TOKENS } from '../di/tokens';
+import { autoImportDomains } from '../di/auto-register';
 
 // Extend the global object type
 declare global {
@@ -211,12 +211,14 @@ BeforeAll(async () => {
     (globalThis as { __DI_CONTAINER__?: Container }).__DI_CONTAINER__ =
       rootContainer;
 
-    // Auto-register all services once
-    await autoDiscover();
+    // Auto-import decorated classes via fast-glob after container is set
+    await autoImportDomains();
 
-    // Optional: warm-up selected singletons
-    // rootContainer.buildAllFromRegistry();
-    Logger.info('[DI] Root container initialized and services auto-registered');
+    // Optional: warm-up selected singletons in a temporary scope if needed
+    // rootContainer.createScope().buildAllFromRegistry();
+    Logger.info(
+      '[DI] Root container initialized and services auto-registered via auto-import'
+    );
   } catch (error) {
     Logger.error('Failed to launch browser', error);
     throw error;

@@ -22,8 +22,8 @@ export class Container {
     (scope: Container) => unknown
   >;
 
-  // Singleton instances cache, owned by root
-  private readonly singletonInstances: Map<symbol | string, unknown>;
+  // Scoped singleton instances cache (per-container)
+  private readonly scopedSingletons = new Map<symbol | string, unknown>();
 
   // Per-scope runtime instance registry (Page, Request, etc.)
   private readonly instanceRegistry = new Map<symbol | string, unknown>();
@@ -32,15 +32,13 @@ export class Container {
     this.parent = parent;
     this.root = parent ? parent.root : this;
 
-    // Share registries/factories/singletons with root
+    // Share registries/factories with root
     if (!parent) {
       this.serviceRegistry = new Map();
       this.compiledFactories = new Map();
-      this.singletonInstances = new Map();
     } else {
       this.serviceRegistry = parent.serviceRegistry;
       this.compiledFactories = parent.compiledFactories;
-      this.singletonInstances = parent.singletonInstances;
     }
   }
 
@@ -108,9 +106,9 @@ export class Container {
       );
     }
 
-    // Singletons are cached at root
+    // Singletons are cached per scope
     if (serviceMetadata.scope === 'singleton') {
-      const existing = this.root.singletonInstances.get(lookupToken);
+      const existing = this.scopedSingletons.get(lookupToken);
       if (existing) return existing as T;
     }
 
@@ -124,7 +122,7 @@ export class Container {
     const instance = factory(this);
 
     if (serviceMetadata.scope === 'singleton') {
-      this.root.singletonInstances.set(lookupToken, instance);
+      this.scopedSingletons.set(lookupToken, instance);
     }
 
     return instance as T;
@@ -134,7 +132,7 @@ export class Container {
     return new Container(this);
   }
 
-  // Eagerly instantiate all singletons (optional warm-up)
+  // Eagerly instantiate all singletons in THIS scope (optional warm-up)
   buildAllFromRegistry(): void {
     for (const [token, metadata] of this.root.serviceRegistry) {
       if (metadata.scope === 'singleton') {
@@ -154,8 +152,8 @@ export class Container {
   }
 
   getInstanceCount(): number {
-    // runtime instances count for this scope only + total singleton count
-    return this.instanceRegistry.size + this.root.singletonInstances.size;
+    // runtime instances count for this scope only + scoped singletons count
+    return this.instanceRegistry.size + this.scopedSingletons.size;
   }
 
   getServiceRegistry(): Map<symbol | string, ServiceMetadata> {
