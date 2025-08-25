@@ -30,6 +30,25 @@ export function Service(options: ServiceOptions = {}): ClassDecorator {
   };
 }
 
+export function Transient(options: Omit<ServiceOptions, 'scope'> = {}): ClassDecorator {
+  return (target: Function) => {
+    const metadata = {
+      scope: 'transient' as const,
+      token: options.token || target,
+      target,
+    };
+    Reflect.defineMetadata(SERVICE_METADATA_KEY, metadata, target);
+    if (
+      typeof (globalThis as { __DI_CONTAINER__?: unknown }).__DI_CONTAINER__ !==
+      'undefined'
+    ) {
+      (
+        globalThis as { __DI_CONTAINER__?: { registerService: Function } }
+      ).__DI_CONTAINER__!.registerService(target, metadata);
+    }
+  };
+}
+
 export function Inject(token: symbol | string): ParameterDecorator {
   return (
     target: Object,

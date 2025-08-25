@@ -2,13 +2,13 @@ import { Page } from '@playwright/test';
 import { AccountDto } from '../types/account.dto';
 import { Logger } from '../../../shared/utilities/logger';
 import { TOKENS } from '../../../shared/di/tokens';
-import { Service, Inject } from '../../../shared/di/decorators';
+import { Service, Inject, Transient } from '../../../shared/di/decorators';
 import { BasePage } from '../../../shared/pages/base.page';
 
 /**
  * Page object for the Accounts page
  */
-@Service({ scope: 'transient', token: TOKENS.AccountsPlaywrightPage })
+@Transient({ token: TOKENS.AccountsPlaywrightPage })
 export class AccountsPlaywrightPage extends BasePage {
   constructor(@Inject(TOKENS.Page) page: Page) {
     super(page);

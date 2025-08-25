@@ -2,9 +2,9 @@ import { APIRequestContext, APIResponse } from '@playwright/test';
 import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
 import { TOKENS } from '../../../shared/di/tokens';
 import { Logger } from '../../../shared/utilities/logger';
-import { Service, Inject } from '../../../shared/di/decorators';
+import { Service, Inject, Transient } from '../../../shared/di/decorators';
 
-@Service({ scope: 'transient', token: TOKENS.CategoryApiClient })
+@Transient({ token: TOKENS.CategoryApiClient })
 export class CategoryApiClient {
   private apiBaseUrl: string;
 

@@ -8,7 +8,7 @@ import { Logger } from '../../../../shared/utilities/logger';
 import { CategoriesPage } from '../../pages/categories.playwright.page';
 import { TestData } from '../../../../shared/utilities/testData';
 import { TOKENS } from '../../../../shared/di/tokens';
-import { Service, Inject } from '../../../../shared/di/decorators';
+import { Service, Inject, Transient } from '../../../../shared/di/decorators';
 
 export type CreateCategoryParams = {
   name: string;
@@ -44,7 +44,7 @@ function hasPresence(x: unknown): x is CategoryPresence {
   );
 }
 
-@Service({ scope: 'transient', token: TOKENS.CreateCategoryUseCase })
+@Transient({ token: TOKENS.CreateCategoryUseCase })
 export class CreateCategoryUseCase {
   constructor(
     @Inject(TOKENS.CategoriesPage)

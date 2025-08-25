@@ -1,4 +1,4 @@
-import { Service } from '../../../../shared/di/decorators';
+import { Service, Transient } from '../../../../shared/di/decorators';
 import { TOKENS } from '../../../../shared/di/tokens';
 
 // src/domains/category/usecases/api/CategoryDeletionApiUseCase.ts
@@ -6,7 +6,7 @@ export interface CategoryDeletionApiUseCase {
   deleteCategory(categoryId: string): Promise<void>;
 }
 
-@Service({ scope: 'transient', token: TOKENS.CategoryDeletionApiUseCase })
+@Transient({ token: TOKENS.CategoryDeletionApiUseCase })
 export class CategoryDeletionApiUseCaseImpl
   implements CategoryDeletionApiUseCase
 {

@@ -6,10 +6,10 @@ import axios, {
 } from 'axios';
 import { Logger } from '../../../shared/utilities/logger';
 import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
-import { Service, Inject } from '../../../shared/di/decorators';
+import { Service, Inject, Transient } from '../../../shared/di/decorators';
 import { TOKENS } from '../../../shared/di/tokens';
 
-@Service({ scope: 'transient', token: TOKENS.AccountApiClient })
+@Transient({ token: TOKENS.AccountApiClient })
 export class AccountApiClient {
   private client: AxiosInstance;
 
