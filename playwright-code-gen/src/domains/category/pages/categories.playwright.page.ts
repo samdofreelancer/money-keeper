@@ -1,10 +1,10 @@
 // src/domains/categories/pages/CategoriesPage.ts
 import { Page, Locator, expect } from '@playwright/test';
-import { Service, Inject, TOKENS } from '../../../shared/di';
+import { Inject, TOKENS, Transient } from '../../../shared/di';
 
 type TimeoutMs = number | undefined;
 
-@Service({ scope: 'singleton', token: TOKENS.CategoriesPage })
+@Transient({token: TOKENS.CategoriesPage })
 export class CategoriesPage {
   constructor(@Inject(TOKENS.Page) private readonly page: Page) {}
 
