@@ -210,6 +210,19 @@ export class AccountsPlaywrightPage extends BasePage {
   }
 
   /**
+   * Get the balance for a given account row by name
+   */
+  async getAccountBalanceForRow(accountName: string): Promise<string | null> {
+    // Find the row containing the account name
+    const row = await this.page
+      .locator(`tr:has(td:has-text("${accountName}"))`)
+      .first();
+    // The balance is typically in the 3rd cell (index 2)
+    const balanceCell = await row.locator('td').nth(2).textContent();
+    return balanceCell;
+  }
+
+  /**
    * Reload the current page
    */
   async reload() {
@@ -223,5 +236,14 @@ export class AccountsPlaywrightPage extends BasePage {
     await this.page.waitForSelector(this.selectors.buttons.addAccount, {
       timeout: 10000,
     });
+  }
+
+  /**
+   * Get the text of the success message if visible
+   */
+  async getSuccessMessageText(): Promise<string | null> {
+    const el = await this.page.$(this.selectors.messages.success);
+    if (!el) return null;
+    return (await el.textContent())?.trim() || null;
   }
 }
