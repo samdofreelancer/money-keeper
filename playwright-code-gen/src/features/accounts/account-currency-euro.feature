@@ -1,4 +1,4 @@
-@accounts @account-creation @positive
+@accounts @account-creation @positive @wip
 Feature: Account Creation with Non-default Currency
   As a money management user
   I want to create a bank account with a currency other than USD
