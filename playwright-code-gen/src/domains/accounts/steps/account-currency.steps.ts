@@ -1,6 +1,5 @@
-import { Then, When } from '@cucumber/cucumber';
+import { Then } from '@cucumber/cucumber';
 import { getAccountsPage } from '../../../shared/utilities/hooks';
-import { getWorldSettingsUseCase } from '../../settings/steps/helpers';
 
 Then(
   'I should see the success message {string}',
@@ -38,17 +37,6 @@ Then(
         `Expected balance "${balance}", but got "${actualBalance?.trim()}"`
       );
     }
-  }
-);
-
-When(
-  'I set default currency to {string} in settings',
-  async function (code: string) {
-    const settingsUseCase = getWorldSettingsUseCase();
-    await settingsUseCase.setDefaultCurrency(code);
-    // Return to Accounts page for subsequent steps
-    const accountsPage = getAccountsPage();
-    await accountsPage.navigateToAccountsPage();
   }
 );
 
