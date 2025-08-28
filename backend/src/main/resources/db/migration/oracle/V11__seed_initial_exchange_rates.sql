@@ -1,175 +1,176 @@
 -- Seed initial exchange rates for today based on provided real response (base EUR)
 DELETE FROM exchange_rate WHERE rate_date = TRUNC(SYSDATE);
-INSERT INTO exchange_rate (base, symbol, rate, rate_date) VALUES
-('EUR','EUR',1.0,TRUNC(SYSDATE)),
-('EUR','AED',4.289806,TRUNC(SYSDATE)),
-('EUR','AFN',79.936579,TRUNC(SYSDATE)),
-('EUR','ALL',97.724612,TRUNC(SYSDATE)),
-('EUR','AMD',446.751537,TRUNC(SYSDATE)),
-('EUR','ANG',2.090625,TRUNC(SYSDATE)),
-('EUR','AOA',1071.136683,TRUNC(SYSDATE)),
-('EUR','ARS',1577.931188,TRUNC(SYSDATE)),
-('EUR','AUD',1.788204,TRUNC(SYSDATE)),
-('EUR','AWG',2.10548,TRUNC(SYSDATE)),
-('EUR','AZN',1.986634,TRUNC(SYSDATE)),
-('EUR','BAM',1.958413,TRUNC(SYSDATE)),
-('EUR','BBD',2.354233,TRUNC(SYSDATE)),
-('EUR','BDT',142.120233,TRUNC(SYSDATE)),
-('EUR','BGN',1.958668,TRUNC(SYSDATE)),
-('EUR','BHD',0.440373,TRUNC(SYSDATE)),
-('EUR','BIF',3486.4697,TRUNC(SYSDATE)),
-('EUR','BMD',1.168089,TRUNC(SYSDATE)),
-('EUR','BND',1.499988,TRUNC(SYSDATE)),
-('EUR','BOB',8.076641,TRUNC(SYSDATE)),
-('EUR','BRL',6.313402,TRUNC(SYSDATE)),
-('EUR','BSD',1.168905,TRUNC(SYSDATE)),
-('EUR','BTC',0.000010324002,TRUNC(SYSDATE)),
-('EUR','BTN',102.3308,TRUNC(SYSDATE)),
-('EUR','BWP',15.705838,TRUNC(SYSDATE)),
-('EUR','BYN',3.973094,TRUNC(SYSDATE)),
-('EUR','BYR',22894.535102,TRUNC(SYSDATE)),
-('EUR','BZD',2.350808,TRUNC(SYSDATE)),
-('EUR','CAD',1.60715,TRUNC(SYSDATE)),
-('EUR','CDF',3352.413701,TRUNC(SYSDATE)),
-('EUR','CHF',0.936107,TRUNC(SYSDATE)),
-('EUR','CLF',0.028787,TRUNC(SYSDATE)),
-('EUR','CLP',1129.366635,TRUNC(SYSDATE)),
-('EUR','CNY',8.356499,TRUNC(SYSDATE)),
-('EUR','CNH',8.325615,TRUNC(SYSDATE)),
-('EUR','COP',4706.357159,TRUNC(SYSDATE)),
-('EUR','CRC',590.060537,TRUNC(SYSDATE)),
-('EUR','CUC',1.168089,TRUNC(SYSDATE)),
-('EUR','CUP',30.954346,TRUNC(SYSDATE)),
-('EUR','CVE',110.412791,TRUNC(SYSDATE)),
-('EUR','CZK',24.564259,TRUNC(SYSDATE)),
-('EUR','DJF',208.142662,TRUNC(SYSDATE)),
-('EUR','DKK',7.464856,TRUNC(SYSDATE)),
-('EUR','DOP',73.548447,TRUNC(SYSDATE)),
-('EUR','DZD',151.595693,TRUNC(SYSDATE)),
-('EUR','EGP',56.765609,TRUNC(SYSDATE)),
-('EUR','ERN',17.521328,TRUNC(SYSDATE)),
-('EUR','ETB',167.533961,TRUNC(SYSDATE)),
-('EUR','FJD',2.63807,TRUNC(SYSDATE)),
-('EUR','FKP',0.867427,TRUNC(SYSDATE)),
-('EUR','GBP',0.864345,TRUNC(SYSDATE)),
-('EUR','GEL',3.148026,TRUNC(SYSDATE)),
-('EUR','GGP',0.867427,TRUNC(SYSDATE)),
-('EUR','GHS',13.383289,TRUNC(SYSDATE)),
-('EUR','GIP',0.867427,TRUNC(SYSDATE)),
-('EUR','GMD',83.51723,TRUNC(SYSDATE)),
-('EUR','GNF',10132.562775,TRUNC(SYSDATE)),
-('EUR','GTQ',8.959222,TRUNC(SYSDATE)),
-('EUR','GYD',244.545595,TRUNC(SYSDATE)),
-('EUR','HKD',9.10466,TRUNC(SYSDATE)),
-('EUR','HNL',30.59295,TRUNC(SYSDATE)),
-('EUR','HRK',7.536625,TRUNC(SYSDATE)),
-('EUR','HTG',152.924695,TRUNC(SYSDATE)),
-('EUR','HUF',396.765215,TRUNC(SYSDATE)),
-('EUR','IDR',19069.804438,TRUNC(SYSDATE)),
-('EUR','ILS',3.885372,TRUNC(SYSDATE)),
-('EUR','IMP',0.867427,TRUNC(SYSDATE)),
-('EUR','INR',102.319301,TRUNC(SYSDATE)),
-('EUR','IQD',1531.142932,TRUNC(SYSDATE)),
-('EUR','IRR',49132.726231,TRUNC(SYSDATE)),
-('EUR','ISK',142.997489,TRUNC(SYSDATE)),
-('EUR','JEP',0.867427,TRUNC(SYSDATE)),
-('EUR','JMD',186.423524,TRUNC(SYSDATE)),
-('EUR','JOD',0.828142,TRUNC(SYSDATE)),
-('EUR','JPY',171.624329,TRUNC(SYSDATE)),
-('EUR','KES',151.232653,TRUNC(SYSDATE)),
-('EUR','KGS',102.039893,TRUNC(SYSDATE)),
-('EUR','KHR',4684.751971,TRUNC(SYSDATE)),
-('EUR','KMF',494.694382,TRUNC(SYSDATE)),
-('EUR','KPW',1051.256144,TRUNC(SYSDATE)),
-('EUR','KRW',1617.498493,TRUNC(SYSDATE)),
-('EUR','KWD',0.356898,TRUNC(SYSDATE)),
-('EUR','KYD',0.974016,TRUNC(SYSDATE)),
-('EUR','KZT',628.416475,TRUNC(SYSDATE)),
-('EUR','LAK',25362.554172,TRUNC(SYSDATE)),
-('EUR','LBP',104669.156036,TRUNC(SYSDATE)),
-('EUR','LKR',353.435446,TRUNC(SYSDATE)),
-('EUR','LRD',234.351776,TRUNC(SYSDATE)),
-('EUR','LSL',20.648739,TRUNC(SYSDATE)),
-('EUR','LTL',3.449061,TRUNC(SYSDATE)),
-('EUR','LVL',0.706565,TRUNC(SYSDATE)),
-('EUR','LYD',6.343491,TRUNC(SYSDATE)),
-('EUR','MAD',10.537505,TRUNC(SYSDATE)),
-('EUR','MDL',19.479325,TRUNC(SYSDATE)),
-('EUR','MGA',5140.452764,TRUNC(SYSDATE)),
-('EUR','MKD',61.62354,TRUNC(SYSDATE)),
-('EUR','MMK',2452.601276,TRUNC(SYSDATE)),
-('EUR','MNT',4201.2635,TRUNC(SYSDATE)),
-('EUR','MOP',9.384406,TRUNC(SYSDATE)),
-('EUR','MRU',46.661458,TRUNC(SYSDATE)),
-('EUR','MUR',53.790533,TRUNC(SYSDATE)),
-('EUR','MVR',17.986264,TRUNC(SYSDATE)),
-('EUR','MWK',2026.747107,TRUNC(SYSDATE)),
-('EUR','MXN',21.743255,TRUNC(SYSDATE)),
-('EUR','MYR',4.925834,TRUNC(SYSDATE)),
-('EUR','MZN',74.665883,TRUNC(SYSDATE)),
-('EUR','NAD',20.648739,TRUNC(SYSDATE)),
-('EUR','NGN',1796.450029,TRUNC(SYSDATE)),
-('EUR','NIO',43.007567,TRUNC(SYSDATE)),
-('EUR','NOK',11.735955,TRUNC(SYSDATE)),
-('EUR','NPR',163.729781,TRUNC(SYSDATE)),
-('EUR','NZD',1.987917,TRUNC(SYSDATE)),
-('EUR','OMR',0.44917,TRUNC(SYSDATE)),
-('EUR','PAB',1.168885,TRUNC(SYSDATE)),
-('EUR','PEN',4.150055,TRUNC(SYSDATE)),
-('EUR','PGK',4.945747,TRUNC(SYSDATE)),
-('EUR','PHP',66.597405,TRUNC(SYSDATE)),
-('EUR','PKR',331.428752,TRUNC(SYSDATE)),
-('EUR','PLN',4.263161,TRUNC(SYSDATE)),
-('EUR','PYG',8447.307003,TRUNC(SYSDATE)),
-('EUR','QAR',4.272018,TRUNC(SYSDATE)),
-('EUR','RON',5.068687,TRUNC(SYSDATE)),
-('EUR','RSD',117.171282,TRUNC(SYSDATE)),
-('EUR','RUB',94.021883,TRUNC(SYSDATE)),
-('EUR','RWF',1692.468274,TRUNC(SYSDATE)),
-('EUR','SAR',4.383078,TRUNC(SYSDATE)),
-('EUR','SBD',9.590379,TRUNC(SYSDATE)),
-('EUR','SCR',17.274778,TRUNC(SYSDATE)),
-('EUR','SDG',701.419246,TRUNC(SYSDATE)),
-('EUR','SEK',11.067768,TRUNC(SYSDATE)),
-('EUR','SGD',1.498305,TRUNC(SYSDATE)),
-('EUR','SHP',0.917934,TRUNC(SYSDATE)),
-('EUR','SLE',27.204495,TRUNC(SYSDATE)),
-('EUR','SLL',24494.229967,TRUNC(SYSDATE)),
-('EUR','SOS',667.988483,TRUNC(SYSDATE)),
-('EUR','SRD',44.964888,TRUNC(SYSDATE)),
-('EUR','STD',24177.074119,TRUNC(SYSDATE)),
-('EUR','STN',24.535783,TRUNC(SYSDATE)),
-('EUR','SVC',10.226689,TRUNC(SYSDATE)),
-('EUR','SYP',15186.985931,TRUNC(SYSDATE)),
-('EUR','SZL',20.647554,TRUNC(SYSDATE)),
-('EUR','THB',37.774838,TRUNC(SYSDATE)),
-('EUR','TJS',11.010611,TRUNC(SYSDATE)),
-('EUR','TMT',4.099991,TRUNC(SYSDATE)),
-('EUR','TND',3.419262,TRUNC(SYSDATE)),
-('EUR','TOP',2.735782,TRUNC(SYSDATE)),
-('EUR','TRY',47.927487,TRUNC(SYSDATE)),
-('EUR','TTD',7.93357,TRUNC(SYSDATE)),
-('EUR','TWD',35.612102,TRUNC(SYSDATE)),
-('EUR','TZS',2925.515083,TRUNC(SYSDATE)),
-('EUR','UAH',48.17969,TRUNC(SYSDATE)),
-('EUR','UGX',4153.038963,TRUNC(SYSDATE)),
-('EUR','USD',1.168089,TRUNC(SYSDATE)),
-('EUR','UYU',46.773609,TRUNC(SYSDATE)),
-('EUR','UZS',14507.729583,TRUNC(SYSDATE)),
-('EUR','VES',168.429903,TRUNC(SYSDATE)),
-('EUR','VND',30808.334863,TRUNC(SYSDATE)),
-('EUR','VUV',140.073662,TRUNC(SYSDATE)),
-('EUR','WST',3.126545,TRUNC(SYSDATE)),
-('EUR','XAF',656.903773,TRUNC(SYSDATE)),
-('EUR','XAG',0.029973,TRUNC(SYSDATE)),
-('EUR','XAU',0.000344,TRUNC(SYSDATE)),
-('EUR','XCD',3.156818,TRUNC(SYSDATE)),
-('EUR','XCG',2.106572,TRUNC(SYSDATE)),
-('EUR','XDR',0.818891,TRUNC(SYSDATE)),
-('EUR','XOF',656.836197,TRUNC(SYSDATE)),
-('EUR','XPF',119.331742,TRUNC(SYSDATE)),
-('EUR','YER',280.516356,TRUNC(SYSDATE)),
-('EUR','ZAR',20.615524,TRUNC(SYSDATE)),
-('EUR','ZMK',10514.194011,TRUNC(SYSDATE)),
-('EUR','ZMW',27.379461,TRUNC(SYSDATE)),
-('EUR','ZWL',376.124029,TRUNC(SYSDATE));
+INSERT ALL
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','EUR',1.0,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AED',4.289806,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AFN',79.936579,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ALL',97.724612,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AMD',446.751537,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ANG',2.090625,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AOA',1071.136683,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ARS',1577.931188,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AUD',1.788204,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AWG',2.10548,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','AZN',1.986634,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BAM',1.958413,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BBD',2.354233,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BDT',142.120233,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BGN',1.958668,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BHD',0.440373,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BIF',3486.4697,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BMD',1.168089,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BND',1.499988,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BOB',8.076641,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BRL',6.313402,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BSD',1.168905,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BTC',0.000010324002,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BTN',102.3308,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BWP',15.705838,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BYN',3.973094,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BYR',22894.535102,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','BZD',2.350808,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CAD',1.60715,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CDF',3352.413701,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CHF',0.936107,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CLF',0.028787,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CLP',1129.366635,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CNY',8.356499,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CNH',8.325615,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','COP',4706.357159,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CRC',590.060537,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CUC',1.168089,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CUP',30.954346,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CVE',110.412791,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','CZK',24.564259,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','DJF',208.142662,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','DKK',7.464856,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','DOP',73.548447,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','DZD',151.595693,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','EGP',56.765609,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ERN',17.521328,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ETB',167.533961,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','FJD',2.63807,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','FKP',0.867427,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GBP',0.864345,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GEL',3.148026,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GGP',0.867427,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GHS',13.383289,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GIP',0.867427,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GMD',83.51723,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GNF',10132.562775,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GTQ',8.959222,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','GYD',244.545595,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','HKD',9.10466,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','HNL',30.59295,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','HRK',7.536625,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','HTG',152.924695,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','HUF',396.765215,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','IDR',19069.804438,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ILS',3.885372,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','IMP',0.867427,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','INR',102.319301,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','IQD',1531.142932,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','IRR',49132.726231,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ISK',142.997489,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','JEP',0.867427,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','JMD',186.423524,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','JOD',0.828142,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','JPY',171.624329,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KES',151.232653,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KGS',102.039893,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KHR',4684.751971,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KMF',494.694382,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KPW',1051.256144,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KRW',1617.498493,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KWD',0.356898,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KYD',0.974016,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','KZT',628.416475,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LAK',25362.554172,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LBP',104669.156036,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LKR',353.435446,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LRD',234.351776,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LSL',20.648739,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LTL',3.449061,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LVL',0.706565,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','LYD',6.343491,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MAD',10.537505,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MDL',19.479325,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MGA',5140.452764,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MKD',61.62354,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MMK',2452.601276,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MNT',4201.2635,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MOP',9.384406,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MRU',46.661458,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MUR',53.790533,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MVR',17.986264,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MWK',2026.747107,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MXN',21.743255,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MYR',4.925834,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','MZN',74.665883,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','NAD',20.648739,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','NGN',1796.450029,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','NIO',43.007567,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','NOK',11.735955,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','NPR',163.729781,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','NZD',1.987917,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','OMR',0.44917,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PAB',1.168885,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PEN',4.150055,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PGK',4.945747,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PHP',66.597405,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PKR',331.428752,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PLN',4.263161,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','PYG',8447.307003,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','QAR',4.272018,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','RON',5.068687,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','RSD',117.171282,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','RUB',94.021883,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','RWF',1692.468274,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SAR',4.383078,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SBD',9.590379,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SCR',17.274778,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SDG',701.419246,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SEK',11.067768,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SGD',1.498305,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SHP',0.917934,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SLE',27.204495,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SLL',24494.229967,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SOS',667.988483,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SRD',44.964888,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','STD',24177.074119,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','STN',24.535783,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SVC',10.226689,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SYP',15186.985931,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','SZL',20.647554,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','THB',37.774838,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TJS',11.010611,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TMT',4.099991,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TND',3.419262,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TOP',2.735782,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TRY',47.927487,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TTD',7.93357,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TWD',35.612102,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','TZS',2925.515083,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','UAH',48.17969,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','UGX',4153.038963,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','USD',1.168089,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','UYU',46.773609,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','UZS',14507.729583,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','VES',168.429903,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','VND',30808.334863,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','VUV',140.073662,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','WST',3.126545,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XAF',656.903773,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XAG',0.029973,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XAU',0.000344,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XCD',3.156818,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XCG',2.106572,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XDR',0.818891,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XOF',656.836197,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','XPF',119.331742,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','YER',280.516356,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ZAR',20.615524,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ZMK',10514.194011,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ZMW',27.379461,TRUNC(SYSDATE))
+INTO exchange_rate (base, symbol, rate, rate_date) VALUES ('EUR','ZWL',376.124029,TRUNC(SYSDATE))
+SELECT 1 FROM DUAL;
