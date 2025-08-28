@@ -243,8 +243,47 @@ const filteredAccounts = computed(() => {
   return accounts
 })
 
+import { ref as vueRef } from 'vue'
+import { exchangeRateApi } from '@/api/exchangeRates'
+
+const rates = vueRef<Record<string, number>>({})
+
+onMounted(async () => {
+  try {
+    const resp = await exchangeRateApi.latest(settingsStore.defaultCurrency)
+    rates.value = resp.rates || {}
+  } catch (e) {
+    rates.value = {}
+  }
+})
+
+watch(() => settingsStore.defaultCurrency, async (val) => {
+  try {
+    const resp = await exchangeRateApi.latest(val)
+    rates.value = resp.rates || {}
+  } catch (e) {
+    rates.value = {}
+  }
+})
+
+function convertByRates(amount: number, fromCode?: string, toCode?: string): number {
+  const from = (fromCode || 'USD').toUpperCase()
+  const to = (toCode || 'USD').toUpperCase()
+  if (from === to) return amount
+  const toRate = rates.value[to]
+  const fromRate = rates.value[from]
+  if (!toRate || !fromRate) return amount
+  const amountInBase = amount / fromRate // since rates are relative to base (to)
+  return amountInBase * toRate
+}
+
 const formattedTotalBalance = computed(() => {
-  return formatCurrency(accountStore.totalBalance, settingsStore.defaultCurrency)
+  const target = settingsStore.defaultCurrency
+  const sum = accountStore.activeAccounts.reduce((acc, a) => {
+    const amount = convertByRates(a.balance, a.currency, target)
+    return acc + amount
+  }, 0)
+  return formatCurrency(sum, target)
 })
 
 import { currencyApi } from '@/api/currency'
