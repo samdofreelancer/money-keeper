@@ -16,6 +16,8 @@ import { TransactionCreationUiUseCase } from '../../domains/transactions/usecase
 import { TransactionCreationApiUseCase } from '../../domains/transactions/usecases/api/TransactionCreationApiUseCase';
 import { AccountCreationUiUseCase } from '../../domains/accounts/usecases/ui/AccountCreationUiUseCase';
 import { AccountsPlaywrightPage } from '../../domains/accounts/pages/accounts.playwright.page';
+import { SettingsPlaywrightPage } from '../../domains/settings/pages/settings.playwright.page';
+import { SettingsUiUseCase } from '../../domains/settings/usecases/ui/SettingsUiUseCase';
 
 /**
  * World per-scenario — browser/context/page từ BaseWorld
@@ -69,6 +71,12 @@ export class World extends BaseWorld {
   }
   public get accountCreationUiUseCase(): AccountCreationUiUseCase {
     return this.use(TOKENS.AccountCreationUiUseCase);
+  }
+  public get settingsPage(): SettingsPlaywrightPage {
+    return this.use(TOKENS.SettingsPlaywrightPage);
+  }
+  public get settingsUiUseCase(): SettingsUiUseCase {
+    return this.use(TOKENS.SettingsUiUseCase);
   }
   public get createCategoryUseCase(): CreateCategoryUseCase {
     return this.use(TOKENS.CreateCategoryUseCase);

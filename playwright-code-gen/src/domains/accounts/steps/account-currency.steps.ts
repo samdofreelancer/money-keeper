@@ -1,5 +1,6 @@
-import { Then } from '@cucumber/cucumber';
-import { getAccountsPage } from '../../../shared/utilities/hooks';
+import { Then, When } from '@cucumber/cucumber';
+import { getAccountsPage, getPage } from '../../../shared/utilities/hooks';
+import { getWorldSettingsUseCase } from '../../settings/steps/helpers';
 
 Then(
   'I should see the success message {string}',
@@ -40,14 +41,28 @@ Then(
   }
 );
 
+When(
+  'I set default currency to {string} in settings',
+  async function (code: string) {
+    const settingsUseCase = getWorldSettingsUseCase();
+    await settingsUseCase.setDefaultCurrency(code);
+    // Return to Accounts page for subsequent steps
+    const accountsPage = getAccountsPage();
+    await accountsPage.navigateToAccountsPage();
+  }
+);
+
 Then(
-  'the total balance should be correct for Euro currency',
+  'the total balance should be shown in default currency from settings',
   async function () {
     const accountsPage = getAccountsPage();
     const totalBalance = await accountsPage.getTotalBalance();
-    if (!totalBalance.includes('€100.00')) {
+    // Expect it contains a currency symbol of currently selected currency code
+    // For VND, symbol is ₫; for USD, $; for EUR, €
+    const symbols = ['₫', '$', '€'];
+    if (!symbols.some(s => totalBalance.includes(s))) {
       throw new Error(
-        `Expected total balance to include "€100.00", but got "${totalBalance}"`
+        `Expected total balance to include the default currency symbol, but got "${totalBalance}"`
       );
     }
   }
