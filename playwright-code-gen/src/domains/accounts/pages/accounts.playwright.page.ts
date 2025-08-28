@@ -24,7 +24,7 @@ export class AccountsPlaywrightPage extends BasePage {
       accountType: '[data-testid="select-account-type"] .el-select__wrapper',
       balance: 'input[type="number"]',
       description: 'input[placeholder="Enter description (optional)"]',
-      currencySelect: '[data-testid="form-item-currency"] .el-select__wrapper'
+      currencySelect: '[data-testid="form-item-currency"] .el-select__wrapper',
     },
     messages: {
       success: '.el-message--success',
@@ -38,7 +38,7 @@ export class AccountsPlaywrightPage extends BasePage {
       categoriesPage: '/categories',
       accountsPage: '/accounts',
     },
-    dialog: '.el-dialog'
+    dialog: '.el-dialog',
   };
 
   /**
@@ -67,7 +67,9 @@ export class AccountsPlaywrightPage extends BasePage {
    */
   async clickAddAccountButton() {
     await this.page.click(this.selectors.buttons.addAccount);
-    await this.page.waitForSelector(this.selectors.dialog, { state: 'visible' });
+    await this.page.waitForSelector(this.selectors.dialog, {
+      state: 'visible',
+    });
   }
 
   /**
@@ -82,7 +84,10 @@ export class AccountsPlaywrightPage extends BasePage {
    */
   async selectAccountType(type: string) {
     await this.page.click(this.selectors.inputs.accountType);
-    await this.page.waitForSelector(`.el-select-dropdown__item:has-text("${type}")`, { state: 'visible', timeout: 3000 });
+    await this.page.waitForSelector(
+      `.el-select-dropdown__item:has-text("${type}")`,
+      { state: 'visible', timeout: 3000 }
+    );
     await this.page.click(`.el-select-dropdown__item:has-text("${type}")`);
   }
 
@@ -91,7 +96,10 @@ export class AccountsPlaywrightPage extends BasePage {
    */
   async selectCurrencyByName(name: string) {
     await this.page.click(this.selectors.inputs.currencySelect);
-    await this.page.waitForSelector(`.el-select-dropdown__item:has-text("${name}")`, { state: 'visible', timeout: 3000 });
+    await this.page.waitForSelector(
+      `.el-select-dropdown__item:has-text("${name}")`,
+      { state: 'visible', timeout: 3000 }
+    );
     await this.page.click(`.el-select-dropdown__item:has-text("${name}")`);
   }
 

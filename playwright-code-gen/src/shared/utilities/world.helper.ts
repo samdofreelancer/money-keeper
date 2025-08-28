@@ -5,4 +5,4 @@ export function getWorld(): World {
     throw new Error('World not initialized');
   }
   return globalThis.testWorld as unknown as World;
-} 
+}

@@ -7,14 +7,15 @@ export class SettingsPlaywrightPage {
 
   private selectors = {
     nav: {
-      settings: 'text=Settings'
+      settings: 'text=Settings',
     },
     settingsPage: '[data-testid="settings-page"]',
     linkDefaultCurrency: '[data-testid="link-default-currency"]',
     currencySelectInDialog: '.el-dialog .el-select',
-    currencyOptionByCode: (code: string) => `.el-select-dropdown__item:has-text("${code}")`,
+    currencyOptionByCode: (code: string) =>
+      `.el-select-dropdown__item:has-text("${code}")`,
     dialog: '.el-dialog',
-    saveButton: '.el-dialog .el-button:has-text("Save")'
+    saveButton: '.el-dialog .el-button:has-text("Save")',
   };
 
   async goto() {
@@ -24,7 +25,9 @@ export class SettingsPlaywrightPage {
 
   async openCurrencyDialog() {
     await this.page.click(this.selectors.linkDefaultCurrency);
-    await this.page.waitForSelector(this.selectors.dialog, { state: 'visible' });
+    await this.page.waitForSelector(this.selectors.dialog, {
+      state: 'visible',
+    });
   }
 
   async chooseCurrencyByCode(code: string) {
@@ -43,4 +46,4 @@ export class SettingsPlaywrightPage {
     await this.chooseCurrencyByCode(code);
     await this.saveCurrency();
   }
-} 
+}

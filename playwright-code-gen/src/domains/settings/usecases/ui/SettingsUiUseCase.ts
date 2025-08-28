@@ -11,4 +11,4 @@ export class SettingsUiUseCase {
   async setDefaultCurrency(code: string) {
     await this.settingsPage.setDefaultCurrency(code);
   }
-} 
+}
