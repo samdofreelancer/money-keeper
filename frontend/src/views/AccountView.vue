@@ -174,6 +174,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAccountStore } from '@/stores/account'
+import { useSettingsStore } from '@/stores/settings'
 import { Plus, Search, Edit, Delete, Wallet } from '@element-plus/icons-vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
@@ -184,6 +185,7 @@ import { accountTypes } from '@/constants/accountTypes'
 import CurrencySelector from '@/components/CurrencySelector.vue'
 
 const accountStore = useAccountStore()
+const settingsStore = useSettingsStore()
 const dialogVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
@@ -242,7 +244,7 @@ const filteredAccounts = computed(() => {
 })
 
 const formattedTotalBalance = computed(() => {
-  return formatCurrency(accountStore.totalBalance)
+  return formatCurrency(accountStore.totalBalance, settingsStore.defaultCurrency)
 })
 
 import { currencyApi } from '@/api/currency'
@@ -250,6 +252,10 @@ import { currencyApi } from '@/api/currency'
 onMounted(async () => {
   await accountStore.fetchAccounts()
   supportedCurrencies.value = await currencyApi.getSupportedCurrencies()
+  // Ensure default currency is available
+  if (!supportedCurrencies.value.find(c => c.code === settingsStore.defaultCurrency)) {
+    settingsStore.setDefaultCurrency('USD')
+  }
 })
 
 function getIconComponent(type: string) {
@@ -287,7 +293,7 @@ function showCreateDialog() {
     accountName: '',
     type: '',
     initBalance: 0,
-    currency: 'USD',
+    currency: settingsStore.defaultCurrency,
     description: ''
   }
   dialogVisible.value = true
@@ -374,7 +380,7 @@ watch(dialogVisible, (newVal, oldVal) => {
       accountName: '',
       type: '',
       initBalance: 0,
-      currency: 'USD',
+      currency: settingsStore.defaultCurrency,
       description: ''
     }
     duplicateNameError.value = ''

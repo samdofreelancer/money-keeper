@@ -13,6 +13,9 @@
       <li>
         <router-link to="/accounts" active-class="active-link">Accounts</router-link>
       </li>
+      <li>
+        <router-link to="/settings" active-class="active-link">Settings</router-link>
+      </li>
     </ul>
   </div>
 </template>

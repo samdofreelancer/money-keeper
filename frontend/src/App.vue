@@ -43,7 +43,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item>Profile</el-dropdown-item>
-                <el-dropdown-item>Settings</el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/settings')">Settings</el-dropdown-item>
                 <el-dropdown-item divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </template>
