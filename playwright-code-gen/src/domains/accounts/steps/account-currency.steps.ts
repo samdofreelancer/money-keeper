@@ -1,5 +1,5 @@
 import { Then, When } from '@cucumber/cucumber';
-import { getAccountsPage, getPage } from '../../../shared/utilities/hooks';
+import { getAccountsPage } from '../../../shared/utilities/hooks';
 import { getWorldSettingsUseCase } from '../../settings/steps/helpers';
 
 Then(
