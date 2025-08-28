@@ -2,26 +2,32 @@
   <div class="sidebar">
     <ul>
       <li>
-        <router-link to="/categories" active-class="active-link">Categories</router-link>
+        <router-link to="/categories" :class="{ 'active-link': isActive('/categories') }">Categories</router-link>
       </li>
       <li>
-        <router-link to="/transactions" active-class="active-link">Transactions</router-link>
+        <router-link to="/transactions" :class="{ 'active-link': isActive('/transactions') }">Transactions</router-link>
       </li>
       <li>
-        <router-link to="/reports" active-class="active-link">Reports</router-link>
+        <router-link to="/reports" :class="{ 'active-link': isActive('/reports') }">Reports</router-link>
       </li>
       <li>
-        <router-link to="/accounts" active-class="active-link">Accounts</router-link>
+        <router-link to="/accounts" :class="{ 'active-link': isActive('/accounts') }">Accounts</router-link>
       </li>
       <li>
-        <router-link to="/settings" active-class="active-link">Settings</router-link>
+        <router-link to="/settings" :class="{ 'active-link': isActive('/settings') }">Settings</router-link>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-// No script logic needed for static sidebar links
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+function isActive(path: string) {
+  return route.path === path || route.path.startsWith(path + '/')
+}
 </script>
 
 <style scoped>

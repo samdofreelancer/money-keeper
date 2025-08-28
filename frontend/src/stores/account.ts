@@ -30,6 +30,7 @@ export const useAccountStore = defineStore('account', () => {
         name: a.accountName,
         type: a.type,
         balance: a.initBalance,
+        currency: a.currency || 'USD',
         active: a.active ?? true
       }))
     } catch (e: any) {
@@ -46,6 +47,7 @@ export const useAccountStore = defineStore('account', () => {
       name: account.accountName,
       type: account.type,
       balance: account.initBalance ?? 0,
+      currency: account.currency || 'USD',
       active: account.active ?? true
     }
     accounts.value.push(tempAccount)
@@ -80,6 +82,7 @@ export const useAccountStore = defineStore('account', () => {
       name: account.accountName,
       type: account.type,
       balance: account.initBalance ?? 0,
+      currency: account.currency || oldAccount.currency || 'USD',
       active: account.active ?? true
     }
     try {
