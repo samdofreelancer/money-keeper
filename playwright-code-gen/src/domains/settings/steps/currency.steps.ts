@@ -11,4 +11,4 @@ When(
     const accountsPage = getAccountsPage();
     await accountsPage.navigateToAccountsPage();
   }
-); 
+);
