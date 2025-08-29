@@ -4,7 +4,11 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "exchange_rate")
+@Table(name = "exchange_rate", 
+    indexes = {
+        @Index(name = "idx_exchange_rate_base_date", columnList = "base,rate_date"),
+        @Index(name = "idx_exchange_rate_date", columnList = "rate_date")
+    })
 public class ExchangeRateEntity {
 
     @Id
