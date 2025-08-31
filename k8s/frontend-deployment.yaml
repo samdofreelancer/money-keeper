@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: money-keeper-frontend
+  labels:
+    app: money-keeper-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: money-keeper-frontend
+  template:
+    metadata:
+      labels:
+        app: money-keeper-frontend
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: frontend
+        image: ghcr.io/samdofreelancer/money-keeper-frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: money-keeper-frontend-service
+spec:
+  selector:
+    app: money-keeper-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
