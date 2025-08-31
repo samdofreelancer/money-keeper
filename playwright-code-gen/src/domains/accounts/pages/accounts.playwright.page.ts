@@ -21,9 +21,10 @@ export class AccountsPlaywrightPage extends BasePage {
     },
     inputs: {
       accountName: 'input[placeholder="Enter account name"]',
-      accountType: '.el-select',
+      accountType: '[data-testid="select-account-type"] .el-select__wrapper',
       balance: 'input[type="number"]',
       description: 'input[placeholder="Enter description (optional)"]',
+      currencySelect: '[data-testid="form-item-currency"] .el-select__wrapper',
     },
     messages: {
       success: '.el-message--success',
@@ -37,6 +38,7 @@ export class AccountsPlaywrightPage extends BasePage {
       categoriesPage: '/categories',
       accountsPage: '/accounts',
     },
+    dialog: '.el-dialog',
   };
 
   /**
@@ -65,6 +67,9 @@ export class AccountsPlaywrightPage extends BasePage {
    */
   async clickAddAccountButton() {
     await this.page.click(this.selectors.buttons.addAccount);
+    await this.page.waitForSelector(this.selectors.dialog, {
+      state: 'visible',
+    });
   }
 
   /**
@@ -79,7 +84,23 @@ export class AccountsPlaywrightPage extends BasePage {
    */
   async selectAccountType(type: string) {
     await this.page.click(this.selectors.inputs.accountType);
-    await this.page.click(`span:text('${type}')`);
+    await this.page.waitForSelector(
+      `.el-select-dropdown__item:has-text("${type}")`,
+      { state: 'visible', timeout: 3000 }
+    );
+    await this.page.click(`.el-select-dropdown__item:has-text("${type}")`);
+  }
+
+  /**
+   * Select currency by visible name in the currency selector
+   */
+  async selectCurrencyByName(name: string) {
+    await this.page.click(this.selectors.inputs.currencySelect);
+    await this.page.waitForSelector(
+      `.el-select-dropdown__item:has-text("${name}")`,
+      { state: 'visible', timeout: 3000 }
+    );
+    await this.page.click(`.el-select-dropdown__item:has-text("${name}")`);
   }
 
   /**
@@ -103,6 +124,9 @@ export class AccountsPlaywrightPage extends BasePage {
     await this.fillAccountName(accountData.name);
     await this.selectAccountType(accountData.type);
     await this.fillBalance(accountData.balance);
+    if (accountData.currency) {
+      await this.selectCurrencyByName(accountData.currency);
+    }
     if (accountData.description) {
       await this.fillDescription(accountData.description);
     }
@@ -210,6 +234,19 @@ export class AccountsPlaywrightPage extends BasePage {
   }
 
   /**
+   * Get the balance for a given account row by name
+   */
+  async getAccountBalanceForRow(accountName: string): Promise<string | null> {
+    // Find the row containing the account name
+    const row = await this.page
+      .locator(`tr:has(td:has-text("${accountName}"))`)
+      .first();
+    // The balance is typically in the 3rd cell (index 2)
+    const balanceCell = await row.locator('td').nth(2).textContent();
+    return balanceCell;
+  }
+
+  /**
    * Reload the current page
    */
   async reload() {
@@ -223,5 +260,14 @@ export class AccountsPlaywrightPage extends BasePage {
     await this.page.waitForSelector(this.selectors.buttons.addAccount, {
       timeout: 10000,
     });
+  }
+
+  /**
+   * Get the text of the success message if visible
+   */
+  async getSuccessMessageText(): Promise<string | null> {
+    const el = await this.page.$(this.selectors.messages.success);
+    if (!el) return null;
+    return (await el.textContent())?.trim() || null;
   }
 }

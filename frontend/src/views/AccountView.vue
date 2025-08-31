@@ -174,6 +174,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAccountStore } from '@/stores/account'
+import { useSettingsStore } from '@/stores/settings'
 import { Plus, Search, Edit, Delete, Wallet } from '@element-plus/icons-vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
@@ -184,6 +185,7 @@ import { accountTypes } from '@/constants/accountTypes'
 import CurrencySelector from '@/components/CurrencySelector.vue'
 
 const accountStore = useAccountStore()
+const settingsStore = useSettingsStore()
 const dialogVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const formRef = ref<FormInstance>()
@@ -241,8 +243,47 @@ const filteredAccounts = computed(() => {
   return accounts
 })
 
+import { ref as vueRef } from 'vue'
+import { exchangeRateApi } from '@/api/exchangeRates'
+
+const rates = vueRef<Record<string, number>>({})
+
+onMounted(async () => {
+  try {
+    const resp = await exchangeRateApi.latest(settingsStore.defaultCurrency)
+    rates.value = resp.rates || {}
+  } catch (e) {
+    rates.value = {}
+  }
+})
+
+watch(() => settingsStore.defaultCurrency, async (val) => {
+  try {
+    const resp = await exchangeRateApi.latest(val)
+    rates.value = resp.rates || {}
+  } catch (e) {
+    rates.value = {}
+  }
+})
+
+function convertByRates(amount: number, fromCode?: string, toCode?: string): number {
+  const from = (fromCode || 'USD').toUpperCase()
+  const to = (toCode || 'USD').toUpperCase()
+  if (from === to) return amount
+  const toRate = rates.value[to]
+  const fromRate = rates.value[from]
+  if (!toRate || !fromRate) return amount
+  const amountInBase = amount / fromRate // since rates are relative to base (to)
+  return amountInBase * toRate
+}
+
 const formattedTotalBalance = computed(() => {
-  return formatCurrency(accountStore.totalBalance)
+  const target = settingsStore.defaultCurrency
+  const sum = accountStore.activeAccounts.reduce((acc, a) => {
+    const amount = convertByRates(a.balance, a.currency, target)
+    return acc + amount
+  }, 0)
+  return formatCurrency(sum, target)
 })
 
 import { currencyApi } from '@/api/currency'
@@ -250,6 +291,10 @@ import { currencyApi } from '@/api/currency'
 onMounted(async () => {
   await accountStore.fetchAccounts()
   supportedCurrencies.value = await currencyApi.getSupportedCurrencies()
+  // Ensure default currency is available
+  if (!supportedCurrencies.value.find(c => c.code === settingsStore.defaultCurrency)) {
+    settingsStore.setDefaultCurrency('USD')
+  }
 })
 
 function getIconComponent(type: string) {
@@ -287,7 +332,7 @@ function showCreateDialog() {
     accountName: '',
     type: '',
     initBalance: 0,
-    currency: 'USD',
+    currency: settingsStore.defaultCurrency,
     description: ''
   }
   dialogVisible.value = true
@@ -374,7 +419,7 @@ watch(dialogVisible, (newVal, oldVal) => {
       accountName: '',
       type: '',
       initBalance: 0,
-      currency: 'USD',
+      currency: settingsStore.defaultCurrency,
       description: ''
     }
     duplicateNameError.value = ''

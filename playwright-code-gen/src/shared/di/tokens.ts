@@ -12,6 +12,10 @@ export const TOKENS = {
   AccountBalanceUiUseCase: Symbol.for('accounts:AccountBalanceUiUseCase'),
   AccountCreationUiUseCase: Symbol.for('accounts:AccountCreationUiUseCase'),
 
+  // Settings domain tokens
+  SettingsPlaywrightPage: Symbol.for('settings:SettingsPlaywrightPage'),
+  SettingsUiUseCase: Symbol.for('settings:SettingsUiUseCase'),
+
   // Category domain tokens
   CategoriesPage: Symbol.for('category:CategoriesPage'),
   CategoryApiClient: Symbol.for('category:CategoryApiClient'),

@@ -6,6 +6,17 @@ function generateTempId(): string {
   return 'temp-' + Date.now().toString()
 }
 
+function mapApiAccount(a: any): Account {
+  return {
+    id: a.id,
+    name: a.accountName,
+    type: a.type,
+    balance: a.initBalance,
+    currency: a.currency || 'USD',
+    active: a.active ?? true
+  } as Account
+}
+
 export const useAccountStore = defineStore('account', () => {
   const accounts = ref<Account[]>([])
   const loading = ref(false)
@@ -24,14 +35,7 @@ export const useAccountStore = defineStore('account', () => {
       loading.value = true
       error.value = null
       const backendAccounts = await accountApi.getAll()
-      // Map backend fields to frontend fields
-      accounts.value = backendAccounts.map((a: any) => ({
-        id: a.id,
-        name: a.accountName,
-        type: a.type,
-        balance: a.initBalance,
-        active: a.active ?? true
-      }))
+      accounts.value = backendAccounts.map(mapApiAccount)
     } catch (e: any) {
       error.value = 'Failed to fetch accounts'
     } finally {
@@ -46,13 +50,15 @@ export const useAccountStore = defineStore('account', () => {
       name: account.accountName,
       type: account.type,
       balance: account.initBalance ?? 0,
+      currency: account.currency || 'USD',
       active: account.active ?? true
     }
     accounts.value.push(tempAccount)
     try {
       loading.value = true
       error.value = null
-      const newAccount = await accountApi.create(account)
+      const newAccountRaw = await accountApi.create(account)
+      const newAccount = mapApiAccount(newAccountRaw)
       const index = accounts.value.findIndex((a: Account) => a.id === tempId)
       if (index !== -1) {
         accounts.value[index] = newAccount
@@ -80,12 +86,14 @@ export const useAccountStore = defineStore('account', () => {
       name: account.accountName,
       type: account.type,
       balance: account.initBalance ?? 0,
+      currency: account.currency || oldAccount.currency || 'USD',
       active: account.active ?? true
     }
     try {
       loading.value = true
       error.value = null
-      const updatedAccount = await accountApi.update(id, account)
+      const updatedRaw = await accountApi.update(id, account)
+      const updatedAccount = mapApiAccount(updatedRaw)
       accounts.value[index] = updatedAccount
       return updatedAccount
     } catch (e: any) {

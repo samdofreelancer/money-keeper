@@ -4,7 +4,7 @@ import { Inject, TOKENS, Transient } from '../../../shared/di';
 
 type TimeoutMs = number | undefined;
 
-@Transient({token: TOKENS.CategoriesPage })
+@Transient({ token: TOKENS.CategoriesPage })
 export class CategoriesPage {
   constructor(@Inject(TOKENS.Page) private readonly page: Page) {}
 

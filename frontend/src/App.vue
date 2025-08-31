@@ -43,7 +43,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item>Profile</el-dropdown-item>
-                <el-dropdown-item>Settings</el-dropdown-item>
+                <el-dropdown-item @click="$router.push('/settings')">Settings</el-dropdown-item>
                 <el-dropdown-item divided>Logout</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -78,6 +78,9 @@ function updateActiveMenu() {
   } else if (path.startsWith('/reports')) {
     activeMenu.value = 'reports'
     activeMenuLabel.value = 'Reports'
+  } else if (path.startsWith('/settings')) {
+    activeMenu.value = ''
+    activeMenuLabel.value = 'Settings'
   } else {
     activeMenu.value = 'categories'
     activeMenuLabel.value = 'Categories'
