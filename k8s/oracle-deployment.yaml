@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oracle-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracle-db
+  labels:
+    app: oracle-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracle-db
+  template:
+    metadata:
+      labels:
+        app: oracle-db
+    spec:
+      containers:
+      - name: oracle
+        image: container-registry.oracle.com/database/express:latest
+        ports:
+        - containerPort: 1521
+        - containerPort: 5500
+        env:
+        - name: ORACLE_PWD
+          value: "Oracle123"
+        - name: ORACLE_CHARACTERSET
+          value: "AL32UTF8"
+        volumeMounts:
+        - name: oracle-storage
+          mountPath: /opt/oracle/oradata
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "1"
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - "echo 'SELECT 1 FROM DUAL;' | sqlplus -s sys/Oracle123@localhost:1521/XE as sysdba"
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        livenessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - "echo 'SELECT 1 FROM DUAL;' | sqlplus -s sys/Oracle123@localhost:1521/XE as sysdba"
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+      volumes:
+      - name: oracle-storage
+        persistentVolumeClaim:
+          claimName: oracle-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle-service
+spec:
+  selector:
+    app: oracle-db
+  ports:
+    - name: oracle-port
+      protocol: TCP
+      port: 1521
+      targetPort: 1521
+    - name: apex-port
+      protocol: TCP
+      port: 5500
+      targetPort: 5500
+  type: ClusterIP 
