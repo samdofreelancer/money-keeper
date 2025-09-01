@@ -335,6 +335,16 @@ fi
 # Check if we can connect to Kubernetes cluster
 if ! kubectl cluster-info &> /dev/null; then
     log_error "Cannot connect to Kubernetes cluster. Please check your kubeconfig."
+    log_info "Run the troubleshooting script for detailed diagnostics:"
+    log_info "  ./troubleshoot-k8s.sh"
+    echo
+    log_info "Common quick fixes:"
+    log_info "  - For minikube: minikube start"
+    log_info "  - For Docker Desktop: Enable Kubernetes in settings"
+    log_info "  - For cloud clusters: Ensure kubeconfig is properly configured"
+    echo
+    log_info "Detailed cluster connection error:"
+    kubectl cluster-info 2>&1
     exit 1
 fi
 
