@@ -16,8 +16,8 @@ import { TransactionCreationUiUseCase } from 'transaction-domain/usecases/ui/Tra
 import { TransactionCreationApiUseCase } from 'transaction-domain/usecases/api/TransactionCreationApiUseCase';
 import { AccountCreationUiUseCase } from 'account-domains/usecases/ui/AccountCreationUiUseCase';
 import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
-import { SettingsPlaywrightPage } from '../../domains/settings/pages/settings.playwright.page';
-import { SettingsUiUseCase } from '../../domains/settings/usecases/ui/SettingsUiUseCase';
+import { SettingsPlaywrightPage } from 'settings-domain/pages/settings.playwright.page';
+import { SettingsUiUseCase } from 'settings-domain/usecases/ui/SettingsUiUseCase';
 
 /**
  * World per-scenario — browser/context/page từ BaseWorld

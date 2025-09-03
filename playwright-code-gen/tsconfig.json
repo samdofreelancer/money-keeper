@@ -15,7 +15,8 @@
       "shared/*": ["src/shared/*"],
       "account-domains/*": ["src/domains/accounts/*"],
       "category-domain/*": ["src/domains/category/*"],
-      "transaction-domain/*": ["src/domains/transactions/*"]
+      "transaction-domain/*": ["src/domains/transactions/*"],
+      "settings-domain/*": ["src/domains/settings/*"]
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true

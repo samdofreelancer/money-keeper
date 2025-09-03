@@ -1,9 +1,9 @@
 import { Page } from '@playwright/test';
-import { Logger } from '../../../shared/utilities/logger';
-import { TOKENS } from '../../../shared/di/tokens';
+import { Logger } from 'shared/utilities/logger';
+import { TOKENS } from 'shared/di/tokens';
 import { TransactionMockProvider } from '../mocks/transaction.mock';
 import { UiStateMockProvider } from '../mocks/ui-state.mock';
-import { Inject, Transient } from '../../../shared/di/decorators';
+import { Inject, Transient } from 'shared/di/decorators';
 
 @Transient({ token: TOKENS.TransactionsPage })
 export class TransactionsPage {

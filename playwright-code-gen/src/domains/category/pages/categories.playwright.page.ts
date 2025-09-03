@@ -1,6 +1,6 @@
 // src/domains/categories/pages/CategoriesPage.ts
 import { Page, Locator, expect } from '@playwright/test';
-import { Inject, TOKENS, Transient } from '../../../shared/di';
+import { Inject, TOKENS, Transient } from 'shared/di';
 
 type TimeoutMs = number | undefined;
 

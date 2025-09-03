@@ -1,7 +1,7 @@
-import { Logger } from '../../../../shared/utilities/logger';
-import { AccountCreateDto } from '../../types/account.dto';
-import { AccountApiClient } from '../../api/account-api.client';
-import { Inject, Transient, TOKENS } from '../../../../shared/di';
+import { Logger } from 'shared/utilities/logger';
+import { AccountCreateDto } from 'account-domains/types/account.dto';
+import { AccountApiClient } from 'account-domains/api/account-api.client';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 /**
  * Use case for account creation via API

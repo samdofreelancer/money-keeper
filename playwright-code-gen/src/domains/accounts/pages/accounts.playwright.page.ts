@@ -1,8 +1,8 @@
 import { Page } from '@playwright/test';
-import { AccountDto } from '../types/account.dto';
-import { Logger } from '../../../shared/utilities/logger';
-import { Inject, Transient, TOKENS } from '../../../shared/di';
-import { BasePage } from '../../../shared/pages/base.page';
+import { AccountDto } from 'account-domains/types/account.dto';
+import { Logger } from 'shared/utilities/logger';
+import { Inject, Transient, TOKENS } from 'shared/di';
+import { BasePage } from 'shared/pages/base.page';
 
 /**
  * Page object for the Accounts page

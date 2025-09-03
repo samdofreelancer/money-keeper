@@ -1,10 +1,10 @@
-import { When, Then } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
 import {
-  getAccountCreationUiUseCase,
+  getAccountCreationApiUseCase,
   getAccountsPage,
-} from '../../../shared/utilities/hooks';
-import { TestData } from '../../../shared/utilities/testData';
-import { AccountDto } from '../types/account.dto';
+} from 'shared/utilities/hooks';
+import { TestData } from 'shared/utilities/testData';
+import { AccountDto, AccountCreateDto } from 'account-domains/types/account.dto';
 
 When(
   'I navigate to accounts via clicking {string}',
@@ -36,8 +36,10 @@ When(
 
     TestData.trackCreatedAccount(accountData.name);
 
-    const accountCreationUiUseCase = getAccountCreationUiUseCase();
-    await accountCreationUiUseCase.createAccount(accountData);
+    const accountCreationUiUseCase = getAccountCreationApiUseCase();
+    await accountCreationUiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(accountData)
+    );
   }
 );
 
@@ -60,8 +62,10 @@ When(
       description: dataTableHash['Description'],
     };
 
-    const accountCreationUiUseCase = getAccountCreationUiUseCase();
-    await accountCreationUiUseCase.createAccount(accountData);
+    const accountCreationUiUseCase = getAccountCreationApiUseCase();
+    await accountCreationUiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(accountData)
+    );
   }
 );
 
