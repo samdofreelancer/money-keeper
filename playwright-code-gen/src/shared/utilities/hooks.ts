@@ -15,7 +15,7 @@ import {
 import { chromium, firefox, webkit, Page, BrowserType } from '@playwright/test';
 import { World } from './world';
 import { BaseWorld } from './base-world';
-import { Environment } from '../config/environment';
+import { Environment } from 'shared/config/environment';
 import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
@@ -26,9 +26,9 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
-import { Container } from '../di/container';
-import { TOKENS } from '../di/tokens';
-import { autoImportDomains } from '../di/auto-register';
+import { Container } from 'shared/di/container';
+import { TOKENS } from 'shared/di/tokens';
+import { autoImportDomains } from 'shared/di/auto-register';
 
 // Extend the global object type
 declare global {

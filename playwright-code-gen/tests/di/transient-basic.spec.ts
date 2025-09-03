@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { test, expect } from '@playwright/test';
-import { Container, Transient, Inject } from '../../src/shared/di';
+import { Container, Transient, Inject } from 'shared/di';
 
 const TOKEN = Symbol.for('di:test:SimpleTransient');
 

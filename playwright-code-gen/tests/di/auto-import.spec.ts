@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { test, expect } from '@playwright/test';
-import { Container, Transient, Inject } from '../../src/shared/di';
-import { autoImportDomains } from '../../src/shared/di';
+import { Container, Transient, Inject } from 'shared/di';
+import { autoImportDomains } from 'shared/di';
 
 // Define a local transient using a symbol token to simulate discovery by glob
 const LOCAL_TOKEN = Symbol.for('di:test:LocalFoo');

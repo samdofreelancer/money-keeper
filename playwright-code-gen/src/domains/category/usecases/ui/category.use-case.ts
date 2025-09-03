@@ -4,10 +4,10 @@
 // - Không truy cập page/locator trực tiếp
 // - Xử lý lỗi nghiệp vụ, retry đúng (kể cả khi predicate trả false), trả kết quả rõ ràng
 
-import { Logger } from '../../../../shared/utilities/logger';
-import { CategoriesPage } from '../../pages/categories.playwright.page';
-import { TestData } from '../../../../shared/utilities/testData';
-import { Inject, Transient, TOKENS } from '../../../../shared/di';
+import { Logger } from 'shared/utilities/logger';
+import { CategoriesPage } from 'category-domain/pages/categories.playwright.page';
+import { TestData } from 'shared/utilities/testData';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 export type CreateCategoryParams = {
   name: string;

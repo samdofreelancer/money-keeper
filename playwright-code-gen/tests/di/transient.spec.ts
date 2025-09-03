@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { test, expect } from '@playwright/test';
-import { Container, Transient, Singleton, Inject } from '../../src/shared/di';
+import { Container, Transient, Singleton, Inject } from 'shared/di';
 
 const FOO = Symbol('Foo');
 

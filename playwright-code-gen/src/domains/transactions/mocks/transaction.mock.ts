@@ -1,4 +1,4 @@
-import { TransactionCreateDto } from '../types/transaction.dto';
+import { TransactionCreateDto } from 'transaction-domain/types/transaction.dto';
 import { Logger } from 'shared/utilities/logger';
 
 export interface TransactionMock {

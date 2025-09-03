@@ -3,7 +3,7 @@ import {
   getTransactionsPage,
   getTransactionCreationUiUseCase,
 } from 'shared/utilities/hooks';
-import { TransactionCreateDto } from '../types/transaction.dto';
+import { TransactionCreateDto } from 'transaction-domain/types/transaction.dto';
 
 Before(async function () {
   const transactionCreationUiUseCase = getTransactionCreationUiUseCase();

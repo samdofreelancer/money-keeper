@@ -1,5 +1,5 @@
 import { glob } from 'fast-glob';
-import { Logger } from '../utilities/logger';
+import { Logger } from 'shared/utilities/logger';
 import type { Container } from './container';
 
 export async function autoImportDomains(

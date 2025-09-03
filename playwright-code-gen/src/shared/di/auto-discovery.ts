@@ -1,6 +1,6 @@
 import { glob } from 'fast-glob';
 import type { ServiceMetadata } from './container';
-import { Logger } from '../utilities/logger';
+import { Logger } from 'shared/utilities/logger';
 
 export async function autoDiscover(
   globs: string[] = [
