@@ -19,7 +19,7 @@ import { Environment } from '../config/environment';
 import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
-import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { CategoryDeletionApiUseCaseImpl } from 'category-domain/usecases/api/CategoryDeletionApiUseCase';
 
 import { allureReporter } from './allure-reporter';
 import { writeFileSync } from 'fs';
