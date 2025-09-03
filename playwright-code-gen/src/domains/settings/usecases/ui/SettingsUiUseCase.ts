@@ -1,5 +1,5 @@
-import { Inject, Transient, TOKENS } from '../../../../shared/di';
-import { SettingsPlaywrightPage } from '../../pages/settings.playwright.page';
+import { Inject, Transient, TOKENS } from 'shared/di';
+import { SettingsPlaywrightPage } from 'settings-domain/pages/settings.playwright.page';
 
 @Transient({ token: TOKENS.SettingsUiUseCase })
 export class SettingsUiUseCase {

@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { Inject, Transient, TOKENS } from '../../../shared/di';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 @Transient({ token: TOKENS.SettingsPlaywrightPage })
 export class SettingsPlaywrightPage {

@@ -1,7 +1,7 @@
-import { TransactionCreateDto } from '../../types/transaction.dto';
-import { Logger } from '../../../../shared/utilities/logger';
-import { TransactionMockProvider } from '../../mocks/transaction.mock';
-import { Inject, Transient, TOKENS } from '../../../../shared/di';
+import { TransactionCreateDto } from 'transaction-domain/types/transaction.dto';
+import { Logger } from 'shared/utilities/logger';
+import { TransactionMockProvider } from 'transaction-domain/mocks/transaction.mock';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 @Transient({ token: TOKENS.TransactionCreationApiUseCase })
 export class TransactionCreationApiUseCase {

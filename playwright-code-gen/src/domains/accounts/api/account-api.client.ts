@@ -4,10 +4,13 @@ import axios, {
   AxiosError,
   AxiosResponse,
 } from 'axios';
-import { Logger } from '../../../shared/utilities/logger';
-import { AccountApiDto, AccountCreateDto } from '../types/account.dto';
-import { Inject, Transient } from '../../../shared/di/decorators';
-import { TOKENS } from '../../../shared/di/tokens';
+import { Logger } from 'shared/utilities/logger';
+import {
+  AccountApiDto,
+  AccountCreateDto,
+} from 'account-domains/types/account.dto';
+import { Inject, Transient } from 'shared/di/decorators';
+import { TOKENS } from 'shared/di/tokens';
 
 @Transient({ token: TOKENS.AccountApiClient })
 export class AccountApiClient {

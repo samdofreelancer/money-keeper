@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { test, expect } from '@playwright/test';
-import { Container } from '../../src/shared/di';
-import { Singleton, Inject, Transient } from '../../src/shared/di';
+import { Container } from 'shared/di';
+import { Singleton, Inject, Transient } from 'shared/di';
 
 @Singleton()
 class OnlyOne {}

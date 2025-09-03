@@ -1,5 +1,5 @@
 import { Then } from '@cucumber/cucumber';
-import { getAccountsPage } from '../../../shared/utilities/hooks';
+import { getAccountsPage } from 'shared/utilities/hooks';
 
 Then(
   'I should see the success message {string}',

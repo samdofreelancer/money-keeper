@@ -1,7 +1,10 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
-import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
-import { Logger } from '../../../shared/utilities/logger';
-import { Inject, Transient, TOKENS } from '../../../shared/di';
+import {
+  CreateCategoryRequest,
+  CategoryResponse,
+} from 'category-domain/types/category.dto';
+import { Logger } from 'shared/utilities/logger';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 @Transient({ token: TOKENS.CategoryApiClient })
 export class CategoryApiClient {

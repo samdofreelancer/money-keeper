@@ -1,8 +1,8 @@
-import { Given, When, Then, DataTable } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
-import { poll } from '../../../shared/utilities/poll';
-import { sanitizeCategoryData } from '../../../shared/utilities/data-sanitization';
-import { getCategoriesPage } from '../../../shared/utilities/hooks';
+import { poll } from 'shared/utilities/poll';
+import { sanitizeCategoryData } from 'shared/utilities/data-sanitization';
+import { getCategoriesPage } from 'shared/utilities/hooks';
 
 // Configuration constants for better maintainability
 const POLLING_CONFIG = {
@@ -36,7 +36,7 @@ Given('I have no category with name {string}', async function (name: string) {
   }, POLLING_CONFIG);
 });
 
-When('I create a new category with:', async function (dataTable: DataTable) {
+When('I create a new category with:', async function (dataTable) {
   const row = dataTable.rowsHash() as Record<string, string>;
   const { name, icon } = sanitizeCategoryData(row);
 

@@ -1,9 +1,9 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
 import {
-  getTransactionCreationUiUseCase,
   getTransactionsPage,
-} from '../../../shared/utilities/hooks';
-import { TransactionCreateDto } from '../types/transaction.dto';
+  getTransactionCreationUiUseCase,
+} from 'shared/utilities/hooks';
+import { TransactionCreateDto } from 'transaction-domain/types/transaction.dto';
 
 Before(async function () {
   const transactionCreationUiUseCase = getTransactionCreationUiUseCase();

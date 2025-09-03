@@ -1,7 +1,7 @@
-import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
-import { CurrencyConfig } from '../../../../shared/config/currency.config';
-import { Inject, Transient, TOKENS } from '../../../../shared/di';
-import { Logger } from '../../../../shared/utilities/logger';
+import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
+import { CurrencyConfig } from 'shared/config/currency.config';
+import { Inject, Transient, TOKENS } from 'shared/di';
+import { Logger } from 'shared/utilities/logger';
 
 /**
  * Use case for account balance operations via UI
