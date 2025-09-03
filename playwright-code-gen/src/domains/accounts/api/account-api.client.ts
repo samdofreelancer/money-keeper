@@ -5,7 +5,10 @@ import axios, {
   AxiosResponse,
 } from 'axios';
 import { Logger } from 'shared/utilities/logger';
-import { AccountApiDto, AccountCreateDto } from 'account-domains/types/account.dto';
+import {
+  AccountApiDto,
+  AccountCreateDto,
+} from 'account-domains/types/account.dto';
 import { Inject, Transient } from 'shared/di/decorators';
 import { TOKENS } from 'shared/di/tokens';
 

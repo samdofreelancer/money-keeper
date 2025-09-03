@@ -1,6 +1,9 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { Given } from '@cucumber/cucumber';
 import { TestData } from 'shared/utilities/testData';
-import { getAccountsPage, getAccountCreationApiUseCase, getAccountCreationUiUseCase } from 'shared/utilities/hooks';
+import {
+  getAccountCreationApiUseCase,
+  getAccountCreationUiUseCase,
+} from 'shared/utilities/hooks';
 import { AccountCreateDto } from 'account-domains/types/account.dto';
 
 /**

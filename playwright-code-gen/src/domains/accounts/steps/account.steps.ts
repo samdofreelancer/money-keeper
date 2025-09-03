@@ -1,10 +1,13 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { When, Then } from '@cucumber/cucumber';
 import {
   getAccountCreationApiUseCase,
   getAccountsPage,
 } from 'shared/utilities/hooks';
 import { TestData } from 'shared/utilities/testData';
-import { AccountDto, AccountCreateDto } from 'account-domains/types/account.dto';
+import {
+  AccountDto,
+  AccountCreateDto,
+} from 'account-domains/types/account.dto';
 
 When(
   'I navigate to accounts via clicking {string}',

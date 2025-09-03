@@ -1,4 +1,4 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { When } from '@cucumber/cucumber';
 import { getAccountsPage } from 'shared/utilities/hooks';
 import { getWorldSettingsUseCase } from './helpers';
 

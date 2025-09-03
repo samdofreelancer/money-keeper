@@ -1,4 +1,4 @@
-import { Given, When, Then } from '@cucumber/cucumber';
+import { Then } from '@cucumber/cucumber';
 import { getAccountsPage } from 'shared/utilities/hooks';
 
 Then(
