@@ -60,4 +60,10 @@ public class CategoryController {
     public void delete(@PathVariable Long id) {
         categoryService.deleteCategory(id);
     }
+
+    @PostMapping("/bulk-delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void bulkDelete(@RequestBody List<Long> categoryIds) {
+        categoryService.bulkDeleteCategories(categoryIds);
+    }
 }

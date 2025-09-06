@@ -86,6 +86,14 @@ export class TestData {
     Logger.info(`[TestData] Tracked category: ${name} with Name: ${name}`);
   }
 
+  /** Remove a category name from the tracker */
+  static untrackCategory(name: string): void {
+    if (name && this.createdCategories.has(name)) {
+      this.createdCategories.delete(name);
+      Logger.info(`[TestData] Untracked category: ${name}`);
+    }
+  }
+
   /** Lấy danh sách account đã tạo (copy) */
   static getAccounts(): string[] {
     return Array.from(this.createdAccounts);
@@ -166,22 +174,17 @@ export class TestData {
         `[TestData] Found ${categoriesToDelete.length} categories to delete`
       );
 
-      // Delete each category by its actual ID
-      for (const category of categoriesToDelete) {
-        try {
-          await categoryApiClient.deleteCategory(category.id);
-          Logger.info(
-            `[TestData] Deleted test category: ${category.name} (ID: ${category.id})`
-          );
-        } catch (error) {
-          Logger.error(
-            `[TestData] Failed to delete test category: ${category.name} (ID: ${category.id})`,
-            error
-          );
-        }
+      if (categoriesToDelete.length > 0) {
+        // Use bulk delete API which handles hierarchical deletion internally
+        const categoryIds = categoriesToDelete.map((cat: CategoryResponse) => cat.id);
+        await categoryApiClient.bulkDeleteCategories(categoryIds);
+
+        Logger.info(
+          `[TestData] Successfully bulk deleted ${categoriesToDelete.length} categories and their descendants`
+        );
       }
     } catch (error) {
-      Logger.error('[TestData] Failed to fetch categories from API', error);
+      Logger.error('[TestData] Failed to bulk delete categories from API', error);
     }
 
     this.createdCategories.clear();
