@@ -5,6 +5,7 @@ import { sanitizeCategoryData } from 'shared/utilities/data-sanitization';
 import { getCategoriesPage } from 'shared/utilities/hooks';
 import { TestData } from 'shared/utilities/testData';
 import { CategoryType } from 'category-domain/types/category-type';
+import { CategoryResponse } from 'category-domain/types/category.dto';
 
 // Configuration constants for better maintainability
 const POLLING_CONFIG = {
@@ -25,11 +26,18 @@ Given('I am on the categories page', async function () {
 });
 
 Given('I have no category with name {string}', async function (name: string) {
-  // Idempotent cleanup: delete all categories with this name
-  const categoriesToDelete = await this.categoryApiClient.findByName(name);
+  // Idempotent cleanup: delete all categories with this name and their descendants using bulk delete
+  const categoriesToDelete: CategoryResponse[] = await this.categoryApiClient.findByName(name);
 
-  for (const category of categoriesToDelete) {
-    await this.categoryApiClient.deleteCategory(category.id);
+  if (categoriesToDelete.length > 0) {
+    // Use bulk delete API which handles hierarchical deletion internally
+    const categoryIds = categoriesToDelete.map((cat: CategoryResponse) => cat.id);
+    await this.categoryApiClient.bulkDeleteCategories(categoryIds);
+
+    // Remove from TestData tracker
+    categoriesToDelete.forEach((category: CategoryResponse) => {
+      TestData.untrackCategory(category.name);
+    });
   }
 
   // Retry/poll to handle eventual consistency
@@ -47,8 +55,12 @@ When('I create a new category with:', async function (dataTable) {
     throw new Error(ERROR_MESSAGES.MISSING_NAME);
   }
 
+  // Generate unique category name similar to account naming convention
+  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+  const uniqueName = TestData.generateUniqueCategoryName(scenarioName, name);
+
   const result = await this.createCategoryUseCase.run(
-    { name, icon },
+    { name: uniqueName, icon },
     { verify: true }
   );
 
@@ -78,11 +90,15 @@ Then(
 );
 
 When('I create a parent category {string} via backend API', async function (name: string) {
+  // Generate unique category name similar to account naming convention
+  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+  const uniqueName = TestData.generateUniqueCategoryName(scenarioName, name);
+
   const categoryData = {
-    name,
+    name: uniqueName,
     icon: 'Grid',
     type: CategoryType.EXPENSE,
-    parentId: null,
+    parentName: null,
   };
 
   const createdCategory = await this.categoryApiClient.createCategory(categoryData);
@@ -92,6 +108,9 @@ When('I create a parent category {string} via backend API', async function (name
 
   // Store parent category for later use
   this.parentCategory = createdCategory;
+
+  // Also store unique name for use in child category creation
+  (this as { uniqueParentCategoryName?: string }).uniqueParentCategoryName = uniqueName;
 });
 
 Then('the parent category {string} should be loaded on the frontend', async function (name: string) {
@@ -107,18 +126,19 @@ Then('the parent category {string} should be loaded on the frontend', async func
 });
 
 When('I create a child category {string} under parent {string}', async function (childName: string, parentName: string) {
-  // Find the parent category by name to get its ID
-  const parentCategories = await this.categoryApiClient.findByName(parentName);
-  if (parentCategories.length === 0) {
-    throw new Error(`Parent category "${parentName}" not found`);
+  // Use stored unique parent category name from previous step
+  const uniqueParentName = (this as { uniqueParentCategoryName?: string }).uniqueParentCategoryName;
+  if (!uniqueParentName) {
+    throw new Error('Unique parent category name not found from previous step');
   }
-  const parentId = parentCategories[0].name;
 
+  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+  const uniqueChildCategoryName = TestData.generateUniqueCategoryName(scenarioName, childName);
   const result = await this.createCategoryUseCase.run(
     {
-      name: childName,
+      name: uniqueChildCategoryName,
       icon: 'Shopping',
-      parentName: parentName,
+      parentName: uniqueParentName,
     },
     { verify: true }
   );
