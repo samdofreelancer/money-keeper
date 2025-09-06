@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,6 +20,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
 
 /**
  * Unit tests for CategoryController.
@@ -160,6 +163,50 @@ class CategoryControllerTest {
                 .when(categoryService).deleteCategory(anyLong());
 
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/categories/{id}", categoryId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturnNoContent() throws Exception {
+        List<Long> categoryIds = List.of(1L, 2L, 3L);
+
+        doNothing().when(categoryService).bulkDeleteCategories(anyList());
+
+        String requestBody = "[1, 2, 3]";
+
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturnNotFoundWhenCategoryNotFound() throws Exception {
+        List<Long> categoryIds = List.of(1L, 999L);
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryNotFoundException(999L))
+                .when(categoryService).bulkDeleteCategories(anyList());
+
+        String requestBody = "[1, 999]";
+
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturnConflictWhenConcurrentModification() throws Exception {
+        List<Long> categoryIds = List.of(1L, 2L);
+
+        doThrow(new com.personal.money.management.core.category.application.exception.CategoryConflictException("Concurrent modification"))
+                .when(categoryService).bulkDeleteCategories(anyList());
+
+        String requestBody = "[1, 2]";
+
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
                 .andExpect(status().isConflict());
     }
 }

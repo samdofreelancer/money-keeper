@@ -307,4 +307,165 @@ class CategoryApiIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void bulkDeleteCategories_shouldDeleteMultipleCategories() throws Exception {
+        // Create multiple categories
+        CategoryRequest request1 = new CategoryRequest();
+        request1.setName("Category1");
+        request1.setIcon("icon1");
+        request1.setType(CategoryType.EXPENSE);
+        request1.setParentId(null);
+
+        CategoryRequest request2 = new CategoryRequest();
+        request2.setName("Category2");
+        request2.setIcon("icon2");
+        request2.setType(CategoryType.EXPENSE);
+        request2.setParentId(null);
+
+        CategoryRequest request3 = new CategoryRequest();
+        request3.setName("Category3");
+        request3.setIcon("icon3");
+        request3.setType(CategoryType.EXPENSE);
+        request3.setParentId(null);
+
+        // Create categories via API
+        String response1 = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long categoryId1 = objectMapper.readTree(response1).get("id").asLong();
+
+        String response2 = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long categoryId2 = objectMapper.readTree(response2).get("id").asLong();
+
+        String response3 = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request3)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long categoryId3 = objectMapper.readTree(response3).get("id").asLong();
+
+        // Bulk delete categories
+        String bulkDeleteRequest = "[" + categoryId1 + "," + categoryId2 + "," + categoryId3 + "]";
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bulkDeleteRequest))
+                .andExpect(status().isNoContent());
+
+        // Verify all categories are deleted
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldDeleteCategoriesWithChildren() throws Exception {
+        // Create parent category
+        CategoryRequest parentRequest = new CategoryRequest();
+        parentRequest.setName("Parent");
+        parentRequest.setIcon("parent_icon");
+        parentRequest.setType(CategoryType.EXPENSE);
+        parentRequest.setParentId(null);
+
+        String parentResponse = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(parentRequest)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long parentId = objectMapper.readTree(parentResponse).get("id").asLong();
+
+        // Create child category
+        CategoryRequest childRequest = new CategoryRequest();
+        childRequest.setName("Child");
+        childRequest.setIcon("child_icon");
+        childRequest.setType(CategoryType.EXPENSE);
+        childRequest.setParentId(parentId);
+
+        String childResponse = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(childRequest)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long childId = objectMapper.readTree(childResponse).get("id").asLong();
+
+        // Bulk delete parent category (should also delete child)
+        String bulkDeleteRequest = "[" + parentId + "]";
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bulkDeleteRequest))
+                .andExpect(status().isNoContent());
+
+        // Verify both parent and child are deleted
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturn404ForNonExistentCategory() throws Exception {
+        // Create one valid category
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Valid Category");
+        request.setIcon("valid_icon");
+        request.setType(CategoryType.EXPENSE);
+        request.setParentId(null);
+
+        String response = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long validCategoryId = objectMapper.readTree(response).get("id").asLong();
+
+        // Attempt bulk delete with valid and invalid IDs
+        String bulkDeleteRequest = "[" + validCategoryId + ", 99999]";
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bulkDeleteRequest))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldHandleEmptyList() throws Exception {
+        String bulkDeleteRequest = "[]";
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bulkDeleteRequest))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldHandleDuplicateIds() throws Exception {
+        // Create one category
+        CategoryRequest request = new CategoryRequest();
+        request.setName("Test Category");
+        request.setIcon("test_icon");
+        request.setType(CategoryType.EXPENSE);
+        request.setParentId(null);
+
+        String response = mockMvc.perform(post("/api/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long categoryId = objectMapper.readTree(response).get("id").asLong();
+
+        // Bulk delete with duplicate IDs
+        String bulkDeleteRequest = "[" + categoryId + "," + categoryId + "]";
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bulkDeleteRequest))
+                .andExpect(status().isNoContent());
+
+        // Verify category is deleted
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/categories"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
 }

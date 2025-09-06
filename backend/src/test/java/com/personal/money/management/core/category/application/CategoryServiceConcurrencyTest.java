@@ -1,13 +1,11 @@
 package com.personal.money.management.core.category.application;
 
 import com.personal.money.management.core.category.application.exception.CategoryConflictException;
-import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.util.Optional;
