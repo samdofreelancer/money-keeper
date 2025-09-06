@@ -12,6 +12,7 @@ import { Inject, Transient, TOKENS } from 'shared/di';
 export type CreateCategoryParams = {
   name: string;
   icon?: string; // ví dụ: "ShoppingBag", "Utensils"
+  parentName?: string | null; // for child categories, use parent name instead of id
   timeoutMs?: number; // timeout kỹ thuật cho từng step
 };
 
@@ -77,19 +78,19 @@ export class CreateCategoryUseCase {
     };
 
     try {
-      // 1) Điều hướng & page contract
+      // 1) Open categories page
       Logger.info('[CreateCategory] goto categories');
       await this.categoriesPage.goto('/categories', timeoutMs);
 
-      // 2) Mở form
+      // 2) Open form add category
       Logger.info('[CreateCategory] open create form');
       await this.categoriesPage.clickAddCategoryButton(timeoutMs);
 
-      // 3) Điền tên
+      // 3) Fill category name
       Logger.info(`[CreateCategory] fill name = ${name}`);
       await this.categoriesPage.fillCategoryName(name, timeoutMs);
 
-      // 4) Chọn icon (tuỳ chọn)
+      // 4) Select icon (optional)
       if (icon) {
         Logger.info(
           `[CreateCategory] open icon picker & choose icon = ${icon}`
@@ -98,20 +99,30 @@ export class CreateCategoryUseCase {
         await this.categoriesPage.chooseIcon(icon, timeoutMs);
       }
 
-      // 5) Lưu
+      // 5) Select parent category (optional)
+      if (params.parentName) {
+        Logger.info(
+          `[CreateCategory] open parent category dropdown & select parent`
+        );
+        await this.categoriesPage.openParentCategoryDropdown(timeoutMs);
+        // Select the parent category by name
+        await this.categoriesPage.selectParentCategory(params.parentName, timeoutMs);
+      }
+
+      // 5) Submit form
       Logger.info('[CreateCategory] submit form');
       await this.categoriesPage.submitCategory(timeoutMs);
 
-      // 5.1) Track cleanup sớm - trước verify (để dọn được cả khi verify fail)
+      // 5.1) Track created for cleanup
       TestData.trackCreatedCategory(name);
       Logger.info(`[CreateCategory] tracked category for cleanup: ${name}`);
 
-      // 6) Chờ UI settle kỹ thuật (nếu cần)
+      // 6) Wait for UI settle
       if ((cfg.settleAfterMs ?? 0) > 0) {
         await this.categoriesPage.waitForIdle(cfg.settleAfterMs!);
       }
 
-      // 7) Verify (nghiệp vụ) nếu bật
+      // 7) Verify business result (optional)
       if (cfg.verify) {
         Logger.info(
           `[CreateCategory] verify "${name}" attempts=${cfg.verifyRetries} intervalMs=${cfg.verifyIntervalMs}ms`
@@ -140,10 +151,12 @@ export class CreateCategoryUseCase {
   }
 
   /**
-   * Verify tồn tại:
-   *  - Ưu tiên verifier inject
-   *  - Fallback POM.hasCategory(name) hoặc POM.categoryExists(name)
-   *  - Nếu không có, log warn và coi như pass (không chặn flow)
+   * Veryfy category exists using provided verifier or POM methods.
+   * @param name 
+   * @param verifier 
+   * @param attempts 
+   * @param intervalMs 
+   * @returns 
    */
   private async verifyExists(
     name: string,
@@ -181,9 +194,11 @@ export class CreateCategoryUseCase {
   }
 
   /**
-   * Retry đến khi fn() trả true (hoặc hết attempts).
-   * - Nuốt lỗi giữa các attempts.
-   * - Bảo đảm attempts >= 1.
+   * Retry until fn() returns true or attempts exhausted.
+   * @param fn 
+   * @param attempts 
+   * @param intervalMs 
+   * @returns 
    */
   private async retryUntilTrue(
     fn: () => Promise<boolean>,

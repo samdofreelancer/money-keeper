@@ -70,6 +70,14 @@ export class CategoriesPage {
       .or(this.page.getByRole('button', { name: /save|create|submit/i }));
   }
 
+  private get parentCategorySelect(): Locator {
+    return this.page.getByTestId('select-parent-category');
+  }
+
+  private get parentCategoryDropdown(): Locator {
+    return this.page.getByRole('listbox').last();
+  }
+
   // --------- Page Contract ----------
   async goto(basePath: string = '/categories', timeout?: TimeoutMs) {
     await this.page.goto(basePath, { timeout });
@@ -125,6 +133,18 @@ export class CategoriesPage {
   async submitCategory(timeout?: TimeoutMs) {
     await expect(this.saveButton).toBeEnabled({ timeout });
     await this.saveButton.click({ timeout });
+  }
+
+  async openParentCategoryDropdown(timeout?: TimeoutMs) {
+    await expect(this.parentCategorySelect).toBeVisible({ timeout });
+    await this.parentCategorySelect.click({ timeout });
+    await expect(this.parentCategoryDropdown).toBeVisible({ timeout });
+  }
+
+  async selectParentCategory(parentName: string, timeout?: TimeoutMs) {
+    const parentOption = this.parentCategoryDropdown.getByText(parentName, { exact: true });
+    await expect(parentOption).toBeVisible({ timeout });
+    await parentOption.click({ timeout });
   }
 
   // --------- tiện ích ----------

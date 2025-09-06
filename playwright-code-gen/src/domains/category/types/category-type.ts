@@ -3,8 +3,12 @@
  * Provides type-safe handling of category types with proper validation
  */
 
-export const CategoryType = ['Expense', 'Income'] as const;
-export type CategoryType = (typeof CategoryType)[number];
+export enum CategoryType {
+  EXPENSE = 'EXPENSE',
+  INCOME = 'INCOME',
+}
+
+export const CategoryTypeValues = ['EXPENSE', 'INCOME'] as const;
 
 /**
  * Validates and parses a string into a CategoryType
@@ -15,12 +19,12 @@ export type CategoryType = (typeof CategoryType)[number];
 export function parseCategoryType(input: string): CategoryType {
   const normalizedInput = input.trim();
 
-  if ((CategoryType as readonly string[]).includes(normalizedInput)) {
+  if (CategoryTypeValues.includes(normalizedInput as CategoryType)) {
     return normalizedInput as CategoryType;
   }
 
   throw new Error(
-    `Invalid category type: "${input}". Expected one of: ${CategoryType.join(', ')}`
+    `Invalid category type: "${input}". Expected one of: ${CategoryTypeValues.join(', ')}`
   );
 }
 
@@ -32,6 +36,6 @@ export function parseCategoryType(input: string): CategoryType {
 export function isValidCategoryType(value: unknown): value is CategoryType {
   return (
     typeof value === 'string' &&
-    (CategoryType as readonly string[]).includes(value)
+    CategoryTypeValues.includes(value as CategoryType)
   );
 }
