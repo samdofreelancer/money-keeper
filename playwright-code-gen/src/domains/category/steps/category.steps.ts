@@ -1,4 +1,4 @@
-import { Given, When, Then, After } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { poll } from 'shared/utilities/poll';
 import { sanitizeCategoryData } from 'shared/utilities/data-sanitization';
@@ -27,11 +27,14 @@ Given('I am on the categories page', async function () {
 
 Given('I have no category with name {string}', async function (name: string) {
   // Idempotent cleanup: delete all categories with this name and their descendants using bulk delete
-  const categoriesToDelete: CategoryResponse[] = await this.categoryApiClient.findByName(name);
+  const categoriesToDelete: CategoryResponse[] =
+    await this.categoryApiClient.findByName(name);
 
   if (categoriesToDelete.length > 0) {
     // Use bulk delete API which handles hierarchical deletion internally
-    const categoryIds = categoriesToDelete.map((cat: CategoryResponse) => cat.id);
+    const categoryIds = categoriesToDelete.map(
+      (cat: CategoryResponse) => cat.id
+    );
     await this.categoryApiClient.bulkDeleteCategories(categoryIds);
 
     // Remove from TestData tracker
@@ -56,7 +59,8 @@ When('I create a new category with:', async function (dataTable) {
   }
 
   // Generate unique category name similar to account naming convention
-  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+  const scenarioName =
+    (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
   const uniqueName = TestData.generateUniqueCategoryName(scenarioName, name);
 
   const result = await this.createCategoryUseCase.run(
@@ -89,74 +93,102 @@ Then(
   }
 );
 
-When('I create a parent category {string} via backend API', async function (name: string) {
-  // Generate unique category name similar to account naming convention
-  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
-  const uniqueName = TestData.generateUniqueCategoryName(scenarioName, name);
+When(
+  'I create a parent category {string} via backend API',
+  async function (name: string) {
+    // Generate unique category name similar to account naming convention
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+    const uniqueName = TestData.generateUniqueCategoryName(scenarioName, name);
 
-  const categoryData = {
-    name: uniqueName,
-    icon: 'Grid',
-    type: CategoryType.EXPENSE,
-    parentName: null,
-  };
+    const categoryData = {
+      name: uniqueName,
+      icon: 'Grid',
+      type: CategoryType.EXPENSE,
+      parentName: null,
+    };
 
-  const createdCategory = await this.categoryApiClient.createCategory(categoryData);
+    const createdCategory =
+      await this.categoryApiClient.createCategory(categoryData);
 
-  // Track for cleanup
-  TestData.trackCreatedCategory(createdCategory.name);
+    // Track for cleanup
+    TestData.trackCreatedCategory(createdCategory.name);
 
-  // Store parent category for later use
-  this.parentCategory = createdCategory;
+    // Store parent category for later use
+    this.parentCategory = createdCategory;
 
-  // Also store unique name for use in child category creation
-  (this as { uniqueParentCategoryName?: string }).uniqueParentCategoryName = uniqueName;
-});
-
-Then('the parent category {string} should be loaded on the frontend', async function (name: string) {
-  const categoriesPage = getCategoriesPage();
-
-  // Navigate to categories page if not already there
-  await categoriesPage.goto('/categories');
-
-  // Poll to ensure the category appears on the frontend
-  await poll(async () => {
-    return await categoriesPage.hasCategory(name);
-  }, POLLING_CONFIG);
-});
-
-When('I create a child category {string} under parent {string}', async function (childName: string, parentName: string) {
-  // Use stored unique parent category name from previous step
-  const uniqueParentName = (this as { uniqueParentCategoryName?: string }).uniqueParentCategoryName;
-  if (!uniqueParentName) {
-    throw new Error('Unique parent category name not found from previous step');
+    // Also store unique name for use in child category creation
+    (this as { uniqueParentCategoryName?: string }).uniqueParentCategoryName =
+      uniqueName;
   }
+);
 
-  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
-  const uniqueChildCategoryName = TestData.generateUniqueCategoryName(scenarioName, childName);
-  const result = await this.createCategoryUseCase.run(
-    {
-      name: uniqueChildCategoryName,
-      icon: 'Shopping',
-      parentName: uniqueParentName,
-    },
-    { verify: true }
-  );
+Then(
+  'the parent category {string} should be loaded on the frontend',
+  async function (name: string) {
+    const categoriesPage = getCategoriesPage();
 
-  expect(result.ok).toBe(true);
+    // Navigate to categories page if not already there
+    await categoriesPage.goto('/categories');
 
-  // Store child category for potential future use
-  this.childCategory = result.createdName;
-});
+    // Poll to ensure the category appears on the frontend
+    await poll(async () => {
+      return await categoriesPage.hasCategory(name);
+    }, POLLING_CONFIG);
+  }
+);
 
-Then('the child category {string} should appear under parent {string}', async function (childName: string, parentName: string) {
-  const categoriesPage = getCategoriesPage();
+When(
+  'I create a child category {string} under parent {string}',
+  async function (childName: string, parentName: string) {
+    // Use stored unique parent category name from previous step
+    const uniqueParentName = (this as { uniqueParentCategoryName?: string })
+      .uniqueParentCategoryName;
+    if (!uniqueParentName || !uniqueParentName.trim().includes(parentName)) {
+      throw new Error(
+        'Unique parent category name not found from previous step'
+      );
+    }
 
-  // Verify child category exists
-  const childExists = await categoriesPage.hasCategory(childName);
-  expect(childExists, `${ERROR_MESSAGES.CATEGORY_NOT_FOUND}: ${childName}`).toBe(true);
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+    const uniqueChildCategoryName = TestData.generateUniqueCategoryName(
+      scenarioName,
+      childName
+    );
+    const result = await this.createCategoryUseCase.run(
+      {
+        name: uniqueChildCategoryName,
+        icon: 'Shopping',
+        parentName: uniqueParentName,
+      },
+      { verify: true }
+    );
 
-  // Verify parent category still exists
-  const parentExists = await categoriesPage.hasCategory(parentName);
-  expect(parentExists, `${ERROR_MESSAGES.CATEGORY_NOT_FOUND}: ${parentName}`).toBe(true);
-});
+    expect(result.ok).toBe(true);
+
+    // Store child category for potential future use
+    this.childCategory = result.createdName;
+  }
+);
+
+Then(
+  'the child category {string} should appear under parent {string}',
+  async function (childName: string, parentName: string) {
+    const categoriesPage = getCategoriesPage();
+
+    // Verify child category exists
+    const childExists = await categoriesPage.hasCategory(childName);
+    expect(
+      childExists,
+      `${ERROR_MESSAGES.CATEGORY_NOT_FOUND}: ${childName}`
+    ).toBe(true);
+
+    // Verify parent category still exists
+    const parentExists = await categoriesPage.hasCategory(parentName);
+    expect(
+      parentExists,
+      `${ERROR_MESSAGES.CATEGORY_NOT_FOUND}: ${parentName}`
+    ).toBe(true);
+  }
+);

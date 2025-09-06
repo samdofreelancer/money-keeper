@@ -157,7 +157,9 @@ export class TestData {
 
     // Recursively get descendants of each child
     for (const child of children) {
-      descendants.push(...this.getDescendantsInDeletionOrder(child, allCategories));
+      descendants.push(
+        ...this.getDescendantsInDeletionOrder(child, allCategories)
+      );
     }
 
     // Add children after their descendants
@@ -204,7 +206,10 @@ export class TestData {
       for (const category of categoriesToDelete) {
         if (!processedIds.has(category.id)) {
           // Add descendants first (children before parents)
-          const descendants = this.getDescendantsInDeletionOrder(category, allCategories);
+          const descendants = this.getDescendantsInDeletionOrder(
+            category,
+            allCategories
+          );
           allCategoriesToDelete.push(...descendants);
           // Add the category itself
           allCategoriesToDelete.push(category);

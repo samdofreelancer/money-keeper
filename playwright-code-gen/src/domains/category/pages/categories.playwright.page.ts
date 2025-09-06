@@ -142,7 +142,9 @@ export class CategoriesPage {
   }
 
   async selectParentCategory(parentName: string, timeout?: TimeoutMs) {
-    const parentOption = this.parentCategoryDropdown.getByText(parentName, { exact: true });
+    const parentOption = this.parentCategoryDropdown.getByText(parentName, {
+      exact: true,
+    });
     await expect(parentOption).toBeVisible({ timeout });
     await parentOption.click({ timeout });
   }

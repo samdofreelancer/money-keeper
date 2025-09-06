@@ -106,7 +106,10 @@ export class CreateCategoryUseCase {
         );
         await this.categoriesPage.openParentCategoryDropdown(timeoutMs);
         // Select the parent category by name
-        await this.categoriesPage.selectParentCategory(params.parentName, timeoutMs);
+        await this.categoriesPage.selectParentCategory(
+          params.parentName,
+          timeoutMs
+        );
       }
 
       // 5) Submit form
@@ -152,11 +155,11 @@ export class CreateCategoryUseCase {
 
   /**
    * Veryfy category exists using provided verifier or POM methods.
-   * @param name 
-   * @param verifier 
-   * @param attempts 
-   * @param intervalMs 
-   * @returns 
+   * @param name
+   * @param verifier
+   * @param attempts
+   * @param intervalMs
+   * @returns
    */
   private async verifyExists(
     name: string,
@@ -195,10 +198,10 @@ export class CreateCategoryUseCase {
 
   /**
    * Retry until fn() returns true or attempts exhausted.
-   * @param fn 
-   * @param attempts 
-   * @param intervalMs 
-   * @returns 
+   * @param fn
+   * @param attempts
+   * @param intervalMs
+   * @returns
    */
   private async retryUntilTrue(
     fn: () => Promise<boolean>,
