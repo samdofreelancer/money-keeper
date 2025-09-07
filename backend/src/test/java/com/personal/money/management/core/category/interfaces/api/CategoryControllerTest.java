@@ -172,7 +172,7 @@ class CategoryControllerTest {
 
         doNothing().when(categoryService).bulkDeleteCategories(anyList());
 
-        String requestBody = "[1, 2, 3]";
+        String requestBody = "{\"categoryIds\": [1, 2, 3]}";
 
         mockMvc.perform(post("/api/categories/bulk-delete")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -187,7 +187,7 @@ class CategoryControllerTest {
         doThrow(new com.personal.money.management.core.category.application.exception.CategoryNotFoundException(999L))
                 .when(categoryService).bulkDeleteCategories(anyList());
 
-        String requestBody = "[1, 999]";
+        String requestBody = "{\"categoryIds\": [1, 999]}";
 
         mockMvc.perform(post("/api/categories/bulk-delete")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -202,11 +202,46 @@ class CategoryControllerTest {
         doThrow(new com.personal.money.management.core.category.application.exception.CategoryConflictException("Concurrent modification"))
                 .when(categoryService).bulkDeleteCategories(anyList());
 
-        String requestBody = "[1, 2]";
+        String requestBody = "{\"categoryIds\": [1, 2]}";
 
         mockMvc.perform(post("/api/categories/bulk-delete")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturnBadRequestWhenPayloadInvalid() throws Exception {
+        String requestBody = "{\"categoryIds\": []}";
+
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturnBadRequestWhenCategoryIdsNull() throws Exception {
+        String requestBody = "{\"categoryIds\": null}";
+
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldReturnBadRequestWhenTooManyCategories() throws Exception {
+        StringBuilder requestBody = new StringBuilder("{\"categoryIds\": [");
+        for (int i = 1; i <= 101; i++) {
+            requestBody.append(i);
+            if (i < 101) requestBody.append(",");
+        }
+        requestBody.append("]}");
+
+        mockMvc.perform(post("/api/categories/bulk-delete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody.toString()))
+                .andExpect(status().isBadRequest());
     }
 }

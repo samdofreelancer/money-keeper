@@ -121,10 +121,14 @@ public class CategoryService {
                 }
             }
 
-            // Remove duplicates while preserving order
-            List<Category> uniqueCategoriesToDelete = allCategoriesToDelete.stream()
-                    .distinct()
-                    .collect(Collectors.toList());
+            // De-duplicate by ID while preserving order (children first)
+            List<Category> uniqueCategoriesToDelete = new ArrayList<>();
+            Set<Long> seenIds = new HashSet<>();
+            for (Category category : allCategoriesToDelete) {
+                if (seenIds.add(category.getId())) {
+                    uniqueCategoriesToDelete.add(category);
+                }
+            }
 
             // Delete in correct order (children first)
             for (Category category : uniqueCategoriesToDelete) {

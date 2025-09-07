@@ -5,6 +5,7 @@ import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.interfaces.api.CategoryMapper;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryRequest;
 import com.personal.money.management.core.category.interfaces.api.dto.CategoryResponse;
+import com.personal.money.management.core.category.interfaces.api.dto.BulkDeleteCategoryRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -63,7 +64,7 @@ public class CategoryController {
 
     @PostMapping("/bulk-delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void bulkDelete(@RequestBody List<Long> categoryIds) {
-        categoryService.bulkDeleteCategories(categoryIds);
+    public void bulkDelete(@Valid @RequestBody BulkDeleteCategoryRequest request) {
+        categoryService.bulkDeleteCategories(request.getCategoryIds());
     }
 }
