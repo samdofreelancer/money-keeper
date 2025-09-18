@@ -9,16 +9,21 @@ on:
     branches:
       - develop
       - master
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   execute-unit-test:
+    if: github.event_name != 'pull_request_review'
     uses: ./.github/workflows/unit-test.yml
     secrets: inherit
 
   execute-e2e-test:
+    if: github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
     uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
 
   execute-integration-test:
+    if: github.event_name != 'pull_request_review'
     uses: ./.github/workflows/integration-test.yml
     secrets: inherit
