@@ -3,6 +3,14 @@ name: playwright-code-gen Tests
 on:
   workflow_call:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'playwright-code-gen/**'
 
 permissions:
   contents: read
