@@ -1,13 +1,12 @@
-import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
-import { Logger } from '../../../../shared/utilities/logger';
-import { AccountDto } from '../../types/account.dto';
-import { Injectable, Inject } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
+import { Logger } from 'shared/utilities/logger';
+import { AccountDto } from 'account-domains/types/account.dto';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 /**
  * Use case for account creation via UI interactions
  */
-@Injectable()
+@Transient({ token: TOKENS.AccountCreationUiUseCase })
 export class AccountCreationUiUseCase {
   constructor(
     @Inject(TOKENS.AccountsPlaywrightPage)

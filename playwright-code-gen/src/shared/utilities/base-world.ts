@@ -1,5 +1,5 @@
 import { Browser, BrowserContext, Page } from '@playwright/test';
-import { Environment } from '../config/environment';
+import { Environment } from 'shared/config/environment';
 
 /**
  * BaseWorld class to provide a foundation for domain-specific World classes

@@ -1,4 +1,4 @@
-import { Logger } from '../../../shared/utilities/logger';
+import { Logger } from 'shared/utilities/logger';
 
 export interface UiState {
   currentPage: string;

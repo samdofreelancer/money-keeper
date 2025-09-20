@@ -96,4 +96,52 @@ For local development without Oracle, the application uses an in-memory H2 datab
 
 ---
 
+---
+
 For more details, refer to the `backend/README.md` and the Docker Compose configuration.
+
+## Automated Start-up and Testing
+
+For convenience, a set of scripts has been created to automate the process of starting the services, running tests, and stopping the services.
+
+These scripts require a Bash-compatible shell (like Git Bash on Windows).
+
+### Quick Start
+
+To start the backend and frontend, run the E2E tests, and leave the services running, execute the main orchestrator script:
+
+```bash
+bash start_all.sh
+```
+
+This script will:
+1.  Ensure any previously running services on the required ports are stopped.
+2.  Start the backend service.
+3.  Start the frontend service.
+4.  Run the full suite of E2E tests.
+5.  Leave the services running and display the URLs to access them.
+
+### Stopping Services
+
+After running `start_all.sh`, the services will continue to run in the background. To stop them, you can use the individual stop scripts:
+
+- **Stop the backend:**
+  ```bash
+  bash ./scripts/stop_backend.sh
+  ```
+
+- **Stop the frontend:**
+  ```bash
+  bash ./scripts/stop_frontend.sh
+  ```
+
+### Individual Scripts
+
+The automation is broken down into modular scripts located in the `/scripts` directory. You can also run these individually if needed (e.g., if you only want to start the backend).
+
+- `scripts/start_backend.sh`
+- `scripts/start_frontend.sh`
+- `scripts/run_e2e.sh`
+- `scripts/stop_backend.sh`
+- `scripts/stop_frontend.sh`
+

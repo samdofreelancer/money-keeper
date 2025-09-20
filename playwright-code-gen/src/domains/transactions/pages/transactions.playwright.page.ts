@@ -1,11 +1,11 @@
 import { Page } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
-import { Logger } from '../../../shared/utilities/logger';
-import { TOKENS } from '../../../shared/di/nest-tokens';
-import { TransactionMockProvider } from '../mocks/transaction.mock';
-import { UiStateMockProvider } from '../mocks/ui-state.mock';
+import { Logger } from 'shared/utilities/logger';
+import { TOKENS } from 'shared/di/tokens';
+import { TransactionMockProvider } from 'transaction-domain/mocks/transaction.mock';
+import { UiStateMockProvider } from 'transaction-domain/mocks/ui-state.mock';
+import { Inject, Transient } from 'shared/di/decorators';
 
-@Injectable()
+@Transient({ token: TOKENS.TransactionsPage })
 export class TransactionsPage {
   constructor(@Inject(TOKENS.Page) private page: Page) {}
 

@@ -4,9 +4,10 @@ const path = require('path');
 
 module.exports = {
   default: {
-    paths: ['src/features/**/*.feature'],
+    // Don't set default paths - let command line arguments control this
+    // paths: ['src/features/**/*.feature'],
     require: ['reflect-metadata','src/shared/utilities/hooks.ts','src/domains/**/steps/*.ts'],
-    requireModule: ['ts-node/register'],
+    requireModule: ['ts-node/register', 'tsconfig-paths/register'],
     format: [
       'json:test-results/cucumber-report.json'
     ],

@@ -1,12 +1,11 @@
-import { Logger } from '../../../../shared/utilities/logger';
-import { AccountApiClient } from '../../api/account-api.client';
-import { Injectable, Inject } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { Logger } from 'shared/utilities/logger';
+import { AccountApiClient } from 'account-domains/api/account-api.client';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
 /**
  * Use case for account deletion via API
  */
-@Injectable()
+@Transient({ token: TOKENS.AccountDeletionApiUseCase })
 export class AccountDeletionApiUseCase {
   constructor(
     @Inject(TOKENS.AccountApiClient) private accountApiClient: AccountApiClient

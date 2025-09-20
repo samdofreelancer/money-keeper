@@ -1,16 +1,17 @@
 import { Page } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
-import { AccountDto } from '../types/account.dto';
-import { Logger } from '../../../shared/utilities/logger';
-import { TOKENS } from '../../../shared/di/nest-tokens';
+import { AccountDto } from 'account-domains/types/account.dto';
+import { Logger } from 'shared/utilities/logger';
+import { Inject, Transient, TOKENS } from 'shared/di';
+import { BasePage } from 'shared/pages/base.page';
 
 /**
  * Page object for the Accounts page
  */
-@Injectable()
-export class AccountsPlaywrightPage {
-  constructor(@Inject(TOKENS.Page) private page: Page) {}
-
+@Transient({ token: TOKENS.AccountsPlaywrightPage })
+export class AccountsPlaywrightPage extends BasePage {
+  constructor(@Inject(TOKENS.Page) page: Page) {
+    super(page);
+  }
   private selectors = {
     buttons: {
       addAccount: 'button:has-text("Add Account")',
@@ -20,9 +21,10 @@ export class AccountsPlaywrightPage {
     },
     inputs: {
       accountName: 'input[placeholder="Enter account name"]',
-      accountType: '.el-select',
+      accountType: '[data-testid="select-account-type"] .el-select__wrapper',
       balance: 'input[type="number"]',
       description: 'input[placeholder="Enter description (optional)"]',
+      currencySelect: '[data-testid="form-item-currency"] .el-select__wrapper',
     },
     messages: {
       success: '.el-message--success',
@@ -36,6 +38,7 @@ export class AccountsPlaywrightPage {
       categoriesPage: '/categories',
       accountsPage: '/accounts',
     },
+    dialog: '.el-dialog',
   };
 
   /**
@@ -64,6 +67,9 @@ export class AccountsPlaywrightPage {
    */
   async clickAddAccountButton() {
     await this.page.click(this.selectors.buttons.addAccount);
+    await this.page.waitForSelector(this.selectors.dialog, {
+      state: 'visible',
+    });
   }
 
   /**
@@ -78,7 +84,23 @@ export class AccountsPlaywrightPage {
    */
   async selectAccountType(type: string) {
     await this.page.click(this.selectors.inputs.accountType);
-    await this.page.click(`span:text('${type}')`);
+    await this.page.waitForSelector(
+      `.el-select-dropdown__item:has-text("${type}")`,
+      { state: 'visible', timeout: 3000 }
+    );
+    await this.page.click(`.el-select-dropdown__item:has-text("${type}")`);
+  }
+
+  /**
+   * Select currency by visible name in the currency selector
+   */
+  async selectCurrencyByName(name: string) {
+    await this.page.click(this.selectors.inputs.currencySelect);
+    await this.page.waitForSelector(
+      `.el-select-dropdown__item:has-text("${name}")`,
+      { state: 'visible', timeout: 3000 }
+    );
+    await this.page.click(`.el-select-dropdown__item:has-text("${name}")`);
   }
 
   /**
@@ -102,6 +124,9 @@ export class AccountsPlaywrightPage {
     await this.fillAccountName(accountData.name);
     await this.selectAccountType(accountData.type);
     await this.fillBalance(accountData.balance);
+    if (accountData.currency) {
+      await this.selectCurrencyByName(accountData.currency);
+    }
     if (accountData.description) {
       await this.fillDescription(accountData.description);
     }
@@ -209,9 +234,40 @@ export class AccountsPlaywrightPage {
   }
 
   /**
+   * Get the balance for a given account row by name
+   */
+  async getAccountBalanceForRow(accountName: string): Promise<string | null> {
+    // Find the row containing the account name
+    const row = await this.page
+      .locator(`tr:has(td:has-text("${accountName}"))`)
+      .first();
+    // The balance is typically in the 3rd cell (index 2)
+    const balanceCell = await row.locator('td').nth(2).textContent();
+    return balanceCell;
+  }
+
+  /**
    * Reload the current page
    */
   async reload() {
     await this.page.reload();
+  }
+
+  /**
+   * Verify that we're on the accounts page by checking for key elements
+   */
+  async verifyOnAccountsPage(): Promise<void> {
+    await this.page.waitForSelector(this.selectors.buttons.addAccount, {
+      timeout: 10000,
+    });
+  }
+
+  /**
+   * Get the text of the success message if visible
+   */
+  async getSuccessMessageText(): Promise<string | null> {
+    const el = await this.page.$(this.selectors.messages.success);
+    if (!el) return null;
+    return (await el.textContent())?.trim() || null;
   }
 }

@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 // Load environment variables from .env file
 import dotenv from 'dotenv';
 dotenv.config();
@@ -14,17 +15,20 @@ import {
 import { chromium, firefox, webkit, Page, BrowserType } from '@playwright/test';
 import { World } from './world';
 import { BaseWorld } from './base-world';
-import { Environment } from '../config/environment';
+import { Environment } from 'shared/config/environment';
 import { Logger } from './logger';
 import { Reporter } from './reporter';
 import { TestData } from './testData';
-import { CategoryDeletionApiUseCaseImpl } from '../../domains/category/usecases/api/CategoryDeletionApiUseCase';
+import { CategoryDeletionApiUseCaseImpl } from 'category-domain/usecases/api/CategoryDeletionApiUseCase';
+
 import { allureReporter } from './allure-reporter';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 import fs from 'fs';
-import { NestContainerFactory } from '../di/nest-container.factory';
+import { Container } from 'shared/di/container';
+import { TOKENS } from 'shared/di/tokens';
+import { autoImportDomains } from 'shared/di/auto-register';
 
 // Extend the global object type
 declare global {
@@ -116,6 +120,15 @@ export const getAccountCreationUiUseCase =
     return global.testWorld.accountCreationUiUseCase;
   };
 
+export const getWorldSettingsUseCase = (): World['settingsUiUseCase'] => {
+  if (!global.testWorld) {
+    throw new Error(
+      'World not initialized. Ensure tests are running in Cucumber context.'
+    );
+  }
+  return global.testWorld.settingsUiUseCase;
+};
+
 export const getCategoriesPage = (): World['categoriesPage'] => {
   if (!global.testWorld) {
     throw new Error(
@@ -154,7 +167,8 @@ export function getCategoryDeletionApiUseCase() {
         'World not initialized. Cannot get CategoryDeletionApiUseCase'
       );
     }
-    _categoryDeletionApiUseCase = global.testWorld.categoryDeletionApiUseCase;
+    _categoryDeletionApiUseCase = global.testWorld
+      .categoryDeletionApiUseCase as CategoryDeletionApiUseCaseImpl;
   }
   return _categoryDeletionApiUseCase;
 }
@@ -176,8 +190,10 @@ function getBrowserType(): BrowserType {
   }
 }
 
+let rootContainer: Container | undefined;
+
 /**
- * Launch the browser before all tests
+ * Launch the browser before all tests and initialize root DI container
  */
 BeforeAll(async () => {
   // Initialize reporter
@@ -198,6 +214,20 @@ BeforeAll(async () => {
 
     BaseWorld.setBrowser(browser);
     Logger.info('Browser launched successfully');
+
+    // Initialize root DI container and expose globally for decorators auto-register
+    rootContainer = new Container();
+    (globalThis as { __DI_CONTAINER__?: Container }).__DI_CONTAINER__ =
+      rootContainer;
+
+    // Auto-import decorated classes via fast-glob after container is set
+    await autoImportDomains();
+
+    // Optional: warm-up selected singletons in a temporary scope if needed
+    // rootContainer.createScope().buildAllFromRegistry();
+    Logger.info(
+      '[DI] Root container initialized and services auto-registered via auto-import'
+    );
   } catch (error) {
     Logger.error('Failed to launch browser', error);
     throw error;
@@ -283,10 +313,26 @@ Before(async function (scenario) {
     // 'this' refers to the World instance in Cucumber hooks
     await (this as unknown as World).initialize();
 
+    // Create DI scope for this scenario
+    if (!rootContainer) throw new Error('Root DI container not initialized');
+    const scope = rootContainer.createScope();
+
+    // Assign scope to world for lazy resolves in getters
+    (this as unknown as World).container = scope;
+
+    // Register runtime instances in the scope (Page/Request/ApiBaseUrl)
+    const page = await (this as unknown as World).getPage();
+    scope.registerInstance(TOKENS.Page, page);
+    scope.registerInstance(TOKENS.Request, page.context().request);
+    scope.registerInstance(
+      TOKENS.ApiBaseUrl,
+      process.env.API_BASE_URL || 'http://127.0.0.1:8080/api'
+    );
+
     // Store the world instance globally for easy access
     global.testWorld = this as unknown as World;
 
-    Logger.debug('Scenario initialized successfully');
+    Logger.debug('Scenario initialized successfully with DI scope');
   } catch (error) {
     Logger.error(`Error initializing scenario: ${scenarioName}`, error);
     throw error;
@@ -389,12 +435,17 @@ After(async function (scenario) {
   try {
     // 'this' refers to the World instance in Cucumber hooks
     await (this as unknown as CucumberWorld).teardown();
+
+    // Clear DI scope runtime instances (drop reference to allow GC)
+    if ((this as unknown as World).container) {
+      (this as unknown as World).container.clearRuntimeInstances();
+      (this as unknown as World).container = undefined as unknown as Container;
+    }
+
     Logger.debug('Scenario teardown completed');
   } catch (error) {
     Logger.error('Error during scenario teardown', error);
   }
-
-  await NestContainerFactory.destroyContainer();
 });
 
 AfterStep(async function (step) {

@@ -1,10 +1,10 @@
 import { Given } from '@cucumber/cucumber';
-import { TestData } from '../../../shared/utilities/testData';
-import { AccountCreateDto } from '../types/account.dto';
+import { TestData } from 'shared/utilities/testData';
 import {
   getAccountCreationApiUseCase,
   getAccountCreationUiUseCase,
-} from '../../../shared/utilities/hooks';
+} from 'shared/utilities/hooks';
+import { AccountCreateDto } from 'account-domains/types/account.dto';
 
 /**
  * Step definitions for account existence setup

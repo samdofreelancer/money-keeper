@@ -1,10 +1,12 @@
 import { APIRequestContext, APIResponse } from '@playwright/test';
-import { Injectable, Inject } from '@nestjs/common';
-import { CreateCategoryRequest, CategoryResponse } from '../types/category.dto';
-import { TOKENS } from '../../../shared/di/nest-tokens';
-import { Logger } from '../../../shared/utilities/logger';
+import {
+  CreateCategoryRequest,
+  CategoryResponse,
+} from 'category-domain/types/category.dto';
+import { Logger } from 'shared/utilities/logger';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
-@Injectable()
+@Transient({ token: TOKENS.CategoryApiClient })
 export class CategoryApiClient {
   private apiBaseUrl: string;
 

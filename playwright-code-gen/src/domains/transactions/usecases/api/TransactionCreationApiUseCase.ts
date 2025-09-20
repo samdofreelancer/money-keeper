@@ -1,10 +1,9 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { TransactionCreateDto } from '../../types/transaction.dto';
-import { Logger } from '../../../../shared/utilities/logger';
-import { TransactionMockProvider } from '../../mocks/transaction.mock';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { TransactionCreateDto } from 'transaction-domain/types/transaction.dto';
+import { Logger } from 'shared/utilities/logger';
+import { TransactionMockProvider } from 'transaction-domain/mocks/transaction.mock';
+import { Inject, Transient, TOKENS } from 'shared/di';
 
-@Injectable()
+@Transient({ token: TOKENS.TransactionCreationApiUseCase })
 export class TransactionCreationApiUseCase {
   constructor(
     @Inject(TOKENS.ApiBaseUrl) private readonly baseUrl: string,

@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { TransactionsPage } from '../../pages/transactions.playwright.page';
-import { TransactionCreateDto } from '../../types/transaction.dto';
-import { TransactionMockProvider } from '../../mocks/transaction.mock';
-import { UiStateMockProvider } from '../../mocks/ui-state.mock';
+import { Transient, TOKENS } from 'shared/di';
+import { TransactionsPage } from 'transaction-domain/pages/transactions.playwright.page';
+import { TransactionCreateDto } from 'transaction-domain/types/transaction.dto';
+import { TransactionMockProvider } from 'transaction-domain/mocks/transaction.mock';
+import { UiStateMockProvider } from 'transaction-domain/mocks/ui-state.mock';
 
-@Injectable()
+@Transient({ token: TOKENS.TransactionCreationUiUseCase })
 export class TransactionCreationUiUseCase {
   constructor(private readonly transactionsPage: TransactionsPage) {}
 

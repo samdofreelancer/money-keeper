@@ -1,12 +1,12 @@
-import { AccountsPlaywrightPage } from '../../pages/accounts.playwright.page';
-import { CurrencyConfig } from '../../../../shared/config/currency.config';
-import { Injectable, Inject, Logger } from '@nestjs/common';
-import { TOKENS } from '../../../../shared/di/nest-tokens';
+import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
+import { CurrencyConfig } from 'shared/config/currency.config';
+import { Inject, Transient, TOKENS } from 'shared/di';
+import { Logger } from 'shared/utilities/logger';
 
 /**
  * Use case for account balance operations via UI
  */
-@Injectable()
+@Transient({ token: TOKENS.AccountBalanceUiUseCase })
 export class AccountBalanceUiUseCase {
   constructor(
     @Inject(TOKENS.AccountsPlaywrightPage)
@@ -63,7 +63,7 @@ export class AccountBalanceUiUseCase {
           `Current balance $${currentBalance} is less than initial balance $${this.initialTotalBalance}`
         );
       }
-      Logger.log(
+      Logger.info(
         `Balance check: Initial: $${this.initialTotalBalance}, Current: $${currentBalance}, Expected: $${expectedAmount}`
       );
     }

@@ -2,18 +2,13 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import {
   getAccountCreationUiUseCase,
   getAccountsPage,
-} from '../../../shared/utilities/hooks';
-import { TestData } from '../../../shared/utilities/testData';
-import { AccountDto } from '../types/account.dto';
+} from 'shared/utilities/hooks';
+import { TestData } from 'shared/utilities/testData';
+import { AccountDto } from 'account-domains/types/account.dto';
 
 Given('I am logged into the money management system', async function () {
   const accountsPage = getAccountsPage();
   await accountsPage.navigateToAccountsPage();
-});
-
-Given('I have access to the accounts management section', async function () {
-  const accountsPage = getAccountsPage();
-  await accountsPage.clickAccountsTab();
 });
 
 When(

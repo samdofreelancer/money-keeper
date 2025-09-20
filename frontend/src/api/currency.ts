@@ -1,6 +1,14 @@
 import axios from 'axios'
 import { apiBaseUrl } from '@/config'
 
+export interface CurrencyDto {
+  id: number
+  code: string
+  name: string
+  symbol: string
+  flag: string
+}
+
 const currencyApiClient = axios.create({
   baseURL: apiBaseUrl + '/currencies',
   headers: {
@@ -9,7 +17,7 @@ const currencyApiClient = axios.create({
 })
 
 export const currencyApi = {
-  async getSupportedCurrencies(): Promise<string[]> {
+  async getSupportedCurrencies(): Promise<CurrencyDto[]> {
     const response = await currencyApiClient.get('/')
     return response.data
   }
