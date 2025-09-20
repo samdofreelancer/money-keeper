@@ -3,8 +3,14 @@ name: Build and Push Docker Images
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
   workflow_dispatch:
     inputs:
       version:
