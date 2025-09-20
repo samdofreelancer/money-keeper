@@ -3,6 +3,12 @@ name: Integration Tests
 on:
   workflow_call:
   workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
   pull_request:
     branches:
       - develop
