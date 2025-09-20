@@ -28,8 +28,7 @@ jobs:
           node-version: 20
 
       - run: npm ci
-      - name: Run E2E (must generate ./allure-results)
-        run: npm run test:e2e
+      - run: npm run test:ci
 
       - name: Install Allure CLI
         run: npx --yes allure-commandline --version
