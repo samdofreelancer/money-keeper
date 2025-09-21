@@ -14,8 +14,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
-app.use(createPinia())
-app.use(router)
+const pinia = createPinia()
+app.use(pinia)
 app.use(ElementPlus)
+app.use(router)
 
+// Initialize after plugins are installed
 app.mount('#app')

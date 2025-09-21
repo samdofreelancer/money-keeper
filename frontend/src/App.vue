@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <aside class="app-sidebar">
+    <aside class="app-sidebar" v-if="authStore.isAuthenticated">
       <div class="logo">
         <img src="@/assets/logo.svg" alt="Money Keeper" height="32">
       </div>
@@ -31,7 +31,7 @@
       </el-menu>
     </aside>
     
-    <header class="app-header">
+    <header class="app-header" v-if="authStore.isAuthenticated">
       <div class="header-content">
         <el-breadcrumb>
           <el-breadcrumb-item>Home</el-breadcrumb-item>
@@ -44,7 +44,7 @@
               <el-dropdown-menu>
                 <el-dropdown-item>Profile</el-dropdown-item>
                 <el-dropdown-item @click="$router.push('/settings')">Settings</el-dropdown-item>
-                <el-dropdown-item divided>Logout</el-dropdown-item>
+                <el-dropdown-item divided @click="handleLogout">Logout</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -61,10 +61,18 @@
 <script setup lang="ts">
 import { Grid, Money, TrendCharts } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 const activeMenu = ref('categories')
+
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/login')
+}
 const activeMenuLabel = ref('Categories')
 
 function updateActiveMenu() {
