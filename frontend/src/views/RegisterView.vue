@@ -17,18 +17,20 @@
           @submit.prevent="handleRegister"
           aria-label="Registration form"
         >
-          <el-form-item prop="username">
+          <el-form-item prop="email" class="mb-4">
             <el-input
-              v-model="form.username"
+              v-model="form.email"
               type="email"
               placeholder="Enter your email"
               prefix-icon="Message"
               aria-label="Email input"
+              id="email-input"
+              aria-describedby="email-helper-text email-error-message"
             />
-            <div class="field-hint">We'll send a verification link to this email</div>
+            <p id="email-helper-text" class="text-gray-500 text-sm mt-1">We’ll send a verification link to this email</p>
           </el-form-item>
 
-          <el-form-item prop="password">
+          <el-form-item prop="password" class="mb-4">
             <el-input
               v-model="form.password"
               type="password"
@@ -36,13 +38,13 @@
               prefix-icon="Lock"
               show-password
               aria-label="Password input"
+              id="password-input"
+              aria-describedby="password-helper-text password-error-message"
             />
-            <div class="password-requirements">
-              Password must be at least 6 characters
-            </div>
+            <p id="password-helper-text" class="text-gray-500 text-sm mt-1">Password must be at least 6 characters</p>
           </el-form-item>
 
-          <el-form-item prop="confirmPassword">
+          <el-form-item prop="confirmPassword" class="mb-4">
             <el-input
               v-model="form.confirmPassword"
               type="password"
@@ -50,17 +52,21 @@
               prefix-icon="Lock"
               show-password
               aria-label="Confirm password input"
+              id="confirm-password-input"
+              aria-describedby="confirm-password-error-message"
             />
           </el-form-item>
 
-          <el-form-item class="terms-checkbox">
+          <el-form-item class="terms-checkbox mb-4" :class="{ 'is-error': termsError }">
             <el-checkbox 
               v-model="acceptTerms" 
-              @change="validateTerms"
               size="large"
+              id="terms-checkbox"
+              aria-describedby="terms-error-message"
             >
               I agree to the <el-link type="primary" @click.prevent="showTerms">Terms of Service</el-link> and <el-link type="primary" @click.prevent="showPrivacy">Privacy Policy</el-link>
             </el-checkbox>
+            <div v-if="termsError" id="terms-error-message" class="el-form-item__error" role="alert">{{ termsError }}</div>
           </el-form-item>
 
           <div class="form-actions">
@@ -68,8 +74,8 @@
               type="primary" 
               native-type="submit" 
               :loading="loading" 
-              class="submit-btn"
-              :class="{ 'is-disabled': !acceptTerms }"
+              class="create-account-btn"
+              :disabled="!isFormValid"
               @click="handleRegister"
               aria-label="Create account button"
             >
@@ -78,18 +84,18 @@
           </div>
         </el-form>
 
-        <div class="social-divider">
+        <div class="social-divider mt-5 mb-5">
           <span>Or continue with</span>
         </div>
 
-        <div class="social-buttons">
+        <div class="social-buttons flex flex-col md:flex-row gap-3 mb-6">
           <el-button class="social-btn google-btn" :loading="googleLoading">
-            <img src="@/assets/google-icon.svg" alt="Google" class="social-icon" />
-            Continue with Google
+            <img src="@/assets/google-icon.svg" alt="Google" class="social-icon pl-2" />
+            <span class="ml-2">Continue with Google</span>
           </el-button>
           <el-button class="social-btn facebook-btn" :loading="facebookLoading">
-            <img src="@/assets/facebook-icon.svg" alt="Facebook" class="social-icon" />
-            Continue with Facebook
+            <img src="@/assets/facebook-icon.svg" alt="Facebook" class="social-icon pl-2" />
+            <span class="ml-2">Continue with Facebook</span>
           </el-button>
         </div>
 
@@ -103,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
@@ -117,9 +123,10 @@ const loading = ref(false);
 const googleLoading = ref(false);
 const facebookLoading = ref(false);
 const acceptTerms = ref(false);
+const termsError = ref(''); // New ref for terms error
 
 const form = ref({
-  username: '',
+  email: '', // Renamed from username to email for clarity
   password: '',
   confirmPassword: ''
 });
@@ -140,19 +147,21 @@ const showPrivacy = () => {
   // Implement opening privacy policy in new tab
 };
 
-const validateTerms = (value: boolean) => {
-  acceptTerms.value = value;
+const validateEmail = (rule: any, value: string, callback: any) => {
   if (!value) {
-    ElMessage({
-      message: 'Please accept the Terms of Service and Privacy Policy to continue',
-      type: 'warning'
-    });
+    callback(new Error('Please enter your email address.'));
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { // Simple RFC-ish regex
+    callback(new Error('Please enter a valid email address.'));
+  } else {
+    callback();
   }
 };
 
-const validatePass = (rule: any, value: any, callback: any) => {
+const validatePassword = (rule: any, value: string, callback: any) => {
   if (value === '') {
-    callback(new Error('Please enter password'));
+    callback(new Error('Please create a password.'));
+  } else if (value.length < 6) {
+    callback(new Error('Password must be at least 6 characters.'));
   } else {
     if (form.value.confirmPassword !== '') {
       if (formRef.value) {
@@ -163,48 +172,69 @@ const validatePass = (rule: any, value: any, callback: any) => {
   }
 };
 
-const validatePass2 = (rule: any, value: any, callback: any) => {
+const validateConfirmPassword = (rule: any, value: string, callback: any) => {
   if (value === '') {
-    callback(new Error('Please confirm password'));
+    callback(new Error('Please confirm your password.'));
   } else if (value !== form.value.password) {
-    callback(new Error("Passwords don't match!"));
+    callback(new Error("Passwords don't match."));
   } else {
     callback();
   }
 };
 
 const rules = ref<FormRules>({
-  username: [
-    { required: true, message: 'Please enter email', trigger: 'blur' },
-    { type: 'email', message: 'Please enter valid email', trigger: 'blur' }
+  email: [
+    { required: true, validator: validateEmail, trigger: ['blur', 'change'] },
   ],
   password: [
-    { required: true, validator: validatePass, trigger: 'blur' },
-    { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
+    { required: true, validator: validatePassword, trigger: ['blur', 'change'] },
   ],
   confirmPassword: [
-    { required: true, validator: validatePass2, trigger: 'blur' }
+    { required: true, validator: validateConfirmPassword, trigger: ['blur', 'change'] }
   ]
 });
 
-const handleRegister = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
+const isFormValid = computed(() => {
+  // Element Plus form validation state is not directly exposed as a single boolean.
+  // We'll rely on manual checks for the button's disabled state.
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email);
+  const passwordValid = form.value.password.length >= 6;
+  const confirmPasswordValid = form.value.confirmPassword === form.value.password && form.value.confirmPassword !== '';
+  
+  return emailValid && passwordValid && confirmPasswordValid && acceptTerms.value;
+});
 
-  await formEl.validate(async (valid) => {
-    if (valid) {
-      try {
-        loading.value = true;
-        const authStore = useAuthStore();
-        await authStore.register(form.value.username, form.value.password);
-        ElMessage.success('Registration successful!');
-        router.push("/login");
-      } catch (error: any) {
-        ElMessage.error(error.message || "Registration failed");
-      } finally {
-        loading.value = false;
+const handleRegister = async () => {
+  termsError.value = ''; // Clear previous terms error
+  if (!formRef.value) return;
+
+  const formValidated = await formRef.value.validate();
+  
+  if (!acceptTerms.value) {
+    termsError.value = 'You must agree to the Terms to continue.';
+    // Scroll to terms checkbox if not visible
+    nextTick(() => {
+      const termsElement = document.querySelector('.terms-checkbox');
+      if (termsElement) {
+        termsElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+    });
+    return;
+  }
+
+  if (formValidated && acceptTerms.value) {
+    try {
+      loading.value = true;
+      const authStore = useAuthStore();
+      await authStore.register(form.value.email, form.value.password);
+      ElMessage.success('Registration successful!');
+      router.push("/login");
+    } catch (error: any) {
+      ElMessage.error(error.message || "Registration failed");
+    } finally {
+      loading.value = false;
     }
-  });
+  }
 };
 </script>
 
@@ -291,6 +321,10 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
   font-size: 15px;
 }
 
+:deep(.el-form-item) {
+  margin-bottom: 16px; /* Default spacing */
+}
+
 :deep(.el-form-item__label) {
   font-weight: 500;
   padding-bottom: 8px;
@@ -298,21 +332,22 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 }
 
 :deep(.el-input__wrapper) {
-  padding: 4px 16px !important;
-  background-color: #ffffff !important;
-  border: 1.5px solid #d1d5db !important;
+  background-color: white !important;
+  border: 1px solid #d1d5db !important;
   box-shadow: none !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important; /* rounded-md */
+  padding: 0 12px !important; /* px-3 */
+  height: 46px !important;
   transition: all 0.2s ease;
 }
 
-:deep(.el-input__wrapper:hover) {
-  border-color: #9ca3af !important;
+:deep(.el-input__wrapper.is-focus) {
+  border-color: transparent !important;
+  box-shadow: 0 0 0 2px #34D399 !important; /* focus:ring-2 focus:ring-green-500 */
 }
 
-:deep(.el-input__wrapper.is-focus) {
-  border-color: var(--topcv-primary) !important;
-  box-shadow: 0 0 0 2px rgba(0, 177, 79, 0.08) !important;
+:deep(.el-input__wrapper.is-error) {
+  border-color: #EF4444 !important; /* border-red-500 */
 }
 
 :deep(.el-input__inner) {
@@ -324,44 +359,48 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 
 :deep(.el-input__prefix) {
   color: #6B7280 !important;
+  margin-right: 8px; /* Adjust icon spacing */
 }
 
-.form-actions {
-  margin-top: 32px;
+.text-gray-500 {
+  color: #6B7280;
 }
 
-.submit-btn {
-  width: 100%;
+.text-sm {
+  font-size: 0.875rem; /* 14px */
+}
+
+.mt-1 {
+  margin-top: 0.25rem; /* 4px */
+}
+
+.create-account-btn {
   height: 48px !important;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-  background-color: var(--topcv-primary);
-  border-color: var(--topcv-primary);
+  width: 100%;
+  border-radius: 6px; /* rounded-md */
+  font-weight: 500; /* font-medium */
+  transition: all 0.2s ease;
+  background-color: #10B981; /* bg-green-500 */
+  border-color: #10B981;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  z-index: 2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  letter-spacing: 0.3px;
-  transition: all 0.2s ease;
-  margin-top: 4px;
 }
 
-.submit-btn:hover:not(.is-disabled) {
-  background-color: var(--topcv-primary-hover);
-  border-color: var(--topcv-primary-hover);
+.create-account-btn:hover:not(:disabled) {
+  background-color: #059669; /* hover:bg-green-600 */
+  border-color: #059669;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.submit-btn.is-disabled {
-  background-color: #f3f4f6 !important;
-  border-color: #e5e7eb !important;
-  color: #6B7280 !important;
+.create-account-btn:disabled {
+  background-color: #E5E7EB !important; /* bg-gray-200 */
+  color: #9CA3AF !important; /* text-gray-500 */
   cursor: not-allowed !important;
+  border-color: #E5E7EB !important;
   box-shadow: none !important;
   opacity: 1 !important;
 }
@@ -388,32 +427,21 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
   text-decoration: underline;
 }
 
-.field-hint {
-  font-size: 13px;
-  color: #6B7280;
-  margin-top: 6px;
-  margin-left: 2px;
-}
-
-.password-requirements {
-  font-size: 13px;
-  color: #6B7280;
-  margin-top: 6px;
-  margin-left: 2px;
-  margin-bottom: 20px;
-}
-
 .terms-checkbox {
   margin-top: 16px;
-  margin-bottom: 28px;
-  padding-left: 16px;
+  margin-bottom: 16px; /* Adjusted for rhythm */
+  padding-left: 0; /* Align with input left edge */
+}
+
+:deep(.terms-checkbox .el-checkbox__input) {
+  margin-right: 8px; /* Adjust checkbox spacing */
 }
 
 :deep(.terms-checkbox .el-checkbox__label) {
   font-size: 14px;
-  color: var(--topcv-text-secondary);
+  color: #6B7280; /* text-gray-500 */
   line-height: 1.5;
-  padding-left: 12px;
+  padding-left: 0; /* Remove default padding */
   max-width: calc(100% - 24px);
 }
 
@@ -427,10 +455,34 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
   text-decoration: underline;
 }
 
+.social-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #9CA3AF; /* text-gray-400 */
+  font-size: 14px;
+  margin-top: 20px; /* Button -> divider: 16-20px */
+  margin-bottom: 20px;
+}
+
+.social-divider::before, .social-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #E5E7EB; /* border-gray-300 */
+}
+
+.social-divider:not(:empty)::before {
+  margin-right: .5em;
+}
+
+.social-divider:not(:empty)::after {
+  margin-left: .5em;
+}
+
 .social-buttons {
   display: flex;
-  gap: 16px;
-  margin: 32px 0;
+  gap: 12px; /* gap-3 */
+  margin-bottom: 24px; /* Adjusted for rhythm */
 }
 
 .social-btn {
@@ -439,7 +491,6 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: white;
@@ -461,7 +512,7 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 }
 
 /* Mobile Responsiveness */
-@media (max-width: 480px) {
+@media (max-width: 768px) { /* Changed from 480px to 768px for md:flex-row breakpoint */
   .auth-card {
     padding: 24px;
     margin: 16px;
