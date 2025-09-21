@@ -6,17 +6,17 @@ set -e
 # --- Backend ---
 echo "--- Ensuring backend is stopped before starting ---"
 bash ./scripts/stop_backend.sh
-source ./scripts/start_backend.sh
+bash ./scripts/start_backend.sh
 
 # --- Frontend ---
 echo ""
 echo "--- Ensuring frontend is stopped before starting ---"
 bash ./scripts/stop_frontend.sh
-source ./scripts/start_frontend.sh
+bash ./scripts/start_frontend.sh
 
 # --- E2E Tests ---
 echo ""
-source ./scripts/run_e2e.sh
+bash ./scripts/run_e2e.sh
 
 # --- Final Status ---
 echo ""
