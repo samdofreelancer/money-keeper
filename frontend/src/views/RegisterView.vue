@@ -15,60 +15,87 @@
           :model="form"
           :rules="rules"
           @submit.prevent="handleRegister"
+          aria-label="Registration form"
         >
           <el-form-item prop="username">
             <el-input
               v-model="form.username"
               type="email"
-              placeholder="Email"
+              placeholder="Enter your email"
               prefix-icon="Message"
+              aria-label="Email input"
             />
+            <div class="field-hint">We'll send a verification link to this email</div>
           </el-form-item>
 
           <el-form-item prop="password">
             <el-input
               v-model="form.password"
               type="password"
-              placeholder="Password"
+              placeholder="Create a password"
               prefix-icon="Lock"
               show-password
+              aria-label="Password input"
             />
+            <div class="password-requirements">
+              Password must be at least 6 characters
+            </div>
           </el-form-item>
 
           <el-form-item prop="confirmPassword">
             <el-input
               v-model="form.confirmPassword"
               type="password"
-              placeholder="Confirm Password"
+              placeholder="Confirm your password"
               prefix-icon="Lock"
               show-password
+              aria-label="Confirm password input"
             />
           </el-form-item>
 
+          <el-form-item class="terms-checkbox">
+            <el-checkbox 
+              v-model="acceptTerms" 
+              @change="validateTerms"
+              size="large"
+            >
+              I agree to the <el-link type="primary" @click.prevent="showTerms">Terms of Service</el-link> and <el-link type="primary" @click.prevent="showPrivacy">Privacy Policy</el-link>
+            </el-checkbox>
+          </el-form-item>
+
           <div class="form-actions">
-            <el-button type="primary" native-type="submit" :loading="loading" class="submit-btn" color="#67c23a">
-              Register
+            <el-button 
+              type="primary" 
+              native-type="submit" 
+              :loading="loading" 
+              class="submit-btn"
+              :class="{ 'is-disabled': !acceptTerms }"
+              @click="handleRegister"
+              aria-label="Create account button"
+            >
+              <span class="btn-text">{{ loading ? 'Creating account...' : 'Create account' }}</span>
             </el-button>
           </div>
         </el-form>
 
         <div class="social-divider">
-          <span>Or register with</span>
+          <span>Or continue with</span>
         </div>
 
         <div class="social-buttons">
-          <el-button class="social-btn google-btn">
+          <el-button class="social-btn google-btn" :loading="googleLoading">
             <img src="@/assets/google-icon.svg" alt="Google" class="social-icon" />
-            Google
+            Continue with Google
           </el-button>
-          <el-button class="social-btn facebook-btn">
+          <el-button class="social-btn facebook-btn" :loading="facebookLoading">
             <img src="@/assets/facebook-icon.svg" alt="Facebook" class="social-icon" />
-            Facebook
+            Continue with Facebook
           </el-button>
         </div>
 
         <div class="form-footer">
-          Already have an account? <router-link to="/login" class="auth-link">Login</router-link>
+          <span>Already have an account?</span>
+          <router-link to="/login" class="auth-link">Sign in</router-link>
         </div>
       </div>
     </div>
@@ -87,12 +114,41 @@ import { Message, Lock } from '@element-plus/icons-vue';
 const router = useRouter();
 const formRef = ref<FormInstance>();
 const loading = ref(false);
+const googleLoading = ref(false);
+const facebookLoading = ref(false);
+const acceptTerms = ref(false);
 
 const form = ref({
   username: '',
   password: '',
   confirmPassword: ''
 });
+
+const showTerms = () => {
+  ElMessage({
+    message: 'Terms of Service will open in a new tab',
+    type: 'info'
+  });
+  // Implement opening terms in new tab
+};
+
+const showPrivacy = () => {
+  ElMessage({
+    message: 'Privacy Policy will open in a new tab',
+    type: 'info'
+  });
+  // Implement opening privacy policy in new tab
+};
+
+const validateTerms = (value: boolean) => {
+  acceptTerms.value = value;
+  if (!value) {
+    ElMessage({
+      message: 'Please accept the Terms of Service and Privacy Policy to continue',
+      type: 'warning'
+    });
+  }
+};
 
 const validatePass = (rule: any, value: any, callback: any) => {
   if (value === '') {
@@ -191,12 +247,16 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
   max-width: 440px;
   padding: 40px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   margin: auto;
   position: relative;
-  top: 50%;
-  transform: translateY(-55%); /* Slightly above center for visual balance */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
 .title {
@@ -208,10 +268,12 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 }
 
 .description {
-  margin: 0 0 24px 0;
-  color: var(--topcv-text-secondary);
+  margin: 0 0 36px 0;
+  color: #6B7280;
   text-align: center;
   font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.1px;
 }
 
 .subtitle {
@@ -236,11 +298,32 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 }
 
 :deep(.el-input__wrapper) {
-  padding: 4px 12px;
+  padding: 4px 16px !important;
+  background-color: #ffffff !important;
+  border: 1.5px solid #d1d5db !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+}
+
+:deep(.el-input__wrapper:hover) {
+  border-color: #9ca3af !important;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  border-color: var(--topcv-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 177, 79, 0.08) !important;
 }
 
 :deep(.el-input__inner) {
-  height: 38px;
+  height: 42px !important;
+  font-size: 15px !important;
+  color: #374151 !important;
+  font-weight: 450 !important;
+}
+
+:deep(.el-input__prefix) {
+  color: #6B7280 !important;
 }
 
 .form-actions {
@@ -249,9 +332,43 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 
 .submit-btn {
   width: 100%;
-  padding: 12px;
+  height: 48px !important;
   font-size: 16px;
-  height: 44px;
+  font-weight: 600;
+  border-radius: 8px;
+  background-color: var(--topcv-primary);
+  border-color: var(--topcv-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.submit-btn:hover:not(.is-disabled) {
+  background-color: var(--topcv-primary-hover);
+  border-color: var(--topcv-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.submit-btn.is-disabled {
+  background-color: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #6B7280 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.btn-text {
+  display: inline-block;
+  pointer-events: none;
 }
 
 .form-footer {
@@ -269,6 +386,98 @@ const handleRegister = async (formEl: FormInstance | undefined) => {
 
 .form-footer a:hover {
   text-decoration: underline;
+}
+
+.field-hint {
+  font-size: 13px;
+  color: #6B7280;
+  margin-top: 6px;
+  margin-left: 2px;
+}
+
+.password-requirements {
+  font-size: 13px;
+  color: #6B7280;
+  margin-top: 6px;
+  margin-left: 2px;
+  margin-bottom: 20px;
+}
+
+.terms-checkbox {
+  margin-top: 16px;
+  margin-bottom: 28px;
+  padding-left: 16px;
+}
+
+:deep(.terms-checkbox .el-checkbox__label) {
+  font-size: 14px;
+  color: var(--topcv-text-secondary);
+  line-height: 1.5;
+  padding-left: 12px;
+  max-width: calc(100% - 24px);
+}
+
+:deep(.terms-checkbox .el-link) {
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+:deep(.terms-checkbox .el-link:hover) {
+  text-decoration: underline;
+}
+
+.social-buttons {
+  display: flex;
+  gap: 16px;
+  margin: 32px 0;
+}
+
+.social-btn {
+  flex: 1;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: var(--topcv-text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0 16px;
+}
+
+.social-btn:hover {
+  background: var(--topcv-background);
+  border-color: var(--topcv-text-secondary);
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px;
+    margin: 16px;
+  }
+
+  .social-buttons {
+    flex-direction: column;
+  }
+
+  .social-btn {
+    width: 100%;
+  }
+
+  .terms-checkbox {
+    margin: 12px 0 20px;
+  }
 }
 
 @media (max-width: 1024px) {
