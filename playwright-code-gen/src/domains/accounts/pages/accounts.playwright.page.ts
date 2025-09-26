@@ -3,28 +3,24 @@ import { AccountDto } from 'account-domains/types/account.dto';
 import { Logger } from 'shared/utilities/logger';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
+import { AccountFormComponent } from './components/account-form.component';
 
 /**
  * Page object for the Accounts page
  */
 @Transient({ token: TOKENS.AccountsPlaywrightPage })
 export class AccountsPlaywrightPage extends BasePage {
-  constructor(@Inject(TOKENS.Page) page: Page) {
+  constructor(
+    @Inject(TOKENS.Page) page: Page,
+    @Inject(TOKENS.AccountFormComponent) public accountForm: AccountFormComponent
+  ) {
     super(page);
   }
   private selectors = {
     buttons: {
       addAccount: 'button:has-text("Add Account")',
-      create: 'button:has-text("Create")',
       confirm: 'button:has-text("Confirm")',
       accountsTab: 'text=Accounts',
-    },
-    inputs: {
-      accountName: 'input[placeholder="Enter account name"]',
-      accountType: '[data-testid="select-account-type"] .el-select__wrapper',
-      balance: 'input[type="number"]',
-      description: 'input[placeholder="Enter description (optional)"]',
-      currencySelect: '[data-testid="form-item-currency"] .el-select__wrapper',
     },
     messages: {
       success: '.el-message--success',
@@ -70,73 +66,6 @@ export class AccountsPlaywrightPage extends BasePage {
     await this.page.waitForSelector(this.selectors.dialog, {
       state: 'visible',
     });
-  }
-
-  /**
-   * Fill in the account name field
-   */
-  async fillAccountName(name: string) {
-    await this.page.fill(this.selectors.inputs.accountName, name);
-  }
-
-  /**
-   * Select the account type from dropdown
-   */
-  async selectAccountType(type: string) {
-    await this.page.click(this.selectors.inputs.accountType);
-    await this.page.waitForSelector(
-      `.el-select-dropdown__item:has-text("${type}")`,
-      { state: 'visible', timeout: 3000 }
-    );
-    await this.page.click(`.el-select-dropdown__item:has-text("${type}")`);
-  }
-
-  /**
-   * Select currency by visible name in the currency selector
-   */
-  async selectCurrencyByName(name: string) {
-    await this.page.click(this.selectors.inputs.currencySelect);
-    await this.page.waitForSelector(
-      `.el-select-dropdown__item:has-text("${name}")`,
-      { state: 'visible', timeout: 3000 }
-    );
-    await this.page.click(`.el-select-dropdown__item:has-text("${name}")`);
-  }
-
-  /**
-   * Fill in the balance field
-   */
-  async fillBalance(balance: number) {
-    await this.page.fill(this.selectors.inputs.balance, balance.toString());
-  }
-
-  /**
-   * Fill in the description field
-   */
-  async fillDescription(description: string) {
-    await this.page.fill(this.selectors.inputs.description, description || '');
-  }
-
-  /**
-   * Fill in the account form by orchestrating individual field methods
-   */
-  async fillAccountForm(accountData: AccountDto) {
-    await this.fillAccountName(accountData.name);
-    await this.selectAccountType(accountData.type);
-    await this.fillBalance(accountData.balance);
-    if (accountData.currency) {
-      await this.selectCurrencyByName(accountData.currency);
-    }
-    if (accountData.description) {
-      await this.fillDescription(accountData.description);
-    }
-  }
-
-  /**
-   * Click the Create button to submit the form
-   */
-  async clickCreateButton() {
-    await this.page.click(this.selectors.buttons.create);
   }
 
   /**
