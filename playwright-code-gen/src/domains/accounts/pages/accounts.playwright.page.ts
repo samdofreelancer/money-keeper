@@ -29,6 +29,7 @@ export class AccountsPlaywrightPage extends BasePage {
       accountRow: '.account-row',
       accountDescription: '.account-description',
       deleteButton: '.delete-account-button',
+      editButton: '.edit-account-button',
     },
     navigation: {
       categoriesPage: '/categories',
@@ -189,6 +190,33 @@ export class AccountsPlaywrightPage extends BasePage {
     await this.page.waitForSelector(this.selectors.buttons.addAccount, {
       timeout: 10000,
     });
+  }
+
+  /**
+   * Click the edit button for a specific account
+   * @param accountName The name of the account to edit
+   */
+  async clickEditAccount(accountName: string): Promise<void> {
+    try {
+      Logger.info(`Attempting to edit account: ${accountName}`);
+
+      // Find the account in the list and click the edit button
+      await this.page.locator(`tr:has(td:has-text("${accountName}"))`).getByTestId('edit-account-button').click();
+
+      // Wait for the edit dialog to appear
+      await this.page.waitForSelector(this.selectors.dialog, {
+        state: 'visible',
+      });
+
+      Logger.info(
+        `Successfully opened edit dialog for account: ${accountName}`
+      );
+    } catch (error) {
+      Logger.error(`Failed to edit account: ${accountName}`, error as Error);
+      throw new Error(
+        `Failed to edit account ${accountName}: ${(error as Error).message}`
+      );
+    }
   }
 
   /**

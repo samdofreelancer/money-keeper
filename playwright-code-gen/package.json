@@ -8,6 +8,7 @@
     "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "npx cucumber-js src/features/categories/**/*.feature",
     "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",
+    "test:focus": "npx cucumber-js src/features/**/*.feature --tags \"@focus\"",
     "test:allure": "node scripts/test-workflow.js",
     "test:fast": "node scripts/test-workflow.js --fast --skip-clean --skip-report --skip-open",
     "test:ci": "node scripts/test-workflow.js --skip-report --skip-open --workers=8",

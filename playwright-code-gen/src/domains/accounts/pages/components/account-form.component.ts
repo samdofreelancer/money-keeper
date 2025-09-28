@@ -9,6 +9,7 @@ export class AccountFormComponent {
   private selectors = {
     buttons: {
       create: 'button:has-text("Create")',
+      update: 'button:has-text("Update")',
     },
     inputs: {
       accountName: 'input[placeholder="Enter account name"]',
@@ -64,5 +65,9 @@ export class AccountFormComponent {
 
   async clickCreateButton() {
     await this.page.click(this.selectors.buttons.create);
+  }
+
+  async clickUpdateButton() {
+    await this.page.getByTestId('button-submit').click();
   }
 }

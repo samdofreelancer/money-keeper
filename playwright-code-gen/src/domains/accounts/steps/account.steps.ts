@@ -1,6 +1,7 @@
 import { When, Then } from '@cucumber/cucumber';
 import {
   getAccountCreationApiUseCase,
+  getAccountUpdateUiUseCase,
   getAccountsPage,
 } from 'shared/utilities/hooks';
 import { TestData } from 'shared/utilities/testData';
@@ -85,6 +86,55 @@ Then(
     const accountsPage = getAccountsPage();
     if (!(await accountsPage.isErrorMessageVisible(errorMessage))) {
       throw new Error(`Error message "${errorMessage}" not visible`);
+    }
+  }
+);
+
+When(
+  'I edit the account {string} with:',
+  async function (oldName: string, dataTable: { rowsHash: () => Record<string, string> }) {
+    const dataTableHash = dataTable.rowsHash();
+    const accountUpdateUiUseCase = getAccountUpdateUiUseCase();
+
+    // Get the unique account name that was generated in the background step
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
+    if (!uniqueAccountName) {
+      throw new Error(
+        'No existing account name found in test context. Make sure "I have an existing account named" step was executed.'
+      );
+    }
+
+    const accountData: AccountDto = {
+      name: dataTableHash['name'],
+      type: dataTableHash['type'],
+      balance: Number(dataTableHash['balance']),
+      currency: dataTableHash['currency'],
+      description: dataTableHash['description'],
+    };
+
+    await accountUpdateUiUseCase.updateAccount(uniqueAccountName, accountData);
+  }
+);
+
+Then(
+  'I should see the success message {string}',
+  async function (expectedMessage: string) {
+    const accountsPage = getAccountsPage();
+    const actualMessage = await accountsPage.getSuccessMessageText();
+    if (actualMessage !== expectedMessage) {
+      throw new Error(`Expected success message "${expectedMessage}", but got "${actualMessage}"`);
+    }
+  }
+);
+
+Then(
+  'the account {string} should have a balance of {string}',
+  async function (accountName: string, expectedBalance: string) {
+    const accountsPage = getAccountsPage();
+    const actualBalance = await accountsPage.getAccountBalanceForRow(accountName);
+    if (actualBalance !== expectedBalance) {
+      throw new Error(`Expected balance "${expectedBalance}" for account "${accountName}", but got "${actualBalance}"`);
     }
   }
 );
