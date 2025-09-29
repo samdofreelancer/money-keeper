@@ -195,13 +195,13 @@ When(
 );
 
 Then(
-  'I should only see accounts with names containing {string}',
-  async function (substring: string) {
+  'only the account {string} is shown',
+  async function (expectedAccountName: string) {
     const accountsPage = getAccountsPage();
     const visibleNames = await accountsPage.getVisibleAccountNames();
     for (const name of visibleNames) {
-      if (!name.includes(substring)) {
-        throw new Error(`Account "${name}" does not contain "${substring}"`);
+      if (!name.includes(expectedAccountName)) {
+        throw new Error(`Account "${name}" does not contain "${expectedAccountName}"`);
       }
     }
   }

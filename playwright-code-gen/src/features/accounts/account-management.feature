@@ -9,7 +9,7 @@ Feature: Account Management
     And I have an existing account named "Main Checking"
     And the account should have a balance of "$1,000.00"
 
-  @positive
+  @positive @update
   Scenario: Successfully edit account details
     When I edit the account "Main Checking" with:
       | name        | Updated Checking |
@@ -25,17 +25,20 @@ Feature: Account Management
     Then the account should be marked as inactive
     And the account balance should not be included in total balance
 
-  @positive @focus
-  Scenario: Search and filter accounts
+  @positive @search
+  Scenario Outline: Search accounts by name substring
     Given I have the following accounts:
-      | name           | type         | balance | currency |
-      | Savings        | Bank Account | 5000    | USD      |
-      | Credit Card    | Credit Card  | 500    | USD      |
-      | Cash Wallet    | Cash         | 200     | USD      |
-    When I search for accounts containing "Sav"
-    Then I should only see accounts with names containing "Sav"
-    When I search for accounts containing "Credit Card"
-    Then I should only see accounts with names containing "Credit Card"
+      | name        | type         | balance | currency |
+      | Savings     | Bank Account | 5000    | USD      |
+      | Credit Card | Credit Card  | 500     | USD      |
+      | Cash Wallet | Cash         | 200     | USD      |
+    When I search for accounts containing "<query>"
+    Then only the account "<expected>" is shown
+
+    Examples:
+      | query        | expected     |
+      | Sav          | Savings      |
+      | Credit Card  | Credit Card  |
 
   @positive @wip
   Scenario: Sort accounts by balance
