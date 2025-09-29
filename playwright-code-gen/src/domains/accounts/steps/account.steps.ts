@@ -121,6 +121,10 @@ Then(
   'I should see the success message {string}',
   async function (expectedMessage: string) {
     const accountsPage = getAccountsPage();
+    const isVisible = await accountsPage.isSuccessMessageVisible();
+    if (!isVisible) {
+      throw new Error(`Success message "${expectedMessage}" not visible`);
+    }
     const actualMessage = await accountsPage.getSuccessMessageText();
     if (actualMessage !== expectedMessage) {
       throw new Error(`Expected success message "${expectedMessage}", but got "${actualMessage}"`);
