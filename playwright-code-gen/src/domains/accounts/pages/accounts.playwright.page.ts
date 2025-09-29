@@ -1,5 +1,4 @@
 import { Page } from '@playwright/test';
-import { AccountDto } from 'account-domains/types/account.dto';
 import { Logger } from 'shared/utilities/logger';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
@@ -12,7 +11,8 @@ import { AccountFormComponent } from './components/account-form.component';
 export class AccountsPlaywrightPage extends BasePage {
   constructor(
     @Inject(TOKENS.Page) page: Page,
-    @Inject(TOKENS.AccountFormComponent) public accountForm: AccountFormComponent
+    @Inject(TOKENS.AccountFormComponent)
+    public accountForm: AccountFormComponent
   ) {
     super(page);
   }
@@ -36,6 +36,10 @@ export class AccountsPlaywrightPage extends BasePage {
       accountsPage: '/accounts',
     },
     dialog: '.el-dialog',
+    search: {
+      searchInput: 'input[placeholder*="Search" i]',
+      typeFilter: 'select[name="accountType"]',
+    },
   };
 
   /**
@@ -201,7 +205,10 @@ export class AccountsPlaywrightPage extends BasePage {
       Logger.info(`Attempting to edit account: ${accountName}`);
 
       // Find the account in the list and click the edit button
-      await this.page.locator(`tr:has(td:has-text("${accountName}"))`).getByTestId('edit-account-button').click();
+      await this.page
+        .locator(`tr:has(td:has-text("${accountName}"))`)
+        .getByTestId('edit-account-button')
+        .click();
 
       // Wait for the edit dialog to appear
       await this.page.waitForSelector(this.selectors.dialog, {
@@ -226,5 +233,28 @@ export class AccountsPlaywrightPage extends BasePage {
     const el = await this.page.$(this.selectors.messages.success);
     if (!el) return null;
     return (await el.textContent())?.trim() || null;
+  }
+
+  /**
+   * Search for accounts by query
+   */
+  async searchAccounts(query: string): Promise<void> {
+    await this.page.getByTestId('search-input').click();
+    await this.page.getByTestId('search-input').fill(query);
+  }
+
+  /**
+   * Get the list of visible account names
+   */
+  async getVisibleAccountNames(): Promise<string[]> {
+    const rows = await this.page
+      .locator(this.selectors.accountElements.accountRow)
+      .all();
+    const names: string[] = [];
+    for (const row of rows) {
+      const name = await row.locator('td').first().textContent();
+      if (name) names.push(name.trim());
+    }
+    return names;
   }
 }

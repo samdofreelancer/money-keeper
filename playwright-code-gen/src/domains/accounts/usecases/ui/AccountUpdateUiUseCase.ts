@@ -17,7 +17,9 @@ export class AccountUpdateUiUseCase {
    * Update an existing account by clicking edit, filling form and submitting
    */
   async updateAccount(oldName: string, accountData: AccountDto) {
-    Logger.info(`Starting account update for "${oldName}" to "${accountData.name}"`);
+    Logger.info(
+      `Starting account update for "${oldName}" to "${accountData.name}"`
+    );
     await this.clickEditAccount(oldName);
     Logger.info(`Edit dialog opened for "${oldName}"`);
     await this.accountsPage.accountForm.fillAccountForm(accountData);

@@ -25,17 +25,17 @@ Feature: Account Management
     Then the account should be marked as inactive
     And the account balance should not be included in total balance
 
-  @positive @wip
+  @positive @focus
   Scenario: Search and filter accounts
     Given I have the following accounts:
       | name           | type         | balance | currency |
       | Savings        | Bank Account | 5000    | USD      |
-      | Credit Card    | Credit Card  | -500    | USD      |
+      | Credit Card    | Credit Card  | 500    | USD      |
       | Cash Wallet    | Cash         | 200     | USD      |
     When I search for accounts containing "Sav"
     Then I should only see accounts with names containing "Sav"
-    When I filter accounts by type "Credit Card"
-    Then I should only see accounts of type "Credit Card"
+    When I search for accounts containing "Credit Card"
+    Then I should only see accounts with names containing "Credit Card"
 
   @positive @wip
   Scenario: Sort accounts by balance

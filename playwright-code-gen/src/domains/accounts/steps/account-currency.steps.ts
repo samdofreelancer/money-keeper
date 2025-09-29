@@ -1,8 +1,6 @@
 import { Then } from '@cucumber/cucumber';
 import { getAccountsPage } from 'shared/utilities/hooks';
 
-
-
 Then(
   'the account {string} should appear in my accounts list with balance {string}',
   async function (accountName: string, balance: string) {

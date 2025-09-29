@@ -1,4 +1,4 @@
-import { When, Then } from '@cucumber/cucumber';
+import { Given, When, Then } from '@cucumber/cucumber';
 import {
   getAccountCreationApiUseCase,
   getAccountUpdateUiUseCase,
@@ -9,6 +9,41 @@ import {
   AccountDto,
   AccountCreateDto,
 } from 'account-domains/types/account.dto';
+
+Given(
+  'I have the following accounts:',
+  async function (dataTable: { hashes: () => Array<Record<string, string>> }) {
+    const rows = dataTable.hashes();
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName ||
+      'search-filter-scenario';
+
+    // Mapping for account types to match backend enum values
+    const typeMapping: Record<string, string> = {
+      'Bank Account': 'BANK_ACCOUNT',
+      'Credit Card': 'BANK_ACCOUNT', // Assuming credit card is treated as bank account
+      Cash: 'E_WALLET',
+    };
+
+    for (const row of rows) {
+      const mappedType = typeMapping[row.type] || row.type; // Fallback to original if not mapped
+
+      const accountData: AccountDto = {
+        name: TestData.generateUniqueAccountName(scenarioName, row.name),
+        type: mappedType,
+        balance: Number(row.balance),
+        currency: row.currency || 'US Dollar',
+      };
+
+      TestData.trackCreatedAccount(accountData.name);
+
+      const accountCreationUiUseCase = getAccountCreationApiUseCase();
+      await accountCreationUiUseCase.createAccount(
+        AccountCreateDto.fromAccountDto(accountData)
+      );
+    }
+  }
+);
 
 When(
   'I navigate to accounts via clicking {string}',
@@ -92,7 +127,10 @@ Then(
 
 When(
   'I edit the account {string} with:',
-  async function (oldName: string, dataTable: { rowsHash: () => Record<string, string> }) {
+  async function (
+    oldName: string,
+    dataTable: { rowsHash: () => Record<string, string> }
+  ) {
     const dataTableHash = dataTable.rowsHash();
     const accountUpdateUiUseCase = getAccountUpdateUiUseCase();
 
@@ -127,7 +165,9 @@ Then(
     }
     const actualMessage = await accountsPage.getSuccessMessageText();
     if (actualMessage !== expectedMessage) {
-      throw new Error(`Expected success message "${expectedMessage}", but got "${actualMessage}"`);
+      throw new Error(
+        `Expected success message "${expectedMessage}", but got "${actualMessage}"`
+      );
     }
   }
 );
@@ -136,9 +176,33 @@ Then(
   'the account {string} should have a balance of {string}',
   async function (accountName: string, expectedBalance: string) {
     const accountsPage = getAccountsPage();
-    const actualBalance = await accountsPage.getAccountBalanceForRow(accountName);
+    const actualBalance =
+      await accountsPage.getAccountBalanceForRow(accountName);
     if (actualBalance !== expectedBalance) {
-      throw new Error(`Expected balance "${expectedBalance}" for account "${accountName}", but got "${actualBalance}"`);
+      throw new Error(
+        `Expected balance "${expectedBalance}" for account "${accountName}", but got "${actualBalance}"`
+      );
+    }
+  }
+);
+
+When(
+  'I search for accounts containing {string}',
+  async function (query: string) {
+    const accountsPage = getAccountsPage();
+    await accountsPage.searchAccounts(query);
+  }
+);
+
+Then(
+  'I should only see accounts with names containing {string}',
+  async function (substring: string) {
+    const accountsPage = getAccountsPage();
+    const visibleNames = await accountsPage.getVisibleAccountNames();
+    for (const name of visibleNames) {
+      if (!name.includes(substring)) {
+        throw new Error(`Account "${name}" does not contain "${substring}"`);
+      }
     }
   }
 );
