@@ -1,4 +1,4 @@
-name: eslint-check 
+name: eslint-wrapper
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  lint:
+  eslint-wrapper:
     uses: samdofreelancer/cloud-workflow/.github/workflows/eslint.yml@main
     with:
       node-version: '20'
