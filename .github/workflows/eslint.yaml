@@ -2,6 +2,7 @@ name: eslint-wrapper
 
 on:
   pull_request:
+    branches: [develop]  
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'playwright-code-gen/**'
