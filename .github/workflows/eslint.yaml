@@ -6,6 +6,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'playwright-code-gen/**'
+  workflow_dispatch: {}
 
 concurrency:
   group: pr-${{ github.event.pull_request.number || github.ref }}-eslint
@@ -13,10 +14,10 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  eslint-wrapper:
+  call-eslint:
+    if: ${{ !github.event.pull_request.draft }} # Skip if the PR is a draft
     uses: samdofreelancer/cloud-workflow/.github/workflows/eslint.yml@main
     with:
       node-version: '20'
