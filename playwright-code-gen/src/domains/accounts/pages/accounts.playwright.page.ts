@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import { Logger } from 'shared/utilities/logger';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
@@ -16,7 +16,9 @@ export class AccountsPlaywrightPage extends BasePage {
   ) {
     super(page);
   }
-  private selectors = {
+
+  // Centralized selectors for maintainability
+  private readonly selectors = {
     buttons: {
       addAccount: 'button:has-text("Add Account")',
       confirm: 'button:has-text("Confirm")',
@@ -40,71 +42,89 @@ export class AccountsPlaywrightPage extends BasePage {
       searchInput: 'input[placeholder*="Search" i]',
       typeFilter: 'select[name="accountType"]',
     },
-  };
+  } as const;
 
-  /**
-   * Navigate to the categories page
-   */
+  // Locators for elements
+  private get addAccountButton(): Locator {
+    return this.page.locator(this.selectors.buttons.addAccount);
+  }
+
+  private get confirmButton(): Locator {
+    return this.page.locator(this.selectors.buttons.confirm);
+  }
+
+  private get accountsTab(): Locator {
+    return this.page.locator(this.selectors.buttons.accountsTab);
+  }
+
+  private get successMessage(): Locator {
+    return this.page.locator(this.selectors.messages.success);
+  }
+
+  private get accountRows(): Locator {
+    return this.page.locator(this.selectors.accountElements.accountRow);
+  }
+
+  private accountRowByName(accountName: string): Locator {
+    return this.page.locator(`text=${accountName}`);
+  }
+
+  private get dialog(): Locator {
+    return this.page.locator(this.selectors.dialog);
+  }
+
+  private get searchInput(): Locator {
+    return this.page.locator(this.selectors.search.searchInput);
+  }
+
+  private deleteButtonForAccount(accountName: string): Locator {
+    return this.page.locator(
+      `text=${accountName} >> ${this.selectors.accountElements.deleteButton}`
+    );
+  }
+
+  private editButtonForAccount(accountName: string): Locator {
+    return this.page
+      .locator(`tr:has(td:has-text("${accountName}"))`)
+      .getByTestId('edit-account-button');
+  }
+
+  // Navigation methods
   async navigateToCategoriesPage() {
     await this.page.goto(this.selectors.navigation.categoriesPage);
   }
 
-  /**
-   * Click the "Accounts" tab or link on the categories page
-   */
   async clickAccountsTab() {
-    await this.page.click(this.selectors.buttons.accountsTab);
+    await this.accountsTab.click();
   }
 
-  /**
-   * Navigate to the accounts page
-   */
   async navigateToAccountsPage() {
     await this.page.goto(this.selectors.navigation.accountsPage);
   }
 
-  /**
-   * Click the Add Account button
-   */
+  // Actions
   async clickAddAccountButton() {
-    await this.page.click(this.selectors.buttons.addAccount);
-    await this.page.waitForSelector(this.selectors.dialog, {
-      state: 'visible',
-    });
+    await this.addAccountButton.click();
+    await this.dialog.waitFor({ state: 'visible' });
   }
 
-  /**
-   * Verify that an account with the given name exists in the accounts list
-   */
   async verifyAccountIsListed(name: string): Promise<boolean> {
     return await this.page.isVisible(`text=${name}`);
   }
 
-  /**
-   * Check if success message is visible
-   */
   async isSuccessMessageVisible(): Promise<boolean> {
     try {
-      await this.page.waitForSelector(this.selectors.messages.success, {
-        timeout: 5000,
-        state: 'visible',
-      });
+      await this.successMessage.waitFor({ timeout: 5000, state: 'visible' });
       return true;
     } catch {
       return false;
     }
   }
 
-  /**
-   * Check if error message with specific text is visible
-   */
   async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
     return await this.page.isVisible(`text=${errorMessage}`);
   }
 
-  /**
-   * Get the total balance text
-   */
   async getTotalBalance(): Promise<string> {
     const balance = await this.page.textContent(
       'text=Total Balance of Active Accounts:'
@@ -113,22 +133,11 @@ export class AccountsPlaywrightPage extends BasePage {
     return balance;
   }
 
-  /**
-   * Delete an account by name with proper error handling and structured logging
-   * @param accountName The name of the account to delete
-   */
   async deleteAccount(accountName: string): Promise<void> {
     try {
       Logger.info(`Attempting to delete account: ${accountName}`);
-
-      // Find the account in the list and click the delete button
-      await this.page.click(
-        `text=${accountName} >> ${this.selectors.accountElements.deleteButton}`
-      );
-
-      // Confirm deletion if there's a confirmation dialog
-      await this.page.click(this.selectors.buttons.confirm);
-
+      await this.deleteButtonForAccount(accountName).click();
+      await this.confirmButton.click();
       Logger.info(
         `Successfully initiated deletion for account: ${accountName}`
       );
@@ -140,81 +149,42 @@ export class AccountsPlaywrightPage extends BasePage {
     }
   }
 
-  /**
-   * Get the count of accounts with a specific name
-   */
   async getAccountCount(accountName: string): Promise<number> {
     const elements = await this.page.locator(`text=${accountName}`).all();
     return elements.length;
   }
 
-  /**
-   * Get the total number of accounts
-   */
   async getTotalAccountCount(): Promise<number> {
-    const rows = await this.page
-      .locator(this.selectors.accountElements.accountRow)
-      .all();
-    return rows.length;
+    return await this.accountRows.count();
   }
 
-  /**
-   * Get the description of an account
-   */
   async getAccountDescription(accountName: string): Promise<string> {
     const descriptionSelector = `text=${accountName} >> .. >> ${this.selectors.accountElements.accountDescription}`;
     const description = await this.page.textContent(descriptionSelector);
     return description || '';
   }
 
-  /**
-   * Get the balance for a given account row by name
-   */
   async getAccountBalanceForRow(accountName: string): Promise<string | null> {
-    // Find the row containing the account name
-    const row = await this.page
+    const row = this.page
       .locator(`tr:has(td:has-text("${accountName}"))`)
       .first();
-    // The balance is typically in the 3rd cell (index 2)
     const balanceCell = await row.locator('td').nth(2).textContent();
     return balanceCell;
   }
 
-  /**
-   * Reload the current page
-   */
   async reload() {
     await this.page.reload();
   }
 
-  /**
-   * Verify that we're on the accounts page by checking for key elements
-   */
   async verifyOnAccountsPage(): Promise<void> {
-    await this.page.waitForSelector(this.selectors.buttons.addAccount, {
-      timeout: 10000,
-    });
+    await this.addAccountButton.waitFor({ timeout: 10000 });
   }
 
-  /**
-   * Click the edit button for a specific account
-   * @param accountName The name of the account to edit
-   */
   async clickEditAccount(accountName: string): Promise<void> {
     try {
       Logger.info(`Attempting to edit account: ${accountName}`);
-
-      // Find the account in the list and click the edit button
-      await this.page
-        .locator(`tr:has(td:has-text("${accountName}"))`)
-        .getByTestId('edit-account-button')
-        .click();
-
-      // Wait for the edit dialog to appear
-      await this.page.waitForSelector(this.selectors.dialog, {
-        state: 'visible',
-      });
-
+      await this.editButtonForAccount(accountName).click();
+      await this.dialog.waitFor({ state: 'visible' });
       Logger.info(
         `Successfully opened edit dialog for account: ${accountName}`
       );
@@ -226,30 +196,19 @@ export class AccountsPlaywrightPage extends BasePage {
     }
   }
 
-  /**
-   * Get the text of the success message if visible
-   */
   async getSuccessMessageText(): Promise<string | null> {
     const el = await this.page.$(this.selectors.messages.success);
     if (!el) return null;
     return (await el.textContent())?.trim() || null;
   }
 
-  /**
-   * Search for accounts by query
-   */
   async searchAccounts(query: string): Promise<void> {
-    await this.page.getByTestId('search-input').click();
-    await this.page.getByTestId('search-input').fill(query);
+    await this.searchInput.click();
+    await this.searchInput.fill(query);
   }
 
-  /**
-   * Get the list of visible account names
-   */
   async getVisibleAccountNames(): Promise<string[]> {
-    const rows = await this.page
-      .locator(this.selectors.accountElements.accountRow)
-      .all();
+    const rows = await this.accountRows.all();
     const names: string[] = [];
     for (const row of rows) {
       const name = await row.locator('td').first().textContent();

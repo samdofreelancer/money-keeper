@@ -201,7 +201,9 @@ Then(
     const visibleNames = await accountsPage.getVisibleAccountNames();
     for (const name of visibleNames) {
       if (!name.includes(expectedAccountName)) {
-        throw new Error(`Account "${name}" does not contain "${expectedAccountName}"`);
+        throw new Error(
+          `Account "${name}" does not contain "${expectedAccountName}"`
+        );
       }
     }
   }
