@@ -6,7 +6,7 @@ import {
   IAccountsNavigation,
   IAccountsActions,
   IAccountsVerification,
-  IAccountsDataRetrieval
+  IAccountsDataRetrieval,
 } from './accounts-interfaces'; // This import is already correct
 import { AccountsNavigation } from './accounts-navigation.page'; // This import is already correct
 import { AccountsActions } from './accounts-actions.page';
