@@ -71,7 +71,7 @@ jobs:
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'playwright-code-gen/test-results/allure-report'
+          path: '${{ env.REPORT_FOLDER }}/test-results/allure-report'
           name: github-pages
           
       - name: Deploy to GitHub Pages

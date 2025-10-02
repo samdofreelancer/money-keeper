@@ -2,10 +2,12 @@
 
 ORACLE_PASSWORD=$1
 
+success=false
 for i in {1..3}; do
   echo "Attempt $i: Running Flyway migration..."
   if ORACLE_PASSWORD=$ORACLE_PASSWORD docker compose up flyway; then
     echo "Flyway migration succeeded"
+    success=true
     break
   else
     echo "Flyway migration failed, retrying..."
@@ -13,7 +15,7 @@ for i in {1..3}; do
   fi
 done
 
-if [ $i -eq 4 ]; then
+if ! $success; then
   echo "Flyway migration failed after 3 attempts"
   exit 1
 fi
