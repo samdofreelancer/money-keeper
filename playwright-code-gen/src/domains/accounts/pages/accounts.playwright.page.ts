@@ -2,12 +2,6 @@ import { Page } from '@playwright/test';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
 import { AccountFormComponent } from './components/account-form.component';
-import {
-  IAccountsNavigation,
-  IAccountsActions,
-  IAccountsVerification,
-  IAccountsDataRetrieval,
-} from './accounts-interfaces'; // This import is already correct
 import { AccountsNavigation } from './accounts-navigation.page'; // This import is already correct
 import { AccountsActions } from './accounts-actions.page';
 import { AccountsVerification } from './accounts-verification.page';
@@ -17,14 +11,7 @@ import { AccountsDataRetrieval } from './accounts-data-retrieval.page';
  * Page object for the Accounts page
  */
 @Transient({ token: TOKENS.AccountsPlaywrightPage })
-export class AccountsPlaywrightPage
-  extends BasePage
-  implements
-    IAccountsNavigation,
-    IAccountsActions,
-    IAccountsVerification,
-    IAccountsDataRetrieval
-{
+export class AccountsPlaywrightPage extends BasePage {
   private navigation: AccountsNavigation;
   private actions: AccountsActions;
   private verification: AccountsVerification;
