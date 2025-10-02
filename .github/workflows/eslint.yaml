@@ -5,7 +5,7 @@ on:
     branches: [develop]  
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - 'playwright-code-gen/**'
+      - 'playwright-code-gen/**/*.ts'
   workflow_dispatch: {}
 
 concurrency:
