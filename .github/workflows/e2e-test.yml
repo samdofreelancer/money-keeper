@@ -35,7 +35,7 @@ jobs:
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
       ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-      REPORT_FOLDER: playwright-code-gen
+      E2E_SOURCE_FOLDER: playwright-code-gen
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -65,13 +65,13 @@ jobs:
 
       - name: Generate Allure report
         if: always()
-        run: bash scripts/generate_allure_report.sh ${{ env.REPORT_FOLDER }}
+        run: bash scripts/generate_allure_report.sh ${{ env.E2E_SOURCE_FOLDER }}
 
       - name: Upload Allure report for Github Pages
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '${{ env.REPORT_FOLDER }}/test-results/allure-report'
+          path: '${{ env.E2E_SOURCE_FOLDER }}/test-results/allure-report'
           name: github-pages
           
       - name: Deploy to GitHub Pages
