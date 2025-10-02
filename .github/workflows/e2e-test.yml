@@ -81,11 +81,15 @@ jobs:
       - name: Run playwright-code-gen tests
         run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
 
+      - name: Fix test results permissions
+        if: always()
+        run: sudo chown -R runner:runner playwright-code-gen/test-results
+
       - name: Setup Node.js
         if: always()
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Generate Allure report
         if: always()
