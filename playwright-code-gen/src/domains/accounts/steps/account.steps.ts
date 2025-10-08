@@ -21,8 +21,9 @@ Given(
     // Mapping for account types to match backend enum values
     const typeMapping: Record<string, string> = {
       'Bank Account': 'BANK_ACCOUNT',
-      'Credit Card': 'BANK_ACCOUNT', // Assuming credit card is treated as bank account
-      Cash: 'E_WALLET',
+      'Credit Card': 'CREDIT_CARD',
+      'Cash': 'CASH',
+      'E-Wallet': 'E_WALLET',
     };
 
     for (const row of rows) {

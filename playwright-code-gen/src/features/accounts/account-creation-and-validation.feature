@@ -62,7 +62,7 @@ Feature: Account Creation and Validation
       | description | Test          |
     Then I should see an error message "Please input account name"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to create account with negative balance
     When I attempt to create a new account with:
       | name        | Negative Balance Account |
@@ -70,51 +70,51 @@ Feature: Account Creation and Validation
       | balance     | -100                     |
       | currency    | USD                      |
       | description | Test                     |
-    Then I should see an error message "Balance must be positive"
+    Then I should see an error message "Balance must be greater than 0"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to create account with name too long
     When I attempt to create a new account with:
-      | name        | This is a very long account name that exceeds the maximum allowed length for account names in the system |
+      | name        | LONG_NAME |
       | type        | Bank Account |
       | balance     | 1000         |
       | currency    | USD          |
       | description | Test          |
-    Then I should see an error message "Name is too long"
+    Then I should see an error message "Account name must be at most 255 characters"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to create account with description too long
     When I attempt to create a new account with:
       | name        | Long Desc Account |
       | type        | Bank Account      |
       | balance     | 1000              |
       | currency    | USD               |
-      | description | This is a very long description that exceeds the maximum allowed length for descriptions in the system and should trigger a validation error |
-    Then I should see an error message "Description is too long"
+      | description | LONG_DESCRIPTION  |
+    Then I should see an error message "Description must be at most 1000 characters"
 
-  @positive @wip
-  Scenario: Successfully create a cash account
+  @positive
+  Scenario: Successfully create an e-wallet account
     When I create a new account with:
-      | name        | My Cash Wallet |
-      | type        | Cash           |
-      | balance     | 200            |
-      | currency    | USD            |
-      | description | Cash on hand   |
-    Then I should see the account "My Cash Wallet" in my accounts list
+      | name        | My E-Wallet |
+      | type        | E-Wallet     |
+      | balance     | 200          |
+      | currency    | USD          |
+      | description | Cash on hand |
+    Then I should see the account "My E-Wallet" in my accounts list
     And the account should have a balance of "$200.00"
 
-  @positive @wip
-  Scenario: Successfully create a credit card account
+  @positive
+  Scenario: Successfully create another bank account
     When I create a new account with:
       | name        | My Credit Card |
-      | type        | Credit Card    |
+      | type        | Bank Account   |
       | balance     | 500            |
       | currency    | USD            |
       | description | Credit limit   |
     Then I should see the account "My Credit Card" in my accounts list
     And the account should have a balance of "$500.00"
 
-  @positive @wip
+  @positive
   Scenario: Successfully create an account with VND currency
     When I create a new account with:
       | name        | VND Savings    |
@@ -125,7 +125,7 @@ Feature: Account Creation and Validation
     Then I should see the account "VND Savings" in my accounts list
     And the account should have a balance of "₫1,000,000"
 
-  @positive @wip
+  @positive
   Scenario: Successfully create an account without description
     When I create a new account with:
       | name        | No Desc Account |

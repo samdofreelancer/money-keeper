@@ -30,15 +30,15 @@ Feature: Account Management
     Given I have the following accounts:
       | name        | type         | balance | currency |
       | Savings     | Bank Account | 5000    | USD      |
-      | Credit Card | Credit Card  | 500     | USD      |
-      | Cash Wallet | Cash         | 200     | USD      |
+      | E-Wallet    | E-Wallet     | 500     | USD      |
+      | Bank Account| Bank Account | 200     | USD      |
     When I search for accounts containing "<query>"
     Then only the account "<expected>" is shown
 
     Examples:
       | query        | expected     |
       | Sav          | Savings      |
-      | Credit Card  | Credit Card  |
+      | E-Wallet     | E-Wallet     |
 
   @positive @wip
   Scenario: Sort accounts by balance

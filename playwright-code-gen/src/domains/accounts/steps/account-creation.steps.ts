@@ -5,6 +5,7 @@ import {
 } from 'shared/utilities/hooks';
 import { TestData } from 'shared/utilities/testData';
 import { AccountDto } from 'account-domains/types/account.dto';
+import { generateStringOfLength } from 'shared/utilities/stringHelpers';
 
 Given('I am logged into the money management system', async function () {
   const accountsPage = getAccountsPage();
@@ -122,6 +123,14 @@ When(
       currency: data['currency'],
       description: data['description'] || '',
     };
+
+    // Use helper to generate long strings if special placeholders are used
+    if (data['name'] === 'LONG_NAME') {
+      accountData.name = generateStringOfLength(256);
+    }
+    if (data['description'] === 'LONG_DESCRIPTION') {
+      accountData.description = generateStringOfLength(1001);
+    }
 
     await accountCreationUiUseCase.createAccount(accountData);
   }
