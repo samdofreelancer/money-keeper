@@ -153,6 +153,10 @@ When(
     };
 
     await accountUpdateUiUseCase.updateAccount(uniqueAccountName, accountData);
+    // Track the updated account name for cleanup
+    TestData.trackCreatedAccount(accountData.name);
+    // Remove the old account name from tracking to avoid leftover data
+    TestData.removeCreatedAccount(uniqueAccountName);
   }
 );
 
