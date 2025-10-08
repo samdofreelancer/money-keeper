@@ -2,6 +2,7 @@ name: eslint-wrapper
 
 on:
   workflow_dispatch: {}
+  workflow_call:
 
 concurrency:
   group: pr-${{ github.event.pull_request.number || github.ref }}-eslint
