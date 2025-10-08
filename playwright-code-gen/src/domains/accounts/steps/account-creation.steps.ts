@@ -95,6 +95,38 @@ When(
   }
 );
 
+When(
+  'I attempt to create a new account with:',
+  async function (dataTable: { rowsHash: () => Record<string, string> }) {
+    const data = dataTable.rowsHash();
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
+
+    // For validation scenarios, use the name as is (e.g., empty string to trigger validation)
+    let accountName = data['name'];
+    if (accountName.trim() === '') {
+      // Keep empty for validation
+    } else {
+      // Generate unique name for other cases
+      const scenarioName =
+        (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+      accountName = TestData.generateUniqueAccountName(scenarioName, data['name']);
+    }
+
+    // Store generated name for later steps
+    (this as { uniqueAccountName?: string }).uniqueAccountName = accountName;
+
+    const accountData: AccountDto = {
+      name: accountName,
+      type: data['type'],
+      balance: Number(data['balance']) || 0,
+      currency: data['currency'],
+      description: data['description'] || '',
+    };
+
+    await accountCreationUiUseCase.createAccount(accountData);
+  }
+);
+
 Then(
   'I should see the account {string} in my accounts list',
   async function (accountName: string) {

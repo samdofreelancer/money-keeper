@@ -52,7 +52,7 @@ Feature: Account Creation and Validation
     And the account "bank account with crrency not a default USD" should appear in my accounts list with balance "€100.00"
     And the total balance should be shown in default currency from settings
 
-  @negative @wip
+  @negative
   Scenario: Attempt to create account with empty name
     When I attempt to create a new account with:
       | name        |  |
@@ -60,7 +60,7 @@ Feature: Account Creation and Validation
       | balance     | 1000         |
       | currency    | USD          |
       | description | Test          |
-    Then I should see an error message "Name is required"
+    Then I should see an error message "Please input account name"
 
   @negative @wip
   Scenario: Attempt to create account with negative balance
