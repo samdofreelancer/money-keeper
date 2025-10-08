@@ -7,6 +7,22 @@ on:
       - completed
     branches:
       - develop
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'playwright-code-gen/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'playwright-code-gen/**'
   workflow_call:
   workflow_dispatch:
 
@@ -19,7 +35,7 @@ jobs:
   playwright-code-gen-test:
     name: Run playwright-code-gen Tests
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || github.event_name == 'pull_request' || github.event_name == 'push' }}
     env:
       SPRING_PROFILES_ACTIVE: ci
       REGISTRY: ghcr.io/${{ github.repository_owner }}
