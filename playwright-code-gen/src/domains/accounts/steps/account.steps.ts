@@ -22,7 +22,7 @@ Given(
     const typeMapping: Record<string, string> = {
       'Bank Account': 'BANK_ACCOUNT',
       'Credit Card': 'CREDIT_CARD',
-      'Cash': 'CASH',
+      Cash: 'CASH',
       'E-Wallet': 'E_WALLET',
     };
 

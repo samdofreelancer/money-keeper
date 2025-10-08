@@ -110,7 +110,10 @@ When(
       // Generate unique name for other cases
       const scenarioName =
         (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
-      accountName = TestData.generateUniqueAccountName(scenarioName, data['name']);
+      accountName = TestData.generateUniqueAccountName(
+        scenarioName,
+        data['name']
+      );
     }
 
     // Store generated name for later steps
