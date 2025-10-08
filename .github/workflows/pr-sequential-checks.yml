@@ -9,6 +9,7 @@ on:
       - 'backend/**'
       - 'frontend/**'
       - 'playwright-code-gen/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
