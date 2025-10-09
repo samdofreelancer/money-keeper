@@ -74,6 +74,7 @@ jobs:
           
       - name: Deploy to GitHub Pages
         id: deployment
+        if: always()
         uses: actions/deploy-pages@v4
 
       # Clean up containers to free resources
