@@ -15,22 +15,41 @@ if (content === '') {
 }
 
 const lines = content.split(/\r?\n/);
-
-console.log(`Found ${lines.length} scenarios to rerun.`);
+const scenariosToRun = [];
 
 for (const line of lines) {
   if (line) {
-    console.log(`\n▶️  Running: ${line}`);
-    try {
-      // Execute cucumber-js for each specific scenario
-      // Pass additional arguments from the command line to cucumber-js
-      execSync(`npx cucumber-js \"${line}\" ${process.argv.slice(2).join(' ')}`, { stdio: 'inherit' });
-    } catch (error) {
-      console.error(`❌ Scenario failed: ${line}`);
-      // We don't exit here, to allow other scenarios to run.
-      // A non-zero exit code will be returned by the calling process eventually.
+    const featureIdentifier = '.feature';
+    const featureIndex = line.indexOf(featureIdentifier);
+    
+    if (featureIndex !== -1) {
+      const pathEndIndex = featureIndex + featureIdentifier.length;
+      const filePath = line.substring(0, pathEndIndex);
+      const lineNumbersStr = line.substring(pathEndIndex + 1);
+      const lineNumbers = lineNumbersStr.split(':').filter(ln => ln);
+
+      for (const lineNumber of lineNumbers) {
+        // Add quotes around the path to handle potential spaces
+        scenariosToRun.push(`"${filePath}:${lineNumber}"`);
+      }
+    } else {
+      scenariosToRun.push(`"${line}"`); // Fallback for lines without .feature
     }
   }
 }
 
-console.log('\n✅ Rerun complete.');
+if (scenariosToRun.length > 0) {
+    console.log(`Found ${scenariosToRun.length} scenarios to rerun.`);
+    const scenariosCommandString = scenariosToRun.join(' ');
+    
+    console.log(`\n▶️  Running ${scenariosToRun.length} scenarios in a single command...`);
+    try {
+        execSync(`npx cucumber-js ${scenariosCommandString} ${process.argv.slice(2).join(' ')}`, { stdio: 'inherit' });
+        console.log('\n✅ Rerun complete.');
+    } catch (error) {
+        console.error(`❌ Rerun command failed.`);
+        process.exit(1);
+    }
+} else {
+    console.log('✅ No scenarios found to rerun.');
+}
