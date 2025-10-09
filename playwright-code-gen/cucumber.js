@@ -5,11 +5,11 @@ const path = require('path');
 module.exports = {
   default: {
     // Don't set default paths - let command line arguments control this
-    // paths: ['src/features/**/*.feature'],
     require: ['reflect-metadata','src/shared/utilities/hooks.ts','src/domains/**/steps/*.ts'],
     requireModule: ['ts-node/register', 'tsconfig-paths/register'],
     format: [
-      'json:test-results/cucumber-report.json'
+      'json:test-results/cucumber-report.json',
+      'rerun:test-results/rerun.txt'
     ],
     parallel: parseInt(process.env.CUCUMBER_PARALLEL_WORKERS || '4'), // Enable parallel execution with 4 workers
     async onComplete() {

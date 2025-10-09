@@ -2,6 +2,7 @@
 
 const { execSync } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 // Parse command line arguments
 function parseArgs() {
@@ -102,19 +103,44 @@ async function runTestWorkflow() {
   // 2. Run tests with optimization flags
   const testEnvVars = {
     CUCUMBER_PARALLEL_WORKERS: options.workers.toString(),
-    CAPTURE_ALL_SCREENSHOTS: options.fastMode ? 'false' : 'true'
+    CAPTURE_ALL_SCREENSHOTS: options.fastMode ? 'false' : 'true',
+    IS_RETRY: 'false'
   };
-  
-  const testResult = executeCommand(
-    'npm run test',
-    'Running Cucumber tests with optimizations',
-    testEnvVars
-  );
+
+  let testResult;
+  let retryCount = 0;
+  const maxRetries = 3;
+
+  do {
+    if (retryCount > 0) {
+        testEnvVars.IS_RETRY = 'true';
+    }
+    const attemptDescription = retryCount === 0 ? 'Running Cucumber tests with optimizations' : `Retrying failed tests (attempt ${retryCount + 1}/${maxRetries})`;
+    const command = retryCount === 0 ? 'npm run test' : 'npm run test:rerun';
+
+    testResult = executeCommand(
+      command,
+      attemptDescription,
+      testEnvVars
+    );
+
+    if (testResult.success) {
+      break;
+    }
+
+    retryCount++;
+    // Check if rerun.txt exists for retry
+    const rerunFile = path.join(__dirname, '..', 'test-results', 'rerun.txt');
+    if (!fs.existsSync(rerunFile) || fs.readFileSync(rerunFile, 'utf8').trim() === '') {
+      break; // No failed scenarios to retry
+    }
+  } while (retryCount < maxRetries);
+
   results.push(testResult);
-  
+
   if (!testResult.success) {
     overallSuccess = false;
-    console.log('⚠️  Tests failed, but continuing with report generation');
+    console.log('⚠️  Tests failed after retries, but continuing with report generation');
     // Continue even if tests fail to generate the report
   }
   
