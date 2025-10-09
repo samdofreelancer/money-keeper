@@ -15,6 +15,7 @@ import { TransactionsPage } from 'transaction-domain/pages/transactions.playwrig
 import { TransactionCreationUiUseCase } from 'transaction-domain/usecases/ui/TransactionCreationUiUseCase';
 import { TransactionCreationApiUseCase } from 'transaction-domain/usecases/api/TransactionCreationApiUseCase';
 import { AccountCreationUiUseCase } from 'account-domains/usecases/ui/AccountCreationUiUseCase';
+import { AccountUpdateUiUseCase } from 'account-domains/usecases/ui/AccountUpdateUiUseCase';
 import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
 import { SettingsPlaywrightPage } from 'settings-domain/pages/settings.playwright.page';
 import { SettingsUiUseCase } from 'settings-domain/usecases/ui/SettingsUiUseCase';
@@ -71,6 +72,9 @@ export class World extends BaseWorld {
   }
   public get accountCreationUiUseCase(): AccountCreationUiUseCase {
     return this.use(TOKENS.AccountCreationUiUseCase);
+  }
+  public get accountUpdateUiUseCase(): AccountUpdateUiUseCase {
+    return this.use(TOKENS.AccountUpdateUiUseCase);
   }
   public get settingsPage(): SettingsPlaywrightPage {
     return this.use(TOKENS.SettingsPlaywrightPage);

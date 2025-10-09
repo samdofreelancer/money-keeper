@@ -12,3 +12,4 @@ backend/.factorypath
 /playwright-code-gen/playwright
 e2e/src/shared/metadata/environment-info.metadata.json
 /playwright-code-gen/dist
+/.vscode

@@ -4,6 +4,7 @@ import { AccountCreationApiUseCase } from '@/domains/accounts/usecases/api/Accou
 import { AccountDeletionApiUseCase } from '@/domains/accounts/usecases/api/AccountDeletionApiUseCase';
 import { AccountBalanceUiUseCase } from '@/domains/accounts/usecases/ui/AccountBalanceUiUseCase';
 import { AccountCreationUiUseCase } from '@/domains/accounts/usecases/ui/AccountCreationUiUseCase';
+import { AccountUpdateUiUseCase } from '@/domains/accounts/usecases/ui/AccountUpdateUiUseCase';
 import { CategoriesPage } from '@/domains/category/pages/categories.playwright.page';
 import { CategoryApiClient } from '@/domains/category/api/category-api.client';
 import { CreateCategoryUseCase } from '@/domains/category/usecases/ui/category.use-case';
@@ -17,5 +18,6 @@ export interface WorldServices {
   accountDeletionApiUseCase: AccountDeletionApiUseCase;
   accountBalanceUiUseCase: AccountBalanceUiUseCase;
   accountCreationUiUseCase: AccountCreationUiUseCase;
+  accountUpdateUiUseCase: AccountUpdateUiUseCase;
   createCategoryUseCase: CreateCategoryUseCase;
 }

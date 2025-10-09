@@ -120,6 +120,16 @@ export const getAccountCreationUiUseCase =
     return global.testWorld.accountCreationUiUseCase;
   };
 
+export const getAccountUpdateUiUseCase =
+  (): World['accountUpdateUiUseCase'] => {
+    if (!global.testWorld) {
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
+    }
+    return global.testWorld.accountUpdateUiUseCase;
+  };
+
 export const getWorldSettingsUseCase = (): World['settingsUiUseCase'] => {
   if (!global.testWorld) {
     throw new Error(

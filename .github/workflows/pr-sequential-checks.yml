@@ -1,0 +1,30 @@
+name: PR Sequential Checks
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'playwright-code-gen/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  eslint-check:
+    uses: ./.github/workflows/eslint.yaml
+    with:
+      node-version: '20'
+      working-directory: 'playwright-code-gen'
+    secrets: inherit
+
+  e2e-test:
+    needs: eslint-check
+    uses: ./.github/workflows/e2e-test.yml
+    secrets: inherit
