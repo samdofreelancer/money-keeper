@@ -91,7 +91,7 @@ export class AllureReporter {
         this.currentTest.stop - this.currentTest.start;
 
       if (process.env.IS_RETRY === 'true') {
-        this.addLabel('flaky', 'true');
+        this.currentTest.statusDetails.flaky = true;
       }
 
       // Save test result to file in proper Allure format
