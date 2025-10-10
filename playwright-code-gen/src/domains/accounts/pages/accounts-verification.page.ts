@@ -45,10 +45,14 @@ export class AccountsVerification implements IAccountsVerification {
     const sortedBalances = [...balances].sort((a, b) =>
       order === 'asc' ? a - b : b - a
     );
-    if (JSON.stringify(balances) !== JSON.stringify(sortedBalances)) {
-      throw new Error(
-        `Accounts are not sorted by balance in ${order}ending order.`
-      );
+    for (let i = 0; i < balances.length; i++) {
+      if (balances[i] !== sortedBalances[i]) {
+        throw new Error(
+          `Accounts are not sorted by balance in ${order}ending order. Expected ${JSON.stringify(
+            sortedBalances
+          )} but got ${JSON.stringify(balances)}.`
+        );
+      }
     }
   }
 }
