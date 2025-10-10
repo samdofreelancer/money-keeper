@@ -62,8 +62,14 @@ export class AllureReporter {
     }
   }
 
-  startTest(name: string, description?: string, historyIdSource?: string): AllureTest {
-    const historyId = createHash('md5').update(historyIdSource || name).digest('hex');
+  startTest(
+    name: string,
+    description?: string,
+    historyIdSource?: string
+  ): AllureTest {
+    const historyId = createHash('md5')
+      .update(historyIdSource || name)
+      .digest('hex');
     this.currentTest = {
       uuid: this.generateUuid(),
       historyId: historyId,

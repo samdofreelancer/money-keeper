@@ -300,7 +300,8 @@ Before(async function (scenario) {
   (this as ScenarioContext).scenarioName = scenarioName;
 
   // Initialize Allure test
-  const featureName = scenario.gherkinDocument?.feature?.name || 'Unknown Feature';
+  const featureName =
+    scenario.gherkinDocument?.feature?.name || 'Unknown Feature';
   const stepsText = scenario.pickle.steps.map(s => s.text).join(';');
   const historyIdSource = `${featureName}:${scenarioName}:${stepsText}`;
 
