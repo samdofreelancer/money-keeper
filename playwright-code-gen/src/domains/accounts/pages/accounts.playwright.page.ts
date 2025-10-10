@@ -63,8 +63,8 @@ export class AccountsPlaywrightPage extends BasePage {
     return this.actions.reload();
   }
 
-  clickBalanceColumnHeader(): Promise<void> {
-    return this.actions.clickBalanceColumnHeader();
+  clickColumnHeader(columnName: string): Promise<void> {
+    return this.actions.clickColumnHeader(columnName);
   }
 
   // IAccountsVerification

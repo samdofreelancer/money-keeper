@@ -242,9 +242,7 @@ When(
   /^I click the "([^"]*)" column header(?: again)?$/,
   async function (columnName: string) {
     const accountsPage = getAccountsPage();
-    if (columnName === 'Balance') {
-      await accountsPage.clickBalanceColumnHeader();
-    }
+    await accountsPage.clickColumnHeader(columnName);
   }
 );
 
@@ -254,9 +252,6 @@ Then(
     const accountsPage = getAccountsPage();
     const balances = await accountsPage.getAccountBalances();
     const sortOrder = order === 'ascending' ? 'asc' : 'desc';
-    await accountsPage.verifyAccountsSortedByBalance(
-      balances,
-      sortOrder
-    );
+    await accountsPage.verifyAccountsSortedByBalance(balances, sortOrder);
   }
 );
