@@ -3,6 +3,7 @@ export const selectors = {
     addAccount: 'button:has-text("Add Account")',
     confirm: 'button:has-text("Confirm")',
     accountsTab: 'text=Accounts',
+    balanceColumnHeader: 'th:has-text("Balance")',
   },
   messages: {
     success: '.el-message--success',

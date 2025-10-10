@@ -37,8 +37,16 @@ export class AccountsActions implements IAccountsActions {
       .getByTestId('edit-account-button');
   }
 
+  private get balanceColumnHeader(): Locator {
+    return this.page.locator(selectors.buttons.balanceColumnHeader);
+  }
+
   private get searchInput(): Locator {
     return this.page.locator(selectors.search.searchInput);
+  }
+
+  async clickBalanceColumnHeader() {
+    await this.balanceColumnHeader.click();
   }
 
   async clickAddAccountButton() {

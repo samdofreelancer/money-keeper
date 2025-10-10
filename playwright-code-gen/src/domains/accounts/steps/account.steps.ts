@@ -213,3 +213,49 @@ Then(
     }
   }
 );
+
+Given('I have multiple accounts with different balances', async function () {
+  const accountCreationApiUseCase = getAccountCreationApiUseCase();
+  const scenarioName =
+    (this as { scenarioName?: string }).scenarioName || 'sort-scenario';
+  const accounts = [
+    { name: 'Account A', balance: 1000, currency: 'USD', type: 'BANK_ACCOUNT' },
+    { name: 'Account B', balance: 500, currency: 'USD', type: 'BANK_ACCOUNT' },
+    { name: 'Account C', balance: 2000, currency: 'USD', type: 'BANK_ACCOUNT' },
+  ];
+
+  for (const account of accounts) {
+    const accountData: AccountDto = {
+      name: TestData.generateUniqueAccountName(scenarioName, account.name),
+      type: account.type,
+      balance: account.balance,
+      currency: account.currency,
+    };
+    TestData.trackCreatedAccount(accountData.name);
+    await accountCreationApiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(accountData)
+    );
+  }
+});
+
+When(
+  /^I click the "([^"]*)" column header(?: again)?$/,
+  async function (columnName: string) {
+    const accountsPage = getAccountsPage();
+    if (columnName === 'Balance') {
+      await accountsPage.clickBalanceColumnHeader();
+    }
+  }
+);
+
+Then(
+  'the accounts should be sorted by balance in {string} order',
+  async function (order: string) {
+    const accountsPage = getAccountsPage();
+    const balances = await accountsPage.getAccountBalances();
+    await accountsPage.verifyAccountsSortedByBalance(
+      balances,
+      order as 'asc' | 'desc'
+    );
+  }
+);

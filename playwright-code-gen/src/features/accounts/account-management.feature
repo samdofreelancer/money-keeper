@@ -40,13 +40,13 @@ Feature: Account Management
       | Sav          | Savings      |
       | E-Wallet     | E-Wallet     |
 
-  @positive @wip
+  @positive
   Scenario: Sort accounts by balance
     Given I have multiple accounts with different balances
     When I click the "Balance" column header
-    Then the accounts should be sorted by balance in descending order
+    Then the accounts should be sorted by balance in "descending" order
     When I click the "Balance" column header again
-    Then the accounts should be sorted by balance in ascending order
+    Then the accounts should be sorted by balance in "ascending" order
 
   @negative @wip
   Scenario: Attempt to delete account with transactions

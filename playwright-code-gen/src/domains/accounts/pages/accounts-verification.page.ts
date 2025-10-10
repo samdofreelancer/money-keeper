@@ -37,4 +37,18 @@ export class AccountsVerification implements IAccountsVerification {
   async verifyOnAccountsPage(): Promise<void> {
     await this.addAccountButton.waitFor({ timeout: 10000 });
   }
+
+  async verifyAccountsSortedByBalance(
+    balances: number[],
+    order: 'asc' | 'desc'
+  ): Promise<void> {
+    const sortedBalances = [...balances].sort((a, b) =>
+      order === 'asc' ? a - b : b - a
+    );
+    if (JSON.stringify(balances) !== JSON.stringify(sortedBalances)) {
+      throw new Error(
+        `Accounts are not sorted by balance in ${order}ending order.`
+      );
+    }
+  }
 }
