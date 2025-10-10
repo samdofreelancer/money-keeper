@@ -250,12 +250,13 @@ When(
 
 Then(
   'the accounts should be sorted by balance in {string} order',
-  async function (order: string) {
+  async function (order: 'ascending' | 'descending') {
     const accountsPage = getAccountsPage();
     const balances = await accountsPage.getAccountBalances();
+    const sortOrder = order === 'ascending' ? 'asc' : 'desc';
     await accountsPage.verifyAccountsSortedByBalance(
       balances,
-      order as 'asc' | 'desc'
+      sortOrder
     );
   }
 );
