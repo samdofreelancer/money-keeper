@@ -151,7 +151,10 @@ When(
       description: dataTableHash['description'],
     };
 
-    const success = await accountUpdateUiUseCase.updateAccount(uniqueAccountName, accountData);
+    const success = await accountUpdateUiUseCase.updateAccount(
+      uniqueAccountName,
+      accountData
+    );
 
     // Track the updated account name and remove the old one only if update was successful
     if (success) {

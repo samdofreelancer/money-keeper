@@ -130,9 +130,8 @@ export class AccountsPlaywrightPage extends BasePage {
    */
   waitForAccountUpdateResponse(): Promise<Response> {
     return this.page.waitForResponse(
-      (resp) =>
-        resp.url().includes('/accounts/') &&
-        resp.request().method() === 'PUT',
+      resp =>
+        resp.url().includes('/accounts/') && resp.request().method() === 'PUT',
       { timeout: Environment.accountUpdateTimeout }
     );
   }
