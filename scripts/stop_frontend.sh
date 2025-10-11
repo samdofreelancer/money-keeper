@@ -3,8 +3,8 @@
 # Port for frontend
 FRONTEND_PORT=5173
 echo "Searching for process on port $FRONTEND_PORT..."
-# Use PowerShell for a more reliable way to get the PID on Windows
-FRONTEND_PID=$(powershell -Command "(Get-NetTCPConnection -LocalPort $FRONTEND_PORT -State Listen -ErrorAction SilentlyContinue).OwningProcess" | head -n 1)
+# Use netstat to find the PID on the port
+FRONTEND_PID=$(netstat -ano 2>/dev/null | grep ":$FRONTEND_PORT" | awk '{print $5}' | head -n 1)
 
 if [ -n "$FRONTEND_PID" ]; then
     echo "Found frontend process with PID $FRONTEND_PID. Terminating..."
