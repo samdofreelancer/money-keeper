@@ -41,6 +41,10 @@ export class AccountsActions implements IAccountsActions {
     return this.page.locator(selectors.search.searchInput);
   }
 
+  async clickColumnHeader(columnName: string) {
+    await this.page.locator(`th:has-text("${columnName}")`).click();
+  }
+
   async clickAddAccountButton() {
     await this.addAccountButton.click();
     await this.dialog.waitFor({ state: 'visible' });

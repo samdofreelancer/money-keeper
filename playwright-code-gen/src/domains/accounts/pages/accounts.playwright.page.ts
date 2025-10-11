@@ -63,6 +63,10 @@ export class AccountsPlaywrightPage extends BasePage {
     return this.actions.reload();
   }
 
+  clickColumnHeader(columnName: string): Promise<void> {
+    return this.actions.clickColumnHeader(columnName);
+  }
+
   // IAccountsVerification
   verifyAccountIsListed(name: string): Promise<boolean> {
     return this.verification.verifyAccountIsListed(name);
@@ -78,6 +82,13 @@ export class AccountsPlaywrightPage extends BasePage {
 
   verifyOnAccountsPage(): Promise<void> {
     return this.verification.verifyOnAccountsPage();
+  }
+
+  verifyAccountsSortedByBalance(
+    balances: number[],
+    order: 'asc' | 'desc'
+  ): Promise<void> {
+    return this.verification.verifyAccountsSortedByBalance(balances, order);
   }
 
   // IAccountsDataRetrieval
@@ -107,5 +118,9 @@ export class AccountsPlaywrightPage extends BasePage {
 
   getVisibleAccountNames(): Promise<string[]> {
     return this.dataRetrieval.getVisibleAccountNames();
+  }
+
+  getAccountBalances(): Promise<number[]> {
+    return this.dataRetrieval.getAccountBalances();
   }
 }

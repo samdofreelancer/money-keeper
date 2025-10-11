@@ -63,4 +63,18 @@ export class AccountsDataRetrieval implements IAccountsDataRetrieval {
     }
     return names;
   }
+
+  async getAccountBalances(): Promise<number[]> {
+    const rows = await this.accountRows.all();
+    const balances: number[] = [];
+    for (const row of rows) {
+      const balanceText = await row.locator('td').nth(2).textContent();
+      if (balanceText) {
+        // Remove currency symbols and commas
+        const cleanBalance = balanceText.replace(/[^\d.-]/g, '');
+        balances.push(parseFloat(cleanBalance));
+      }
+    }
+    return balances;
+  }
 }
