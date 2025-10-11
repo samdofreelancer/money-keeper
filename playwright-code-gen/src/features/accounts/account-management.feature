@@ -72,7 +72,7 @@ Feature: Account Management
       | description | Updated    |
     Then I should see an error message "Account name already exists"
 
-  @negative
+  @negative @focus
   Scenario: Attempt to update account to empty name
     When I edit the account "Main Checking" with:
       | name        |  |

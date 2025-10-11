@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, Response } from '@playwright/test';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
 import { AccountFormComponent } from './components/account-form.component';
@@ -122,5 +122,17 @@ export class AccountsPlaywrightPage extends BasePage {
 
   getAccountBalances(): Promise<number[]> {
     return this.dataRetrieval.getAccountBalances();
+  }
+
+  /**
+   * Wait for the account update API response
+   */
+  waitForAccountUpdateResponse(): Promise<Response> {
+    return this.page.waitForResponse(
+      (resp) =>
+        resp.url().includes('/accounts/') &&
+        resp.request().method() === 'PUT',
+      { timeout: 2000 }
+    );
   }
 }

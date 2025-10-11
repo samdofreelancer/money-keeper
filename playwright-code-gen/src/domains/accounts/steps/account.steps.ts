@@ -151,11 +151,13 @@ When(
       description: dataTableHash['description'],
     };
 
-    await accountUpdateUiUseCase.updateAccount(uniqueAccountName, accountData);
-    // Track the updated account name for cleanup
-    TestData.trackCreatedAccount(accountData.name);
-    // Remove the old account name from tracking to avoid leftover data
-    TestData.removeCreatedAccount(uniqueAccountName);
+    const success = await accountUpdateUiUseCase.updateAccount(uniqueAccountName, accountData);
+
+    // Track the updated account name and remove the old one only if update was successful
+    if (success) {
+      TestData.trackCreatedAccount(accountData.name);
+      TestData.removeCreatedAccount(uniqueAccountName);
+    }
   }
 );
 

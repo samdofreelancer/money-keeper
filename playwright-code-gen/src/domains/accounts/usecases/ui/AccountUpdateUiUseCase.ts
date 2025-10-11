@@ -15,17 +15,39 @@ export class AccountUpdateUiUseCase {
 
   /**
    * Update an existing account by clicking edit, filling form and submitting
+   * @returns true if update was successful (API response 200), false otherwise
    */
-  async updateAccount(oldName: string, accountData: AccountDto) {
+  async updateAccount(oldName: string, accountData: AccountDto): Promise<boolean> {
     Logger.info(
       `Starting account update for "${oldName}" to "${accountData.name}"`
     );
     await this.clickEditAccount(oldName);
     Logger.info(`Edit dialog opened for "${oldName}"`);
+
+    // Set up response interception for the update API call
+    const responsePromise = this.accountsPage.waitForAccountUpdateResponse();
+
     await this.accountsPage.accountForm.fillAccountForm(accountData);
     Logger.info(`Form filled with new data for "${accountData.name}"`);
-    await this.clickUpdateButton();
-    Logger.info(`Update button clicked for "${accountData.name}"`);
+
+    try {
+      const [ , response ] = await Promise.all([
+        this.clickUpdateButton(),
+        responsePromise
+      ]);
+      Logger.info(`Update button clicked for "${accountData.name}"`);
+
+      const isSuccess = response.ok();
+      if (isSuccess) {
+        Logger.info(`Update successful for "${accountData.name}" - API response 200`);
+      } else {
+        Logger.warn(`Update failed for "${accountData.name}" - API response ${response.status()}`);
+      }
+      return isSuccess;
+    } catch (error) {
+      Logger.error(`Failed to intercept API response for update of "${accountData.name}"`, error);
+      return false;
+    }
   }
 
   /**
