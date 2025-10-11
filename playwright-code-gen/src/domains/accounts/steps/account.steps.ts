@@ -19,6 +19,7 @@ Given(
       (this as { scenarioName?: string }).scenarioName ||
       'search-filter-scenario';
 
+    // Create accounts with unique names to avoid conflicts across tests
     for (const row of rows) {
       const mappedType = ACCOUNT_TYPE_MAPPING[row.type] || row.type; // Fallback to original if not mapped
 
@@ -29,6 +30,7 @@ Given(
         currency: row.currency || 'US Dollar',
       };
 
+      // Track created accounts for cleanup after test
       TestData.trackCreatedAccount(accountData.name);
 
       const accountCreationUiUseCase = getAccountCreationApiUseCase();
@@ -113,8 +115,11 @@ Then(
   'I should see the error message {string}',
   async function (errorMessage: string) {
     const accountsPage = getAccountsPage();
-    if (!(await accountsPage.isErrorMessageVisible(errorMessage))) {
-      throw new Error(`Error message "${errorMessage}" not visible`);
+    const isVisible = await accountsPage.isErrorMessageVisible(errorMessage);
+    if (!isVisible) {
+      throw new Error(
+        `Expected error message "${errorMessage}" is not visible`
+      );
     }
   }
 );
@@ -128,16 +133,16 @@ When(
     const dataTableHash = dataTable.rowsHash();
     const accountUpdateUiUseCase = getAccountUpdateUiUseCase();
 
-    // Get the unique account name that was generated in the background step
+    // Retrieve the unique account name generated in the background step
     const uniqueAccountName = (this as { uniqueAccountName?: string })
       .uniqueAccountName;
     if (!uniqueAccountName) {
       throw new Error(
-        'No existing account name found in test context. Make sure "I have an existing account named" step was executed.'
+        'No existing account name found in test context. Ensure "I have an existing account named" step was executed.'
       );
     }
 
-    // When updating to Account B's name, use the unique version of Account B
+    // Handle updates to duplicate names (e.g., Account B) by using unique versions
     const uniqueName2 = (this as { uniqueAccountName2?: string })
       .uniqueAccountName2;
     const accountData: AccountDto = {
@@ -145,7 +150,7 @@ When(
         dataTableHash['name'] === 'Account B' && uniqueName2
           ? uniqueName2
           : dataTableHash['name'],
-      type: dataTableHash['type'], // Keep as display text for UI
+      type: dataTableHash['type'], // Retain as display text for UI compatibility
       balance: Number(dataTableHash['balance']),
       currency: dataTableHash['currency'],
       description: dataTableHash['description'],
@@ -156,7 +161,7 @@ When(
       accountData
     );
 
-    // Track the updated account name and remove the old one only if update was successful
+    // Update test data tracking: add new name and remove old if successful
     if (success) {
       TestData.trackCreatedAccount(accountData.name);
       TestData.removeCreatedAccount(uniqueAccountName);

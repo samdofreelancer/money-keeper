@@ -39,13 +39,15 @@ Feature: Account Management
       | query        | expected     |
       | Sav          | Savings      |
       | E-Wallet     | E-Wallet     |
+      | Bank         | Bank Account |
 
   @positive
   Scenario: Sort accounts by balance
+    # Test sorting functionality: first click sorts descending, second click sorts ascending
     Given I have multiple accounts with different balances
     When I click the "Balance" column header
     Then the accounts should be sorted by balance in "descending" order
-    When I click the "Balance" column header again
+    When I click the "Balance" column header
     Then the accounts should be sorted by balance in "ascending" order
 
   @negative @wip
