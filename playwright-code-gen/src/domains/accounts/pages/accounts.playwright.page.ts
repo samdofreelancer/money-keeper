@@ -1,6 +1,7 @@
 import { Page, Response } from '@playwright/test';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
+import { Environment } from 'shared/config/environment';
 import { AccountFormComponent } from './components/account-form.component';
 import { AccountsNavigation } from './accounts-navigation.page'; // This import is already correct
 import { AccountsActions } from './accounts-actions.page';
@@ -132,7 +133,7 @@ export class AccountsPlaywrightPage extends BasePage {
       (resp) =>
         resp.url().includes('/accounts/') &&
         resp.request().method() === 'PUT',
-      { timeout: 2000 }
+      { timeout: Environment.accountUpdateTimeout }
     );
   }
 }
