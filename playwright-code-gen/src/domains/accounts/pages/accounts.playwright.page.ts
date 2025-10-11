@@ -85,13 +85,6 @@ export class AccountsPlaywrightPage extends BasePage {
     return this.verification.verifyOnAccountsPage();
   }
 
-  verifyAccountsSortedByBalance(
-    balances: number[],
-    order: 'asc' | 'desc'
-  ): Promise<void> {
-    return this.verification.verifyAccountsSortedByBalance(balances, order);
-  }
-
   // IAccountsDataRetrieval
   getTotalBalance(): Promise<string> {
     return this.dataRetrieval.getTotalBalance();

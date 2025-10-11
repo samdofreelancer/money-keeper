@@ -242,7 +242,11 @@ Then(
   async function (order: 'ascending' | 'descending') {
     const accountsPage = getAccountsPage();
     const balances = await accountsPage.getAccountBalances();
-    const sortOrder = order === 'ascending' ? 'asc' : 'desc';
-    await accountsPage.verifyAccountsSortedByBalance(balances, sortOrder);
+    const sortedBalances = [...balances].sort((a, b) =>
+      order === 'ascending' ? a - b : b - a
+    );
+    for (let i = 0; i < balances.length; i++) {
+      expect(balances[i]).toBe(sortedBalances[i]);
+    }
   }
 );
