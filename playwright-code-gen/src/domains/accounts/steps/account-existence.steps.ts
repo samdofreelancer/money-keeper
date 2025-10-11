@@ -61,7 +61,8 @@ Given(
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     // Generate unique names for both accounts
-    const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
     const uniqueName1 = TestData.generateUniqueAccountName(scenarioName, name1);
     const uniqueName2 = TestData.generateUniqueAccountName(scenarioName, name2);
 

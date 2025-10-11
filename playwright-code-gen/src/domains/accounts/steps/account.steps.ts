@@ -138,9 +138,13 @@ When(
     }
 
     // When updating to Account B's name, use the unique version of Account B
-    const uniqueName2 = (this as { uniqueAccountName2?: string }).uniqueAccountName2;
+    const uniqueName2 = (this as { uniqueAccountName2?: string })
+      .uniqueAccountName2;
     const accountData: AccountDto = {
-      name: dataTableHash['name'] === 'Account B' && uniqueName2 ? uniqueName2 : dataTableHash['name'],
+      name:
+        dataTableHash['name'] === 'Account B' && uniqueName2
+          ? uniqueName2
+          : dataTableHash['name'],
       type: dataTableHash['type'], // Keep as display text for UI
       balance: Number(dataTableHash['balance']),
       currency: dataTableHash['currency'],

@@ -35,10 +35,12 @@ export class AccountsVerification implements IAccountsVerification {
       // Wait for and check el-message error
       await this.page.waitForSelector(`${selectors.messages.error}`, {
         state: 'visible',
-        timeout: 5000
+        timeout: 5000,
       });
-      const toastError = await this.page.isVisible(`${selectors.messages.error}:has-text("${errorMessage}")`);
-      
+      const toastError = await this.page.isVisible(
+        `${selectors.messages.error}:has-text("${errorMessage}")`
+      );
+
       if (toastError) {
         return true;
       }
@@ -46,7 +48,7 @@ export class AccountsVerification implements IAccountsVerification {
       // Check form validation error (if toast not found)
       const formError = await this.page.isVisible(`text=${errorMessage}`);
       return formError;
-    } catch (error) {
+    } catch {
       // If timeout occurs while waiting for error message
       return false;
     }
