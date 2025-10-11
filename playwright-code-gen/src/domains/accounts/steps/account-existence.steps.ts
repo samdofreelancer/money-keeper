@@ -53,3 +53,49 @@ Given(
     );
   }
 );
+
+Given(
+  'I have accounts named {string} and {string}',
+  async function (name1: string, name2: string) {
+    const accountCreationApiUseCase = getAccountCreationApiUseCase();
+    const accountCreationUiUseCase = getAccountCreationUiUseCase();
+
+    // Generate unique names for both accounts
+    const scenarioName = (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
+    const uniqueName1 = TestData.generateUniqueAccountName(scenarioName, name1);
+    const uniqueName2 = TestData.generateUniqueAccountName(scenarioName, name2);
+
+    const accountData1 = new AccountCreateDto({
+      accountName: uniqueName1,
+      initBalance: 1000,
+      type: 'BANK_ACCOUNT',
+      currency: 'USD',
+      description: 'Test account 1 for duplicate name test',
+    });
+
+    const accountData2 = new AccountCreateDto({
+      accountName: uniqueName2,
+      initBalance: 1000,
+      type: 'BANK_ACCOUNT',
+      currency: 'USD',
+      description: 'Test account 2 for duplicate name test',
+    });
+
+    // Track the created accounts for cleanup
+    TestData.trackCreatedAccount(accountData1.accountName);
+    TestData.trackCreatedAccount(accountData2.accountName);
+
+    // Create the accounts directly via backend API
+    await accountCreationApiUseCase.createAccount(accountData1);
+    await accountCreationApiUseCase.createAccount(accountData2);
+
+    // Reload the page to ensure the new accounts appear in the list
+    await accountCreationUiUseCase.reloadAccountsPage();
+
+    // Store both the original and unique names
+    (this as { originalAccountName?: string }).originalAccountName = name1;
+    (this as { uniqueAccountName?: string }).uniqueAccountName = uniqueName1;
+    (this as { originalAccountName2?: string }).originalAccountName2 = name2;
+    (this as { uniqueAccountName2?: string }).uniqueAccountName2 = uniqueName2;
+  }
+);

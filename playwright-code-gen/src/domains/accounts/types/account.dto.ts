@@ -8,6 +8,14 @@ export interface AccountDto {
   active?: boolean;
 }
 
+// Mapping for account types to match backend enum values
+export const ACCOUNT_TYPE_MAPPING: Record<string, string> = {
+  'Bank Account': 'BANK_ACCOUNT',
+  'Credit Card': 'CREDIT_CARD',
+  Cash: 'CASH',
+  'E-Wallet': 'E_WALLET',
+};
+
 export interface AccountApiDto {
   id: string;
   accountName: string;

@@ -8,6 +8,7 @@ import { TestData } from 'shared/utilities/testData';
 import {
   AccountDto,
   AccountCreateDto,
+  ACCOUNT_TYPE_MAPPING,
 } from 'account-domains/types/account.dto';
 
 Given(
@@ -18,16 +19,8 @@ Given(
       (this as { scenarioName?: string }).scenarioName ||
       'search-filter-scenario';
 
-    // Mapping for account types to match backend enum values
-    const typeMapping: Record<string, string> = {
-      'Bank Account': 'BANK_ACCOUNT',
-      'Credit Card': 'CREDIT_CARD',
-      Cash: 'CASH',
-      'E-Wallet': 'E_WALLET',
-    };
-
     for (const row of rows) {
-      const mappedType = typeMapping[row.type] || row.type; // Fallback to original if not mapped
+      const mappedType = ACCOUNT_TYPE_MAPPING[row.type] || row.type; // Fallback to original if not mapped
 
       const accountData: AccountDto = {
         name: TestData.generateUniqueAccountName(scenarioName, row.name),
@@ -144,9 +137,11 @@ When(
       );
     }
 
+    // When updating to Account B's name, use the unique version of Account B
+    const uniqueName2 = (this as { uniqueAccountName2?: string }).uniqueAccountName2;
     const accountData: AccountDto = {
-      name: dataTableHash['name'],
-      type: dataTableHash['type'],
+      name: dataTableHash['name'] === 'Account B' && uniqueName2 ? uniqueName2 : dataTableHash['name'],
+      type: dataTableHash['type'], // Keep as display text for UI
       balance: Number(dataTableHash['balance']),
       currency: dataTableHash['currency'],
       description: dataTableHash['description'],

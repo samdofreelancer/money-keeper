@@ -31,7 +31,25 @@ export class AccountsVerification implements IAccountsVerification {
   }
 
   async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
-    return await this.page.isVisible(`text=${errorMessage}`);
+    try {
+      // Wait for and check el-message error
+      await this.page.waitForSelector(`${selectors.messages.error}`, {
+        state: 'visible',
+        timeout: 5000
+      });
+      const toastError = await this.page.isVisible(`${selectors.messages.error}:has-text("${errorMessage}")`);
+      
+      if (toastError) {
+        return true;
+      }
+
+      // Check form validation error (if toast not found)
+      const formError = await this.page.isVisible(`text=${errorMessage}`);
+      return formError;
+    } catch (error) {
+      // If timeout occurs while waiting for error message
+      return false;
+    }
   }
 
   async verifyOnAccountsPage(): Promise<void> {

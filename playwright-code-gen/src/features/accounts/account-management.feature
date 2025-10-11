@@ -61,7 +61,7 @@ Feature: Account Management
     When I delete the account "Temp Account"
     Then the account "Temp Account" should not be in my accounts list
 
-  @negative @wip
+  @negative
   Scenario: Attempt to update account to duplicate name
     Given I have accounts named "Account A" and "Account B"
     When I edit the account "Account A" with:
