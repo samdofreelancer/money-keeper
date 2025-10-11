@@ -1,4 +1,5 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import {
   getTransactionsPage,
   getTransactionCreationUiUseCase,
@@ -73,11 +74,7 @@ Then(
     await transactionCreationUiUseCase.reloadTransactionsPage();
 
     const exists = await transactionsPage.verifyTransactionExists(description);
-    if (!exists) {
-      throw new Error(
-        `Transaction "${description}" not found in transactions list`
-      );
-    }
+    expect(exists).toBe(true);
   }
 );
 
@@ -100,11 +97,7 @@ Then(
         currentTransaction.description,
         key
       );
-      if (actualValue !== expectedValue) {
-        throw new Error(
-          `Expected transaction ${key} to be "${expectedValue}", but found "${actualValue}"`
-        );
-      }
+      expect(actualValue).toBe(expectedValue);
     }
   }
 );
@@ -122,9 +115,7 @@ Then('the transaction should not be created', async function () {
   const exists = await transactionsPage.verifyTransactionExists(
     currentTransaction.description
   );
-  if (exists) {
-    throw new Error('Transaction was created when it should not have been');
-  }
+  expect(exists).toBe(false);
 });
 
 Then(
@@ -143,10 +134,6 @@ Then(
       currentTransaction.description,
       'amount'
     );
-    if (actualAmount !== expectedAmount) {
-      throw new Error(
-        `Expected transaction amount to be "${expectedAmount}", but found "${actualAmount}"`
-      );
-    }
+    expect(actualAmount).toBe(expectedAmount);
   }
 );

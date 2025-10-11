@@ -1,23 +1,15 @@
 import { Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import { getAccountsPage } from 'shared/utilities/hooks';
 
 Then(
   'the account {string} should appear in my accounts list with balance {string}',
   async function (accountName: string, balance: string) {
     const accountsPage = getAccountsPage();
-    const isListed = await accountsPage.verifyAccountIsListed(accountName);
-    if (!isListed) {
-      throw new Error(
-        `Account "${accountName}" not found in the accounts list`
-      );
-    }
-    const actualBalance =
-      await accountsPage.getAccountBalanceForRow(accountName);
-    if (!actualBalance || actualBalance.trim() !== balance) {
-      throw new Error(
-        `Expected balance "${balance}", but got "${actualBalance?.trim()}"`
-      );
-    }
+    expect(await accountsPage.verifyAccountIsListed(accountName)).toBe(true);
+    expect(
+      (await accountsPage.getAccountBalanceForRow(accountName))?.trim()
+    ).toBe(balance);
   }
 );
 
@@ -29,10 +21,6 @@ Then(
     // Expect it contains a currency symbol of currently selected currency code
     // For VND, symbol is ₫; for USD, $; for EUR, €
     const symbols = ['₫', '$', '€'];
-    if (!symbols.some(s => totalBalance.includes(s))) {
-      throw new Error(
-        `Expected total balance to include the default currency symbol, but got "${totalBalance}"`
-      );
-    }
+    expect(symbols.some(s => totalBalance.includes(s))).toBe(true);
   }
 );

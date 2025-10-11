@@ -1,4 +1,5 @@
 import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import {
   getAccountCreationApiUseCase,
   getAccountUpdateUiUseCase,
@@ -106,21 +107,14 @@ When(
 
 Then('I should see a success message', async function () {
   const accountsPage = getAccountsPage();
-  if (!(await accountsPage.isSuccessMessageVisible())) {
-    throw new Error('Success message not visible');
-  }
+  expect(await accountsPage.isSuccessMessageVisible()).toBe(true);
 });
 
 Then(
   'I should see the error message {string}',
   async function (errorMessage: string) {
     const accountsPage = getAccountsPage();
-    const isVisible = await accountsPage.isErrorMessageVisible(errorMessage);
-    if (!isVisible) {
-      throw new Error(
-        `Expected error message "${errorMessage}" is not visible`
-      );
-    }
+    expect(await accountsPage.isErrorMessageVisible(errorMessage)).toBe(true);
   }
 );
 
@@ -177,16 +171,8 @@ Then(
   'I should see the success message {string}',
   async function (expectedMessage: string) {
     const accountsPage = getAccountsPage();
-    const isVisible = await accountsPage.isSuccessMessageVisible();
-    if (!isVisible) {
-      throw new Error(`Success message "${expectedMessage}" not visible`);
-    }
-    const actualMessage = await accountsPage.getSuccessMessageText();
-    if (actualMessage !== expectedMessage) {
-      throw new Error(
-        `Expected success message "${expectedMessage}", but got "${actualMessage}"`
-      );
-    }
+    expect(await accountsPage.isSuccessMessageVisible()).toBe(true);
+    expect(await accountsPage.getSuccessMessageText()).toBe(expectedMessage);
   }
 );
 
@@ -196,11 +182,7 @@ Then(
     const accountsPage = getAccountsPage();
     const actualBalance =
       await accountsPage.getAccountBalanceForRow(accountName);
-    if (actualBalance !== expectedBalance) {
-      throw new Error(
-        `Expected balance "${expectedBalance}" for account "${accountName}", but got "${actualBalance}"`
-      );
-    }
+    expect(actualBalance).toBe(expectedBalance);
   }
 );
 
@@ -218,11 +200,7 @@ Then(
     const accountsPage = getAccountsPage();
     const visibleNames = await accountsPage.getVisibleAccountNames();
     for (const name of visibleNames) {
-      if (!name.includes(expectedAccountName)) {
-        throw new Error(
-          `Account "${name}" does not contain "${expectedAccountName}"`
-        );
-      }
+      expect(name).toContain(expectedAccountName);
     }
   }
 );

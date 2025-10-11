@@ -1,4 +1,5 @@
 import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
 import {
   getAccountCreationUiUseCase,
   getAccountsPage,
@@ -148,11 +149,7 @@ Then(
       (this as { uniqueAccountName?: string }).uniqueAccountName || accountName;
 
     const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
-    if (!exists) {
-      throw new Error(
-        `Account "${uniqueAccountName}" not found in accounts list`
-      );
-    }
+    expect(exists).toBe(true);
   }
 );
 
@@ -160,15 +157,14 @@ Then(
   'the account should have a balance of {string}',
   async function (expectedBalance: string) {
     const accountsPage = getAccountsPage();
-    const actualBalance = await accountsPage.getTotalBalance();
-    const expectedBalanceNum = parseFloat(expectedBalance.replace('$', ''));
-    const actualBalanceNum = parseFloat(actualBalance.replace('$', ''));
-
-    if (actualBalanceNum < expectedBalanceNum) {
-      throw new Error(
-        `Expected balance to be at least ${expectedBalance}, but found ${actualBalance}`
-      );
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
+    if (!uniqueAccountName) {
+      throw new Error('No account name found in test context');
     }
+    const actualBalance =
+      await accountsPage.getAccountBalanceForRow(uniqueAccountName);
+    expect(actualBalance).toBe(expectedBalance);
   }
 );
 
@@ -176,10 +172,7 @@ Then(
   'I should see an error message {string}',
   async function (errorMessage: string) {
     const accountsPage = getAccountsPage();
-    const isVisible = await accountsPage.isErrorMessageVisible(errorMessage);
-    if (!isVisible) {
-      throw new Error(`Error message "${errorMessage}" not visible`);
-    }
+    expect(await accountsPage.isErrorMessageVisible(errorMessage)).toBe(true);
   }
 );
 
@@ -201,15 +194,9 @@ Then(
 
     if (uniqueAccountName.includes(accountName)) {
       const count = await accountsPage.getAccountCount(uniqueAccountName);
-      if (count !== 1) {
-        throw new Error(
-          `Account "${uniqueAccountName}" appears ${count} times, expected 1`
-        );
-      }
+      expect(count).toBe(1);
     } else {
-      throw new Error(
-        `Account "${uniqueAccountName}" not found in accounts list`
-      );
+      expect(uniqueAccountName).toContain(accountName);
     }
   }
 );
