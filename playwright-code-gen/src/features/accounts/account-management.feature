@@ -67,11 +67,11 @@ Feature: Account Management
   Scenario: Attempt to update account to duplicate name
     Given I have accounts named "Account A" and "Account B"
     When I edit the account "Account A" with:
-      | name        | Account B |
-      | type        | Bank Account |
-      | balance     | 2000       |
-      | currency    | USD        |
-      | description | Updated    |
+      | name        | Account B      |
+      | type        | Bank Account   |
+      | balance     | 2000           |
+      | currency    | USD            |
+      | description | Updated        |
     Then I should see an error message "Account name already exists"
 
   @negative

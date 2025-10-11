@@ -142,14 +142,18 @@ When(
       );
     }
 
-    // Handle updates to duplicate names (e.g., Account B) by using unique versions
+    // Handle updates to duplicate names by using unique versions from context
+    const logicalNewName = dataTableHash['name'];
+    const originalAccountName2 = (this as { originalAccountName2?: string })
+      .originalAccountName2;
     const uniqueName2 = (this as { uniqueAccountName2?: string })
       .uniqueAccountName2;
+    const newName =
+      logicalNewName === originalAccountName2 && uniqueName2
+        ? uniqueName2
+        : logicalNewName;
     const accountData: AccountDto = {
-      name:
-        dataTableHash['name'] === 'Account B' && uniqueName2
-          ? uniqueName2
-          : dataTableHash['name'],
+      name: newName,
       type: dataTableHash['type'], // Retain as display text for UI compatibility
       balance: Number(dataTableHash['balance']),
       currency: dataTableHash['currency'],
