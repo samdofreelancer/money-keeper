@@ -72,7 +72,7 @@ Feature: Account Management
       | description | Updated    |
     Then I should see an error message "Account name already exists"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to update account to empty name
     When I edit the account "Main Checking" with:
       | name        |  |
@@ -80,9 +80,9 @@ Feature: Account Management
       | balance     | 1000         |
       | currency    | USD          |
       | description | Test         |
-    Then I should see an error message "Name is required"
+    Then I should see an error message "Please input account name"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to update account to negative balance
     When I edit the account "Main Checking" with:
       | name        | Main Checking |
@@ -90,7 +90,7 @@ Feature: Account Management
       | balance     | -500          |
       | currency    | USD           |
       | description | Negative      |
-    Then I should see an error message "Balance must be positive"
+    Then I should see an error message "Balance must be greater than 0"
 
   @positive @wip
   Scenario: Successfully list all accounts
