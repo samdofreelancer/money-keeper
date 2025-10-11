@@ -1,0 +1,28 @@
+name: eslint-wrapper
+
+on:
+  workflow_dispatch: {}
+  workflow_call:
+    inputs:
+      node-version:
+        required: true
+        type: string
+      working-directory:
+        required: true
+        type: string
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.ref }}-eslint
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  call-eslint:
+    if: ${{ !github.event.pull_request.draft }} # Skip if the PR is a draft
+    uses: samdofreelancer/cloud-workflow/.github/workflows/eslint.yml@main
+    with:
+      node-version: ${{ inputs['node-version'] }}
+      working-directory: ${{ inputs['working-directory'] }}
+

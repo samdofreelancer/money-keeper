@@ -32,7 +32,7 @@ export class AccountCreationUiUseCase {
    */
   async createAccount(accountData: AccountDto) {
     await this.clickAddAccountButton();
-    await this.accountsPage.fillAccountForm(accountData);
+    await this.accountsPage.accountForm.fillAccountForm(accountData);
     await this.clickCreateButton();
   }
 
@@ -47,7 +47,7 @@ export class AccountCreationUiUseCase {
    * Click the Create button
    */
   async clickCreateButton() {
-    await this.accountsPage.clickCreateButton();
+    await this.accountsPage.accountForm.clickCreateButton();
   }
 
   /**

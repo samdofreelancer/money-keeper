@@ -80,6 +80,11 @@ export class TestData {
     if (accountName) this.createdAccounts.add(accountName);
   }
 
+  /** Xóa tên account đã tạo */
+  static removeCreatedAccount(accountName: string): void {
+    if (accountName) this.createdAccounts.delete(accountName);
+  }
+
   /** Lưu tên category đã tạo */
   static trackCreatedCategory(name: string): void {
     if (name) this.createdCategories.add(name);

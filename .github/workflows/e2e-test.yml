@@ -2,7 +2,12 @@ name: playwright-code-gen Tests
 
 on:
   workflow_call:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["eslint-wrapper"]
+    types:
+      - completed
+    branches:
+      - develop
   push:
     branches:
       - develop
@@ -11,14 +16,7 @@ on:
       - 'backend/**'
       - 'frontend/**'
       - 'playwright-code-gen/**'
-  pull_request:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'playwright-code-gen/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -35,19 +33,19 @@ jobs:
       IMAGE_TAG: ${{ github.sha }}
       VITE_BACKEND_HOST: backend
       ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+      E2E_SOURCE_FOLDER: playwright-code-gen
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          ref: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.ref }}
 
       - name: Start Oracle service
         run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
 
-      - name: Run Flyway migration with retries
-        run: |
-          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up flyway
+      - name: Run Flyway migration
+        run: bash scripts/flyway_migrate.sh ${{ secrets.ORACLE_PASSWORD_SECRET }}
         env:
           SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
           
@@ -55,54 +53,31 @@ jobs:
         run: docker compose up -d backend frontend
 
       - name: Wait for Backend to be healthy
-        run: |
-          echo "Waiting for Backend to be healthy..."
-          for i in {1..30}; do
-            if curl -f http://localhost:8080/actuator/health; then
-              echo "Backend is healthy"
-              break
-            fi
-            echo "Waiting for Backend..."
-            sleep 10
-          done
+        run: bash scripts/wait_for_backend.sh
 
       - name: Wait for Frontend to be healthy
-        run: |
-          echo "Waiting for Frontend to be healthy..."
-          for i in {1..30}; do
-            if curl -f http://localhost:5173; then
-              echo "Frontend is healthy"
-              break
-            fi
-            echo "Waiting for Frontend..."
-            sleep 10
-          done
+        run: bash scripts/wait_for_frontend.sh
 
       - name: Run playwright-code-gen tests
-        run: docker compose run --rm -e GITHUB_REF=${{ github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
+        run: docker compose run --rm -e GITHUB_REF=${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
 
       - name: Generate Allure report
         if: always()
-        run: docker compose run --rm playwright-code-gen npm run allure:generate
-        working-directory: ./
+        run: bash scripts/generate_allure_report.sh ${{ env.E2E_SOURCE_FOLDER }}
 
       - name: Upload Allure report for Github Pages
         if: always()
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'playwright-code-gen/test-results/allure-report'
+          path: '${{ env.E2E_SOURCE_FOLDER }}/test-results/allure-report'
           name: github-pages
           
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
-        
-      - name: List files in deployed artifact
         if: always()
-        run: |
-          echo "Files in playwright-code-gen/test-results/allure-report:"
-          ls -la playwright-code-gen/test-results/allure-report/
+        uses: actions/deploy-pages@v4
 
+      # Clean up containers to free resources
       - name: Stop containers
         if: always()
         run: docker compose down

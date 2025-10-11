@@ -14,10 +14,6 @@ echo "--- Ensuring frontend is stopped before starting ---"
 bash ./scripts/stop_frontend.sh
 source ./scripts/start_frontend.sh
 
-# --- E2E Tests ---
-echo ""
-source ./scripts/run_e2e.sh
-
 # --- Final Status ---
 echo ""
 echo "--- Services are running in the background ---"

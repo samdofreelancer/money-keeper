@@ -1,9 +1,11 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { createHash } from 'crypto';
 
 // Allure reporter that creates proper Allure format files
 interface AllureTest {
   uuid: string;
+  historyId: string;
   name: string;
   description?: string;
   descriptionHtml?: string;
@@ -60,9 +62,17 @@ export class AllureReporter {
     }
   }
 
-  startTest(name: string, description?: string): AllureTest {
+  startTest(
+    name: string,
+    description?: string,
+    historyIdSource?: string
+  ): AllureTest {
+    const historyId = createHash('md5')
+      .update(historyIdSource || name)
+      .digest('hex');
     this.currentTest = {
       uuid: this.generateUuid(),
+      historyId: historyId,
       name,
       description,
       status: 'passed',
@@ -85,6 +95,10 @@ export class AllureReporter {
       this.currentTest.stop = Date.now();
       this.currentTest.duration =
         this.currentTest.stop - this.currentTest.start;
+
+      if (process.env.IS_RETRY === 'true') {
+        this.currentTest.statusDetails.flaky = true;
+      }
 
       // Save test result to file in proper Allure format
       const testFile = join(

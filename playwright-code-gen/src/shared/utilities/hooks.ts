@@ -120,6 +120,16 @@ export const getAccountCreationUiUseCase =
     return global.testWorld.accountCreationUiUseCase;
   };
 
+export const getAccountUpdateUiUseCase =
+  (): World['accountUpdateUiUseCase'] => {
+    if (!global.testWorld) {
+      throw new Error(
+        'World not initialized. Ensure tests are running in Cucumber context.'
+      );
+    }
+    return global.testWorld.accountUpdateUiUseCase;
+  };
+
 export const getWorldSettingsUseCase = (): World['settingsUiUseCase'] => {
   if (!global.testWorld) {
     throw new Error(
@@ -290,9 +300,15 @@ Before(async function (scenario) {
   (this as ScenarioContext).scenarioName = scenarioName;
 
   // Initialize Allure test
+  const featureName =
+    scenario.gherkinDocument?.feature?.name || 'Unknown Feature';
+  const stepsText = scenario.pickle.steps.map(s => s.text).join(';');
+  const historyIdSource = `${featureName}:${scenarioName}:${stepsText}`;
+
   allureReporter.startTest(
     scenarioName,
-    `Feature: ${scenario.gherkinDocument?.feature?.name || 'Unknown Feature'}`
+    `Feature: ${featureName}`,
+    historyIdSource
   );
   allureReporter.addFeature(
     scenario.gherkinDocument?.feature?.name || 'Unknown Feature'

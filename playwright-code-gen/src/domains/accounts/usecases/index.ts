@@ -1,5 +1,6 @@
 // UI Use Cases
 export { AccountCreationUiUseCase } from './ui/AccountCreationUiUseCase';
+export { AccountUpdateUiUseCase } from './ui/AccountUpdateUiUseCase';
 export { AccountBalanceUiUseCase } from './ui/AccountBalanceUiUseCase';
 
 // API Use Cases

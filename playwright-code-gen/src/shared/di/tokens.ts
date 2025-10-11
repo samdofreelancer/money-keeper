@@ -11,6 +11,8 @@ export const TOKENS = {
   AccountDeletionApiUseCase: Symbol.for('accounts:AccountDeletionApiUseCase'),
   AccountBalanceUiUseCase: Symbol.for('accounts:AccountBalanceUiUseCase'),
   AccountCreationUiUseCase: Symbol.for('accounts:AccountCreationUiUseCase'),
+  AccountUpdateUiUseCase: Symbol.for('accounts:AccountUpdateUiUseCase'),
+  AccountFormComponent: Symbol.for('accounts:AccountFormComponent'),
 
   // Settings domain tokens
   SettingsPlaywrightPage: Symbol.for('settings:SettingsPlaywrightPage'),
