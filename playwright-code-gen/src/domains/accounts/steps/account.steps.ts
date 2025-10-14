@@ -1,5 +1,4 @@
 import { Given, When, Then } from '@cucumber/cucumber';
-import { expect } from '@playwright/test';
 import {
   getAccountCreationApiUseCase,
   getAccountUpdateUiUseCase,
@@ -106,15 +105,13 @@ When(
 );
 
 Then('I should see a success message', async function () {
-  const accountsPage = getAccountsPage();
-  expect(await accountsPage.isSuccessMessageVisible()).toBe(true);
+  await this.accountsVerification.verifySuccessMessageVisible();
 });
 
 Then(
   'I should see the error message {string}',
   async function (errorMessage: string) {
-    const accountsPage = getAccountsPage();
-    expect(await accountsPage.isErrorMessageVisible(errorMessage)).toBe(true);
+    await this.accountsVerification.verifyErrorMessageVisible(errorMessage);
   }
 );
 
@@ -170,19 +167,15 @@ When(
 Then(
   'I should see the success message {string}',
   async function (expectedMessage: string) {
-    const accountsPage = getAccountsPage();
-    expect(await accountsPage.isSuccessMessageVisible()).toBe(true);
-    expect(await accountsPage.getSuccessMessageText()).toBe(expectedMessage);
+    await this.accountsVerification.verifySuccessMessageVisible();
+    await this.accountsVerification.verifySuccessMessageText(expectedMessage);
   }
 );
 
 Then(
   'the account {string} should have a balance of {string}',
   async function (accountName: string, expectedBalance: string) {
-    const accountsPage = getAccountsPage();
-    const actualBalance =
-      await accountsPage.getAccountBalanceForRow(accountName);
-    expect(actualBalance).toBe(expectedBalance);
+    await this.accountsVerification.verifyAccountBalance(accountName, expectedBalance);
   }
 );
 
@@ -197,11 +190,7 @@ When(
 Then(
   'only the account {string} is shown',
   async function (expectedAccountName: string) {
-    const accountsPage = getAccountsPage();
-    const visibleNames = await accountsPage.getVisibleAccountNames();
-    for (const name of visibleNames) {
-      expect(name).toContain(expectedAccountName);
-    }
+    await this.accountsVerification.verifySearchResultsContain(expectedAccountName);
   }
 );
 
@@ -240,13 +229,6 @@ When(
 Then(
   'the accounts should be sorted by balance in {string} order',
   async function (order: 'ascending' | 'descending') {
-    const accountsPage = getAccountsPage();
-    const balances = await accountsPage.getAccountBalances();
-    const sortedBalances = [...balances].sort((a, b) =>
-      order === 'ascending' ? a - b : b - a
-    );
-    for (let i = 0; i < balances.length; i++) {
-      expect(balances[i]).toBe(sortedBalances[i]);
-    }
+    await this.accountsVerification.verifyAccountsSortedByBalance(order);
   }
 );

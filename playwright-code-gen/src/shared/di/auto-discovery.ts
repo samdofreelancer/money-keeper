@@ -4,7 +4,7 @@ import { Logger } from 'shared/utilities/logger';
 
 export async function autoDiscover(
   globs: string[] = [
-    'src/domains/**/{pages,usecases,api,services}/**/*.{ts,tsx,js}',
+    'src/domains/**/{pages,usecases,api,services,verification,verifications}/**/*.{ts,tsx,js}',
     'src/shared/**/{services,clients}/**/*.{ts,tsx,js}',
   ],
   opts?: { eager?: boolean }

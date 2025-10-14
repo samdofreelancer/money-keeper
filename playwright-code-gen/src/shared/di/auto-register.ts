@@ -4,7 +4,7 @@ import type { Container } from './container';
 
 export async function autoImportDomains(
   globs: string[] = [
-    'src/domains/**/{pages,usecases,api,services}/**/*.{ts,tsx,js}',
+    'src/domains/**/{pages,usecases,api,services,verification,verifications}/**/*.{ts,tsx,js}',
     'src/shared/**/{services,clients}/**/*.{ts,tsx,js}',
   ],
   opts?: { eager?: boolean }

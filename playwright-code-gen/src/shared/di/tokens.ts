@@ -6,6 +6,7 @@ export const TOKENS = {
 
   // Accounts domain tokens
   AccountsPlaywrightPage: Symbol.for('accounts:AccountsPlaywrightPage'),
+  AccountsVerification: Symbol.for('accounts:AccountsVerification'),
   AccountApiClient: Symbol.for('accounts:AccountApiClient'),
   AccountCreationApiUseCase: Symbol.for('accounts:AccountCreationApiUseCase'),
   AccountDeletionApiUseCase: Symbol.for('accounts:AccountDeletionApiUseCase'),
@@ -20,12 +21,14 @@ export const TOKENS = {
 
   // Category domain tokens
   CategoriesPage: Symbol.for('category:CategoriesPage'),
+  CategoriesVerification: Symbol.for('category:CategoriesVerification'),
   CategoryApiClient: Symbol.for('category:CategoryApiClient'),
   CreateCategoryUseCase: Symbol.for('category:CreateCategoryUseCase'),
   CategoryDeletionApiUseCase: Symbol.for('category:CategoryDeletionApiUseCase'),
 
   // Transaction domain tokens
   TransactionsPage: Symbol.for('transactions:TransactionsPage'),
+  TransactionsVerification: Symbol.for('transactions:TransactionsVerification'),
   TransactionCreationUiUseCase: Symbol.for(
     'transactions:TransactionCreationUiUseCase'
   ),

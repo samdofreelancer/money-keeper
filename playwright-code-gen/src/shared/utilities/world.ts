@@ -17,6 +17,9 @@ import { TransactionCreationApiUseCase } from 'transaction-domain/usecases/api/T
 import { AccountCreationUiUseCase } from 'account-domains/usecases/ui/AccountCreationUiUseCase';
 import { AccountUpdateUiUseCase } from 'account-domains/usecases/ui/AccountUpdateUiUseCase';
 import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
+import { AccountsVerification } from 'account-domains/verification/accounts.verify';
+import { CategoriesVerification } from 'category-domain/verifications/category.verify';
+import { TransactionsVerification } from 'transaction-domain/verifications/transactions.verify';
 import { SettingsPlaywrightPage } from 'settings-domain/pages/settings.playwright.page';
 import { SettingsUiUseCase } from 'settings-domain/usecases/ui/SettingsUiUseCase';
 
@@ -99,6 +102,17 @@ export class World extends BaseWorld {
   }
   public get transactionCreationApiUseCase(): TransactionCreationApiUseCase {
     return this.use(TOKENS.TransactionCreationApiUseCase);
+  }
+
+  // Verification getters
+  public get accountsVerification(): AccountsVerification {
+    return this.use(TOKENS.AccountsVerification);
+  }
+  public get categoriesVerification(): CategoriesVerification {
+    return this.use(TOKENS.CategoriesVerification);
+  }
+  public get transactionsVerification(): TransactionsVerification {
+    return this.use(TOKENS.TransactionsVerification);
   }
 
   /**
