@@ -15,15 +15,23 @@ export class AccountsVerification {
   }
 
   async verifyErrorMessageVisible(errorMessage: string): Promise<void> {
-    expect(await this.accountsPage.isErrorMessageVisible(errorMessage)).toBe(true);
+    expect(await this.accountsPage.isErrorMessageVisible(errorMessage)).toBe(
+      true
+    );
   }
 
   async verifySuccessMessageText(expectedMessage: string): Promise<void> {
-    expect(await this.accountsPage.getSuccessMessageText()).toBe(expectedMessage);
+    expect(await this.accountsPage.getSuccessMessageText()).toBe(
+      expectedMessage
+    );
   }
 
-  async verifyAccountBalance(accountName: string, expectedBalance: string): Promise<void> {
-    const actualBalance = await this.accountsPage.getAccountBalanceForRow(accountName);
+  async verifyAccountBalance(
+    accountName: string,
+    expectedBalance: string
+  ): Promise<void> {
+    const actualBalance =
+      await this.accountsPage.getAccountBalanceForRow(accountName);
     expect(actualBalance).toBe(expectedBalance);
   }
 
@@ -44,7 +52,9 @@ export class AccountsVerification {
     }
   }
 
-  async verifyAccountsSortedByBalance(order: 'ascending' | 'descending'): Promise<void> {
+  async verifyAccountsSortedByBalance(
+    order: 'ascending' | 'descending'
+  ): Promise<void> {
     const balances = await this.accountsPage.getAccountBalances();
     const sortedBalances = [...balances].sort((a, b) =>
       order === 'ascending' ? a - b : b - a
@@ -54,7 +64,10 @@ export class AccountsVerification {
     }
   }
 
-  async verifyAccountCount(accountName: string, expectedCount: number): Promise<void> {
+  async verifyAccountCount(
+    accountName: string,
+    expectedCount: number
+  ): Promise<void> {
     const count = await this.accountsPage.getAccountCount(accountName);
     expect(count).toBe(expectedCount);
   }
@@ -73,10 +86,16 @@ export class AccountsVerification {
     }
   }
 
-  async verifyAccountDescription(accountName: string, expectedDescription: string): Promise<void> {
-    const description = await this.accountsPage.getAccountDescription(accountName);
+  async verifyAccountDescription(
+    accountName: string,
+    expectedDescription: string
+  ): Promise<void> {
+    const description =
+      await this.accountsPage.getAccountDescription(accountName);
     if (description !== expectedDescription) {
-      throw new Error(`Expected description "${expectedDescription}", but found "${description}"`);
+      throw new Error(
+        `Expected description "${expectedDescription}", but found "${description}"`
+      );
     }
   }
 

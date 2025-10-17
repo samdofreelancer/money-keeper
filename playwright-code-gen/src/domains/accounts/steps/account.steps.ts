@@ -175,7 +175,10 @@ Then(
 Then(
   'the account {string} should have a balance of {string}',
   async function (accountName: string, expectedBalance: string) {
-    await this.accountsVerification.verifyAccountBalance(accountName, expectedBalance);
+    await this.accountsVerification.verifyAccountBalance(
+      accountName,
+      expectedBalance
+    );
   }
 );
 
@@ -190,7 +193,9 @@ When(
 Then(
   'only the account {string} is shown',
   async function (expectedAccountName: string) {
-    await this.accountsVerification.verifySearchResultsContain(expectedAccountName);
+    await this.accountsVerification.verifySearchResultsContain(
+      expectedAccountName
+    );
   }
 );
 
