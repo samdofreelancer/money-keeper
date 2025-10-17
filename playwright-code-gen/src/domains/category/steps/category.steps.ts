@@ -272,3 +272,64 @@ Then(
     expect(exists, `Expected category in results: ${mapped}`).toBe(true);
   }
 );
+
+When('I open the edit dialog for {string}', async function (name: string) {
+  const mapped = this.uniqueCategoryNames?.[name] || name;
+
+  // Find the category node and click its edit button
+  const slug = this.categoriesPage.slugify
+    ? this.categoriesPage.slugify(mapped)
+    : mapped.trim().toLowerCase().replace(/\s+/g, '-');
+
+  // Use testid for the node if available, otherwise find by visible text in the tree
+  const node = this.categoriesPage.page.getByTestId(`category-node-${slug}`);
+  if (await node.isVisible().catch(() => false)) {
+    // find edit button inside node
+    const editBtn = node.getByTestId('edit-category-button');
+    await editBtn.click();
+    await this.categoriesPage.waitForIdle(100);
+    return;
+  }
+
+  // Fallback: search for the tree node by visible name and click the edit button in the sibling button-group
+  const nameLocator = this.categoriesPage.page
+    .getByTestId('category-name')
+    .filter({ hasText: mapped });
+  const parent = nameLocator.locator('..').locator('..');
+  const editBtnFallback = parent.getByTestId('edit-category-button');
+  await editBtnFallback.click();
+  await this.categoriesPage.waitForIdle(100);
+});
+
+When('I delete the category {string}', async function (name: string) {
+  const mapped = this.uniqueCategoryNames?.[name] || name;
+
+  // Try to click delete button on the node
+  const slug = this.categoriesPage.slugify
+    ? this.categoriesPage.slugify(mapped)
+    : mapped.trim().toLowerCase().replace(/\s+/g, '-');
+
+  const node = this.categoriesPage.page.getByTestId(`category-node-${slug}`);
+  if (await node.isVisible().catch(() => false)) {
+    const delBtn = node.getByTestId('delete-category-button');
+    await delBtn.click();
+  } else {
+    const nameLocator = this.categoriesPage.page
+      .getByTestId('category-name')
+      .filter({ hasText: mapped });
+    const parent = nameLocator.locator('..').locator('..');
+    const delBtnFallback = parent.getByTestId('delete-category-button');
+    await delBtnFallback.click();
+  }
+
+  // Confirm delete in modal
+  await this.categoriesPage.page.getByTestId('button-confirm-delete').click();
+  // Wait and ensure success message or category removal
+  await this.categoriesPage.waitForIdle(200);
+
+  // Track deletion attempt: ensure cleanup mapping is cleared for this logical name
+  if (this.uniqueCategoryNames && this.uniqueCategoryNames[name]) {
+    // remove mapping so further lookups use the original name and cleanup won't try to delete again
+    delete this.uniqueCategoryNames[name];
+  }
+});
