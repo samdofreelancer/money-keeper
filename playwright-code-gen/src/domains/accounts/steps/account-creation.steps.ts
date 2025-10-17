@@ -174,7 +174,7 @@ Then(
 
 Then(
   'the account {string} should appear only once in my accounts list',
-  async function () {
+  async function (accountName: string) {
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     // Reload the page to ensure we have the latest state
@@ -185,6 +185,10 @@ Then(
       .uniqueAccountName;
     if (!uniqueAccountName) {
       throw new Error('No existing account name found in test context');
+    }
+
+    if(accountName !== uniqueAccountName) {
+      throw new Error(`Account name mismatch: expected "${uniqueAccountName}" but got "${accountName}" in test context`);
     }
 
     await this.accountsVerification.verifyAccountCount(uniqueAccountName, 1);
