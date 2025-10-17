@@ -31,7 +31,6 @@ Feature: Category creation and validation
     Then I should see a success message "Category created successfully"
     And the category "Child_of_Parent_UI" should appear under "Parent_Category_UI"
 
-  @wip
   # Validation: required fields
   Scenario: Show validation errors when required fields are missing
     When I open the create category dialog
@@ -60,7 +59,6 @@ Feature: Category creation and validation
     And I cancel the create category form
     Then the category "Temp_Cancel_UI" should not appear in the category list
 
-  @wip
   # Search: find created category using search box
   Scenario: Search for a created category
     Given a category exists with name "Searchable_UI"

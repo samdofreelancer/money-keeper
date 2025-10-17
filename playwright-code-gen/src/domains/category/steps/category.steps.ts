@@ -88,6 +88,18 @@ When('I fill the category form with:', async function (dataTable) {
   }
 });
 
+When('I clear the category name field', async function () {
+  // Clear the name input inside the create dialog
+  const page = this.categoriesPage.page;
+  // Use the page object helper if available, otherwise target the test id directly
+  if (this.categoriesPage.fillCategoryName) {
+    await this.categoriesPage.fillCategoryName('');
+  } else {
+    await page.getByTestId('input-category-name').fill('');
+  }
+  await this.categoriesPage.waitForIdle(50);
+});
+
 When('I submit the create category form', async function () {
   await this.categoriesPage.submitCategory();
   // wait small time for create to propagate
@@ -223,3 +235,9 @@ Then(
     ).toBe(false);
   }
 );
+
+Then('I should see the category {string} in the results', async function (name: string) {
+  const mapped = (this as any).uniqueCategoryNames?.[name] || name;
+  const exists = await this.categoriesPage.hasCategory(mapped);
+  expect(exists, `Expected category in results: ${mapped}`).toBe(true);
+});
