@@ -188,7 +188,9 @@ Then(
     }
 
     if (!uniqueAccountName.includes(accountName)) {
-      throw new Error(`Account name mismatch: expected "${uniqueAccountName}" but got "${accountName}" in test context`);
+      throw new Error(
+        `Account name mismatch: expected "${uniqueAccountName}" but got "${accountName}" in test context`
+      );
     }
 
     await this.accountsVerification.verifyAccountCount(uniqueAccountName, 1);
