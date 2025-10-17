@@ -7,6 +7,7 @@ Feature: Category creation and validation
     Given I am on the categories page
 
   # Happy path: create a top-level category
+  @smoke @create @ui
   Scenario: Create a top-level category successfully
     Given I have no category with name "Food_Test_UI"
     When I open the create category dialog
@@ -19,6 +20,7 @@ Feature: Category creation and validation
     And the category "Food_Test_UI" should appear in the category list
 
   # Create a category using an existing category as parent
+  @create @parent @ui
   Scenario: Create a category with a parent successfully
     Given a category exists with name "Parent_Category_UI"
     When I open the create category dialog
@@ -32,6 +34,7 @@ Feature: Category creation and validation
     And the category "Child_of_Parent_UI" should appear under "Parent_Category_UI"
 
   # Validation: required fields
+  @validation @negative
   Scenario: Show validation errors when required fields are missing
     When I open the create category dialog
     And I clear the category name field
@@ -39,6 +42,7 @@ Feature: Category creation and validation
     Then I should see a validation error for the name field
 
   # Validation: duplicate name not allowed
+  @validation @negative @duplicate
   Scenario: Prevent creating a category with a duplicate name
     Given a category exists with name "Duplicate_UI"
     When I open the create category dialog
@@ -50,6 +54,7 @@ Feature: Category creation and validation
     Then I should see an error indicating the category name already exists
 
   # Cancel flow: closing dialog should not create category
+  @cancel @negative
   Scenario: Cancel creating a category
     When I open the create category dialog
     And I fill the category form with:
@@ -60,6 +65,7 @@ Feature: Category creation and validation
     Then the category "Temp_Cancel_UI" should not appear in the category list
 
   # Search: find created category using search box
+  @search @ui
   Scenario: Search for a created category
     Given a category exists with name "Searchable_UI"
     When I search for "Searchable_UI"

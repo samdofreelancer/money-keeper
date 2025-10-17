@@ -33,21 +33,21 @@ When('I fill the category form with:', async function (dataTable) {
   // Name
   if (row.name) {
     // If this name was created as a precondition, use the unique version mapped on the world
-    if (!(this as any).uniqueCategoryNames) (this as any).uniqueCategoryNames = {};
+    if (!this.uniqueCategoryNames) this.uniqueCategoryNames = {};
 
-    let mapped = (this as any).uniqueCategoryNames?.[row.name];
+    let mapped = this.uniqueCategoryNames?.[row.name];
     // If not mapped yet, generate a unique name to avoid collisions and use that for UI input
     if (!mapped) {
-      const scenarioName = (this as { scenarioName?: string }).scenarioName || 'scenario';
+      const scenarioName = this.scenarioName || 'scenario';
       mapped = TestData.generateUniqueCategoryName(scenarioName, row.name);
-      (this as any).uniqueCategoryNames[row.name] = mapped;
+      this.uniqueCategoryNames[row.name] = mapped;
     }
 
     await this.categoriesPage.fillCategoryName(mapped);
 
     // record last filled name so submit step can track created record
-    (this as any).lastFilledCategoryLogicalName = row.name;
-    (this as any).lastFilledCategoryUniqueName = mapped;
+    this.lastFilledCategoryLogicalName = row.name;
+    this.lastFilledCategoryUniqueName = mapped;
   }
 
   // Icon
@@ -58,13 +58,21 @@ When('I fill the category form with:', async function (dataTable) {
 
   // Type (accept both 'Expense'/'EXPENSE' and 'Income'/'INCOME')
   if (row.type) {
-    const type = row.type.toUpperCase().startsWith('EXP') ? 'EXPENSE' : 'INCOME';
+    const type = row.type.toUpperCase().startsWith('EXP')
+      ? 'EXPENSE'
+      : 'INCOME';
     // the UI defaults to EXPENSE, but ensure radio selection when needed
     if (type === 'INCOME') {
       // choose income via clicking the radio button in the UI
-      await this.categoriesPage.page.getByTestId('radio-income').click().catch(() => {});
+      await this.categoriesPage.page
+        .getByTestId('radio-income')
+        .click()
+        .catch(() => {});
     } else {
-      await this.categoriesPage.page.getByTestId('radio-expense').click().catch(() => {});
+      await this.categoriesPage.page
+        .getByTestId('radio-expense')
+        .click()
+        .catch(() => {});
     }
   }
 
@@ -72,7 +80,8 @@ When('I fill the category form with:', async function (dataTable) {
   if (row.parent) {
     // If parent was created earlier in the scenario, resolve logical->unique mapping
     const parentLogical = row.parent;
-    const parentUnique = (this as any).uniqueCategoryNames?.[parentLogical] || parentLogical;
+    const parentUnique =
+      this.uniqueCategoryNames?.[parentLogical] || parentLogical;
 
     // Find parent category via API client using unique name
     const parentList = await this.categoryApiClient.findByName(parentUnique);
@@ -82,8 +91,12 @@ When('I fill the category form with:', async function (dataTable) {
     const parent = parentList[0];
 
     // open parent select and pick the option by visible label (the page renders label as parent.name)
-    await this.categoriesPage.page.getByTestId('select-parent-category').click();
-    const option = this.categoriesPage.page.getByRole('option', { name: parent.name });
+    await this.categoriesPage.page
+      .getByTestId('select-parent-category')
+      .click();
+    const option = this.categoriesPage.page.getByRole('option', {
+      name: parent.name,
+    });
     await option.click();
   }
 });
@@ -105,12 +118,12 @@ When('I submit the create category form', async function () {
   // wait small time for create to propagate
   await this.categoriesPage.waitForIdle(100);
   // Track UI-created category for cleanup if we have lastFilledCategoryUniqueName
-  const created = (this as any).lastFilledCategoryUniqueName;
+  const created = this.lastFilledCategoryUniqueName;
   if (created) {
     TestData.trackCreatedCategory(created);
     // Clear last filled to avoid duplicating track in subsequent submits
-    (this as any).lastFilledCategoryUniqueName = undefined;
-    (this as any).lastFilledCategoryLogicalName = undefined;
+    this.lastFilledCategoryUniqueName = undefined;
+    this.lastFilledCategoryLogicalName = undefined;
   }
 });
 
@@ -122,18 +135,21 @@ When('I cancel the create category form', async function () {
 
 Given('a category exists with name {string}', async function (name: string) {
   // Create via API use case to ensure deterministic precondition
-  const scenarioName = (this as { scenarioName?: string }).scenarioName || 'precondition';
+  const scenarioName = this.scenarioName || 'precondition';
   const uniqueName = TestData.generateUniqueCategoryName(scenarioName, name);
 
   // Track for cleanup
   TestData.trackCreatedCategory(uniqueName);
 
   // Store mapping from logical name to unique name on the world for later steps
-  if (!(this as any).uniqueCategoryNames) (this as any).uniqueCategoryNames = {};
-  (this as any).uniqueCategoryNames[name] = uniqueName;
+  if (!this.uniqueCategoryNames) this.uniqueCategoryNames = {};
+  this.uniqueCategoryNames[name] = uniqueName;
 
   // Use createCategoryUseCase (API) to create the category with minimal fields
-  await this.createCategoryUseCase.run({ name: uniqueName, icon: 'Grid', type: 'EXPENSE' }, { verify: true });
+  await this.createCategoryUseCase.run(
+    { name: uniqueName, icon: 'Grid', type: 'EXPENSE' },
+    { verify: true }
+  );
 });
 
 When('I search for {string}', async function (query: string) {
@@ -143,47 +159,59 @@ When('I search for {string}', async function (query: string) {
   await this.categoriesPage.waitForIdle(100);
 });
 
-Then('I should see a success message {string}', async function (expectedMessage: string) {
-  // The UI shows ElMessage but verification helper expects page-level checks; use categoriesVerification if available
-  // Fallback: check for message text in DOM
-  const page = this.categoriesPage.page;
-  // The app uses ElMessage which appends to body; check visible text
-  const locator = page.locator('text=' + expectedMessage).first();
-  await expect(locator).toBeVisible();
-});
+Then(
+  'I should see a success message {string}',
+  async function (expectedMessage: string) {
+    // The UI shows ElMessage but verification helper expects page-level checks; use categoriesVerification if available
+    // Fallback: check for message text in DOM
+    const page = this.categoriesPage.page;
+    // The app uses ElMessage which appends to body; check visible text
+    const locator = page.locator('text=' + expectedMessage).first();
+    await expect(locator).toBeVisible();
+  }
+);
 
 Then('I should see a validation error for the name field', async function () {
   // The form validator renders a tooltip/message near the form-item; assert there is text about required name
   const page = this.categoriesPage.page;
-  const msg = page.getByText(/Please input category name|Please input category name/);
+  const msg = page.getByText(
+    /Please input category name|Please input category name/
+  );
   await expect(msg).toBeVisible();
 });
 
-Then('I should see an error indicating the category name already exists', async function () {
-  const page = this.categoriesPage.page;
-  const msg = page.getByText(/Category name already exists|already exists/);
-  await expect(msg).toBeVisible();
-});
+Then(
+  'I should see an error indicating the category name already exists',
+  async function () {
+    const page = this.categoriesPage.page;
+    const msg = page.getByText(/Category name already exists|already exists/);
+    await expect(msg).toBeVisible();
+  }
+);
 
-Then('the category {string} should appear under {string}', async function (child: string, parent: string) {
-  // Resolve logical -> unique mappings
-  const mappedChild = (this as any).uniqueCategoryNames?.[child] || child;
-  const mappedParent = (this as any).uniqueCategoryNames?.[parent] || parent;
+Then(
+  'the category {string} should appear under {string}',
+  async function (child: string, parent: string) {
+    // Resolve logical -> unique mappings
+    const mappedChild = this.uniqueCategoryNames?.[child] || child;
+    const mappedParent = this.uniqueCategoryNames?.[parent] || parent;
 
-  // Verify child exists and parent exists in the visible tree
-  const childExists = await this.categoriesPage.hasCategory(mappedChild);
-  expect(childExists).toBe(true);
+    // Verify child exists and parent exists in the visible tree
+    const childExists = await this.categoriesPage.hasCategory(mappedChild);
+    expect(childExists).toBe(true);
 
-  const parentExists = await this.categoriesPage.hasCategory(mappedParent);
-  expect(parentExists).toBe(true);
-});
+    const parentExists = await this.categoriesPage.hasCategory(mappedParent);
+    expect(parentExists).toBe(true);
+  }
+);
 
 Given('I have no category with name {string}', async function (name: string) {
   // Resolve logical -> unique mapping if present
-  const targetName = (this as any).uniqueCategoryNames?.[name] || name;
+  const targetName = this.uniqueCategoryNames?.[name] || name;
 
   // Idempotent cleanup: delete all categories with this target name
-  const categoriesToDelete = await this.categoryApiClient.findByName(targetName);
+  const categoriesToDelete =
+    await this.categoryApiClient.findByName(targetName);
 
   for (const category of categoriesToDelete) {
     await this.categoryApiClient.deleteCategory(category.id);
@@ -215,7 +243,7 @@ When('I create a new category with:', async function (dataTable) {
 Then(
   'the category {string} should appear in the category list',
   async function (name: string) {
-    const mapped = (this as any).uniqueCategoryNames?.[name] || name;
+    const mapped = this.uniqueCategoryNames?.[name] || name;
     const categoryExists = await this.categoriesPage.hasCategory(mapped);
     expect(
       categoryExists,
@@ -227,7 +255,7 @@ Then(
 Then(
   'the category {string} should not appear in the category list',
   async function (name: string) {
-    const mapped = (this as any).uniqueCategoryNames?.[name] || name;
+    const mapped = this.uniqueCategoryNames?.[name] || name;
     const categoryExists = await this.categoriesPage.hasCategory(mapped);
     expect(
       categoryExists,
@@ -236,8 +264,11 @@ Then(
   }
 );
 
-Then('I should see the category {string} in the results', async function (name: string) {
-  const mapped = (this as any).uniqueCategoryNames?.[name] || name;
-  const exists = await this.categoriesPage.hasCategory(mapped);
-  expect(exists, `Expected category in results: ${mapped}`).toBe(true);
-});
+Then(
+  'I should see the category {string} in the results',
+  async function (name: string) {
+    const mapped = this.uniqueCategoryNames?.[name] || name;
+    const exists = await this.categoriesPage.hasCategory(mapped);
+    expect(exists, `Expected category in results: ${mapped}`).toBe(true);
+  }
+);

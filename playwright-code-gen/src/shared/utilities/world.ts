@@ -31,6 +31,12 @@ export class World extends BaseWorld {
   private initialized = false;
   public container!: Container; // assigned in hooks Before()
 
+  // Properties for category steps to avoid 'any' types
+  public uniqueCategoryNames?: Record<string, string>;
+  public lastFilledCategoryLogicalName?: string;
+  public lastFilledCategoryUniqueName?: string;
+  public scenarioName?: string;
+
   constructor() {
     super();
   }

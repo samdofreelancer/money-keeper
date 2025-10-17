@@ -174,15 +174,22 @@ export class TestData {
       // Attempt deletion in multiple passes to gracefully handle parent-child constraints.
       // Some APIs prevent deleting a parent before its children; retrying allows child deletions first.
       const maxPasses = 5;
-      for (let pass = 1; pass <= maxPasses && categoriesToDelete.length > 0; pass++) {
-        Logger.info(`[TestData] Deletion pass ${pass}, remaining ${categoriesToDelete.length}`);
+      for (
+        let pass = 1;
+        pass <= maxPasses && categoriesToDelete.length > 0;
+        pass++
+      ) {
+        Logger.info(
+          `[TestData] Deletion pass ${pass}, remaining ${categoriesToDelete.length}`
+        );
         const remaining: CategoryResponse[] = [];
 
         for (const category of categoriesToDelete) {
           try {
             await categoryApiClient.deleteCategory(category.id);
             Logger.info(
-              `[TestData] Deleted test category: ${category.name} (ID: ${category.id})`);
+              `[TestData] Deleted test category: ${category.name} (ID: ${category.id})`
+            );
           } catch (error) {
             Logger.debug(
               `[TestData] Could not delete category (will retry later): ${category.name} (ID: ${category.id})`,
@@ -194,7 +201,9 @@ export class TestData {
 
         // If nothing deleted in this pass, break to avoid infinite loop
         if (remaining.length === categoriesToDelete.length) {
-          Logger.warn('[TestData] No progress deleting categories on this pass; aborting further attempts');
+          Logger.warn(
+            '[TestData] No progress deleting categories on this pass; aborting further attempts'
+          );
           break;
         }
 
@@ -202,7 +211,9 @@ export class TestData {
       }
 
       if (categoriesToDelete.length > 0) {
-        Logger.warn(`[TestData] Some categories could not be deleted after ${maxPasses} passes: ${categoriesToDelete.map(c => c.name).join(', ')}`);
+        Logger.warn(
+          `[TestData] Some categories could not be deleted after ${maxPasses} passes: ${categoriesToDelete.map(c => c.name).join(', ')}`
+        );
       }
     } catch (error) {
       Logger.error('[TestData] Failed to fetch categories from API', error);
