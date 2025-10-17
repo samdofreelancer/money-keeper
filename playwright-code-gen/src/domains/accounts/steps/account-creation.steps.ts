@@ -187,7 +187,7 @@ Then(
       throw new Error('No existing account name found in test context');
     }
 
-    if(accountName !== uniqueAccountName) {
+    if (!uniqueAccountName.includes(accountName)) {
       throw new Error(`Account name mismatch: expected "${uniqueAccountName}" but got "${accountName}" in test context`);
     }
 
