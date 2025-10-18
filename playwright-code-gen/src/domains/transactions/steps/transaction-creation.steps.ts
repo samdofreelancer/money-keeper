@@ -1,5 +1,4 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
-import { expect } from '@playwright/test';
 import { TransactionVerify } from '../verification/transaction.verify';
 import {
   getTransactionsPage,
@@ -95,7 +94,11 @@ Then(
     // Verify each provided field
     const verifier = new TransactionVerify(this.page, transactionsPage);
     for (const [key, expectedValue] of Object.entries(data)) {
-      await verifier.shouldHaveTransactionDetail(currentTransaction.description, key, expectedValue);
+      await verifier.shouldHaveTransactionDetail(
+        currentTransaction.description,
+        key,
+        expectedValue
+      );
     }
   }
 );
@@ -110,7 +113,7 @@ Then('the transaction should not be created', async function () {
     throw new Error('No transaction data found in test context');
   }
 
-  const exists = await transactionsPage.verifyTransactionExists(
+  await transactionsPage.verifyTransactionExists(
     currentTransaction.description
   );
   const verifier = new TransactionVerify(this.page, transactionsPage);
@@ -130,6 +133,9 @@ Then(
     }
 
     const verifier = new TransactionVerify(this.page, transactionsPage);
-    await verifier.shouldHaveTransactionAmount(currentTransaction.description, expectedAmount);
+    await verifier.shouldHaveTransactionAmount(
+      currentTransaction.description,
+      expectedAmount
+    );
   }
 );

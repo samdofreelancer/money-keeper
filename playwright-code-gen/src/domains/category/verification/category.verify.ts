@@ -2,7 +2,10 @@ import { Page, expect } from '@playwright/test';
 import { CategoriesPage } from '../pages/categories.playwright.page';
 
 export class CategoryVerify {
-  constructor(private readonly page: Page, private readonly categoriesPage: CategoriesPage) {}
+  constructor(
+    private readonly page: Page,
+    private readonly categoriesPage: CategoriesPage
+  ) {}
 
   async shouldSeeSuccessMessage(expectedMessage: string) {
     const locator = this.page.locator('text=' + expectedMessage).first();
@@ -10,12 +13,16 @@ export class CategoryVerify {
   }
 
   async shouldSeeValidationErrorForName() {
-    const msg = this.page.getByText(/Please input category name|Please input category name/);
+    const msg = this.page.getByText(
+      /Please input category name|Please input category name/
+    );
     await expect(msg).toBeVisible();
   }
 
   async shouldSeeNameExistsError() {
-    const msg = this.page.getByText(/Category name already exists|already exists/);
+    const msg = this.page.getByText(
+      /Category name already exists|already exists/
+    );
     await expect(msg).toBeVisible();
   }
 
