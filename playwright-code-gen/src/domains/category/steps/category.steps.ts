@@ -1,5 +1,6 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
+import { CategoryVerify } from '../verification/category.verify';
 import { poll } from 'shared/utilities/poll';
 import { sanitizeCategoryData } from 'shared/utilities/data-sanitization';
 import { getCategoriesPage } from 'shared/utilities/hooks';
@@ -162,30 +163,24 @@ When('I search for {string}', async function (query: string) {
 Then(
   'I should see a success message {string}',
   async function (expectedMessage: string) {
-    // The UI shows ElMessage but verification helper expects page-level checks; use categoriesVerification if available
-    // Fallback: check for message text in DOM
     const page = this.categoriesPage.page;
-    // The app uses ElMessage which appends to body; check visible text
-    const locator = page.locator('text=' + expectedMessage).first();
-    await expect(locator).toBeVisible();
+    const verifier = new CategoryVerify(page, this.categoriesPage);
+    await verifier.shouldSeeSuccessMessage(expectedMessage);
   }
 );
 
 Then('I should see a validation error for the name field', async function () {
-  // The form validator renders a tooltip/message near the form-item; assert there is text about required name
   const page = this.categoriesPage.page;
-  const msg = page.getByText(
-    /Please input category name|Please input category name/
-  );
-  await expect(msg).toBeVisible();
+  const verifier = new CategoryVerify(page, this.categoriesPage);
+  await verifier.shouldSeeValidationErrorForName();
 });
 
 Then(
   'I should see an error indicating the category name already exists',
   async function () {
     const page = this.categoriesPage.page;
-    const msg = page.getByText(/Category name already exists|already exists/);
-    await expect(msg).toBeVisible();
+    const verifier = new CategoryVerify(page, this.categoriesPage);
+    await verifier.shouldSeeNameExistsError();
   }
 );
 
@@ -196,12 +191,9 @@ Then(
     const mappedChild = this.uniqueCategoryNames?.[child] || child;
     const mappedParent = this.uniqueCategoryNames?.[parent] || parent;
 
-    // Verify child exists and parent exists in the visible tree
-    const childExists = await this.categoriesPage.hasCategory(mappedChild);
-    expect(childExists).toBe(true);
-
-    const parentExists = await this.categoriesPage.hasCategory(mappedParent);
-    expect(parentExists).toBe(true);
+    const page = this.categoriesPage.page;
+    const verifier = new CategoryVerify(page, this.categoriesPage);
+    await verifier.shouldSeeCategoryUnderParent(mappedChild, mappedParent);
   }
 );
 
@@ -237,18 +229,18 @@ When('I create a new category with:', async function (dataTable) {
     { verify: true }
   );
 
-  expect(result.ok).toBe(true);
+  if (!result.ok) {
+    throw new Error('Category creation API returned non-ok result');
+  }
 });
 
 Then(
   'the category {string} should appear in the category list',
   async function (name: string) {
     const mapped = this.uniqueCategoryNames?.[name] || name;
-    const categoryExists = await this.categoriesPage.hasCategory(mapped);
-    expect(
-      categoryExists,
-      `${ERROR_MESSAGES.CATEGORY_NOT_FOUND}: ${mapped}`
-    ).toBe(true);
+    const page = this.categoriesPage.page;
+    const verifier = new CategoryVerify(page, this.categoriesPage);
+    await verifier.shouldSeeCategoryInList(mapped);
   }
 );
 
@@ -256,11 +248,9 @@ Then(
   'the category {string} should not appear in the category list',
   async function (name: string) {
     const mapped = this.uniqueCategoryNames?.[name] || name;
-    const categoryExists = await this.categoriesPage.hasCategory(mapped);
-    expect(
-      categoryExists,
-      `${ERROR_MESSAGES.CATEGORY_STILL_EXISTS}: ${mapped}`
-    ).toBe(false);
+    const page = this.categoriesPage.page;
+    const verifier = new CategoryVerify(page, this.categoriesPage);
+    await verifier.shouldNotSeeCategoryInList(mapped);
   }
 );
 
@@ -268,8 +258,9 @@ Then(
   'I should see the category {string} in the results',
   async function (name: string) {
     const mapped = this.uniqueCategoryNames?.[name] || name;
-    const exists = await this.categoriesPage.hasCategory(mapped);
-    expect(exists, `Expected category in results: ${mapped}`).toBe(true);
+    const page = this.categoriesPage.page;
+    const verifier = new CategoryVerify(page, this.categoriesPage);
+    await verifier.shouldSeeCategoryInResults(mapped);
   }
 );
 

@@ -1,5 +1,6 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
+import { TransactionVerify } from '../verification/transaction.verify';
 import {
   getTransactionsPage,
   getTransactionCreationUiUseCase,
@@ -73,8 +74,8 @@ Then(
     // Reload the page to ensure we have the latest state
     await transactionCreationUiUseCase.reloadTransactionsPage();
 
-    const exists = await transactionsPage.verifyTransactionExists(description);
-    expect(exists).toBe(true);
+    const verifier = new TransactionVerify(this.page, transactionsPage);
+    await verifier.shouldSeeTransaction(description);
   }
 );
 
@@ -92,12 +93,9 @@ Then(
     }
 
     // Verify each provided field
+    const verifier = new TransactionVerify(this.page, transactionsPage);
     for (const [key, expectedValue] of Object.entries(data)) {
-      const actualValue = await transactionsPage.getTransactionDetail(
-        currentTransaction.description,
-        key
-      );
-      expect(actualValue).toBe(expectedValue);
+      await verifier.shouldHaveTransactionDetail(currentTransaction.description, key, expectedValue);
     }
   }
 );
@@ -115,7 +113,8 @@ Then('the transaction should not be created', async function () {
   const exists = await transactionsPage.verifyTransactionExists(
     currentTransaction.description
   );
-  expect(exists).toBe(false);
+  const verifier = new TransactionVerify(this.page, transactionsPage);
+  await verifier.shouldNotSeeTransaction(currentTransaction.description);
 });
 
 Then(
@@ -130,10 +129,7 @@ Then(
       throw new Error('No transaction data found in test context');
     }
 
-    const actualAmount = await transactionsPage.getTransactionDetail(
-      currentTransaction.description,
-      'amount'
-    );
-    expect(actualAmount).toBe(expectedAmount);
+    const verifier = new TransactionVerify(this.page, transactionsPage);
+    await verifier.shouldHaveTransactionAmount(currentTransaction.description, expectedAmount);
   }
 );
