@@ -31,25 +31,30 @@ export class AccountsVerification implements IAccountsVerification {
   }
 
   async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
-    try {
-      // Wait for and check el-message error
-      await this.page.waitForSelector(`${selectors.messages.error}`, {
-        state: 'visible',
-        timeout: 5000,
-      });
-      const toastError = await this.page.isVisible(
-        `${selectors.messages.error}:has-text("${errorMessage}")`
-      );
+    // Improved: check both toast-style messages and inline form errors concurrently
+    // to avoid flakiness where one appears quickly and the other never does.
+    const toastLocator = this.page.locator(
+      `${selectors.messages.error}:has-text("${errorMessage}")`
+    );
+    const inlineLocator = this.page.locator(`text=${errorMessage}`);
 
-      if (toastError) {
-        return true;
+    // Wait up to timeoutMs for either locator to become visible.
+    const timeoutMs = 5000;
+
+    try {
+      const start = Date.now();
+
+      // Poll both locators until timeout — this avoids awaiting one then the other
+      // which can miss fast transient messages.
+      while (Date.now() - start < timeoutMs) {
+        if (await toastLocator.isVisible()) return true;
+        if (await inlineLocator.isVisible()) return true;
+        // small backoff to avoid tight loop
+        await this.page.waitForTimeout(100);
       }
 
-      // Check form validation error (if toast not found)
-      const formError = await this.page.isVisible(`text=${errorMessage}`);
-      return formError;
+      return false;
     } catch {
-      // If timeout occurs while waiting for error message
       return false;
     }
   }
