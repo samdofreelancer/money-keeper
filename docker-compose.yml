@@ -37,6 +37,9 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ci
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      # Explicitly disable Micrometer system metrics in containerized CI environments
+      # This maps to spring property: management.metrics.binders.system.enabled=false
+      MANAGEMENT_METRICS_BINDERS_SYSTEM_ENABLED: "false"
     restart: unless-stopped
     depends_on:
       oracle:

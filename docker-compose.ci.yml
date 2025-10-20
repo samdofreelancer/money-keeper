@@ -7,3 +7,6 @@ services:
       # overrides are preferred in CI. This uses SPRING_APPLICATION_JSON to
       # inject nested properties without changing the image.
       SPRING_APPLICATION_JSON: '{"management":{"metrics":{"binders":{"system":{"enabled":false}}}}}'
+      # Also provide the straightforward environment variable mapping so some
+      # Docker runners or entrypoints that rely on simple env mapping pick it up.
+      MANAGEMENT_METRICS_BINDERS_SYSTEM_ENABLED: "false"
