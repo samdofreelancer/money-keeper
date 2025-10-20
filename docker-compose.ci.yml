@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  backend:
+    environment:
+      # Ensure the 'ci' profile disables Micrometer system metrics if the image
+      # does not include the updated application-ci.properties or if environment
+      # overrides are preferred in CI. This uses SPRING_APPLICATION_JSON to
+      # inject nested properties without changing the image.
+      SPRING_APPLICATION_JSON: '{"management":{"metrics":{"binders":{"system":{"enabled":false}}}}}'
