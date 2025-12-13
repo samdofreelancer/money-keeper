@@ -9,7 +9,8 @@ backend/.factorypath
 /playwright-code-gen/node_modules
 /playwright-code-gen/test-results
 *.html
-!docs/**/*.html
+!docs/
+!docs/**
 /playwright-code-gen/playwright
 e2e/src/shared/metadata/environment-info.metadata.json
 /playwright-code-gen/dist
