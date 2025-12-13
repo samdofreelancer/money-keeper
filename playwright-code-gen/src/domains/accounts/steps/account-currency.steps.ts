@@ -1,38 +1,16 @@
 import { Then } from '@cucumber/cucumber';
-import { getAccountsPage } from 'shared/utilities/hooks';
 
 Then(
   'the account {string} should appear in my accounts list with balance {string}',
   async function (accountName: string, balance: string) {
-    const accountsPage = getAccountsPage();
-    const isListed = await accountsPage.verifyAccountIsListed(accountName);
-    if (!isListed) {
-      throw new Error(
-        `Account "${accountName}" not found in the accounts list`
-      );
-    }
-    const actualBalance =
-      await accountsPage.getAccountBalanceForRow(accountName);
-    if (!actualBalance || actualBalance.trim() !== balance) {
-      throw new Error(
-        `Expected balance "${balance}", but got "${actualBalance?.trim()}"`
-      );
-    }
+    await this.accountsVerification.verifyAccountListed(accountName);
+    await this.accountsVerification.verifyAccountBalance(accountName, balance);
   }
 );
 
 Then(
   'the total balance should be shown in default currency from settings',
   async function () {
-    const accountsPage = getAccountsPage();
-    const totalBalance = await accountsPage.getTotalBalance();
-    // Expect it contains a currency symbol of currently selected currency code
-    // For VND, symbol is ₫; for USD, $; for EUR, €
-    const symbols = ['₫', '$', '€'];
-    if (!symbols.some(s => totalBalance.includes(s))) {
-      throw new Error(
-        `Expected total balance to include the default currency symbol, but got "${totalBalance}"`
-      );
-    }
+    await this.accountsVerification.verifyTotalBalanceHasCurrency();
   }
 );

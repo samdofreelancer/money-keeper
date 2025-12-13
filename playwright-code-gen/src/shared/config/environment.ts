@@ -21,6 +21,12 @@ export class Environment {
   private static _workers: number = parseInt(process.env.WORKERS || '1', 10);
   private static _reporter: string = process.env.REPORTER || 'list';
 
+  // Account update configuration
+  private static _accountUpdateTimeout: number = parseInt(
+    process.env.ACCOUNT_UPDATE_TIMEOUT || '1000',
+    10
+  );
+
   // Getters for browser configuration
   public static get headless(): boolean {
     return Environment._headless;
@@ -50,5 +56,10 @@ export class Environment {
 
   public static get reporter(): string {
     return Environment._reporter;
+  }
+
+  // Getters for account update configuration
+  public static get accountUpdateTimeout(): number {
+    return Environment._accountUpdateTimeout;
   }
 }

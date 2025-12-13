@@ -1,4 +1,5 @@
 import { Given, When, Then, Before } from '@cucumber/cucumber';
+import { TransactionVerify } from '../verification/transaction.verify';
 import {
   getTransactionsPage,
   getTransactionCreationUiUseCase,
@@ -72,12 +73,8 @@ Then(
     // Reload the page to ensure we have the latest state
     await transactionCreationUiUseCase.reloadTransactionsPage();
 
-    const exists = await transactionsPage.verifyTransactionExists(description);
-    if (!exists) {
-      throw new Error(
-        `Transaction "${description}" not found in transactions list`
-      );
-    }
+    const verifier = new TransactionVerify(this.page, transactionsPage);
+    await verifier.shouldSeeTransaction(description);
   }
 );
 
@@ -95,16 +92,13 @@ Then(
     }
 
     // Verify each provided field
+    const verifier = new TransactionVerify(this.page, transactionsPage);
     for (const [key, expectedValue] of Object.entries(data)) {
-      const actualValue = await transactionsPage.getTransactionDetail(
+      await verifier.shouldHaveTransactionDetail(
         currentTransaction.description,
-        key
+        key,
+        expectedValue
       );
-      if (actualValue !== expectedValue) {
-        throw new Error(
-          `Expected transaction ${key} to be "${expectedValue}", but found "${actualValue}"`
-        );
-      }
     }
   }
 );
@@ -119,12 +113,11 @@ Then('the transaction should not be created', async function () {
     throw new Error('No transaction data found in test context');
   }
 
-  const exists = await transactionsPage.verifyTransactionExists(
+  await transactionsPage.verifyTransactionExists(
     currentTransaction.description
   );
-  if (exists) {
-    throw new Error('Transaction was created when it should not have been');
-  }
+  const verifier = new TransactionVerify(this.page, transactionsPage);
+  await verifier.shouldNotSeeTransaction(currentTransaction.description);
 });
 
 Then(
@@ -139,14 +132,10 @@ Then(
       throw new Error('No transaction data found in test context');
     }
 
-    const actualAmount = await transactionsPage.getTransactionDetail(
+    const verifier = new TransactionVerify(this.page, transactionsPage);
+    await verifier.shouldHaveTransactionAmount(
       currentTransaction.description,
-      'amount'
+      expectedAmount
     );
-    if (actualAmount !== expectedAmount) {
-      throw new Error(
-        `Expected transaction amount to be "${expectedAmount}", but found "${actualAmount}"`
-      );
-    }
   }
 );

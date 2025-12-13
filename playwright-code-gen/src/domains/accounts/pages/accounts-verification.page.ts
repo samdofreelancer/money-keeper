@@ -31,28 +31,35 @@ export class AccountsVerification implements IAccountsVerification {
   }
 
   async isErrorMessageVisible(errorMessage: string): Promise<boolean> {
-    return await this.page.isVisible(`text=${errorMessage}`);
+    // Improved: check both toast-style messages and inline form errors concurrently
+    // to avoid flakiness where one appears quickly and the other never does.
+    const toastLocator = this.page.locator(
+      `${selectors.messages.error}:has-text("${errorMessage}")`
+    );
+    const inlineLocator = this.page.locator(`text=${errorMessage}`);
+
+    // Wait up to timeoutMs for either locator to become visible.
+    const timeoutMs = 5000;
+
+    try {
+      const start = Date.now();
+
+      // Poll both locators until timeout — this avoids awaiting one then the other
+      // which can miss fast transient messages.
+      while (Date.now() - start < timeoutMs) {
+        if (await toastLocator.isVisible()) return true;
+        if (await inlineLocator.isVisible()) return true;
+        // small backoff to avoid tight loop
+        await this.page.waitForTimeout(100);
+      }
+
+      return false;
+    } catch {
+      return false;
+    }
   }
 
   async verifyOnAccountsPage(): Promise<void> {
     await this.addAccountButton.waitFor({ timeout: 10000 });
-  }
-
-  async verifyAccountsSortedByBalance(
-    balances: number[],
-    order: 'asc' | 'desc'
-  ): Promise<void> {
-    const sortedBalances = [...balances].sort((a, b) =>
-      order === 'asc' ? a - b : b - a
-    );
-    for (let i = 0; i < balances.length; i++) {
-      if (balances[i] !== sortedBalances[i]) {
-        throw new Error(
-          `Accounts are not sorted by balance in ${order}ending order. Expected ${JSON.stringify(
-            sortedBalances
-          )} but got ${JSON.stringify(balances)}.`
-        );
-      }
-    }
   }
 }

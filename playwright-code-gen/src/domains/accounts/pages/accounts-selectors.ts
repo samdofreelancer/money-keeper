@@ -7,6 +7,7 @@ export const selectors = {
   },
   messages: {
     success: '.el-message--success',
+    error: '.el-message--error, .el-form-item__error',
   },
   accountElements: {
     accountRow: '.account-row',

@@ -39,13 +39,15 @@ Feature: Account Management
       | query        | expected     |
       | Sav          | Savings      |
       | E-Wallet     | E-Wallet     |
+      | Bank         | Bank Account |
 
   @positive
   Scenario: Sort accounts by balance
+    # Test sorting functionality: first click sorts descending, second click sorts ascending
     Given I have multiple accounts with different balances
     When I click the "Balance" column header
     Then the accounts should be sorted by balance in "descending" order
-    When I click the "Balance" column header again
+    When I click the "Balance" column header
     Then the accounts should be sorted by balance in "ascending" order
 
   @negative @wip
@@ -61,18 +63,18 @@ Feature: Account Management
     When I delete the account "Temp Account"
     Then the account "Temp Account" should not be in my accounts list
 
-  @negative @wip
+  @negative
   Scenario: Attempt to update account to duplicate name
     Given I have accounts named "Account A" and "Account B"
     When I edit the account "Account A" with:
-      | name        | Account B |
-      | type        | Bank Account |
-      | balance     | 2000       |
-      | currency    | USD        |
-      | description | Updated    |
+      | name        | Account B      |
+      | type        | Bank Account   |
+      | balance     | 2000           |
+      | currency    | USD            |
+      | description | Updated        |
     Then I should see an error message "Account name already exists"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to update account to empty name
     When I edit the account "Main Checking" with:
       | name        |  |
@@ -80,9 +82,9 @@ Feature: Account Management
       | balance     | 1000         |
       | currency    | USD          |
       | description | Test         |
-    Then I should see an error message "Name is required"
+    Then I should see an error message "Please input account name"
 
-  @negative @wip
+  @negative
   Scenario: Attempt to update account to negative balance
     When I edit the account "Main Checking" with:
       | name        | Main Checking |
@@ -90,7 +92,7 @@ Feature: Account Management
       | balance     | -500          |
       | currency    | USD           |
       | description | Negative      |
-    Then I should see an error message "Balance must be positive"
+    Then I should see an error message "Balance must be greater than 0"
 
   @positive @wip
   Scenario: Successfully list all accounts

@@ -142,51 +142,39 @@ When(
 Then(
   'I should see the account {string} in my accounts list',
   async function (accountName: string) {
-    const accountsPage = getAccountsPage();
     // Use the stored unique account name from previous steps
     const uniqueAccountName =
       (this as { uniqueAccountName?: string }).uniqueAccountName || accountName;
 
-    const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
-    if (!exists) {
-      throw new Error(
-        `Account "${uniqueAccountName}" not found in accounts list`
-      );
-    }
+    await this.accountsVerification.verifyAccountListed(uniqueAccountName);
   }
 );
 
 Then(
   'the account should have a balance of {string}',
   async function (expectedBalance: string) {
-    const accountsPage = getAccountsPage();
-    const actualBalance = await accountsPage.getTotalBalance();
-    const expectedBalanceNum = parseFloat(expectedBalance.replace('$', ''));
-    const actualBalanceNum = parseFloat(actualBalance.replace('$', ''));
-
-    if (actualBalanceNum < expectedBalanceNum) {
-      throw new Error(
-        `Expected balance to be at least ${expectedBalance}, but found ${actualBalance}`
-      );
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
+    if (!uniqueAccountName) {
+      throw new Error('No account name found in test context');
     }
+    await this.accountsVerification.verifyAccountBalance(
+      uniqueAccountName,
+      expectedBalance
+    );
   }
 );
 
 Then(
   'I should see an error message {string}',
   async function (errorMessage: string) {
-    const accountsPage = getAccountsPage();
-    const isVisible = await accountsPage.isErrorMessageVisible(errorMessage);
-    if (!isVisible) {
-      throw new Error(`Error message "${errorMessage}" not visible`);
-    }
+    await this.accountsVerification.verifyErrorMessageVisible(errorMessage);
   }
 );
 
 Then(
   'the account {string} should appear only once in my accounts list',
   async function (accountName: string) {
-    const accountsPage = getAccountsPage();
     const accountCreationUiUseCase = getAccountCreationUiUseCase();
 
     // Reload the page to ensure we have the latest state
@@ -199,69 +187,45 @@ Then(
       throw new Error('No existing account name found in test context');
     }
 
-    if (uniqueAccountName.includes(accountName)) {
-      const count = await accountsPage.getAccountCount(uniqueAccountName);
-      if (count !== 1) {
-        throw new Error(
-          `Account "${uniqueAccountName}" appears ${count} times, expected 1`
-        );
-      }
-    } else {
+    if (!uniqueAccountName.includes(accountName)) {
       throw new Error(
-        `Account "${uniqueAccountName}" not found in accounts list`
+        `Account name mismatch: expected "${uniqueAccountName}" but got "${accountName}" in test context`
       );
     }
+
+    await this.accountsVerification.verifyAccountCount(uniqueAccountName, 1);
   }
 );
 
 Then(
   'I should see a validation error {string}',
   async function (errorMessage: string) {
-    const accountsPage = getAccountsPage();
-    const isVisible = await accountsPage.isErrorMessageVisible(errorMessage);
-    if (!isVisible) {
-      throw new Error(`Validation error "${errorMessage}" not visible`);
-    }
+    await this.accountsVerification.verifyErrorMessageVisible(errorMessage);
   }
 );
 
 Then('the account should not be created', async function () {
-  const accountsPage = getAccountsPage();
-  const accountCount = await accountsPage.getTotalAccountCount();
-  if (accountCount > 0) {
-    throw new Error('An account was created when it should not have been');
-  }
-  // This would need to be implemented based on expected behavior
+  await this.accountsVerification.verifyAccountNotCreated();
 });
 
 Then(
   'the account should display the balance in {string}',
   async function (currency: string) {
-    const accountsPage = getAccountsPage();
-    const balanceText = await accountsPage.getTotalBalance();
-    if (!balanceText.includes(currency)) {
-      throw new Error(`Balance does not display in ${currency}`);
-    }
+    await this.accountsVerification.verifyBalanceInCurrency(currency);
   }
 );
 
 Then(
   'the account description should be {string}',
   async function (expectedDescription: string) {
-    const accountsPage = getAccountsPage();
-    const scenarioName =
-      (this as { scenarioName?: string }).scenarioName || 'unknown-scenario';
-    const uniqueAccountName = TestData.generateUniqueAccountName(
-      scenarioName,
-      'test-account'
-    );
-
-    const description =
-      await accountsPage.getAccountDescription(uniqueAccountName);
-    if (description !== expectedDescription) {
-      throw new Error(
-        `Expected description "${expectedDescription}", but found "${description}"`
-      );
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
+    if (!uniqueAccountName) {
+      throw new Error('No account name found in test context');
     }
+    await this.accountsVerification.verifyAccountDescription(
+      uniqueAccountName,
+      expectedDescription
+    );
   }
 );

@@ -1,10 +1,11 @@
-import { Page } from '@playwright/test';
+import { Page, Response } from '@playwright/test';
 import { Inject, Transient, TOKENS } from 'shared/di';
 import { BasePage } from 'shared/pages/base.page';
+import { Environment } from 'shared/config/environment';
 import { AccountFormComponent } from './components/account-form.component';
 import { AccountsNavigation } from './accounts-navigation.page'; // This import is already correct
 import { AccountsActions } from './accounts-actions.page';
-import { AccountsVerification } from './accounts-verification.page';
+import { AccountsVerify } from '../verification/accounts.verify';
 import { AccountsDataRetrieval } from './accounts-data-retrieval.page';
 
 /**
@@ -14,7 +15,7 @@ import { AccountsDataRetrieval } from './accounts-data-retrieval.page';
 export class AccountsPlaywrightPage extends BasePage {
   private navigation: AccountsNavigation;
   private actions: AccountsActions;
-  private verification: AccountsVerification;
+  private verification: AccountsVerify;
   private dataRetrieval: AccountsDataRetrieval;
 
   constructor(
@@ -25,7 +26,11 @@ export class AccountsPlaywrightPage extends BasePage {
     super(page);
     this.navigation = new AccountsNavigation(page);
     this.actions = new AccountsActions(page, accountForm);
-    this.verification = new AccountsVerification(page);
+    // Instantiate the page-level verification adapter. The verification
+    // implementation (AccountsVerify) is registered in DI but the page
+    // object expects a small verification surface; for now we keep the
+    // thin adapter by instantiating AccountsVerify via the Page.
+    this.verification = new AccountsVerify(page);
     this.dataRetrieval = new AccountsDataRetrieval(page);
   }
 
@@ -84,13 +89,6 @@ export class AccountsPlaywrightPage extends BasePage {
     return this.verification.verifyOnAccountsPage();
   }
 
-  verifyAccountsSortedByBalance(
-    balances: number[],
-    order: 'asc' | 'desc'
-  ): Promise<void> {
-    return this.verification.verifyAccountsSortedByBalance(balances, order);
-  }
-
   // IAccountsDataRetrieval
   getTotalBalance(): Promise<string> {
     return this.dataRetrieval.getTotalBalance();
@@ -122,5 +120,16 @@ export class AccountsPlaywrightPage extends BasePage {
 
   getAccountBalances(): Promise<number[]> {
     return this.dataRetrieval.getAccountBalances();
+  }
+
+  /**
+   * Wait for the account update API response
+   */
+  waitForAccountUpdateResponse(): Promise<Response> {
+    return this.page.waitForResponse(
+      resp =>
+        resp.url().includes('/accounts/') && resp.request().method() === 'PUT',
+      { timeout: Environment.accountUpdateTimeout }
+    );
   }
 }

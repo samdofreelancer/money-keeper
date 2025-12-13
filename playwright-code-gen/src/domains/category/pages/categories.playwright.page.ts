@@ -28,12 +28,8 @@ export class CategoriesPage {
   }
 
   private get addCategoryButton(): Locator {
-    return this.page
-      .getByTestId(this.TID.btnAdd)
-      .or(
-        this.page.getByRole('button', { name: /^(add|new|create)\s+category/i })
-      )
-      .or(this.page.getByText(/^(add|new|create)\s+category/i));
+    // Prefer the explicit test id for determinism. Use .first() to avoid strict-mode issues
+    return this.page.getByTestId(this.TID.btnAdd).first();
   }
 
   private get nameInput(): Locator {
