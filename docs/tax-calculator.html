@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Tính Thuế Thu nhập Cá nhân - Gross to Net Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .label-subtitle {
+            display: block;
+            color: #999;
+            font-weight: 400;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-wrapper input {
+            flex: 1;
+        }
+
+        .input-wrapper span {
+            color: #666;
+            font-weight: 500;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 32px;
+            margin-bottom: 32px;
+        }
+
+        .button-group.full {
+            grid-template-columns: 1fr;
+        }
+
+        button {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .results {
+            display: none;
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item label {
+            color: #666;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .result-item .value {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .result-item.highlight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 0 -12px;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .result-item.highlight label {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .result-item.highlight .value {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .breakdown {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .breakdown h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .breakdown-item .label {
+            flex: 1;
+        }
+
+        .breakdown-item .value {
+            text-align: right;
+            min-width: 120px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #1565c0;
+            line-height: 1.5;
+        }
+
+        .currency {
+            color: #999;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .currency-symbol {
+            color: #999;
+            font-size: 12px;
+            font-weight: 400;
+            margin-left: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .form-row,
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group.full {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #999;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Công cụ Tính Thuế Thu nhập Cá nhân</h1>
+            <p>Tính toán lương ròng (Net) từ lương brutto (Gross)</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('vietnam')">Tính Toán 🇻🇳</button>
+            <button class="tab-btn" onclick="switchTab('reference')">Tham khảo Quy định 📋</button>
+        </div>
+
+        <!-- Vietnam Tax Tab -->
+        <div id="vietnam" class="tab-content active">
+            <div class="info-box">
+                ℹ️ Công cụ tính toán theo quy định thuế thu nhập cá nhân tại Việt Nam. Kết quả chỉ mang tính chất tham khảo.
+            </div>
+
+            <form id="vietnamForm">
+                <!-- TAX BRACKET SELECTION -->
+                <div class="form-group">
+                    <label>
+                        Biểu thuế TNCN
+                        <span class="label-subtitle">Chọn biểu áp dụng</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <select id="taxBracket" onchange="calculateVietnam()">
+                            <option value="7-bracket">7 bậc (13/12/2025 - 30/6/2026)</option>
+                            <option value="5-bracket">5 bậc (Từ 01/7/2026 trở đi)</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- LƯƠNG GROSS -->
+                <div class="form-group">
+                    <label>
+                        Lương Gross
+                        <span class="label-subtitle">(Trước khấu trừ)</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="text" id="grossSalary" value="60.000.000" placeholder="0" required oninput="formatInputCurrency(this)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Thưởng
+                        <span class="label-subtitle">Sẽ tính thuế riêng theo bảng lũy tiến</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="text" id="tetBonus" value="0" placeholder="0" oninput="formatInputCurrency(this)">
+                    </div>
+                </div>
+
+                <!-- KHẤU TRỪ -->
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <h4 style="color: #667eea; font-size: 14px; font-weight: 600; margin-bottom: 16px;">Khấu Trừ</h4>
+                    
+                    <div class="form-group">
+                        <label>
+                            Biểu khấu trừ gia cảnh
+                            <span class="label-subtitle">Chọn theo thời kỳ áp dụng</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <select id="deductionBracket" onchange="updateDeductionValues(); calculateVietnam();">
+                                <option value="old">13/12/2025 - 31/12/2025: Cá nhân 11M, Phụ thuộc 4.4M</option>
+                                <option value="new">Từ 01/01/2026: Cá nhân 15.5M, Phụ thuộc 6.2M</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                Khấu trừ cá nhân
+                                <span class="label-subtitle">Mặc định: 11.000.000 VND</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" id="personalDeduction" value="11.000.000" oninput="formatInputCurrency(this)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                Số người phụ thuộc
+                                <span class="label-subtitle">(Tối đa 10 người)</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="dependents" min="0" max="10" value="2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Khấu trừ mỗi người phụ thuộc
+                            <span class="label-subtitle">Mặc định: 4.400.000 VND</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="dependentDeductionPerPerson" value="4.400.000" oninput="formatInputCurrency(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BẢO HIỂM -->
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <h4 style="color: #667eea; font-size: 14px; font-weight: 600; margin-bottom: 16px;">Bảo Hiểm</h4>
+                    
+                    <div class="form-group">
+                        <label>
+                            Lương cơ sở đóng BHXH
+                            <span class="label-subtitle">(Mặc định: 46.800.000 VND = 20 × 2.340.000)</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="insuranceBase" placeholder="0" oninput="formatInputCurrency(this)">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                Tỷ lệ BHXH (%)
+                                <span class="label-subtitle">Bảo hiểm Xã hội</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="bhxhRate" min="0" max="100" step="0.1" value="8">
+                                <span>%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                Tỷ lệ BHYT (%)
+                                <span class="label-subtitle">Bảo hiểm Y tế</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="number" id="bhytRate" min="0" max="100" step="0.1" value="1.5">
+                                <span>%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Vùng lương
+                            <span class="label-subtitle">Để tính trần BHTN</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <select id="wageZone" onchange="calculateVietnam()">
+                                <option value="I">Vùng I (HN, TP.HCM): 4.960.000 → Trần: 99.200.000</option>
+                                <option value="II">Vùng II: 4.410.000 → Trần: 88.200.000</option>
+                                <option value="III">Vùng III: 3.860.000 → Trần: 77.200.000</option>
+                                <option value="IV">Vùng IV: 3.450.000 → Trần: 69.000.000</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Tỷ lệ BHTN (%)
+                            <span class="label-subtitle">Bảo hiểm Thất nghiệp</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="bhtnRate" min="0" max="100" step="0.1" value="1">
+                            <span>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PHỤ CẤP KHÔNG TÍNH THUẾ -->
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <h4 style="color: #667eea; font-size: 14px; font-weight: 600; margin-bottom: 16px;">Phụ Cấp Không Tính Thuế</h4>
+                    
+                    <div class="form-group">
+                        <label>
+                            Phụ cấp (ăn trưa, đi lại, v.v.)
+                            <span class="label-subtitle">Mặc định: 1.200.000 VND</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="taxFreeAllowance" value="1.200.000" oninput="formatInputCurrency(this)">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Khoản Trừ (truy thu, rớt chứng chỉ, v.v.)
+                            <span class="label-subtitle">Sẽ trừ trực tiếp từ lương net</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="text" id="deduction" value="0" placeholder="0" oninput="formatInputCurrency(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-calculate" onclick="calculateVietnam()">Tính Thuế</button>
+                    <button type="reset" class="btn-reset" onclick="resetForm('vietnam')">Reset</button>
+                </div>
+            </form>
+
+            <div id="vietnamResults" class="results">
+                <div class="result-item">
+                    <label>Lương Gross</label>
+                    <span class="value"><span id="vn-gross">0</span> <span class="currency-symbol">₫</span></span>
+                </div>
+
+                <div class="breakdown">
+                    <h3>Các khoản khấu trừ</h3>
+                    <div class="breakdown-item">
+                        <span class="label">BHXH (<span id="vn-bhxh-rate">8</span>%):</span>
+                        <span class="value"><span id="vn-bhxh">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="label">BHYT (<span id="vn-bhyt-rate">1.5</span>%):</span>
+                        <span class="value"><span id="vn-bhyt">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="label">BHTN (<span id="vn-bhtn-rate">1</span>%):</span>
+                        <span class="value"><span id="vn-bhtn">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <label>Thu nhập chịu thuế</label>
+                    <span class="value"><span id="vn-taxable-income">0</span> <span class="currency-symbol">₫</span></span>
+                </div>
+
+                <div class="result-item">
+                    <label>Thuế TNCN phải nộp</label>
+                    <span class="value"><span id="vn-tax">0</span> <span class="currency-symbol">₫</span></span>
+                </div>
+
+                <div class="result-item">
+                    <label>Lương Net tháng (sau thuế)</label>
+                    <span class="value"><span id="vn-net-before-allowance">0</span> <span class="currency-symbol">₫</span></span>
+                </div>
+
+                <div class="breakdown">
+                    <h3>Điều chỉnh Lương Net</h3>
+                    <div class="breakdown-item">
+                        <span class="label">+ Phụ cấp (ăn trưa, đi lại):</span>
+                        <span class="value"><span id="vn-tax-free-allowance">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="label">- Khoản trừ (truy thu, rớt chứng chỉ):</span>
+                        <span class="value"><span id="vn-deduction-display">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <label>Lương Net tháng (cộng trừ)</label>
+                    <span class="value"><span id="vn-net-monthly">0</span> <span class="currency-symbol">₫</span></span>
+                </div>
+
+                <div class="breakdown">
+                    <h3>Thưởng</h3>
+                    <div class="breakdown-item">
+                        <span class="label">Tiền Thưởng:</span>
+                        <span class="value"><span id="vn-bonus">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="label">Thuế Thưởng:</span>
+                        <span class="value"><span id="vn-bonus-tax">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="label">Thưởng Net (sau thuế):</span>
+                        <span class="value"><span id="vn-net-bonus">0</span> <span class="currency-symbol">₫</span></span>
+                    </div>
+                </div>
+
+                <div class="result-item highlight">
+                    <label>🎯 Tổng Lương Net (Tháng + Thưởng)</label>
+                    <span class="value"><span id="vn-net">0</span> <span class="currency-symbol">₫</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reference Tab -->
+        <div id="reference" class="tab-content">
+            <div class="info-box">
+                📋 Thông tin tham khảo về các quy định thuế TNCN và lương tối thiểu mới nhất tại Việt Nam
+            </div>
+
+            <div style="padding: 20px 0;">
+                <!-- Biểu Thuế TNCN -->
+                <div style="margin-bottom: 30px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="color: #667eea; margin-bottom: 16px;">📊 Biểu Thuế TNCN Lũy Tiến</h3>
+                    
+                    <h4 style="color: #333; margin: 12px 0;">7 Bậc (13/12/2025 - 30/6/2026)</h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                        <tr style="background: #f5f5f5;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Bậc</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Khoảng thu nhập/tháng</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Suất thuế</th>
+                        </tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">1</td><td style="border: 1px solid #ddd; padding: 8px;">0 - 5.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">5%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">2</td><td style="border: 1px solid #ddd; padding: 8px;">5.000.001 - 10.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">10%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">3</td><td style="border: 1px solid #ddd; padding: 8px;">10.000.001 - 18.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">15%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">4</td><td style="border: 1px solid #ddd; padding: 8px;">18.000.001 - 32.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">20%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">5</td><td style="border: 1px solid #ddd; padding: 8px;">32.000.001 - 52.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">25%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">6</td><td style="border: 1px solid #ddd; padding: 8px;">52.000.001 - 80.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">30%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">7</td><td style="border: 1px solid #ddd; padding: 8px;">Trên 80.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">35%</td></tr>
+                    </table>
+
+                    <h4 style="color: #333; margin: 12px 0;">5 Bậc (Từ 01/7/2026 trở đi)</h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="background: #f5f5f5;">
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Bậc</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Khoảng thu nhập/tháng</th>
+                            <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Suất thuế</th>
+                        </tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">1</td><td style="border: 1px solid #ddd; padding: 8px;">0 - 10.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">5%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">2</td><td style="border: 1px solid #ddd; padding: 8px;">10.000.001 - 30.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">10%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">3</td><td style="border: 1px solid #ddd; padding: 8px;">30.000.001 - 60.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">20%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">4</td><td style="border: 1px solid #ddd; padding: 8px;">60.000.001 - 100.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">30%</td></tr>
+                        <tr><td style="border: 1px solid #ddd; padding: 8px;">5</td><td style="border: 1px solid #ddd; padding: 8px;">Trên 100.000.000</td><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">35%</td></tr>
+                    </table>
+                </div>
+
+                <!-- Khấu Trừ Gia Cảnh -->
+                <div style="margin-bottom: 30px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="color: #667eea; margin-bottom: 16px;">💰 Khấu Trừ Gia Cảnh</h3>
+                    
+                    <h4 style="color: #333; margin: 12px 0;">13/12/2025 - 31/12/2025</h4>
+                    <p>• Cá nhân: <strong>11.000.000 VND/tháng</strong></p>
+                    <p>• Người phụ thuộc: <strong>4.400.000 VND/tháng</strong> (mỗi người, tối đa 10 người)</p>
+
+                    <h4 style="color: #333; margin: 12px 0;">Từ 01/01/2026 trở đi</h4>
+                    <p>• Cá nhân: <strong>15.500.000 VND/tháng</strong></p>
+                    <p>• Người phụ thuộc: <strong>6.200.000 VND/tháng</strong> (mỗi người, tối đa 10 người)</p>
+                </div>
+
+                <!-- Bảo Hiểm -->
+                <div style="margin-bottom: 30px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="color: #667eea; margin-bottom: 16px;">🏥 Tỷ Lệ Bảo Hiểm Xã Hội (2025)</h3>
+                    
+                    <h4 style="color: #333; margin: 12px 0;">Cơ sở tính bảo hiểm:</h4>
+                    <p>• <strong>Trần BHXH/BHYT: 46.800.000 VND/tháng</strong> (= 20 × lương cơ sở 2.340.000)</p>
+
+                    <h4 style="color: #333; margin: 12px 0;">Tỷ lệ đóng (người lao động + công ty):</h4>
+                    <p>• BHXH: <strong>8% + 17.5%</strong> (Công ty: 17,5%, Người lao động: 8%)</p>
+                    <p>• BHYT: <strong>1.5% + 3%</strong> (Công ty: 3%, Người lao động: 1,5%)</p>
+                    <p>• BHTN: <strong>1% + 1%</strong> (Công ty: 1%, Người lao động: 1%)</p>
+
+                    <h4 style="color: #333; margin: 12px 0;">Trần BHTN (theo vùng):</h4>
+                    <p>• Trần = 20 × Lương tối thiểu vùng</p>
+                    <p>• Vùng I (HN, TP.HCM): 4.960.000 → <strong>99.200.000</strong></p>
+                    <p>• Vùng II: 4.410.000 → <strong>88.200.000</strong></p>
+                    <p>• Vùng III: 3.860.000 → <strong>77.200.000</strong></p>
+                    <p>• Vùng IV: 3.450.000 → <strong>69.000.000</strong></p>
+                </div>
+
+                <!-- Lương Tối Thiểu -->
+                <div style="padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    <h3 style="color: #667eea; margin-bottom: 16px;">💵 Lương Tối Thiểu Vùng (Từ 1/7/2025)</h3>
+                    <p>• <strong>Vùng I</strong> (HN, TP.HCM): <strong>4.960.000 VND/tháng</strong></p>
+                    <p>• <strong>Vùng II</strong>: <strong>4.410.000 VND/tháng</strong></p>
+                    <p>• <strong>Vùng III</strong>: <strong>3.860.000 VND/tháng</strong></p>
+                    <p>• <strong>Vùng IV</strong>: <strong>3.450.000 VND/tháng</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateDeductionValues() {
+            const deductionBracket = document.getElementById('deductionBracket').value;
+            const personalDeductionInput = document.getElementById('personalDeduction');
+            const dependentDeductionInput = document.getElementById('dependentDeductionPerPerson');
+
+            if (deductionBracket === 'new') {
+                // New deduction values (từ 1/1/2026)
+                personalDeductionInput.value = '15.500.000';
+                dependentDeductionInput.value = '6.200.000';
+            } else {
+                // Old deduction values (trước 1/1/2026)
+                personalDeductionInput.value = '11.000.000';
+                dependentDeductionInput.value = '4.400.000';
+            }
+        }
+
+        function formatCurrency(value) {
+            // Format with Vietnamese locale and custom currency
+            const formatter = new Intl.NumberFormat('vi-VN', {
+                style: 'decimal',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            });
+            return formatter.format(Math.round(value));
+        }
+
+        function formatCurrencyWithVND(value) {
+            // Format with currency symbol
+            return formatCurrency(value) + ' ₫';
+        }
+
+        function formatInputCurrency(input) {
+            // Remove all non-digit characters
+            let value = input.value.replace(/\D/g, '');
+            
+            if (value === '') {
+                input.value = '';
+                return;
+            }
+            
+            // Format with thousand separators
+            const formatted = new Intl.NumberFormat('vi-VN').format(value);
+            input.value = formatted;
+        }
+
+        function getInputNumericValue(inputElement) {
+            // Extract numeric value from formatted input
+            return parseFloat(inputElement.value.replace(/\D/g, '')) || 0;
+        }
+
+        function calculateProgressiveTax(taxableIncome, taxBracketType = '7-bracket') {
+            let brackets;
+
+            if (taxBracketType === '5-bracket') {
+                // Vietnam's 5-bracket progressive tax system (từ 01/7/2026)
+                brackets = [
+                    { threshold: 10_000_000, rate: 0.05 },     // 5% from 0 to 10M
+                    { threshold: 30_000_000, rate: 0.10 },     // 10% from 10M to 30M
+                    { threshold: 60_000_000, rate: 0.20 },     // 20% from 30M to 60M
+                    { threshold: 100_000_000, rate: 0.30 },    // 30% from 60M to 100M
+                    { threshold: Infinity, rate: 0.35 }        // 35% from 100M and above
+                ];
+            } else {
+                // Vietnam's 7-bracket progressive tax system (hiện tại - đến 30/6/2026)
+                brackets = [
+                    { threshold: 5_000_000, rate: 0.05 },      // 5% up to 5M
+                    { threshold: 10_000_000, rate: 0.10 },     // 10% from 5M to 10M
+                    { threshold: 18_000_000, rate: 0.15 },     // 15% from 10M to 18M
+                    { threshold: 32_000_000, rate: 0.20 },     // 20% from 18M to 32M
+                    { threshold: 52_000_000, rate: 0.25 },     // 25% from 32M to 52M
+                    { threshold: 80_000_000, rate: 0.30 },     // 30% from 52M to 80M
+                    { threshold: Infinity, rate: 0.35 }        // 35% from 80M and above
+                ];
+            }
+
+            let tax = 0;
+            let previousThreshold = 0;
+
+            for (let i = 0; i < brackets.length; i++) {
+                const bracket = brackets[i];
+                
+                if (taxableIncome > previousThreshold) {
+                    const taxableInThisBracket = Math.min(taxableIncome, bracket.threshold) - previousThreshold;
+                    tax += taxableInThisBracket * bracket.rate;
+                    previousThreshold = bracket.threshold;
+                } else {
+                    break;
+                }
+            }
+
+            return tax;
+        }
+
+        function calculateVietnam() {
+            const gross = getInputNumericValue(document.getElementById('grossSalary'));
+            const insuranceBaseInput = document.getElementById('insuranceBase');
+            // Default insurance base: 20 × 2.340.000 = 46.800.000 VND (salary cap for insurance)
+            const insuranceBase = insuranceBaseInput.value ? getInputNumericValue(insuranceBaseInput) : 46_800_000;
+            const dependents = parseFloat(document.getElementById('dependents').value) || 0;
+            const bhxhRate = parseFloat(document.getElementById('bhxhRate').value) || 8;
+            const bhytRate = parseFloat(document.getElementById('bhytRate').value) || 1.5;
+            const bhtnRate = parseFloat(document.getElementById('bhtnRate').value) || 1;
+            // Get personal deduction from formatted input (in VND)
+            const personalDeductionInput = document.getElementById('personalDeduction');
+            const personalDeduction = personalDeductionInput.value ? getInputNumericValue(personalDeductionInput) : (11 * 1_000_000);
+            // Get dependent deduction per person from formatted input (in VND, not millions)
+            const dependentDeductionInput = document.getElementById('dependentDeductionPerPerson');
+            const dependentDeductionPerPerson = dependentDeductionInput.value ? getInputNumericValue(dependentDeductionInput) : (4.4 * 1_000_000);
+
+            // Calculate insurance
+            const bhxh = (insuranceBase * bhxhRate) / 100;
+            const bhyt = (insuranceBase * bhytRate) / 100;
+            
+            // BHTN calculation with zone-based cap
+            // Trần BHTN = 20 × lương tối thiểu vùng
+            const wageZone = document.getElementById('wageZone').value || 'I';
+            const bhtnCaps = {
+                'I': 99_200_000,    // 20 × 4.960.000
+                'II': 88_200_000,   // 20 × 4.410.000
+                'III': 77_200_000,  // 20 × 3.860.000
+                'IV': 69_000_000    // 20 × 3.450.000
+            };
+            const bhtnCap = bhtnCaps[wageZone];
+            const bhtnBase = Math.min(gross, bhtnCap);  // Apply cap
+            const bhtn = (bhtnBase * bhtnRate) / 100;
+            
+            const totalInsurance = bhxh + bhyt + bhtn;
+
+            // Income after insurance
+            const incomeAfterInsurance = gross - totalInsurance;
+
+            // Taxable income with personal deduction and dependent deduction
+            // Dependent deduction: 4.4 triệu VND per dependent (mặc định theo quy định thuế TNCN Việt Nam)
+            const dependentDeduction = dependents * dependentDeductionPerPerson;
+            const totalDeduction = personalDeduction + dependentDeduction;
+            const taxableIncome = Math.max(incomeAfterInsurance - totalDeduction, 0);
+
+            // Tax calculation using selected tax bracket
+            const taxBracketType = document.getElementById('taxBracket').value || '7-bracket';
+            const tax = calculateProgressiveTax(taxableIncome, taxBracketType);
+
+            // Get Tết bonus
+            const tetBonusInput = document.getElementById('tetBonus');
+            const tetBonus = tetBonusInput.value ? getInputNumericValue(tetBonusInput) : 0;
+            
+            // Calculate tax for bonus (bonus also follows the progressive tax system, no personal deduction)
+            const bonusTax = tetBonus > 0 ? calculateProgressiveTax(tetBonus, taxBracketType) : 0;
+
+            // Get tax-free allowance
+            const taxFreeAllowanceInput = document.getElementById('taxFreeAllowance');
+            const taxFreeAllowance = taxFreeAllowanceInput.value ? getInputNumericValue(taxFreeAllowanceInput) : 0;
+
+            // Get deduction (truy thu, rớt chứng chỉ, etc.)
+            const deductionInput = document.getElementById('deduction');
+            const deduction = deductionInput.value ? getInputNumericValue(deductionInput) : 0;
+
+            // Net salary (before tax-free allowance)
+            const netBeforeAllowance = gross - totalInsurance - tax;
+            
+            // Final net from monthly salary (after adding tax-free allowance and deduction)
+            const netMonthly = netBeforeAllowance + taxFreeAllowance - deduction;
+            
+            // Net bonus (after bonus tax)
+            const netBonus = tetBonus - bonusTax;
+            
+            // Total net (monthly + bonus)
+            const net = netMonthly + netBonus;
+
+            // Update Vietnam results
+            document.getElementById('vn-gross').textContent = formatCurrency(gross);
+            document.getElementById('vn-bhxh-rate').textContent = bhxhRate;
+            document.getElementById('vn-bhyt-rate').textContent = bhytRate;
+            document.getElementById('vn-bhtn-rate').textContent = bhtnRate;
+            document.getElementById('vn-bhxh').textContent = formatCurrency(bhxh);
+            document.getElementById('vn-bhyt').textContent = formatCurrency(bhyt);
+            document.getElementById('vn-bhtn').textContent = formatCurrency(bhtn);
+            document.getElementById('vn-taxable-income').textContent = formatCurrency(taxableIncome);
+            document.getElementById('vn-tax').textContent = formatCurrency(tax);
+            document.getElementById('vn-net-before-allowance').textContent = formatCurrency(netBeforeAllowance);
+            document.getElementById('vn-tax-free-allowance').textContent = formatCurrency(taxFreeAllowance);
+            document.getElementById('vn-deduction-display').textContent = formatCurrency(deduction);
+            document.getElementById('vn-bonus').textContent = formatCurrency(tetBonus);
+            document.getElementById('vn-bonus-tax').textContent = formatCurrency(bonusTax);
+            document.getElementById('vn-net-bonus').textContent = formatCurrency(netBonus);
+            document.getElementById('vn-net-monthly').textContent = formatCurrency(netMonthly);
+            document.getElementById('vn-net').textContent = formatCurrency(net);
+
+            document.getElementById('vietnamResults').classList.add('show');
+        }
+
+        function resetForm(tab) {
+            if (tab === 'vietnam') {
+                document.getElementById('vietnamForm').reset();
+                document.getElementById('vietnamResults').classList.remove('show');
+            }
+        }
+
+        // Initialize with default values
+        calculateVietnam();
+    </script>
+</body>
+</html>
