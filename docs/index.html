@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Keeper - Công Cụ Tính Lương</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .tools-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .tool-card:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .tool-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .tool-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .tool-description {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .features {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .features h3 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .features ul {
+            list-style: none;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .tool-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">💰</div>
+        <h1>Money Keeper</h1>
+        <p class="subtitle">Tập hợp các công cụ tính toán lương và thu nhập cá nhân</p>
+
+        <div class="features">
+            <h3>🎯 Các Tính Năng</h3>
+            <ul>
+                <li>Tính toán lương ròng từ lương brutto</li>
+                <li>Hỗ trợ thuế Việt Nam (TNCN, BHXH, BHYT, BHTN)</li>
+                <li>Giao diện thân thiện, dễ sử dụng</li>
+                <li>Hỗ trợ nhiều hệ thống thuế khác nhau</li>
+                <li>Tính toán nhanh chóng và chính xác</li>
+            </ul>
+        </div>
+
+        <div class="tools-grid">
+            <a href="tax-calculator.html" class="tool-card">
+                <div class="tool-icon">📊</div>
+                <div class="tool-name">Tính Thuế Thu nhập</div>
+                <div class="tool-description">Tính lương ròng từ lương brutto theo quy định Việt Nam</div>
+            </a>
+        </div>
+
+        <div style="color: #999; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+            <p>💡 Các công cụ này chỉ mang tính chất tham khảo. Vui lòng xác nhận với nhân sự hoặc kế toán trước khi sử dụng trong quyết định chính thức.</p>
+        </div>
+    </div>
+</body>
+</html>

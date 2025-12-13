@@ -1,0 +1,19 @@
+# GitHub Pages Configuration
+baseUrl: /money-keeper/
+title: Money Keeper - Công Cụ Tính Lương
+description: Công cụ tính lương ròng từ lương brutto, hỗ trợ thuế Việt Nam
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/
+  - .DS_Store
+  - *.md
+  - README.md
