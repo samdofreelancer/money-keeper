@@ -32,6 +32,10 @@
           <el-icon><Operation /></el-icon>
           <span>Tax Calculator</span>
         </el-menu-item>
+        <el-menu-item index="tax-settings">
+          <el-icon><Setting /></el-icon>
+          <span>Tax Settings</span>
+        </el-menu-item>
       </el-menu>
     </aside>
     
@@ -63,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { Grid, Money, TrendCharts, Operation } from '@element-plus/icons-vue'
+import { Grid, Money, TrendCharts, Operation, Setting } from '@element-plus/icons-vue'
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -85,6 +89,9 @@ function updateActiveMenu() {
   } else if (path.startsWith('/tax-calculator')) {
     activeMenu.value = 'tax-calculator'
     activeMenuLabel.value = 'Tax Calculator'
+  } else if (path.startsWith('/tax-settings')) {
+    activeMenu.value = 'tax-settings'
+    activeMenuLabel.value = 'Tax Settings'
   } else if (path.startsWith('/settings')) {
     activeMenu.value = ''
     activeMenuLabel.value = 'Settings'

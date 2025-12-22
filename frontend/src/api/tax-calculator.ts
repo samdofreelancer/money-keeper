@@ -55,6 +55,16 @@ export interface TaxBracketOption {
   value: string
   label: string
   effectiveDate: string
+  brackets?: TaxBracketDetail[]
+}
+
+export interface TaxBracketDetail {
+  id?: string
+  minIncome: number
+  maxIncome: number | null
+  rate: number
+  deduction: number
+  order: number
 }
 
 export interface DeductionBracketOption {

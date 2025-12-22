@@ -47,15 +47,91 @@ public class TaxConfigResponse {
     
     // Inner classes for tax configuration options
     
+    public static class TaxBracketDetail {
+        private String id;
+        private long minIncome;
+        private Long maxIncome;
+        private double rate;
+        private long deduction;
+        private int order;
+        
+        public TaxBracketDetail() {}
+        
+        public TaxBracketDetail(long minIncome, Long maxIncome, double rate, long deduction, int order) {
+            this.minIncome = minIncome;
+            this.maxIncome = maxIncome;
+            this.rate = rate;
+            this.deduction = deduction;
+            this.order = order;
+        }
+        
+        public String getId() {
+            return id;
+        }
+        
+        public void setId(String id) {
+            this.id = id;
+        }
+        
+        public long getMinIncome() {
+            return minIncome;
+        }
+        
+        public void setMinIncome(long minIncome) {
+            this.minIncome = minIncome;
+        }
+        
+        public Long getMaxIncome() {
+            return maxIncome;
+        }
+        
+        public void setMaxIncome(Long maxIncome) {
+            this.maxIncome = maxIncome;
+        }
+        
+        public double getRate() {
+            return rate;
+        }
+        
+        public void setRate(double rate) {
+            this.rate = rate;
+        }
+        
+        public long getDeduction() {
+            return deduction;
+        }
+        
+        public void setDeduction(long deduction) {
+            this.deduction = deduction;
+        }
+        
+        public int getOrder() {
+            return order;
+        }
+        
+        public void setOrder(int order) {
+            this.order = order;
+        }
+    }
+    
     public static class TaxBracketOption {
         private String value;
         private String label;
         private String effectiveDate;
+        private List<TaxBracketDetail> brackets;
         
         public TaxBracketOption(String value, String label, String effectiveDate) {
             this.value = value;
             this.label = label;
             this.effectiveDate = effectiveDate;
+            this.brackets = new java.util.ArrayList<>();
+        }
+        
+        public TaxBracketOption(String value, String label, String effectiveDate, List<TaxBracketDetail> brackets) {
+            this.value = value;
+            this.label = label;
+            this.effectiveDate = effectiveDate;
+            this.brackets = brackets;
         }
         
         public String getValue() {
@@ -80,6 +156,14 @@ public class TaxConfigResponse {
         
         public void setEffectiveDate(String effectiveDate) {
             this.effectiveDate = effectiveDate;
+        }
+        
+        public List<TaxBracketDetail> getBrackets() {
+            return brackets;
+        }
+        
+        public void setBrackets(List<TaxBracketDetail> brackets) {
+            this.brackets = brackets;
         }
     }
     
