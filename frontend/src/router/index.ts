@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import CategoryView from '../views/CategoryView.vue'
 import AccountView from '../views/AccountView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import TaxCalculatorView from '../views/TaxCalculatorView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
       path: '/accounts',
       name: 'accounts',
       component: AccountView
+    },
+    {
+      path: '/tax-calculator',
+      name: 'tax-calculator',
+      component: TaxCalculatorView
     },
     {
       path: '/settings',
