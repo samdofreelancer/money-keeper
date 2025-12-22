@@ -3,6 +3,7 @@ package com.personal.money.management.core.tax.interfaces;
 import com.personal.money.management.core.tax.application.SalaryCalculationRequest;
 import com.personal.money.management.core.tax.application.SalaryCalculationResponse;
 import com.personal.money.management.core.tax.application.TaxCalculatorApplicationService;
+import com.personal.money.management.core.tax.application.TaxConfigService;
 import com.personal.money.management.core.tax.domain.model.SalaryCalculationResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,13 @@ import org.springframework.web.bind.annotation.*;
 public class TaxCalculatorController {
 
     private final TaxCalculatorApplicationService taxCalculatorApplicationService;
+    private final TaxConfigService taxConfigService;
 
-    public TaxCalculatorController(TaxCalculatorApplicationService taxCalculatorApplicationService) {
+    public TaxCalculatorController(
+            TaxCalculatorApplicationService taxCalculatorApplicationService,
+            TaxConfigService taxConfigService) {
         this.taxCalculatorApplicationService = taxCalculatorApplicationService;
+        this.taxConfigService = taxConfigService;
     }
 
     /**
@@ -53,6 +58,16 @@ public class TaxCalculatorController {
         );
         
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get tax configuration options
+     * Returns all available tax brackets, deduction brackets, and wage zones
+     * @return TaxConfigResponse with configuration options
+     */
+    @GetMapping("/config")
+    public ResponseEntity<TaxConfigResponse> getTaxConfig() {
+        return ResponseEntity.ok(taxConfigService.getTaxConfig());
     }
 
     /**

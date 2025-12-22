@@ -45,12 +45,46 @@ export interface SalaryCalculationResponse {
   totalNetSalary: number
 }
 
+export interface TaxConfigResponse {
+  taxBrackets: TaxBracketOption[]
+  deductionBrackets: DeductionBracketOption[]
+  wageZones: WageZoneOption[]
+}
+
+export interface TaxBracketOption {
+  value: string
+  label: string
+  effectiveDate: string
+}
+
+export interface DeductionBracketOption {
+  value: string
+  label: string
+  personalDeduction: number
+  dependentDeduction: number
+  effectiveDate: string
+}
+
+export interface WageZoneOption {
+  value: string
+  label: string
+  minimumWage: number
+  bhtnCeiling: number
+}
+
 export const taxCalculatorAPI = {
   /**
    * Calculate salary and tax
    */
   calculateSalary(request: SalaryCalculationRequest): Promise<SalaryCalculationResponse> {
     return api.post<SalaryCalculationResponse>('/tax/calculate', request).then(response => response.data)
+  },
+
+  /**
+   * Get tax configuration
+   */
+  getTaxConfig(): Promise<TaxConfigResponse> {
+    return api.get<TaxConfigResponse>('/tax/config').then(response => response.data)
   },
 
   /**

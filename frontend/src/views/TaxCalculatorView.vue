@@ -45,8 +45,9 @@
             <span class="label-subtitle">Chọn biểu áp dụng</span>
           </label>
           <select v-model="formData.taxBracketType" class="form-select">
-            <option value="7-bracket">7 bậc (13/12/2025 - 30/6/2026)</option>
-            <option value="5-bracket">5 bậc (Từ 01/7/2026 trở đi)</option>
+            <option v-for="bracket in taxBrackets" :key="bracket.value" :value="bracket.value">
+              {{ bracket.label }}
+            </option>
           </select>
         </div>
 
@@ -94,8 +95,9 @@
             <span class="label-subtitle">Chọn theo thời kỳ áp dụng</span>
           </label>
           <select v-model="formData.deductionBracket" @change="updateDeductionValues" class="form-select">
-            <option value="old">13/12/2025 - 31/12/2025: Cá nhân 11M, Phụ thuộc 4.4M</option>
-            <option value="new">Từ 01/01/2026: Cá nhân 15.5M, Phụ thuộc 6.2M</option>
+            <option v-for="deduction in deductionBrackets" :key="deduction.value" :value="deduction.value">
+              {{ deduction.label }}
+            </option>
           </select>
         </div>
 
@@ -212,11 +214,10 @@
             Vùng lương
             <span class="label-subtitle">Để tính trần BHTN</span>
           </label>
-          <select v-model="formData.wageZone" @change="calculateSalary" class="form-select">
-            <option value="I">Vùng I (HN, TP.HCM): 4.960.000 → Trần: 99.200.000</option>
-            <option value="II">Vùng II: 4.410.000 → Trần: 88.200.000</option>
-            <option value="III">Vùng III: 3.860.000 → Trần: 77.200.000</option>
-            <option value="IV">Vùng IV: 3.450.000 → Trần: 69.000.000</option>
+          <select v-model="formData.wageZone" class="form-select">
+            <option v-for="zone in wageZones" :key="zone.value" :value="zone.value">
+              {{ zone.label }}
+            </option>
           </select>
         </div>
 
@@ -454,13 +455,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { taxCalculatorAPI } from '@/api/tax-calculator'
+import { taxCalculatorAPI, type TaxBracketOption, type DeductionBracketOption, type WageZoneOption } from '@/api/tax-calculator'
 
 const activeTab = ref('calculator')
 const hasResults = ref(false)
 const loading = ref(false)
+
+// Tax configuration from backend
+const taxBrackets = ref<TaxBracketOption[]>([])
+const deductionBrackets = ref<DeductionBracketOption[]>([])
+const wageZones = ref<WageZoneOption[]>([])
 
 const formData = ref({
   grossSalary: '60.000.000',
@@ -526,12 +532,22 @@ function formatCurrency(value: number | string): string {
 }
 
 function updateDeductionValues() {
-  if (formData.value.deductionBracket === 'new') {
-    formData.value.personalDeduction = '15.500.000'
-    formData.value.dependentDeductionPerPerson = '6.200.000'
-  } else {
-    formData.value.personalDeduction = '11.000.000'
-    formData.value.dependentDeductionPerPerson = '4.400.000'
+  const selected = deductionBrackets.value.find(d => d.value === formData.value.deductionBracket)
+  if (selected) {
+    formData.value.personalDeduction = formatCurrency(selected.personalDeduction)
+    formData.value.dependentDeductionPerPerson = formatCurrency(selected.dependentDeduction)
+  }
+}
+
+async function loadTaxConfig() {
+  try {
+    const config = await taxCalculatorAPI.getTaxConfig()
+    taxBrackets.value = config.taxBrackets
+    deductionBrackets.value = config.deductionBrackets
+    wageZones.value = config.wageZones
+  } catch (error) {
+    console.error('Failed to load tax configuration:', error)
+    ElMessage.warning('Không thể tải cấu hình thuế. Sử dụng giá trị mặc định.')
   }
 }
 
@@ -588,7 +604,10 @@ function resetForm() {
   activeTab.value = 'calculator'
 }
 
-// Remove auto-initialization - let user click the button to calculate
+// Load tax configuration on component mount
+onMounted(() => {
+  loadTaxConfig()
+})
 </script>
 
 <style scoped>
