@@ -829,22 +829,31 @@
             // Income after insurance
             const incomeAfterInsurance = gross - totalInsurance;
 
-            // Taxable income with personal deduction and dependent deduction
-            // Dependent deduction: 4.4 triệu VND per dependent (mặc định theo quy định thuế TNCN Việt Nam)
-            const dependentDeduction = dependents * dependentDeductionPerPerson;
-            const totalDeduction = personalDeduction + dependentDeduction;
-            const taxableIncome = Math.max(incomeAfterInsurance - totalDeduction, 0);
-
-            // Tax calculation using selected tax bracket
-            const taxBracketType = document.getElementById('taxBracket').value || '7-bracket';
-            const tax = calculateProgressiveTax(taxableIncome, taxBracketType);
-
             // Get Tết bonus
             const tetBonusInput = document.getElementById('tetBonus');
             const tetBonus = tetBonusInput.value ? getInputNumericValue(tetBonusInput) : 0;
+
+            // Taxable income with personal deduction and dependent deduction
+            // Dependent deduction: 4.4 triệu VND per dependent (mặc định theo quy định thuế TNCN Việt Nam)
+            // BONUS IS ADDED TO INCOME FOR TAX CALCULATION (not calculated separately)
+            const dependentDeduction = dependents * dependentDeductionPerPerson;
+            const totalDeduction = personalDeduction + dependentDeduction;
             
-            // Calculate tax for bonus (bonus also follows the progressive tax system, no personal deduction)
-            const bonusTax = tetBonus > 0 ? calculateProgressiveTax(tetBonus, taxBracketType) : 0;
+            // Calculate taxable income for salary and bonus combined
+            const totalIncomeForTax = incomeAfterInsurance + tetBonus;
+            const taxableIncome = Math.max(totalIncomeForTax - totalDeduction, 0);
+
+            // Tax calculation using selected tax bracket
+            const taxBracketType = document.getElementById('taxBracket').value || '7-bracket';
+            const totalTax = calculateProgressiveTax(taxableIncome, taxBracketType);
+            
+            // Calculate tax for salary portion only (with deduction applied)
+            const salaryTaxableIncome = Math.max(incomeAfterInsurance - totalDeduction, 0);
+            const salaryOnlyTax = calculateProgressiveTax(salaryTaxableIncome, taxBracketType);
+            
+            // Bonus tax is the difference (marginal tax from adding the bonus)
+            const bonusTaxPortion = Math.max(totalTax - salaryOnlyTax, 0);
+            const salaryTaxPortion = salaryOnlyTax;
 
             // Get tax-free allowance
             const taxFreeAllowanceInput = document.getElementById('taxFreeAllowance');
@@ -854,14 +863,14 @@
             const deductionInput = document.getElementById('deduction');
             const deduction = deductionInput.value ? getInputNumericValue(deductionInput) : 0;
 
-            // Net salary (before tax-free allowance)
-            const netBeforeAllowance = gross - totalInsurance - tax;
+            // Net salary (after salary tax portion)
+            const netBeforeAllowance = gross - totalInsurance - salaryTaxPortion;
             
             // Final net from monthly salary (after adding tax-free allowance and deduction)
             const netMonthly = netBeforeAllowance + taxFreeAllowance - deduction;
             
-            // Net bonus (after bonus tax)
-            const netBonus = tetBonus - bonusTax;
+            // Net bonus (after bonus tax portion)
+            const netBonus = tetBonus - bonusTaxPortion;
             
             // Total net (monthly + bonus)
             const net = netMonthly + netBonus;
@@ -875,12 +884,12 @@
             document.getElementById('vn-bhyt').textContent = formatCurrency(bhyt);
             document.getElementById('vn-bhtn').textContent = formatCurrency(bhtn);
             document.getElementById('vn-taxable-income').textContent = formatCurrency(taxableIncome);
-            document.getElementById('vn-tax').textContent = formatCurrency(tax);
+            document.getElementById('vn-tax').textContent = formatCurrency(totalTax);
             document.getElementById('vn-net-before-allowance').textContent = formatCurrency(netBeforeAllowance);
             document.getElementById('vn-tax-free-allowance').textContent = formatCurrency(taxFreeAllowance);
             document.getElementById('vn-deduction-display').textContent = formatCurrency(deduction);
             document.getElementById('vn-bonus').textContent = formatCurrency(tetBonus);
-            document.getElementById('vn-bonus-tax').textContent = formatCurrency(bonusTax);
+            document.getElementById('vn-bonus-tax').textContent = formatCurrency(bonusTaxPortion);
             document.getElementById('vn-net-bonus').textContent = formatCurrency(netBonus);
             document.getElementById('vn-net-monthly').textContent = formatCurrency(netMonthly);
             document.getElementById('vn-net').textContent = formatCurrency(net);
