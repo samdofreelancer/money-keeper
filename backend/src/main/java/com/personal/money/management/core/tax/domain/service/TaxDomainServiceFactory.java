@@ -7,11 +7,17 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TaxDomainServiceFactory {
+    
+    private final TaxBracketRepository taxBracketRepository;
+    
+    public TaxDomainServiceFactory(TaxBracketRepository taxBracketRepository) {
+        this.taxBracketRepository = taxBracketRepository;
+    }
 
     /**
      * Create a new instance of TaxCalculationService
      */
     public TaxCalculationService createTaxCalculationService() {
-        return new TaxCalculationService();
+        return new TaxCalculationService(taxBracketRepository);
     }
 }

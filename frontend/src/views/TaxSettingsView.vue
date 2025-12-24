@@ -373,24 +373,87 @@ function removeBracketDetail(index: string | number) {
 }
 
 function saveBracketDetails() {
-  // TODO: Call backend API to save bracket details
-  ElMessage.success('Cập nhật chi tiết bảng lũy tuyến thành công!')
-  showEditBracketDetails.value = false
-  loadTaxConfig()
+  if (!editingBracket.value.value || !editingBracket.value.label) {
+    ElMessage.error('Vui lòng điền đầy đủ thông tin')
+    return
+  }
+
+  if (!editingBracket.value.brackets || editingBracket.value.brackets.length === 0) {
+    ElMessage.error('Vui lòng thêm ít nhất một bậc lũy tuyến')
+    return
+  }
+
+  // Prepare request payload
+  const request = {
+    value: editingBracket.value.value,
+    label: editingBracket.value.label,
+    effectiveDate: editingBracket.value.effectiveDate,
+    details: editingBracket.value.brackets.map((detail: any) => ({
+      minIncome: detail.minIncome || 0,
+      maxIncome: detail.maxIncome || null,
+      rate: detail.rate || 0,
+      deduction: detail.deduction || 0,
+      bracketOrder: detail.bracketOrder || detail.order || (editingBracket.value.brackets.indexOf(detail) + 1)
+    }))
+  }
+
+  // Call backend API to update bracket details
+  taxCalculatorAPI.updateTaxBracket(editingBracket.value.value, request)
+    .then(() => {
+      ElMessage.success('Cập nhật chi tiết bảng lũy tuyến thành công!')
+      showEditBracketDetails.value = false
+      loadTaxConfig()
+    })
+    .catch((error: any) => {
+      console.error('Failed to update bracket details:', error)
+      ElMessage.error('Cập nhật thất bại: ' + (error.response?.data?.message || error.message))
+    })
 }
 
 function saveBracket() {
-  // TODO: Call backend API to save
-  ElMessage.success('Cập nhật biểu thuế thành công!')
-  showAddBracket.value = false
-  loadTaxConfig()
+  if (!editingBracket.value.value || !editingBracket.value.label) {
+    ElMessage.error('Vui lòng điền đầy đủ thông tin')
+    return
+  }
+
+  // Prepare request payload
+  const request = {
+    value: editingBracket.value.value,
+    label: editingBracket.value.label,
+    effectiveDate: editingBracket.value.effectiveDate,
+    details: editingBracket.value.brackets || []
+  }
+
+  // Check if we're creating new or updating existing
+  const isNewBracket = !taxBrackets.value.some(b => b.value === editingBracket.value.value)
+
+  const apiCall = isNewBracket
+    ? taxCalculatorAPI.createTaxBracket(request)
+    : taxCalculatorAPI.updateTaxBracket(editingBracket.value.value, request)
+
+  apiCall
+    .then(() => {
+      ElMessage.success(isNewBracket ? 'Thêm biểu thuế thành công!' : 'Cập nhật biểu thuế thành công!')
+      showAddBracket.value = false
+      loadTaxConfig()
+    })
+    .catch((error: any) => {
+      console.error('Failed to save bracket:', error)
+      ElMessage.error('Lưu thất bại: ' + (error.response?.data?.message || error.message))
+    })
 }
 
 function deleteBracket(value: string) {
   if (confirm('Bạn có chắc muốn xóa biểu thuế này?')) {
-    // TODO: Call backend API to delete
-    ElMessage.success('Xóa biểu thuế thành công!')
-    loadTaxConfig()
+    taxCalculatorAPI.deleteTaxBracket(value)
+      .then(() => {
+        ElMessage.success('Xóa biểu thuế thành công!')
+        loadTaxConfig()
+      })
+      .catch((error: any) => {
+        console.error('Failed to delete bracket:', error)
+        ElMessage.error('Xóa thất bại: ' + (error.response?.data?.message || error.message))
+      })
   }
 }
 
@@ -436,10 +499,16 @@ function deleteZone(value: string) {
 
 function resetToDefaults() {
   if (confirm('Bạn có chắc muốn đặt lại tất cả cấu hình về mặc định? Hành động này không thể hoàn tác!')) {
-    // TODO: Call backend API to reset
-    ElMessage.success('Cấu hình đã được đặt lại về mặc định!')
-    loadTaxConfig()
-    expandedBracketValue.value = null
+    taxCalculatorAPI.resetToDefaults()
+      .then(() => {
+        ElMessage.success('Cấu hình đã được đặt lại về mặc định!')
+        loadTaxConfig()
+        expandedBracketValue.value = null
+      })
+      .catch(error => {
+        console.error('Reset failed:', error)
+        ElMessage.error('Không thể đặt lại cấu hình: ' + (error.response?.data?.message || error.message))
+      })
   }
 }
 

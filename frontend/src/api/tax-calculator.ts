@@ -102,6 +102,41 @@ export const taxCalculatorAPI = {
    */
   health(): Promise<string> {
     return api.get<string>('/tax/health').then(response => response.data)
+  },
+
+  /**
+   * Create a new tax bracket
+   */
+  createTaxBracket(request: any): Promise<any> {
+    return api.post<any>('/tax/brackets/bracket', request).then(response => response.data)
+  },
+
+  /**
+   * Update an existing tax bracket
+   */
+  updateTaxBracket(value: string, request: any): Promise<any> {
+    return api.put<any>(`/tax/brackets/bracket/${value}`, request).then(response => response.data)
+  },
+
+  /**
+   * Delete a tax bracket
+   */
+  deleteTaxBracket(value: string): Promise<any> {
+    return api.delete<any>(`/tax/brackets/bracket/${value}`).then(response => response.data)
+  },
+
+  /**
+   * Get a specific tax bracket by value
+   */
+  getTaxBracketByValue(value: string): Promise<any> {
+    return api.get<any>(`/tax/brackets/bracket/${value}`).then(response => response.data)
+  },
+
+  /**
+   * Reset all tax configuration to default values
+   */
+  resetToDefaults(): Promise<any> {
+    return api.post<any>('/tax/brackets/reset').then(response => response.data)
   }
 }
 

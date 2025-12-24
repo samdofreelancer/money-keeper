@@ -2,6 +2,7 @@ package com.personal.money.management.core.tax.application;
 
 import com.personal.money.management.core.tax.domain.model.*;
 import com.personal.money.management.core.tax.domain.service.TaxCalculationService;
+import com.personal.money.management.core.tax.domain.service.TaxBracketRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
@@ -13,14 +14,16 @@ import org.springframework.stereotype.Service;
 public class TaxCalculatorApplicationService {
     
     private final TaxCalculationService taxCalculationService;
+    private final TaxBracketRepository taxBracketRepository;
 
-    public TaxCalculatorApplicationService() {
-        this.taxCalculationService = new TaxCalculationService();
+    public TaxCalculatorApplicationService(TaxBracketRepository taxBracketRepository) {
+        this.taxBracketRepository = taxBracketRepository;
+        this.taxCalculationService = new TaxCalculationService(taxBracketRepository);
     }
 
     @Bean
     public TaxCalculationService taxCalculationService() {
-        return new TaxCalculationService();
+        return new TaxCalculationService(taxBracketRepository);
     }
 
     /**

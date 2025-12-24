@@ -3,6 +3,7 @@ package com.personal.money.management.core.tax.domain.service;
 import com.personal.money.management.core.tax.domain.model.TaxBracketEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,4 +26,11 @@ public interface TaxBracketRepository extends JpaRepository<TaxBracketEntity, St
      */
     @Query("SELECT t FROM TaxBracketEntity t ORDER BY t.effectiveDate DESC")
     List<TaxBracketEntity> findAllOrderByEffectiveDate();
+    
+    /**
+     * Delete all tax brackets (useful for reset)
+     */
+    @Modifying
+    @Query("DELETE FROM TaxBracketEntity")
+    void deleteAllBrackets();
 }

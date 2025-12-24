@@ -2,22 +2,38 @@ package com.personal.money.management.core.tax.domain.service;
 
 import com.personal.money.management.core.tax.domain.model.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Domain Service for tax calculations following Vietnam's personal income tax rules
  * This service contains the core business logic for tax calculation
+ * 
+ * Tax bracket data is loaded from database (TaxBracketEntity) for flexibility
+ * Falls back to enum hardcoded values if database data is unavailable
  */
 public class TaxCalculationService {
+    
+    private final TaxBracketRepository taxBracketRepository;
+    
+    public TaxCalculationService(TaxBracketRepository taxBracketRepository) {
+        this.taxBracketRepository = taxBracketRepository;
+    }
 
     /**
      * Calculate progressive tax based on taxable income and tax bracket type
+     * 
+     * @param taxableIncome The taxable income amount
+     * @param taxBracketType The tax bracket type (7-bracket or 5-bracket)
+     * @return Total tax amount (rounded)
      */
     public long calculateProgressiveTax(long taxableIncome, TaxBracketType taxBracketType) {
         if (taxableIncome <= 0) {
             return 0;
         }
 
-        List<TaxBracket> brackets = taxBracketType.getBrackets();
+        // Get brackets from database first, fall back to enum if not found
+        List<TaxBracket> brackets = getFirstBracketsFromDatabaseOrEnum(taxBracketType);
+        
         long tax = 0;
         long previousThreshold = 0;
 
@@ -32,6 +48,38 @@ public class TaxCalculationService {
         }
 
         return tax;
+    }
+    
+    /**
+     * Get tax brackets from database by bracket type value
+     * Falls back to enum hardcoded values if database lookup fails
+     * 
+     * @param taxBracketType The tax bracket type enum
+     * @return List of TaxBracket objects ordered by bracket order
+     */
+    private List<TaxBracket> getFirstBracketsFromDatabaseOrEnum(TaxBracketType taxBracketType) {
+        try {
+            // Try to load from database first
+            String bracketValue = taxBracketType.getCode();  // e.g., "7-bracket" or "5-bracket"
+            var entityOptional = taxBracketRepository.findByValue(bracketValue);
+            
+            if (entityOptional.isPresent()) {
+                TaxBracketEntity entity = entityOptional.get();
+                if (entity.getDetails() != null && !entity.getDetails().isEmpty()) {
+                    // Convert database entities to domain TaxBracket objects
+                    return entity.getDetails().stream()
+                        .sorted((a, b) -> a.getBracketOrder().compareTo(b.getBracketOrder()))
+                        .map(detail -> new TaxBracket(detail.getMaxIncome(), detail.getRate()))
+                        .collect(Collectors.toList());
+                }
+            }
+        } catch (Exception e) {
+            // Log error but continue - fall back to enum
+            System.err.println("Error loading tax brackets from database: " + e.getMessage());
+        }
+        
+        // Fall back to enum hardcoded values
+        return taxBracketType.getBrackets();
     }
 
     /**
