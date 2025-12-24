@@ -180,43 +180,13 @@
             <td>{{ formatCurrency(deduction.dependentDeduction) }}</td>
             <td>{{ deduction.effectiveDate }}</td>
             <td>
-              <button class="btn-edit" @click="editDeduction(deduction)">Sửa</button>
-              <button class="btn-delete" @click="deleteDeduction(deduction.value)">Xóa</button>
+              <span class="text-muted">Chỉ đọc</span>
             </td>
           </tr>
         </tbody>
       </table>
-      <button class="btn-add" @click="showAddDeduction = true">+ Thêm Biểu Khấu Trừ Mới</button>
-
-      <!-- Add/Edit Deduction Modal -->
-      <div v-if="showAddDeduction" class="modal-overlay" @click="showAddDeduction = false">
-        <div class="modal-content" @click.stop>
-          <h2>{{ editingDeduction ? 'Cập Nhật Biểu Khấu Trừ' : 'Thêm Biểu Khấu Trừ Mới' }}</h2>
-          <div class="form-group">
-            <label>Giá trị (Value)</label>
-            <input v-model="editingDeduction.value" type="text" class="form-input" placeholder="VD: old">
-          </div>
-          <div class="form-group">
-            <label>Tên Biểu</label>
-            <input v-model="editingDeduction.label" type="text" class="form-input" placeholder="VD: Từ 01/01/2026 (...)">
-          </div>
-          <div class="form-group">
-            <label>Khấu Trừ Cá Nhân (VND)</label>
-            <input v-model.number="editingDeduction.personalDeduction" type="number" class="form-input" placeholder="VD: 15500000">
-          </div>
-          <div class="form-group">
-            <label>Khấu Trừ Phụ Thuộc (VND)</label>
-            <input v-model.number="editingDeduction.dependentDeduction" type="number" class="form-input" placeholder="VD: 6200000">
-          </div>
-          <div class="form-group">
-            <label>Ngày Hiệu Lực</label>
-            <input v-model="editingDeduction.effectiveDate" type="date" class="form-input">
-          </div>
-          <div class="modal-buttons">
-            <button class="btn-save" @click="saveDeduction">Lưu</button>
-            <button class="btn-cancel" @click="showAddDeduction = false">Hủy</button>
-          </div>
-        </div>
+      <div class="info-message">
+        ℹ️ Biểu khấu trừ được cấu hình mặc định theo quy định của Bộ Tài Chính. Liên hệ quản trị viên để thay đổi.
       </div>
     </div>
 
@@ -240,39 +210,13 @@
             <td>{{ formatCurrency(zone.minimumWage) }}</td>
             <td>{{ formatCurrency(zone.bhtnCeiling) }}</td>
             <td>
-              <button class="btn-edit" @click="editZone(zone)">Sửa</button>
-              <button class="btn-delete" @click="deleteZone(zone.value)">Xóa</button>
+              <span class="text-muted">Chỉ đọc</span>
             </td>
           </tr>
         </tbody>
       </table>
-      <button class="btn-add" @click="showAddZone = true">+ Thêm Vùng Lương Mới</button>
-
-      <!-- Add/Edit Zone Modal -->
-      <div v-if="showAddZone" class="modal-overlay" @click="showAddZone = false">
-        <div class="modal-content" @click.stop>
-          <h2>{{ editingZone ? 'Cập Nhật Vùng Lương' : 'Thêm Vùng Lương Mới' }}</h2>
-          <div class="form-group">
-            <label>Giá trị (Value)</label>
-            <input v-model="editingZone.value" type="text" class="form-input" placeholder="VD: I, II, III, IV">
-          </div>
-          <div class="form-group">
-            <label>Tên Vùng</label>
-            <input v-model="editingZone.label" type="text" class="form-input" placeholder="VD: Vùng I (HN, TP.HCM) (...)">
-          </div>
-          <div class="form-group">
-            <label>Lương Tối Thiểu (VND)</label>
-            <input v-model.number="editingZone.minimumWage" type="number" class="form-input" placeholder="VD: 4960000">
-          </div>
-          <div class="form-group">
-            <label>Trần BHTN (VND)</label>
-            <input v-model.number="editingZone.bhtnCeiling" type="number" class="form-input" placeholder="VD: 99200000">
-          </div>
-          <div class="modal-buttons">
-            <button class="btn-save" @click="saveZone">Lưu</button>
-            <button class="btn-cancel" @click="showAddZone = false">Hủy</button>
-          </div>
-        </div>
+      <div class="info-message">
+        ℹ️ Vùng lương được cấu hình mặc định theo quy định. Liên hệ quản trị viên để thay đổi.
       </div>
     </div>
   </div>
@@ -299,8 +243,6 @@ const expandedBracket = computed(() => {
 
 // Modal states
 const showAddBracket = ref(false)
-const showAddDeduction = ref(false)
-const showAddZone = ref(false)
 const showEditBracketDetails = ref(false)
 
 // Editing states
@@ -309,21 +251,6 @@ const editingBracket = ref<any>({
   label: '',
   effectiveDate: '',
   brackets: []
-})
-
-const editingDeduction = ref<any>({
-  value: '',
-  label: '',
-  personalDeduction: 0,
-  dependentDeduction: 0,
-  effectiveDate: ''
-})
-
-const editingZone = ref<any>({
-  value: '',
-  label: '',
-  minimumWage: 0,
-  bhtnCeiling: 0
 })
 
 // Methods
@@ -454,46 +381,6 @@ function deleteBracket(value: string) {
         console.error('Failed to delete bracket:', error)
         ElMessage.error('Xóa thất bại: ' + (error.response?.data?.message || error.message))
       })
-  }
-}
-
-function editDeduction(deduction: DeductionBracketOption) {
-  editingDeduction.value = { ...deduction }
-  showAddDeduction.value = true
-}
-
-function saveDeduction() {
-  // TODO: Call backend API to save
-  ElMessage.success('Cập nhật biểu khấu trừ thành công!')
-  showAddDeduction.value = false
-  loadTaxConfig()
-}
-
-function deleteDeduction(value: string) {
-  if (confirm('Bạn có chắc muốn xóa biểu khấu trừ này?')) {
-    // TODO: Call backend API to delete
-    ElMessage.success('Xóa biểu khấu trừ thành công!')
-    loadTaxConfig()
-  }
-}
-
-function editZone(zone: WageZoneOption) {
-  editingZone.value = { ...zone }
-  showAddZone.value = true
-}
-
-function saveZone() {
-  // TODO: Call backend API to save
-  ElMessage.success('Cập nhật vùng lương thành công!')
-  showAddZone.value = false
-  loadTaxConfig()
-}
-
-function deleteZone(value: string) {
-  if (confirm('Bạn có chắc muốn xóa vùng lương này?')) {
-    // TODO: Call backend API to delete
-    ElMessage.success('Xóa vùng lương thành công!')
-    loadTaxConfig()
   }
 }
 
@@ -970,6 +857,21 @@ onMounted(() => {
 .btn-add-small:hover {
   background: #229954;
   box-shadow: 0 2px 6px rgba(39, 174, 96, 0.3);
+}
+
+.info-message {
+  padding: 12px 16px;
+  background: #e8f4f8;
+  border-left: 4px solid #3498db;
+  color: #2c3e50;
+  margin: 16px 0;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.text-muted {
+  color: #7f8c8d;
+  font-style: italic;
 }
 
 @media (max-width: 768px) {
