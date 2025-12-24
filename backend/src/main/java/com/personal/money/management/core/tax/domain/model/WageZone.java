@@ -1,8 +1,11 @@
 package com.personal.money.management.core.tax.domain.model;
 
 /**
+ * DEPRECATED: Use WageZoneValue and WageZoneRepository instead
+ * This enum is kept for backward compatibility only
  * Enumeration for Vietnamese wage zones affecting insurance caps
  */
+@Deprecated(since = "1.1.0", forRemoval = true)
 public enum WageZone {
     ZONE_I("I", "Vùng I (HN, TP.HCM)", 4_960_000, 99_200_000),
     ZONE_II("II", "Vùng II", 4_410_000, 88_200_000),

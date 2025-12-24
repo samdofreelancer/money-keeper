@@ -3,7 +3,8 @@ package com.personal.money.management.core.tax.application;
 import com.personal.money.management.core.tax.domain.model.*;
 import com.personal.money.management.core.tax.domain.service.TaxCalculationService;
 import com.personal.money.management.core.tax.domain.service.TaxBracketRepository;
-import org.springframework.context.annotation.Bean;
+import com.personal.money.management.core.tax.domain.service.DeductionBracketRepository;
+import com.personal.money.management.core.tax.domain.service.WageZoneRepository;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,22 +15,24 @@ import org.springframework.stereotype.Service;
 public class TaxCalculatorApplicationService {
     
     private final TaxCalculationService taxCalculationService;
-    private final TaxBracketRepository taxBracketRepository;
 
-    public TaxCalculatorApplicationService(TaxBracketRepository taxBracketRepository) {
-        this.taxBracketRepository = taxBracketRepository;
-        this.taxCalculationService = new TaxCalculationService(taxBracketRepository);
-    }
-
-    @Bean
-    public TaxCalculationService taxCalculationService() {
-        return new TaxCalculationService(taxBracketRepository);
+    public TaxCalculatorApplicationService(TaxBracketRepository taxBracketRepository,
+                                           DeductionBracketRepository deductionBracketRepository,
+                                           WageZoneRepository wageZoneRepository) {
+        this.taxCalculationService = new TaxCalculationService(
+            taxBracketRepository,
+            deductionBracketRepository,
+            wageZoneRepository
+        );
     }
 
     /**
      * Calculate salary and tax based on provided input
      */
     public SalaryCalculationResult calculateSalaryTax(SalaryCalculationRequest request) {
+        // Load wage zone from database
+        WageZoneValue wageZone = taxCalculationService.getWageZone(request.getWageZone());
+        
         // Build input value object
         SalaryCalculationInput input = new SalaryCalculationInput(
             request.getGrossSalary(),
@@ -44,7 +47,7 @@ public class TaxCalculatorApplicationService {
             request.getTaxFreeAllowance(),
             request.getOtherDeduction(),
             TaxBracketType.fromCode(request.getTaxBracketType()),
-            WageZone.fromCode(request.getWageZone())
+            wageZone
         );
 
         // Calculate using domain service

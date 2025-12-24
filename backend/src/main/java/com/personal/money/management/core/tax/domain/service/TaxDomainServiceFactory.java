@@ -9,15 +9,21 @@ import org.springframework.stereotype.Service;
 public class TaxDomainServiceFactory {
     
     private final TaxBracketRepository taxBracketRepository;
+    private final DeductionBracketRepository deductionBracketRepository;
+    private final WageZoneRepository wageZoneRepository;
     
-    public TaxDomainServiceFactory(TaxBracketRepository taxBracketRepository) {
+    public TaxDomainServiceFactory(TaxBracketRepository taxBracketRepository,
+                                   DeductionBracketRepository deductionBracketRepository,
+                                   WageZoneRepository wageZoneRepository) {
         this.taxBracketRepository = taxBracketRepository;
+        this.deductionBracketRepository = deductionBracketRepository;
+        this.wageZoneRepository = wageZoneRepository;
     }
 
     /**
      * Create a new instance of TaxCalculationService
      */
     public TaxCalculationService createTaxCalculationService() {
-        return new TaxCalculationService(taxBracketRepository);
+        return new TaxCalculationService(taxBracketRepository, deductionBracketRepository, wageZoneRepository);
     }
 }

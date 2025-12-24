@@ -16,14 +16,14 @@ public class SalaryCalculationInput {
     private final long taxFreeAllowance;
     private final long otherDeduction;
     private final TaxBracketType taxBracketType;
-    private final WageZone wageZone;
+    private final WageZoneValue wageZone;
 
     public SalaryCalculationInput(long grossSalary, long tetBonus, long insuranceBase, 
                                  int dependents, double bhxhRate, double bhytRate, 
                                  double bhtnRate, long personalDeduction, 
                                  long dependentDeductionPerPerson, long taxFreeAllowance,
                                  long otherDeduction, TaxBracketType taxBracketType, 
-                                 WageZone wageZone) {
+                                 WageZoneValue wageZone) {
         this.grossSalary = grossSalary;
         this.tetBonus = tetBonus;
         this.insuranceBase = insuranceBase;
@@ -51,5 +51,6 @@ public class SalaryCalculationInput {
     public long getTaxFreeAllowance() { return taxFreeAllowance; }
     public long getOtherDeduction() { return otherDeduction; }
     public TaxBracketType getTaxBracketType() { return taxBracketType; }
-    public WageZone getWageZone() { return wageZone; }
+    public WageZoneValue getWageZone() { return wageZone; }
 }
+

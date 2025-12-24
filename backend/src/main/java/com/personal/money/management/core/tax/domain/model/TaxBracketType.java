@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * Enumeration for different tax bracket types in Vietnam
+ * NOTE: Tax bracket values are now fully database-driven
+ * This enum only maintains type codes - actual rates are loaded from database
  */
 public enum TaxBracketType {
     SEVEN_BRACKET("7-bracket", "7 bậc (13/12/2025 - 30/6/2026)", true) {

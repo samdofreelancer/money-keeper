@@ -1,8 +1,11 @@
 package com.personal.money.management.core.tax.domain.model;
 
 /**
+ * DEPRECATED: Use DeductionBracketValue and DeductionBracketRepository instead
+ * This enum is kept for backward compatibility only
  * Enumeration for deduction bracket types in Vietnam personal income tax
  */
+@Deprecated(since = "1.1.0", forRemoval = true)
 public enum DeductionBracket {
     OLD("old", "13/12/2025 - 31/12/2025", 11_000_000, 4_400_000),
     NEW("new", "Từ 01/01/2026", 15_500_000, 6_200_000);

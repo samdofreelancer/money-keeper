@@ -1,6 +1,7 @@
 package com.personal.money.management.core.tax.domain.service;
 
 import com.personal.money.management.core.tax.domain.model.*;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,15 +9,21 @@ import java.util.stream.Collectors;
  * Domain Service for tax calculations following Vietnam's personal income tax rules
  * This service contains the core business logic for tax calculation
  * 
- * Tax bracket data is loaded from database (TaxBracketEntity) for flexibility
- * Falls back to enum hardcoded values if database data is unavailable
+ * All tax bracket data is loaded from database for flexibility
+ * No hardcoded values - fully database-driven
  */
 public class TaxCalculationService {
     
     private final TaxBracketRepository taxBracketRepository;
+    private final DeductionBracketRepository deductionBracketRepository;
+    private final WageZoneRepository wageZoneRepository;
     
-    public TaxCalculationService(TaxBracketRepository taxBracketRepository) {
+    public TaxCalculationService(TaxBracketRepository taxBracketRepository,
+                                 DeductionBracketRepository deductionBracketRepository,
+                                 WageZoneRepository wageZoneRepository) {
         this.taxBracketRepository = taxBracketRepository;
+        this.deductionBracketRepository = deductionBracketRepository;
+        this.wageZoneRepository = wageZoneRepository;
     }
 
     /**
@@ -31,8 +38,8 @@ public class TaxCalculationService {
             return 0;
         }
 
-        // Get brackets from database first, fall back to enum if not found
-        List<TaxBracket> brackets = getFirstBracketsFromDatabaseOrEnum(taxBracketType);
+        // Get brackets from database
+        List<TaxBracket> brackets = getTaxBracketsFromDatabase(taxBracketType);
         
         long tax = 0;
         long previousThreshold = 0;
@@ -52,34 +59,74 @@ public class TaxCalculationService {
     
     /**
      * Get tax brackets from database by bracket type value
-     * Falls back to enum hardcoded values if database lookup fails
      * 
      * @param taxBracketType The tax bracket type enum
      * @return List of TaxBracket objects ordered by bracket order
      */
-    private List<TaxBracket> getFirstBracketsFromDatabaseOrEnum(TaxBracketType taxBracketType) {
-        try {
-            // Try to load from database first
-            String bracketValue = taxBracketType.getCode();  // e.g., "7-bracket" or "5-bracket"
-            var entityOptional = taxBracketRepository.findByValue(bracketValue);
-            
-            if (entityOptional.isPresent()) {
-                TaxBracketEntity entity = entityOptional.get();
-                if (entity.getDetails() != null && !entity.getDetails().isEmpty()) {
-                    // Convert database entities to domain TaxBracket objects
-                    return entity.getDetails().stream()
-                        .sorted((a, b) -> a.getBracketOrder().compareTo(b.getBracketOrder()))
-                        .map(detail -> new TaxBracket(detail.getMaxIncome(), detail.getRate()))
-                        .collect(Collectors.toList());
-                }
-            }
-        } catch (Exception e) {
-            // Log error but continue - fall back to enum
-            System.err.println("Error loading tax brackets from database: " + e.getMessage());
+    private List<TaxBracket> getTaxBracketsFromDatabase(TaxBracketType taxBracketType) {
+        String bracketValue = taxBracketType.getCode();  // e.g., "7-bracket" or "5-bracket"
+        var entityOptional = taxBracketRepository.findByValue(bracketValue);
+        
+        if (entityOptional.isEmpty()) {
+            throw new IllegalArgumentException("Tax bracket not found for value: " + bracketValue);
         }
         
-        // Fall back to enum hardcoded values
-        return taxBracketType.getBrackets();
+        TaxBracketEntity entity = entityOptional.get();
+        if (entity.getDetails() == null || entity.getDetails().isEmpty()) {
+            throw new IllegalArgumentException("No tax bracket details found for value: " + bracketValue);
+        }
+        
+        // Convert database entities to domain TaxBracket objects
+        return entity.getDetails().stream()
+            .sorted((a, b) -> a.getBracketOrder().compareTo(b.getBracketOrder()))
+            .map(detail -> new TaxBracket(
+                detail.getMaxIncome() != null ? detail.getMaxIncome() : Long.MAX_VALUE, 
+                detail.getRate() / 100.0  // Convert percentage (5) to decimal (0.05)
+            ))
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Get deduction bracket from database
+     * @param date The date to find the effective deduction bracket for
+     * @return DeductionBracketValue or null if not found
+     */
+    public DeductionBracketValue getDeductionBracket(LocalDate date) {
+        var entities = deductionBracketRepository.findLatestEffectiveByDate(date);
+        
+        if (entities.isEmpty()) {
+            throw new IllegalArgumentException("No deduction bracket found for date: " + date);
+        }
+        
+        DeductionBracketEntity entity = entities.get(0);
+        return new DeductionBracketValue(
+            entity.getValue(),
+            entity.getLabel(),
+            entity.getPersonalDeduction(),
+            entity.getDependentDeduction(),
+            entity.getEffectiveDate()
+        );
+    }
+    
+    /**
+     * Get wage zone from database
+     * @param wageZoneValue The wage zone code
+     * @return WageZoneValue or null if not found
+     */
+    public WageZoneValue getWageZone(String wageZoneValue) {
+        var entityOptional = wageZoneRepository.findByValue(wageZoneValue);
+        
+        if (entityOptional.isEmpty()) {
+            throw new IllegalArgumentException("Wage zone not found for value: " + wageZoneValue);
+        }
+        
+        WageZoneEntity entity = entityOptional.get();
+        return new WageZoneValue(
+            entity.getValue(),
+            entity.getLabel(),
+            entity.getMinimumWage(),
+            entity.getBhtnCeiling()
+        );
     }
 
     /**
@@ -93,7 +140,7 @@ public class TaxCalculationService {
         long bhyt = Math.round(insuranceBase * input.getBhytRate() / 100);
 
         // Calculate BHTN with zone-based cap
-        WageZone wageZone = input.getWageZone();
+        WageZoneValue wageZone = input.getWageZone();
         long bhtnBase = Math.min(input.getGrossSalary(), wageZone.getInsuranceCap());
         long bhtn = Math.round(bhtnBase * input.getBhtnRate() / 100);
 
