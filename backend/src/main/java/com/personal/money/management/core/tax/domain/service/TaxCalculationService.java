@@ -1,6 +1,14 @@
 package com.personal.money.management.core.tax.domain.service;
 
-import com.personal.money.management.core.tax.domain.model.*;
+import com.personal.money.management.core.tax.domain.model.TaxBracket;
+import com.personal.money.management.core.tax.domain.model.DeductionBracketValue;
+import com.personal.money.management.core.tax.domain.model.WageZoneValue;
+import com.personal.money.management.core.tax.domain.model.TaxBracketType;
+import com.personal.money.management.core.tax.domain.model.SalaryCalculationInput;
+import com.personal.money.management.core.tax.domain.model.SalaryCalculationResult;
+import com.personal.money.management.core.tax.infrastructure.persistence.TaxBracketEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.DeductionBracketEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.WageZoneEntity;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -125,7 +133,7 @@ public class TaxCalculationService {
             entity.getValue(),
             entity.getLabel(),
             entity.getMinimumWage(),
-            entity.getBhtnCeiling()
+            entity.getInsuranceCap()
         );
     }
 

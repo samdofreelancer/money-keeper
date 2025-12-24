@@ -1,10 +1,11 @@
-package com.personal.money.management.core.tax.domain.model;
+package com.personal.money.management.core.tax.infrastructure.persistence;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
  * JPA Entity for TAX_BRACKET_DETAIL table
+ * Infrastructure Layer - Persistence Model
  * Represents progressive tax rates for a specific tax bracket
  */
 @Entity

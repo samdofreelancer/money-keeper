@@ -1,16 +1,17 @@
-package com.personal.money.management.core.tax.domain.model;
+package com.personal.money.management.core.tax.infrastructure.persistence;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * JPA Entity for TAX_BRACKET table
- * Represents a tax bracket configuration with its progressive tax rates
+ * JPA Entity for DEDUCTION_BRACKET table
+ * Infrastructure Layer - Persistence Model
+ * Represents personal and dependent deduction amounts for different periods
  */
 @Entity
-@Table(name = "TAX_BRACKET", schema = "CORE")
-public class TaxBracketEntity {
+@Table(name = "DEDUCTION_BRACKET", schema = "CORE")
+public class DeductionBracketEntity {
     
     @Id
     private String id;
@@ -21,6 +22,12 @@ public class TaxBracketEntity {
     @Column(name = "LABEL", nullable = false)
     private String label;
     
+    @Column(name = "PERSONAL_DEDUCTION", nullable = false)
+    private Long personalDeduction;
+    
+    @Column(name = "DEPENDENT_DEDUCTION", nullable = false)
+    private Long dependentDeduction;
+    
     @Column(name = "EFFECTIVE_DATE", nullable = false)
     private LocalDate effectiveDate;
     
@@ -30,19 +37,16 @@ public class TaxBracketEntity {
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
     
-    @OneToMany(mappedBy = "bracket", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @OrderBy("bracketOrder ASC")
-    private java.util.List<TaxBracketDetailEntity> details;
-    
     // Constructors
-    public TaxBracketEntity() {}
+    public DeductionBracketEntity() {}
     
-    public TaxBracketEntity(String id, String value, String label, LocalDate effectiveDate) {
+    public DeductionBracketEntity(String id, String value, String label, Long personalDeduction, Long dependentDeduction, LocalDate effectiveDate) {
         this.id = id;
         this.value = value;
         this.label = label;
+        this.personalDeduction = personalDeduction;
+        this.dependentDeduction = dependentDeduction;
         this.effectiveDate = effectiveDate;
-        this.details = new java.util.ArrayList<>();
     }
     
     // Getters and Setters
@@ -70,6 +74,22 @@ public class TaxBracketEntity {
         this.label = label;
     }
     
+    public Long getPersonalDeduction() {
+        return personalDeduction;
+    }
+    
+    public void setPersonalDeduction(Long personalDeduction) {
+        this.personalDeduction = personalDeduction;
+    }
+    
+    public Long getDependentDeduction() {
+        return dependentDeduction;
+    }
+    
+    public void setDependentDeduction(Long dependentDeduction) {
+        this.dependentDeduction = dependentDeduction;
+    }
+    
     public LocalDate getEffectiveDate() {
         return effectiveDate;
     }
@@ -92,13 +112,5 @@ public class TaxBracketEntity {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-    
-    public java.util.List<TaxBracketDetailEntity> getDetails() {
-        return details;
-    }
-    
-    public void setDetails(java.util.List<TaxBracketDetailEntity> details) {
-        this.details = details;
     }
 }

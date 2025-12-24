@@ -1,6 +1,10 @@
 package com.personal.money.management.core.tax.application;
 
-import com.personal.money.management.core.tax.domain.model.*;
+import com.personal.money.management.core.tax.domain.model.TaxBracketType;
+import com.personal.money.management.core.tax.infrastructure.persistence.TaxBracketEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.TaxBracketDetailEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.DeductionBracketEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.WageZoneEntity;
 import com.personal.money.management.core.tax.domain.service.TaxBracketRepository;
 import com.personal.money.management.core.tax.domain.service.TaxBracketDetailRepository;
 import com.personal.money.management.core.tax.domain.service.DeductionBracketRepository;
@@ -121,7 +125,7 @@ public class TaxConfigService {
                 entity.getValue(),
                 entity.getLabel(),
                 entity.getMinimumWage(),
-                entity.getBhtnCeiling()
+                entity.getInsuranceCap()
             );
             options.add(option);
         }
@@ -443,7 +447,7 @@ public class TaxConfigService {
         zoneI.setValue("I");
         zoneI.setLabel("Vùng I (HN, TP.HCM): 4.960.000 → Trần: 99.200.000");
         zoneI.setMinimumWage(4960000L);
-        zoneI.setBhtnCeiling(99200000L);
+        zoneI.setInsuranceCap(99200000L);
         zoneI.setCreatedAt(now);
         zoneI.setUpdatedAt(now);
         wageZoneRepository.save(zoneI);
@@ -453,7 +457,7 @@ public class TaxConfigService {
         zoneII.setValue("II");
         zoneII.setLabel("Vùng II: 4.410.000 → Trần: 88.200.000");
         zoneII.setMinimumWage(4410000L);
-        zoneII.setBhtnCeiling(88200000L);
+        zoneII.setInsuranceCap(88200000L);
         zoneII.setCreatedAt(now);
         zoneII.setUpdatedAt(now);
         wageZoneRepository.save(zoneII);

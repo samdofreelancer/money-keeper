@@ -1,6 +1,6 @@
 package com.personal.money.management.core.tax.domain.service;
 
-import com.personal.money.management.core.tax.domain.model.WageZoneEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.WageZoneEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

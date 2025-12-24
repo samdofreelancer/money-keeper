@@ -1,7 +1,7 @@
 package com.personal.money.management.core.tax.domain.service;
 
-import com.personal.money.management.core.tax.domain.model.TaxBracketDetailEntity;
-import com.personal.money.management.core.tax.domain.model.TaxBracketEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.TaxBracketDetailEntity;
+import com.personal.money.management.core.tax.infrastructure.persistence.TaxBracketEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

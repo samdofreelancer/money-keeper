@@ -1,11 +1,13 @@
-package com.personal.money.management.core.tax.domain.model;
+package com.personal.money.management.core.tax.infrastructure.persistence;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * JPA Entity for WAGE_ZONE table
- * Represents wage zones with their minimum wage and insurance ceiling
+ * Infrastructure Layer - Persistence Model
+ * Represents wage zones with minimum wage and BHTN insurance ceiling
  */
 @Entity
 @Table(name = "WAGE_ZONE", schema = "CORE")
@@ -14,7 +16,7 @@ public class WageZoneEntity {
     @Id
     private String id;
     
-    @Column(name = "BRACKET_VALUE", nullable = false, unique = true)
+    @Column(name = "ZONE_VALUE", nullable = false, unique = true)
     private String value;
     
     @Column(name = "LABEL", nullable = false)
@@ -23,8 +25,11 @@ public class WageZoneEntity {
     @Column(name = "MINIMUM_WAGE", nullable = false)
     private Long minimumWage;
     
-    @Column(name = "BHTN_CEILING", nullable = false)
-    private Long bhtnCeiling;
+    @Column(name = "BHTN_INSURANCE_CAP", nullable = false)
+    private Long insuranceCap;
+    
+    @Column(name = "EFFECTIVE_DATE", nullable = false)
+    private LocalDate effectiveDate;
     
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
@@ -35,12 +40,13 @@ public class WageZoneEntity {
     // Constructors
     public WageZoneEntity() {}
     
-    public WageZoneEntity(String id, String value, String label, Long minimumWage, Long bhtnCeiling) {
+    public WageZoneEntity(String id, String value, String label, Long minimumWage, Long insuranceCap, LocalDate effectiveDate) {
         this.id = id;
         this.value = value;
         this.label = label;
         this.minimumWage = minimumWage;
-        this.bhtnCeiling = bhtnCeiling;
+        this.insuranceCap = insuranceCap;
+        this.effectiveDate = effectiveDate;
     }
     
     // Getters and Setters
@@ -76,12 +82,20 @@ public class WageZoneEntity {
         this.minimumWage = minimumWage;
     }
     
-    public Long getBhtnCeiling() {
-        return bhtnCeiling;
+    public Long getInsuranceCap() {
+        return insuranceCap;
     }
     
-    public void setBhtnCeiling(Long bhtnCeiling) {
-        this.bhtnCeiling = bhtnCeiling;
+    public void setInsuranceCap(Long insuranceCap) {
+        this.insuranceCap = insuranceCap;
+    }
+    
+    public LocalDate getEffectiveDate() {
+        return effectiveDate;
+    }
+    
+    public void setEffectiveDate(LocalDate effectiveDate) {
+        this.effectiveDate = effectiveDate;
     }
     
     public LocalDateTime getCreatedAt() {
