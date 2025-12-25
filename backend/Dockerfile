@@ -1,4 +1,4 @@
-FROM maven:3.9-openjdk-21 as build
+FROM maven:3.9-openjdk-17 as build
 
 WORKDIR /app
 
@@ -31,7 +31,7 @@ RUN mvn dependency:go-offline -B
 
 RUN mvn -B -ntp -Dmaven.repo.local=/root/.m2/repository clean package -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-FROM openjdk:21-slim
+FROM openjdk:17-slim
 
 RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/lists/*
 
