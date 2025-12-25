@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-21 as build
+FROM maven:3.9-openjdk-21 as build
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN gdown --id $FILE_ID_BASIC -O /tmp/instantclient-basic.zip && \
     rm /tmp/instantclient-basic.zip /tmp/instantclient-sqlplus.zip && \
     ln -s /opt/oracle/instantclient_12_2 /opt/oracle/instantclient && \
     sh -c "echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
-    ldconfig
+RUN ldconfig
 
 COPY src ./src
 
@@ -31,7 +31,7 @@ RUN mvn dependency:go-offline -B
 
 RUN mvn -B -ntp -Dmaven.repo.local=/root/.m2/repository clean package -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-FROM eclipse-temurin:21-jdk-slim
+FROM openjdk:21-slim
 
 RUN apt-get update && apt-get install -y netcat curl && rm -rf /var/lib/apt/lists/*
 
