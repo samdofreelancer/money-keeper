@@ -20,7 +20,7 @@ RUN gdown --id $FILE_ID_BASIC -O /tmp/instantclient-basic.zip && \
     rm /tmp/instantclient-basic.zip /tmp/instantclient-sqlplus.zip && \
     ln -s /opt/oracle/instantclient_12_2 /opt/oracle/instantclient && \
     sh -c "echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
-RUN ldconfig
+    ldconfig
 
 COPY src ./src
 
