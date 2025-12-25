@@ -30,6 +30,18 @@ public class TaxCalculatorApplicationService {
      * Calculate salary and tax based on provided input
      */
     public SalaryCalculationResult calculateSalaryTax(SalaryCalculationRequest request) {
+        // Validate tax bracket type - must be explicitly 7-bracket or 5-bracket
+        if (request.getTaxBracketType() == null || request.getTaxBracketType().isEmpty()) {
+            throw new IllegalArgumentException("Tax bracket type cannot be null or empty");
+        }
+        
+        // Only allow known tax bracket types
+        if (!request.getTaxBracketType().equals("7-bracket") && !request.getTaxBracketType().equals("5-bracket")) {
+            throw new IllegalArgumentException("Invalid tax bracket type: " + request.getTaxBracketType() + ". Must be '7-bracket' or '5-bracket'");
+        }
+        
+        TaxBracketType bracketType = TaxBracketType.fromCode(request.getTaxBracketType());
+        
         // Load wage zone from database
         WageZoneValue wageZone = taxCalculationService.getWageZone(request.getWageZone());
         
@@ -46,7 +58,7 @@ public class TaxCalculatorApplicationService {
             request.getDependentDeductionPerPerson() > 0 ? request.getDependentDeductionPerPerson() : 4_400_000,
             request.getTaxFreeAllowance(),
             request.getOtherDeduction(),
-            TaxBracketType.fromCode(request.getTaxBracketType()),
+            bracketType,
             wageZone
         );
 
