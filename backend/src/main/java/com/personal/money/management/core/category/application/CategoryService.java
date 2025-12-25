@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -92,5 +96,60 @@ public class CategoryService {
         } catch (OptimisticLockingFailureException e) {
             throw new CategoryConflictException("Category delete failed due to concurrent modification. Please retry.", e);
         }
+    }
+
+    @Transactional
+    public void bulkDeleteCategories(List<Long> categoryIds) {
+        try {
+            // Collect all categories to delete including descendants
+            List<Category> allCategoriesToDelete = new ArrayList<>();
+            Set<Long> processedIds = new HashSet<>();
+
+            for (Long categoryId : categoryIds) {
+                if (!processedIds.contains(categoryId)) {
+                    Category category = categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
+                    // Get all descendants in deletion order (children first)
+                    List<Category> descendants = getDescendantsInDeletionOrder(category);
+                    allCategoriesToDelete.addAll(descendants);
+                    allCategoriesToDelete.add(category);
+
+                    // Mark as processed
+                    processedIds.add(categoryId);
+                    processedIds.addAll(descendants.stream().map(Category::getId).collect(Collectors.toSet()));
+                }
+            }
+
+            // De-duplicate by ID while preserving order (children first)
+            List<Category> uniqueCategoriesToDelete = new ArrayList<>();
+            Set<Long> seenIds = new HashSet<>();
+            for (Category category : allCategoriesToDelete) {
+                if (seenIds.add(category.getId())) {
+                    uniqueCategoriesToDelete.add(category);
+                }
+            }
+
+            // Delete in correct order (children first)
+            for (Category category : uniqueCategoriesToDelete) {
+                categoryRepository.deleteById(category.getId());
+            }
+        } catch (OptimisticLockingFailureException e) {
+            throw new CategoryConflictException("Bulk category delete failed due to concurrent modification. Please retry.", e);
+        }
+    }
+
+    private List<Category> getDescendantsInDeletionOrder(Category category) {
+        List<Category> descendants = new ArrayList<>();
+        List<Category> children = categoryRepository.findByParent(category);
+
+        for (Category child : children) {
+            // Recursively get descendants of this child
+            descendants.addAll(getDescendantsInDeletionOrder(child));
+        }
+
+        // Add children after their descendants
+        descendants.addAll(children);
+        return descendants;
     }
 }

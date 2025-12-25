@@ -4,17 +4,18 @@ import com.personal.money.management.core.category.application.exception.Categor
 import com.personal.money.management.core.category.application.exception.CategoryCyclicDependencyException;
 import com.personal.money.management.core.category.application.exception.CategoryConflictException;
 import com.personal.money.management.core.category.application.exception.CategoryHasChildException;
-import com.personal.money.management.core.category.domain.CategoryFactory;
 import com.personal.money.management.core.category.domain.model.Category;
 import com.personal.money.management.core.category.domain.model.CategoryType;
 import com.personal.money.management.core.category.domain.repository.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -229,5 +230,109 @@ class CategoryServiceTest {
         verify(categoryRepository).findById(categoryId);
         verify(categoryRepository).findByParent(category);
         verify(categoryRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldDeleteMultipleCategoriesSuccessfully() {
+        // Setup categories
+        Category category1 = Category.reconstruct(1L, "Category1", "icon1", CategoryType.EXPENSE, null);
+        Category category2 = Category.reconstruct(2L, "Category2", "icon2", CategoryType.EXPENSE, null);
+        Category category3 = Category.reconstruct(3L, "Category3", "icon3", CategoryType.EXPENSE, null);
+
+        List<Long> categoryIds = Arrays.asList(1L, 2L, 3L);
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category1));
+        when(categoryRepository.findById(2L)).thenReturn(Optional.of(category2));
+        when(categoryRepository.findById(3L)).thenReturn(Optional.of(category3));
+
+        // Mock no children for any category
+        when(categoryRepository.findByParent(any(Category.class))).thenReturn(Collections.emptyList());
+
+        doNothing().when(categoryRepository).deleteById(anyLong());
+
+        assertDoesNotThrow(() -> categoryService.bulkDeleteCategories(categoryIds));
+
+        verify(categoryRepository).findById(1L);
+        verify(categoryRepository).findById(2L);
+        verify(categoryRepository).findById(3L);
+        verify(categoryRepository, times(3)).deleteById(anyLong());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldDeleteCategoriesWithChildren() {
+        // Setup parent and child categories
+        Category parent = Category.reconstruct(1L, "Parent", "parent_icon", CategoryType.EXPENSE, null);
+        Category child = Category.reconstruct(2L, "Child", "child_icon", CategoryType.EXPENSE, parent);
+
+        List<Long> categoryIds = Arrays.asList(1L);
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(parent));
+        when(categoryRepository.findByParent(parent)).thenReturn(List.of(child));
+        when(categoryRepository.findByParent(child)).thenReturn(Collections.emptyList());
+
+        doNothing().when(categoryRepository).deleteById(anyLong());
+
+        assertDoesNotThrow(() -> categoryService.bulkDeleteCategories(categoryIds));
+
+        // Verify both parent and child are deleted (child first, then parent)
+        verify(categoryRepository).deleteById(2L); // child deleted first
+        verify(categoryRepository).deleteById(1L); // parent deleted after
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldThrowExceptionIfCategoryNotFound() {
+        List<Long> categoryIds = Arrays.asList(1L, 999L);
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(Category.reconstruct(1L, "Category1", "icon1", CategoryType.EXPENSE, null)));
+        when(categoryRepository.findById(999L)).thenReturn(Optional.empty());
+
+        CategoryNotFoundException exception = assertThrows(CategoryNotFoundException.class, () -> {
+            categoryService.bulkDeleteCategories(categoryIds);
+        });
+
+        assertEquals("Category not found with id: 999", exception.getMessage());
+        verify(categoryRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldHandleEmptyList() {
+        List<Long> categoryIds = Collections.emptyList();
+
+        assertDoesNotThrow(() -> categoryService.bulkDeleteCategories(categoryIds));
+
+        verify(categoryRepository, never()).findById(anyLong());
+        verify(categoryRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldHandleDuplicateIds() {
+        Category category = Category.reconstruct(1L, "Category1", "icon1", CategoryType.EXPENSE, null);
+        List<Long> categoryIds = Arrays.asList(1L, 1L); // duplicate IDs
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(categoryRepository.findByParent(category)).thenReturn(Collections.emptyList());
+        doNothing().when(categoryRepository).deleteById(1L);
+
+        assertDoesNotThrow(() -> categoryService.bulkDeleteCategories(categoryIds));
+
+        // Should only delete once despite duplicate IDs
+        verify(categoryRepository).deleteById(1L);
+    }
+
+    @Test
+    void bulkDeleteCategories_shouldThrowExceptionOnConcurrentModification() {
+        Category category = Category.reconstruct(1L, "Category1", "icon1", CategoryType.EXPENSE, null);
+        List<Long> categoryIds = Arrays.asList(1L);
+
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+        when(categoryRepository.findByParent(category)).thenReturn(Collections.emptyList());
+        doThrow(new OptimisticLockingFailureException("Concurrent modification"))
+                .when(categoryRepository).deleteById(1L);
+
+        CategoryConflictException exception = assertThrows(CategoryConflictException.class, () -> {
+            categoryService.bulkDeleteCategories(categoryIds);
+        });
+
+        assertEquals("Bulk category delete failed due to concurrent modification. Please retry.", exception.getMessage());
     }
 }

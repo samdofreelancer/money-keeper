@@ -82,4 +82,13 @@ export class CategoryApiClient {
     const categories = await this.getCategories();
     return categories.filter(category => category.name === name);
   }
+
+  async bulkDeleteCategories(categoryIds: string[]): Promise<void> {
+    const apiUrl = this.getApiUrl('/categories/bulk-delete');
+    const response = await this.request.post(apiUrl, {
+      data: categoryIds,
+    });
+
+    await this.assertOk(response, 'bulkDeleteCategories');
+  }
 }

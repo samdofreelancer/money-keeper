@@ -91,6 +91,14 @@ export class TestData {
     Logger.info(`[TestData] Tracked category: ${name} with Name: ${name}`);
   }
 
+  /** Remove a category name from the tracker */
+  static untrackCategory(name: string): void {
+    if (name && this.createdCategories.has(name)) {
+      this.createdCategories.delete(name);
+      Logger.info(`[TestData] Untracked category: ${name}`);
+    }
+  }
+
   /** Lấy danh sách account đã tạo (copy) */
   static getAccounts(): string[] {
     return Array.from(this.createdAccounts);
@@ -141,6 +149,31 @@ export class TestData {
   }
 
   /**
+   * Get all descendants of a category in deletion order (children first).
+   */
+  private static getDescendantsInDeletionOrder(
+    category: CategoryResponse,
+    allCategories: CategoryResponse[]
+  ): CategoryResponse[] {
+    const descendants: CategoryResponse[] = [];
+
+    // Find direct children
+    const children = allCategories.filter(cat => cat.parentId === category.id);
+
+    // Recursively get descendants of each child
+    for (const child of children) {
+      descendants.push(
+        ...this.getDescendantsInDeletionOrder(child, allCategories)
+      );
+    }
+
+    // Add children after their descendants
+    descendants.push(...children);
+
+    return descendants;
+  }
+
+  /**
    * Cleanup Categories qua API.
    */
   static async cleanupCategoriesViaApi(): Promise<void> {
@@ -171,8 +204,35 @@ export class TestData {
         `[TestData] Found ${categoriesToDelete.length} categories to delete`
       );
 
-      // Delete each category by its actual ID
+      // Collect all categories to delete including descendants
+      const allCategoriesToDelete: CategoryResponse[] = [];
+      const processedIds = new Set<string>();
+
       for (const category of categoriesToDelete) {
+        if (!processedIds.has(category.id)) {
+          // Add descendants first (children before parents)
+          const descendants = this.getDescendantsInDeletionOrder(
+            category,
+            allCategories
+          );
+          allCategoriesToDelete.push(...descendants);
+          // Add the category itself
+          allCategoriesToDelete.push(category);
+          processedIds.add(category.id);
+        }
+      }
+
+      // Remove duplicates while preserving order
+      const uniqueCategoriesToDelete = allCategoriesToDelete.filter(
+        (cat, index, arr) => arr.findIndex(c => c.id === cat.id) === index
+      );
+
+      Logger.info(
+        `[TestData] Total categories to delete including descendants: ${uniqueCategoriesToDelete.length}`
+      );
+
+      // Delete each category by its actual ID in correct order
+      for (const category of uniqueCategoriesToDelete) {
         try {
           await categoryApiClient.deleteCategory(category.id);
           Logger.info(

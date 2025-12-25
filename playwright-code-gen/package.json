@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cucumber-js src/features/**/**.feature --tags \"not @wip\"",
+    "test:focus": "cucumber-js src/features/**/**.feature --tags \"@focus\"",
     "test:account": "npx cucumber-js src/features/accounts/account-creation.feature",
     "test:category": "npx cucumber-js src/features/categories/**/*.feature",
     "test:transaction": "npx cucumber-js src/features/transactions/**/*.feature --tags \"@wip\"",
