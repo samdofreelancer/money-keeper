@@ -37,10 +37,11 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ci
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      SPRING_FLYWAY_ENABLED: "false"
     restart: unless-stopped
     depends_on:
-      oracle:
-        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
