@@ -31,7 +31,7 @@ public class TaxBracketDetailEntity {
     @Column(name = "DEDUCTION", nullable = false)
     private Long deduction;
     
-    @Column(name = "BRACKET_ORDER", nullable = false)
+    @Column(name = "BRACKET_SEQ", nullable = false)
     private Integer bracketOrder;
     
     @Column(name = "CREATED_AT")
