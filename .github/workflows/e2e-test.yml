@@ -63,8 +63,17 @@ jobs:
       - name: Wait for Frontend to be healthy
         run: bash scripts/wait_for_frontend.sh
 
+      - name: Check Backend logs before running tests
+        run: docker compose logs backend
+
       - name: Run playwright-code-gen tests
         run: docker compose run --rm -e GITHUB_REF=${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
+
+      - name: Check Backend and Frontend logs on failure
+        if: failure()
+        run: |
+          echo "=== Backend logs ===" && docker compose logs backend
+          echo "=== Frontend logs ===" && docker compose logs frontend
 
       - name: Generate Allure report
         if: always()
