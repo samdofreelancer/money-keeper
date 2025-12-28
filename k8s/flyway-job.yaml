@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flyway-migration
+  namespace: money-keeper
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: flyway
+    spec:
+      serviceAccountName: default
+      restartPolicy: Never
+      containers:
+      - name: flyway
+        image: flyway/flyway:latest
+        command: ["flyway"]
+        args:
+          - "-url=jdbc:oracle:thin:@oracle:1521/XEPDB1"
+          - "-user=system"
+          - "-password=$(ORACLE_PASSWORD)"
+          - "-schemas=CORE"
+          - "-locations=filesystem:/flyway/sql"
+          - "-baselineOnMigrate=false"
+          - "-cleanDisabled=false"
+          - "clean"
+          - "migrate"
+        env:
+        - name: ORACLE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: oracle-secret
+              key: password
+        volumeMounts:
+        - name: migration-sql
+          mountPath: /flyway/sql
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: migration-sql
+        configMap:
+          name: flyway-migrations
