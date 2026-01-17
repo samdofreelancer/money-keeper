@@ -3,6 +3,7 @@ import {
   getAccountCreationApiUseCase,
   getAccountUpdateUiUseCase,
   getAccountsPage,
+  getAccountSortingVerificationUiUseCase,
 } from 'shared/utilities/hooks';
 import { TestData } from 'shared/utilities/testData';
 import {
@@ -249,9 +250,11 @@ When(
 Then(
   'the accounts should be sorted by balance in {string} order',
   async function (order: 'ascending' | 'descending') {
-    const accountsPage = getAccountsPage();
-    const balances = await accountsPage.getAccountBalances();
+    const balances = await getAccountsPage().getAccountBalances();
     const sortOrder = order === 'ascending' ? 'asc' : 'desc';
-    await accountsPage.verifyAccountsSortedByBalance(balances, sortOrder);
+    await getAccountSortingVerificationUiUseCase().verifyAccountsSortedByBalance(
+      balances,
+      sortOrder
+    );
   }
 );
