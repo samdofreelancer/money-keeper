@@ -7,6 +7,7 @@ export const TOKENS = {
   // Accounts domain tokens
   AccountsPlaywrightPage: Symbol.for('accounts:AccountsPlaywrightPage'),
   AccountApiClient: Symbol.for('accounts:AccountApiClient'),
+  AccountRepository: Symbol.for('accounts:AccountRepository'),
   AccountCreationApiUseCase: Symbol.for('accounts:AccountCreationApiUseCase'),
   AccountDeletionApiUseCase: Symbol.for('accounts:AccountDeletionApiUseCase'),
   AccountBalanceUiUseCase: Symbol.for('accounts:AccountBalanceUiUseCase'),
