@@ -97,12 +97,25 @@ ENFORCEMENT / LINTING (practical checks)
 - CI should include:
   - A small static check (eslint rule or script) to flag:
     - Pages importing usecases or steps.
+DTO CONSISTENCY PATTERN (CRITICAL)
+- Domain/UI Layer DTOs: Use standardized names (name, balance, description)
+  - Example: AccountDto { name: string, balance: number, ... }
+- API/Backend Layer DTOs: Use backend names (accountName, initBalance, description)
+  - Example: AccountCreateDto { accountName: string, initBalance: number, ... }
+  - Example: AccountApiDto { accountName: string, balance: number, ... }
+- CONVERSION RULES:
+  - ALWAYS use factory methods: AccountCreateDto.fromAccountDto(accountDto)
+  - NEVER manually map fields (name → accountName) outside conversion functions
+  - Conversion functions should be in DTO file, well-documented with JSDoc
+- BENEFIT: Centralized mapping prevents bugs, clear intent, maintainable code
+
     - UseCases importing '@playwright/test'.
     - Step files importing selectors or referencing locators.
   - A naming lint checklist / PR template to verify DTO naming consistency.
 - Code review checklist items:
   - "Does the Page throw business errors?" If yes — request move to UseCase.
   - "Is any Playwright locator used outside pages?" If yes — request relocation.
+  - "Are DTOs converted using factory methods?" If not — request update to use fromAccountDto(), toAccountDto(), etc.
 
 REFACTOR MANDATES (when violation found)
 - If a page contains verification logic (sorting, complex comparison):
@@ -111,15 +124,22 @@ REFACTOR MANDATES (when violation found)
   - Move selectors into Page object and call Page methods from Steps/UseCases.
 - If naming mismatches exist in DTOs:
   - Add a conversion factory and update call sites to use it; then standardize names in future changes.
+- If DTO is constructed directly instead of via factory:
+  - Update to use AccountCreateDto.fromAccountDto(accountDto) pattern.
 
 EXAMPLES (do this, not that)
 - Good:
   - UseCase.createAccount(dto) -> calls accountsPage.clickAddAccount(); accountsPage.fillForm(dto); await accountsPage.getVisibleAccountNames(); perform verification and return structured result.
+  - const createDto = AccountCreateDto.fromAccountDto(accountDto); // ALWAYS use factory
+  - const accountDto = toAccountDto(apiResponse); // Use conversion function
 - Bad:
   - accountsVerification.verifyAccountsSortedByBalance(...) inside a page that throws business Error.
   - Steps directly running page.locator('...').
+  - const createDto = new AccountCreateDto({ accountName: "...", initBalance: 1000 }); // Direct constructor
+  - Manual mapping: { accountName: dto.name, initBalance: dto.balance } // Outside conversion function
 
 FINAL NOTE
 - These rules are intentionally strict: keep Pages mechanical, UseCases cognitive, Steps declarative.
+- DTOs must follow strict conversion patterns to prevent bugs and maintain clarity.
 - Do NOT invent new layers or patterns; apply these rules consistently to move the codebase from PARTIAL → PASS.
 `;
