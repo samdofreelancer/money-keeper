@@ -2,7 +2,10 @@ import { Given, When, Then } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
 import { poll } from 'shared/utilities/poll';
 import { sanitizeCategoryData } from 'shared/utilities/data-sanitization';
-import { getCategoriesPage } from 'shared/utilities/hooks';
+import {
+  getCategoriesPage,
+  getCategoryAssertionUiUseCase,
+} from 'shared/utilities/hooks';
 
 // Configuration constants for better maintainability
 const POLLING_CONFIG = {
@@ -55,21 +58,13 @@ When('I create a new category with:', async function (dataTable) {
 Then(
   'the category {string} should appear in the category list',
   async function (name: string) {
-    const categoryExists = await this.categoriesPage.hasCategory(name);
-    expect(
-      categoryExists,
-      `${ERROR_MESSAGES.CATEGORY_NOT_FOUND}: ${name}`
-    ).toBe(true);
+    await getCategoryAssertionUiUseCase().verifyCategory(name);
   }
 );
 
 Then(
   'the category {string} should not appear in the category list',
   async function (name: string) {
-    const categoryExists = await this.categoriesPage.hasCategory(name);
-    expect(
-      categoryExists,
-      `${ERROR_MESSAGES.CATEGORY_STILL_EXISTS}: ${name}`
-    ).toBe(false);
+    await getCategoryAssertionUiUseCase().verifyNoCategory(name);
   }
 );

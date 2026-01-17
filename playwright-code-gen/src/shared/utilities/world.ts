@@ -9,8 +9,9 @@ import { AccountDeletionApiUseCase } from 'account-domains/usecases/api/AccountD
 import { CategoryApiClient } from 'category-domain/api/category-api.client';
 import { CategoryDeletionApiUseCase } from 'category-domain/usecases/api/CategoryDeletionApiUseCase';
 import { CategoriesPage } from 'category-domain/pages/categories.playwright.page';
-import { AccountBalanceUiUseCase } from 'account-domains/usecases/ui/AccountBalanceUiUseCase';
 import { CreateCategoryUseCase } from 'category-domain/usecases/ui/category.use-case';
+import { CategoryAssertionUiUseCase } from 'category-domain/usecases/ui/CategoryAssertionUiUseCase';
+import { AccountBalanceUiUseCase } from 'account-domains/usecases/ui/AccountBalanceUiUseCase';
 import { TransactionsPage } from 'transaction-domain/pages/transactions.playwright.page';
 import { TransactionCreationUiUseCase } from 'transaction-domain/usecases/ui/TransactionCreationUiUseCase';
 import { TransactionCreationApiUseCase } from 'transaction-domain/usecases/api/TransactionCreationApiUseCase';
@@ -88,6 +89,10 @@ export class World extends BaseWorld {
   }
   public get createCategoryUseCase(): CreateCategoryUseCase {
     return this.use(TOKENS.CreateCategoryUseCase);
+  }
+
+  public get categoryAssertionUiUseCase(): CategoryAssertionUiUseCase {
+    return this.use(TOKENS.CategoryAssertionUiUseCase);
   }
 
   public get categoryDeletionApiUseCase(): CategoryDeletionApiUseCase {

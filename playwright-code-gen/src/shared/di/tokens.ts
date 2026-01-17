@@ -26,6 +26,7 @@ export const TOKENS = {
   CategoryApiClient: Symbol.for('category:CategoryApiClient'),
   CreateCategoryUseCase: Symbol.for('category:CreateCategoryUseCase'),
   CategoryDeletionApiUseCase: Symbol.for('category:CategoryDeletionApiUseCase'),
+  CategoryAssertionUiUseCase: Symbol.for('category:CategoryAssertionUiUseCase'),
 
   // Transaction domain tokens
   TransactionsPage: Symbol.for('transactions:TransactionsPage'),
