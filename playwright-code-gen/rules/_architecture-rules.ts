@@ -12,6 +12,14 @@
  *   - API clients / API use-cases (api)
  *
  * Keep rules short, concrete, and actionable.
+ *
+ * ENHANCEMENTS (January 17, 2026):
+ * - Added ASYNC/AWAIT PATTERNS section (prevents race conditions & flakiness)
+ * - Added CROSS-DOMAIN ORCHESTRATION section (multi-domain workflows)
+ * - Added TEST DATA MANAGEMENT section (fixtures and cleanup)
+ * - Added FLAKINESS PREVENTION section (test reliability)
+ * - Added COMPLIANCE SCORING section (measurable enforcement)
+ * - Enhanced LAYER RESPONSIBILITIES with async requirements
  */
 
 export const ARCHITECTURE_RULES = `
@@ -26,16 +34,20 @@ LAYER RESPONSIBILITIES
   - Do not implement business rules, retries, or heavy logic.
 
 - UseCase (src/domains/<domain>/usecases/)
+  - MUST be async when calling Pages or awaiting UI state changes
   - Orchestrate workflows across Page objects, ApiClients, and mocks.
-  - Implement business rules, validations, retries, and eventual-consistency polling.
+  - Implement business rules, validations, retries, and eventual-consistency polling with async/await.
   - Return structured results (e.g., { ok: true } | { ok: false, error: string }) or throw for exceptional failures.
   - Do NOT import '@playwright/test' or call Playwright locators directly.
+  - Implement polling for UI state verification: use 5 retries × 500ms for typical operations (2.5s timeout).
 
 - Page (src/domains/<domain>/pages/)
-  - Encapsulate all UI selectors and Playwright interactions.
+  - MUST be fully async (all methods that interact with Playwright must be async)
+  - Encapsulate all UI selectors and Playwright interactions using Playwright locators.
   - Provide primitive actions and data retrieval methods only (click..., fill..., get..., is/has...).
   - Do NOT contain assertions, sorting/business-verification logic, or API calls.
   - Prefer methods that return data/booleans rather than throwing for business checks.
+  - Example: async clickAddButton(): Promise<void> { await this.page.locator('button:has-text("Add")').click(); }
 
 - API (src/domains/<domain>/api/ or usecases/api/)
   - Contain HTTP/backend interactions for setup/cleanup or direct API flows.
@@ -46,6 +58,95 @@ ALLOWED DEPENDENCIES (directional)
 - UseCases → Pages, UseCases → ApiClients, UseCases → shared utilities
 - Pages → Playwright, Pages → shared utilities
 - shared/* → allowed everywhere
+- Steps may call multiple domain UseCases for multi-domain orchestration
+
+ASYNC/AWAIT PATTERNS (CRITICAL)
+- Pages:
+  - All Playwright interactions (click, fill, navigate) MUST be async
+  - Use page.locator() instead of direct DOM queries for better wait handling
+  - Example async method: async clickAddButton(): Promise<void> { await this.page.locator(...).click(); }
+  - Simple getters may be sync if no Playwright interaction: getName(): string
+  - Any method that waits on UI state MUST be async
+
+- UseCases:
+  - MUST be async when calling Pages or awaiting UI state changes
+  - Implement polling for eventual consistency with configurable retries
+  - Pattern: for (let i = 0; i < maxRetries; i++) { if (condition) return ok; await delay(ms); }
+  - Example UseCase method:
+    async verifyAccountsSortedByBalance(order: 'asc' | 'desc'): Promise<VerifyResult> {
+      const maxRetries = 5;
+      for (let i = 0; i < maxRetries; i++) {
+        const balances = await this.accountsPage.getAccountBalances();
+        if (this.isSorted(balances, order)) return { ok: true };
+        await this.delay(500);
+      }
+      return { ok: false, error: 'Balances not sorted after retries' };
+    }
+
+- Steps:
+  - MUST always await UseCase calls: await getAccountCreationUiUseCase().createAccount(dto);
+  - MUST always await Page calls: const balance = await this.accountsPage.getBalance();
+
+- Polling Guidelines:
+  - UI state changes: 5 retries with 500ms delay (typical, 2.5s total)
+  - Data-heavy operations: 10 retries with 1000ms delay (network dependent, 10s total)
+  - Simple state checks: 3 retries with 300ms delay (fast checks, 0.9s total)
+  - NEVER use artificial waitForTimeout() without condition polling
+  - Always log retry attempts for debugging in UseCase methods
+
+- Timeouts:
+  - Page-level default: 5 seconds for typical operations
+  - Page-level extended: 15 seconds for slow operations (file uploads, large data loads)
+  - Polling: calculate as maxRetries times delayMs (e.g., 5 times 500ms = 2.5s total timeout)
+  - Network waits: Use page.waitForLoadState('networkidle') for data-heavy pages
+- Steps may call multiple domain UseCases for multi-domain orchestration
+
+ASYNC/AWAIT PATTERNS (CRITICAL)
+- Pages:
+  - All Playwright interactions (click, fill, navigate) MUST be async
+  - Use page.locator() instead of direct DOM queries for better wait handling
+  - Example: async clickAddButton(): Promise<void> { await this.page.locator('button:has-text("Add")').click(); }
+  - Simple getters may be sync if no Playwright interaction: getName(): string (no async needed)
+  - Any method that waits on UI state MUST be async
+
+- UseCases:
+  - MUST be async when calling Pages or awaiting UI state changes
+  - Implement polling for eventual consistency with configurable retries:
+    const maxRetries = 5; const delayMs = 500;
+    for (let i = 0; i < maxRetries; i++) {
+      const condition = await checkCondition();
+      if (condition) return { ok: true };
+      await this.delay(delayMs);
+    }
+    return { ok: false, error: 'Condition never met' };
+  - Example UseCase with polling:
+    async verifyAccountsSortedByBalance(order: 'asc' | 'desc'): Promise<VerifyResult> {
+      const maxRetries = 5;
+      for (let i = 0; i < maxRetries; i++) {
+        const balances = await this.accountsPage.getAccountBalances();
+        if (this.isSorted(balances, order)) return { ok: true };
+        await this.delay(500);
+      }
+      return { ok: false, error: 'Balances not sorted after retries' };
+    }
+
+- Steps:
+  - MUST always await UseCase calls
+  - Example: await getAccountCreationUiUseCase().createAccount(dto);
+  - Example: const balance = await this.accountsPage.getBalance();
+
+- Polling Guidelines:
+  - UI state changes: 5 retries with 500ms delay (typical, 2.5s total)
+  - Data-heavy operations: 10 retries with 1000ms delay (network dependent, 10s total)
+  - Simple state checks: 3 retries with 300ms delay (fast checks, 0.9s total)
+  - NEVER use artificial waitForTimeout() without condition polling
+  - Always log retry attempts for debugging in UseCase methods
+
+- Timeouts:
+  - Page-level default: 5 seconds for typical operations
+  - Page-level extended: 15 seconds for slow operations
+  - Polling calculation: maxRetries multiplied by delayMs 
+  - Network waits: Use page.waitForLoadState() for data-heavy pages
 
 FORBIDDEN DEPENDENCIES
 - UseCases or Pages must NOT import Steps or Step-specific modules.
