@@ -5,20 +5,17 @@ import { getAccountsPage } from 'shared/utilities/hooks';
  * Step definitions for viewing account details
  */
 
-When(
-  'I click on the account {string}',
-  async function (accountName: string) {
-    const accountsPage = getAccountsPage();
-    // Get the unique account name
-    const uniqueAccountName = (this as { uniqueAccountName?: string })
-      .uniqueAccountName || accountName;
+When('I click on the account {string}', async function (accountName: string) {
+  const accountsPage = getAccountsPage();
+  // Get the unique account name
+  const uniqueAccountName =
+    (this as { uniqueAccountName?: string }).uniqueAccountName || accountName;
 
-    // This would require adding a clickAccountName method to AccountsPage
-    throw new Error(
-      'Account details view not yet implemented. Please add clickAccountRow() or similar method to AccountsPage.'
-    );
-  }
-);
+  // This would require adding a clickAccountName method to AccountsPage
+  throw new Error(
+    'Account details view not yet implemented. Please add clickAccountRow() or similar method to AccountsPage.'
+  );
+});
 
 Then(
   'I should see the account details including name, type, balance, currency, and description',

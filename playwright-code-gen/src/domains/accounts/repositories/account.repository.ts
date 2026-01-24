@@ -8,7 +8,11 @@ import {
   DeleteResult,
   ExistsResult,
 } from '../types/account.repository';
-import { AccountCreateDto, AccountDto, toAccountDto } from '../types/account.dto';
+import {
+  AccountCreateDto,
+  AccountDto,
+  toAccountDto,
+} from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
 import { Transient, Inject, TOKENS } from 'shared/di';
 
@@ -157,7 +161,7 @@ export class AccountRepository implements IAccountRepository {
       Logger.info('[Repository] Fetching all accounts');
 
       const apiResponse = await this.apiClient.getAllAccounts();
-      const accounts = apiResponse.map((apiDto) => toAccountDto(apiDto));
+      const accounts = apiResponse.map(apiDto => toAccountDto(apiDto));
 
       Logger.info(
         `[Repository] Retrieved ${accounts.length} accounts successfully`
@@ -203,7 +207,7 @@ export class AccountRepository implements IAccountRepository {
       // Note: Adjust based on actual AccountApiClient implementation
       // If getAccountById exists, use it; otherwise use getAllAccounts
       const allAccounts = await this.apiClient.getAllAccounts();
-      const account = allAccounts.find((acc) => acc.id === id);
+      const account = allAccounts.find(acc => acc.id === id);
 
       if (!account) {
         Logger.warn(`[Repository] Account not found with ID: ${id}`);
@@ -283,7 +287,10 @@ export class AccountRepository implements IAccountRepository {
    * @param dto Partial update DTO
    * @returns Promise with result
    */
-  async update(id: string, dto: Partial<AccountCreateDto>): Promise<UpdateResult> {
+  async update(
+    id: string,
+    dto: Partial<AccountCreateDto>
+  ): Promise<UpdateResult> {
     try {
       Logger.info(`[Repository] Updating account: ${id}`);
 
