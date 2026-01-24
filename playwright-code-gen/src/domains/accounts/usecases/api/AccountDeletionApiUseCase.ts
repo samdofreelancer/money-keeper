@@ -89,9 +89,7 @@ export class AccountDeletionApiUseCase {
       const allResult = await this.repository.findAll();
 
       if (!allResult.ok) {
-        Logger.warn(
-          `[UseCase] Failed to fetch accounts for deletion: ${allResult.error}`
-        );
+        Logger.warn(`[UseCase] Failed to fetch accounts for deletion: ${allResult.error}`);
         return {
           ok: false,
           error: allResult.error,
@@ -99,7 +97,7 @@ export class AccountDeletionApiUseCase {
       }
 
       // Find account by name (use domain format field name)
-      const account = allResult.data.find(acc => acc.name === name);
+      const account = allResult.data.find((acc) => acc.name === name);
 
       if (!account) {
         Logger.warn(`[UseCase] Account not found: ${name}`);
@@ -122,9 +120,7 @@ export class AccountDeletionApiUseCase {
           deletedId: deleteResult.deletedId,
         };
       } else {
-        Logger.error(
-          `[UseCase] Failed to delete account: ${deleteResult.error}`
-        );
+        Logger.error(`[UseCase] Failed to delete account: ${deleteResult.error}`);
 
         return {
           ok: false,

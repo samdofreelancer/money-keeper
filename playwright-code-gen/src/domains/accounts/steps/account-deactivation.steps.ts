@@ -5,23 +5,26 @@ import { getAccountsPage } from 'shared/utilities/hooks';
  * Step definitions for account deactivation scenarios
  */
 
-When('I deactivate the account {string}', async function (accountName: string) {
-  const accountsPage = getAccountsPage();
-  // Get the unique account name
-  const uniqueAccountName = (this as { uniqueAccountName?: string })
-    .uniqueAccountName;
-  if (!uniqueAccountName) {
+When(
+  'I deactivate the account {string}',
+  async function (accountName: string) {
+    const accountsPage = getAccountsPage();
+    // Get the unique account name
+    const uniqueAccountName = (this as { uniqueAccountName?: string })
+      .uniqueAccountName;
+    if (!uniqueAccountName) {
+      throw new Error(
+        'No account name found in test context. Make sure "I have an existing account named" step was executed.'
+      );
+    }
+
+    // This would require adding a deactivateAccount method to AccountsPage
+    // For now, we'll throw a descriptive error
     throw new Error(
-      'No account name found in test context. Make sure "I have an existing account named" step was executed.'
+      'Deactivation feature not yet implemented. Please add deactivateAccount() method to AccountsPage.'
     );
   }
-
-  // This would require adding a deactivateAccount method to AccountsPage
-  // For now, we'll throw a descriptive error
-  throw new Error(
-    'Deactivation feature not yet implemented. Please add deactivateAccount() method to AccountsPage.'
-  );
-});
+);
 
 Then('the account should be marked as inactive', async function () {
   const accountsPage = getAccountsPage();

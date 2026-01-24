@@ -316,7 +316,10 @@ export interface IAccountRepository {
    * - HTTP PATCH/PUT with 5s timeout
    * - Uses partial update (only changed fields)
    */
-  update(id: string, dto: Partial<AccountCreateDto>): Promise<UpdateResult>;
+  update(
+    id: string,
+    dto: Partial<AccountCreateDto>
+  ): Promise<UpdateResult>;
 
   /**
    * Delete account

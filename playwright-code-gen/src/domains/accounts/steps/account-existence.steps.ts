@@ -4,10 +4,7 @@ import {
   getAccountCreationApiUseCase,
   getAccountCreationUiUseCase,
 } from 'shared/utilities/hooks';
-import {
-  AccountCreateDto,
-  AccountDto,
-} from 'account-domains/types/account.dto';
+import { AccountCreateDto, AccountDto } from 'account-domains/types/account.dto';
 
 /**
  * Step definitions for account existence setup
