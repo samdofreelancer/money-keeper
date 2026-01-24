@@ -433,7 +433,7 @@ Then(
 
 Then(
   /^the accounts should be sorted by type in (ascending|descending) order$/,
-  async function () {
+  async function (order: string) {
     // This would require getting account types from the UI
     // For now, we'll provide a placeholder
     throw new Error(

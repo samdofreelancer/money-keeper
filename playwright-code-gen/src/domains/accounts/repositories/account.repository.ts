@@ -8,7 +8,11 @@ import {
   DeleteResult,
   ExistsResult,
 } from '../types/account.repository';
-import { AccountCreateDto, toAccountDto } from '../types/account.dto';
+import {
+  AccountCreateDto,
+  AccountDto,
+  toAccountDto,
+} from '../types/account.dto';
 import { AccountApiClient } from '../api/account-api.client';
 import { Transient, Inject, TOKENS } from 'shared/di';
 
