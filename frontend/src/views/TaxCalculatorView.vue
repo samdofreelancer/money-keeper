@@ -60,7 +60,7 @@
           </label>
           <div class="input-wrapper">
             <input 
-              v-model="formData.grossSalary" 
+              v-model.lazy="formData.grossSalary" 
               type="text" 
               placeholder="0"
               @input="formatInputCurrency"
@@ -77,7 +77,7 @@
           </label>
           <div class="input-wrapper">
             <input 
-              v-model="formData.tetBonus" 
+              v-model.lazy="formData.tetBonus" 
               type="text" 
               placeholder="0"
               @input="formatInputCurrency"
@@ -109,7 +109,7 @@
             </label>
             <div class="input-wrapper">
               <input 
-                v-model="formData.personalDeduction" 
+                v-model.lazy="formData.personalDeduction" 
                 type="text" 
                 placeholder="0"
                 @input="formatInputCurrency"
@@ -128,7 +128,6 @@
                 type="number" 
                 min="0" 
                 max="10"
-                @input="calculateSalary"
                 class="form-input"
               >
             </div>
@@ -142,7 +141,7 @@
           </label>
           <div class="input-wrapper">
             <input 
-              v-model="formData.dependentDeductionPerPerson" 
+              v-model.lazy="formData.dependentDeductionPerPerson" 
               type="text" 
               placeholder="0"
               @input="formatInputCurrency"
@@ -160,7 +159,7 @@
           </label>
           <div class="input-wrapper">
             <input 
-              v-model="formData.insuranceBase" 
+              v-model.lazy="formData.insuranceBase" 
               type="text" 
               placeholder="0"
               @input="formatInputCurrency"
@@ -249,7 +248,7 @@
           </label>
           <div class="input-wrapper">
             <input 
-              v-model="formData.taxFreeAllowance" 
+              v-model.lazy="formData.taxFreeAllowance" 
               type="text" 
               placeholder="0"
               @input="formatInputCurrency"
@@ -266,7 +265,7 @@
           </label>
           <div class="input-wrapper">
             <input 
-              v-model="formData.otherDeduction" 
+              v-model.lazy="formData.otherDeduction" 
               type="text" 
               placeholder="0"
               @input="formatInputCurrency"
@@ -472,16 +471,16 @@ const formData = ref({
   grossSalary: '60.000.000',
   tetBonus: '0',
   insuranceBase: '46.800.000',
-  dependents: 2,
+  dependents: 3,
   bhxhRate: 8,
   bhytRate: 1.5,
   bhtnRate: 1,
-  personalDeduction: '11.000.000',
-  dependentDeductionPerPerson: '4.400.000',
+  personalDeduction: '15.500.000',
+  dependentDeductionPerPerson: '6.200.000',
   taxFreeAllowance: '1.200.000',
   otherDeduction: '0',
-  taxBracketType: '7-bracket',
-  deductionBracket: 'old',
+  taxBracketType: '5-bracket',
+  deductionBracket: 'new',
   wageZone: 'I'
 })
 
@@ -588,16 +587,16 @@ function resetForm() {
     grossSalary: '60.000.000',
     tetBonus: '0',
     insuranceBase: '46.800.000',
-    dependents: 2,
+    dependents: 3,
     bhxhRate: 8,
     bhytRate: 1.5,
     bhtnRate: 1,
-    personalDeduction: '11.000.000',
-    dependentDeductionPerPerson: '4.400.000',
+    personalDeduction: '15.500.000',
+    dependentDeductionPerPerson: '6.200.000',
     taxFreeAllowance: '1.200.000',
     otherDeduction: '0',
-    taxBracketType: '7-bracket',
-    deductionBracket: 'old',
+    taxBracketType: '5-bracket',
+    deductionBracket: 'new',
     wageZone: 'I'
   }
   hasResults.value = false
