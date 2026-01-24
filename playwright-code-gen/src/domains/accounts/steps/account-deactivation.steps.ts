@@ -5,8 +5,7 @@ import { getAccountsPage } from 'shared/utilities/hooks';
  * Step definitions for account deactivation scenarios
  */
 
-When('I deactivate the account {string}', async function (accountName: string) {
-  const accountsPage = getAccountsPage();
+When('I deactivate the account {string}', async function () {
   // Get the unique account name
   const uniqueAccountName = (this as { uniqueAccountName?: string })
     .uniqueAccountName;
@@ -24,7 +23,6 @@ When('I deactivate the account {string}', async function (accountName: string) {
 });
 
 Then('the account should be marked as inactive', async function () {
-  const accountsPage = getAccountsPage();
   const uniqueAccountName = (this as { uniqueAccountName?: string })
     .uniqueAccountName;
   if (!uniqueAccountName) {

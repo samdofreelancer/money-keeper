@@ -6,7 +6,7 @@ import { TestData } from 'shared/utilities/testData';
  * Step definitions for account deletion scenarios
  */
 
-When('I delete the account {string}', async function (accountName: string) {
+When('I delete the account {string}', async function () {
   const accountsPage = getAccountsPage();
   // Get the unique account name that was generated in previous steps
   const uniqueAccountName = (this as { uniqueAccountName?: string })
@@ -59,26 +59,22 @@ Then(
   }
 );
 
-Given(
-  'the account {string} has existing transactions',
-  async function (accountName: string) {
-    // This step would require creating transactions via API
-    // For now, we'll store the info for the test to handle
-    (this as { hasTransactions?: boolean }).hasTransactions = true;
+Given('the account {string} has existing transactions', async function () {
+  // This step would require creating transactions via API
+  // For now, we'll store the info for the test to handle
+  (this as { hasTransactions?: boolean }).hasTransactions = true;
 
-    // In a real implementation, you would:
-    // 1. Get the account ID
-    // 2. Create transaction(s) via backend API
-    // 3. Verify via the UI that transactions exist
+  // In a real implementation, you would:
+  // 1. Get the account ID
+  // 2. Create transaction(s) via backend API
+  // 3. Verify via the UI that transactions exist
 
-    const accountsPage = getAccountsPage();
-    const uniqueAccountName = (this as { uniqueAccountName?: string })
-      .uniqueAccountName;
-    if (!uniqueAccountName) {
-      throw new Error('No account name found in test context');
-    }
-
-    // Log that this account has transactions (would be validated by backend)
-    console.log(`Account "${uniqueAccountName}" marked as having transactions`);
+  const uniqueAccountName = (this as { uniqueAccountName?: string })
+    .uniqueAccountName;
+  if (!uniqueAccountName) {
+    throw new Error('No account name found in test context');
   }
-);
+
+  // Log that this account has transactions (would be validated by backend)
+  console.log(`Account "${uniqueAccountName}" marked as having transactions`);
+});
