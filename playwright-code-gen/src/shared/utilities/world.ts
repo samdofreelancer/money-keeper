@@ -4,18 +4,22 @@ import { Logger } from './logger';
 import type { Container } from 'shared/di/container';
 import { TOKENS } from 'shared/di/tokens';
 import { AccountApiClient } from 'account-domains/api/account-api.client';
+import { AccountRepository } from 'account-domains/repositories/account.repository';
+import { IAccountRepository } from 'account-domains/types/account.repository';
 import { AccountCreationApiUseCase } from 'account-domains/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from 'account-domains/usecases/api/AccountDeletionApiUseCase';
 import { CategoryApiClient } from 'category-domain/api/category-api.client';
 import { CategoryDeletionApiUseCase } from 'category-domain/usecases/api/CategoryDeletionApiUseCase';
 import { CategoriesPage } from 'category-domain/pages/categories.playwright.page';
-import { AccountBalanceUiUseCase } from 'account-domains/usecases/ui/AccountBalanceUiUseCase';
 import { CreateCategoryUseCase } from 'category-domain/usecases/ui/category.use-case';
+import { CategoryAssertionUiUseCase } from 'category-domain/usecases/ui/CategoryAssertionUiUseCase';
+import { AccountBalanceUiUseCase } from 'account-domains/usecases/ui/AccountBalanceUiUseCase';
 import { TransactionsPage } from 'transaction-domain/pages/transactions.playwright.page';
 import { TransactionCreationUiUseCase } from 'transaction-domain/usecases/ui/TransactionCreationUiUseCase';
 import { TransactionCreationApiUseCase } from 'transaction-domain/usecases/api/TransactionCreationApiUseCase';
 import { AccountCreationUiUseCase } from 'account-domains/usecases/ui/AccountCreationUiUseCase';
 import { AccountUpdateUiUseCase } from 'account-domains/usecases/ui/AccountUpdateUiUseCase';
+import { AccountSortingVerificationUiUseCase } from 'account-domains/usecases/ui/AccountSortingVerificationUiUseCase';
 import { AccountsPlaywrightPage } from 'account-domains/pages/accounts.playwright.page';
 import { SettingsPlaywrightPage } from 'settings-domain/pages/settings.playwright.page';
 import { SettingsUiUseCase } from 'settings-domain/usecases/ui/SettingsUiUseCase';
@@ -57,6 +61,9 @@ export class World extends BaseWorld {
   public get accountApiClient(): AccountApiClient {
     return this.use(TOKENS.AccountApiClient);
   }
+  public get accountRepository(): IAccountRepository {
+    return this.use(TOKENS.AccountRepository);
+  }
   public get categoryApiClient(): CategoryApiClient {
     return this.use(TOKENS.CategoryApiClient);
   }
@@ -76,6 +83,9 @@ export class World extends BaseWorld {
   public get accountUpdateUiUseCase(): AccountUpdateUiUseCase {
     return this.use(TOKENS.AccountUpdateUiUseCase);
   }
+  public get accountSortingVerificationUiUseCase(): AccountSortingVerificationUiUseCase {
+    return this.use(TOKENS.AccountSortingVerificationUiUseCase);
+  }
   public get settingsPage(): SettingsPlaywrightPage {
     return this.use(TOKENS.SettingsPlaywrightPage);
   }
@@ -84,6 +94,10 @@ export class World extends BaseWorld {
   }
   public get createCategoryUseCase(): CreateCategoryUseCase {
     return this.use(TOKENS.CreateCategoryUseCase);
+  }
+
+  public get categoryAssertionUiUseCase(): CategoryAssertionUiUseCase {
+    return this.use(TOKENS.CategoryAssertionUiUseCase);
   }
 
   public get categoryDeletionApiUseCase(): CategoryDeletionApiUseCase {

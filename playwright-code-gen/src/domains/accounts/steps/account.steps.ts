@@ -3,6 +3,7 @@ import {
   getAccountCreationApiUseCase,
   getAccountUpdateUiUseCase,
   getAccountsPage,
+  getAccountSortingVerificationUiUseCase,
 } from 'shared/utilities/hooks';
 import { TestData } from 'shared/utilities/testData';
 import {
@@ -249,9 +250,255 @@ When(
 Then(
   'the accounts should be sorted by balance in {string} order',
   async function (order: 'ascending' | 'descending') {
-    const accountsPage = getAccountsPage();
-    const balances = await accountsPage.getAccountBalances();
+    const balances = await getAccountsPage().getAccountBalances();
     const sortOrder = order === 'ascending' ? 'asc' : 'desc';
-    await accountsPage.verifyAccountsSortedByBalance(balances, sortOrder);
+    await getAccountSortingVerificationUiUseCase().verifyAccountsSortedByBalance(
+      balances,
+      sortOrder
+    );
   }
 );
+
+Given(
+  'I have accounts named {string} and {string}',
+  async function (accountName1: string, accountName2: string) {
+    const accountCreationApiUseCase = getAccountCreationApiUseCase();
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'multi-account-scenario';
+
+    // Create first account
+    const uniqueName1 = TestData.generateUniqueAccountName(
+      scenarioName,
+      accountName1
+    );
+    const account1Data: AccountDto = {
+      name: uniqueName1,
+      type: 'BANK_ACCOUNT',
+      balance: 1000,
+      currency: 'USD',
+    };
+    TestData.trackCreatedAccount(uniqueName1);
+    await accountCreationApiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(account1Data)
+    );
+
+    // Create second account
+    const uniqueName2 = TestData.generateUniqueAccountName(
+      scenarioName,
+      accountName2
+    );
+    const account2Data: AccountDto = {
+      name: uniqueName2,
+      type: 'BANK_ACCOUNT',
+      balance: 2000,
+      currency: 'USD',
+    };
+    TestData.trackCreatedAccount(uniqueName2);
+    await accountCreationApiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(account2Data)
+    );
+
+    // Store names for later verification
+    (this as { accountNames?: string[] }).accountNames = [uniqueName1, uniqueName2];
+  }
+);
+
+Given('I have accounts of different types', async function () {
+  const accountCreationApiUseCase = getAccountCreationApiUseCase();
+  const scenarioName =
+    (this as { scenarioName?: string }).scenarioName || 'type-scenario';
+
+  const accountTypes = [
+    { name: 'Bank Account', type: 'BANK_ACCOUNT' },
+    { name: 'Credit Card', type: 'CREDIT_CARD' },
+    { name: 'Cash', type: 'CASH' },
+    { name: 'E-Wallet', type: 'E_WALLET' },
+  ];
+
+  for (const account of accountTypes) {
+    const uniqueName = TestData.generateUniqueAccountName(
+      scenarioName,
+      account.name
+    );
+    const accountData: AccountDto = {
+      name: uniqueName,
+      type: account.type,
+      balance: 1000,
+      currency: 'USD',
+    };
+    TestData.trackCreatedAccount(uniqueName);
+    await accountCreationApiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(accountData)
+    );
+  }
+});
+
+Given('I have multiple accounts with different names', async function () {
+  const accountCreationApiUseCase = getAccountCreationApiUseCase();
+  const scenarioName =
+    (this as { scenarioName?: string }).scenarioName || 'name-sort-scenario';
+
+  const accountNames = [
+    'Zebra Savings',
+    'Apple Checking',
+    'Mango E-Wallet',
+    'Banana Cash',
+  ];
+
+  for (const name of accountNames) {
+    const uniqueName = TestData.generateUniqueAccountName(scenarioName, name);
+    const accountData: AccountDto = {
+      name: uniqueName,
+      type: 'BANK_ACCOUNT',
+      balance: 1000,
+      currency: 'USD',
+    };
+    TestData.trackCreatedAccount(uniqueName);
+    await accountCreationApiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(accountData)
+    );
+  }
+});
+
+Given('I have multiple accounts', async function () {
+  const accountCreationApiUseCase = getAccountCreationApiUseCase();
+  const scenarioName =
+    (this as { scenarioName?: string }).scenarioName || 'all-accounts-scenario';
+
+  const accounts = [
+    { name: 'Account One', balance: 1000 },
+    { name: 'Account Two', balance: 2000 },
+    { name: 'Account Three', balance: 3000 },
+  ];
+
+  for (const account of accounts) {
+    const uniqueName = TestData.generateUniqueAccountName(
+      scenarioName,
+      account.name
+    );
+    const accountData: AccountDto = {
+      name: uniqueName,
+      type: 'BANK_ACCOUNT',
+      balance: account.balance,
+      currency: 'USD',
+    };
+    TestData.trackCreatedAccount(uniqueName);
+    await accountCreationApiUseCase.createAccount(
+      AccountCreateDto.fromAccountDto(accountData)
+    );
+  }
+});
+
+When('I navigate to the accounts page', async function () {
+  const accountsPage = getAccountsPage();
+  await accountsPage.navigateToAccountsPage();
+});
+
+Then('I should see all accounts listed', async function () {
+  const accountsPage = getAccountsPage();
+  const count = await accountsPage.getTotalAccountCount();
+  if (count === 0) {
+    throw new Error('No accounts are listed on the accounts page');
+  }
+});
+
+Then(
+  /^the accounts should be sorted by name in (ascending|descending) order$/,
+  async function (order: string) {
+    const accountsPage = getAccountsPage();
+    const names = await accountsPage.getVisibleAccountNames();
+
+    const sortedNames = [...names].sort();
+    const reverseSortedNames = [...names].sort().reverse();
+
+    if (order === 'ascending') {
+      if (JSON.stringify(names) !== JSON.stringify(sortedNames)) {
+        throw new Error(
+          `Accounts are not sorted by name in ascending order. Got: ${names.join(', ')}, Expected: ${sortedNames.join(', ')}`
+        );
+      }
+    } else if (order === 'descending') {
+      if (JSON.stringify(names) !== JSON.stringify(reverseSortedNames)) {
+        throw new Error(
+          `Accounts are not sorted by name in descending order. Got: ${names.join(', ')}, Expected: ${reverseSortedNames.join(', ')}`
+        );
+      }
+    }
+  }
+);
+
+Then(
+  /^the accounts should be sorted by type in (ascending|descending) order$/,
+  async function (order: string) {
+    // This would require getting account types from the UI
+    // For now, we'll provide a placeholder
+    throw new Error(
+      'Type sorting verification requires extending AccountsDataRetrieval.getAccountTypes(). This step is a placeholder.'
+    );
+  }
+);
+
+Then('the total balance should be {string}', async function (expectedTotal: string) {
+  const accountsPage = getAccountsPage();
+  const actualTotal = await accountsPage.getTotalBalance();
+
+  // Normalize the expected total (remove currency symbol if present)
+  const expectedNum = parseFloat(expectedTotal.replace(/[$€₫]/g, '').replace(/,/g, ''));
+  const actualNum = parseFloat(actualTotal.replace(/[$€₫]/g, '').replace(/,/g, ''));
+
+  if (Math.abs(expectedNum - actualNum) > 0.01) {
+    throw new Error(
+      `Expected total balance "${expectedTotal}", but got "${actualTotal}"`
+    );
+  }
+});
+
+Then('the account {string} should still exist', async function (accountName: string) {
+  const accountsPage = getAccountsPage();
+  const uniqueAccountName = (this as { uniqueAccountName?: string })
+    .uniqueAccountName || accountName;
+
+  const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
+  if (!exists) {
+    throw new Error(
+      `Account "${uniqueAccountName}" should exist but was not found`
+    );
+  }
+});
+
+Given(
+  /^I have accounts with balances \$(\d+), \$(\d+), \$(\d+)$/,
+  async function (balance1: string, balance2: string, balance3: string) {
+    const accountCreationApiUseCase = getAccountCreationApiUseCase();
+    const scenarioName =
+      (this as { scenarioName?: string }).scenarioName || 'balance-scenario';
+
+    const balances = [
+      parseFloat(balance1),
+      parseFloat(balance2),
+      parseFloat(balance3),
+    ];
+
+    for (let i = 0; i < balances.length; i++) {
+      const uniqueName = TestData.generateUniqueAccountName(
+        scenarioName,
+        `Balance Account ${i + 1}`
+      );
+      const accountData: AccountDto = {
+        name: uniqueName,
+        type: 'BANK_ACCOUNT',
+        balance: balances[i],
+        currency: 'USD',
+      };
+      TestData.trackCreatedAccount(uniqueName);
+      await accountCreationApiUseCase.createAccount(
+        AccountCreateDto.fromAccountDto(accountData)
+      );
+    }
+  }
+);
+
+When('I view the accounts page', async function () {
+  const accountsPage = getAccountsPage();
+  await accountsPage.navigateToAccountsPage();
+});
