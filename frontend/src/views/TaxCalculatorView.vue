@@ -468,10 +468,10 @@ const deductionBrackets = ref<DeductionBracketOption[]>([])
 const wageZones = ref<WageZoneOption[]>([])
 
 const formData = ref({
-  grossSalary: '60.000.000',
+  grossSalary: '0',
   tetBonus: '0',
   insuranceBase: '46.800.000',
-  dependents: 3,
+  dependents: 0,
   bhxhRate: 8,
   bhytRate: 1.5,
   bhtnRate: 1,
@@ -584,10 +584,10 @@ async function calculateSalary() {
 
 function resetForm() {
   formData.value = {
-    grossSalary: '60.000.000',
+    grossSalary: '0',
     tetBonus: '0',
     insuranceBase: '46.800.000',
-    dependents: 3,
+    dependents: 0,
     bhxhRate: 8,
     bhytRate: 1.5,
     bhtnRate: 1,
