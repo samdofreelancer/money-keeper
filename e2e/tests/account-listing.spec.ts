@@ -16,7 +16,7 @@ test.describe('Account Listing Page', () => {
     await accountPage.navigateToAccounts();
 
     // Assert - verify page heading is visible
-    await expect(accountPage.getPageHeading()).toBeVisible();
+    await expect(await accountPage.getPageHeading()).toBeVisible();
   });
 
   test('should display account table', async ({ accountPage }) => {
@@ -24,7 +24,7 @@ test.describe('Account Listing Page', () => {
     await accountPage.navigateToAccounts();
 
     // Assert - verify table is visible
-    await expect(accountPage.getAccountTable()).toBeVisible();
+    await expect(await accountPage.getAccountTable()).toBeVisible();
   });
 
   test('should display create account button', async ({ accountPage }) => {
@@ -32,6 +32,6 @@ test.describe('Account Listing Page', () => {
     await accountPage.navigateToAccounts();
 
     // Assert - verify button is visible
-    await expect(accountPage.getCreateAccountButton()).toBeVisible();
+    await expect(await accountPage.getCreateAccountButton()).toBeVisible();
   });
 });

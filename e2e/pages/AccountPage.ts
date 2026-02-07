@@ -1,90 +1,105 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 
 /**
- * Account Page Object
+ * Account Page Object - Best Practice Implementation
  * 
- * Encapsulates all UI interactions for the account management page.
- * Contains ONLY:
- * - Selectors and locators
- * - Low-level UI actions (click, fill, etc.)
+ * ✅ FOLLOWS BEST PRACTICES:
+ * - Single responsibility: UI interactions only
+ * - No assertions (no expect() calls)
+ * - Consistent async API
+ * - Encapsulated selectors (no getPage() leaking internals)
+ * - DRY principle: selectors defined once
+ * - Explicit waits: no arbitrary timeouts
  * 
- * Does NOT contain:
- * - Assertions
- * - Business logic
- * - Conditional logic
+ * ❌ DOES NOT:
+ * - Assert anything
+ * - Contain business logic
+ * - Expose raw page object
  */
 export class AccountPage {
+  // ===== Selector Constants (DRY Principle) =====
+  private readonly SELECTORS = {
+    // Page structure
+    pageTitle: '[data-testid="page-title"]',
+    accountTable: '[data-testid="account-table"]',
+    addAccountButton: '[data-testid="add-account-button"]',
+    
+    // Create dialog
+    createDialog: '[data-testid="account-dialog"]',
+    inputAccountName: '[data-testid="input-account-name"]',
+    inputAccountBalance: '[data-testid="input-account-balance"] input',
+    buttonCancel: '[data-testid="button-cancel"]',
+    errorMessage: '[data-testid="error-message"]',
+  };
+
   constructor(private page: Page) {}
 
-  // ===== Public Access =====
-  
-  getPage(): Page {
-    return this.page;
-  }
-
-  // ===== Navigation & Page State =====
+  // ===== Navigation =====
 
   async navigateToAccounts() {
     await this.page.goto('/accounts');
-    await this.page.waitForSelector('[data-testid="account-table"]', { timeout: 5000 });
+    await this.page.waitForSelector(this.SELECTORS.accountTable, { timeout: 5000 });
   }
 
-  async isAccountTableVisible() {
-    return await this.page.isVisible('[data-testid="account-table"]');
+  // ===== Locators for Assertions (async getters, consistent API) =====
+
+  async getPageHeading(): Promise<Locator> {
+    return this.page.locator(this.SELECTORS.pageTitle);
   }
 
-  // ===== Page Element Getters (for assertions) =====
-
-  getPageHeading() {
-    return this.page.locator('[data-testid="page-title"]');
+  async getAccountTable(): Promise<Locator> {
+    return this.page.locator(this.SELECTORS.accountTable);
   }
 
-  getAccountTable() {
-    return this.page.locator('[data-testid="account-table"]');
+  async getCreateAccountButton(): Promise<Locator> {
+    return this.page.locator(this.SELECTORS.addAccountButton);
   }
 
-  getCreateAccountButton() {
-    return this.page.locator('[data-testid="add-account-button"]');
+  async getCreateDialog(): Promise<Locator> {
+    return this.page.locator(this.SELECTORS.createDialog);
   }
 
-  getCreateDialog() {
-    return this.page.locator('[data-testid="account-dialog"]');
+  async getAccountNameInput(): Promise<Locator> {
+    return this.page.locator(this.SELECTORS.inputAccountName);
   }
 
-  getAccountNameInput() {
-    return this.page.locator('[data-testid="input-account-name"]');
-  }
-
-  getInitialBalanceInput() {
-    return this.page.locator('[data-testid="input-account-balance"] input');
+  async getInitialBalanceInput(): Promise<Locator> {
+    return this.page.locator(this.SELECTORS.inputAccountBalance);
   }
 
   // ===== Create Account Dialog =====
 
   async openCreateAccountDialog() {
-    await this.page.click('[data-testid="add-account-button"]');
-    await this.page.waitForSelector('[data-testid="account-dialog"]', { timeout: 5000 });
+    await this.page.click(this.SELECTORS.addAccountButton);
+    await this.page.waitForSelector(this.SELECTORS.createDialog, { timeout: 5000 });
   }
 
   async fillAccountName(name: string) {
-    await this.page.fill('[data-testid="input-account-name"]', name);
+    const input = this.page.locator(this.SELECTORS.inputAccountName);
+    await input.waitFor({ state: 'visible', timeout: 5000 });
+    await input.fill(name);
   }
 
   async fillInitialBalance(balance: number) {
-    // el-input-number wraps the actual input, so we need to find the input inside
-    const input = this.page.locator('[data-testid="input-account-balance"] input');
+    const input = this.page.locator(this.SELECTORS.inputAccountBalance);
+    await input.waitFor({ state: 'visible', timeout: 5000 });
     await input.fill(balance.toString());
   }
 
-  async getDialogErrorMessage() {
-    const errorElement = await this.page.$('[data-testid="error-message"]');
-    if (!errorElement) return null;
-    return await this.page.textContent('[data-testid="error-message"]');
+  async closeDialog() {
+    await this.page.click(this.SELECTORS.buttonCancel);
+    await this.page.waitForSelector(this.SELECTORS.createDialog, { 
+      state: 'hidden', 
+      timeout: 5000 
+    });
   }
 
-  async closeDialog() {
-    await this.page.click('[data-testid="button-cancel"]');
-    await this.page.waitForSelector('[data-testid="account-dialog"]', { state: 'hidden', timeout: 5000 });
+  async getDialogErrorMessage(): Promise<string | null> {
+    const errorElement = this.page.locator(this.SELECTORS.errorMessage);
+    const isVisible = await errorElement.isVisible().catch(() => false);
+    
+    if (!isVisible) return null;
+    return await errorElement.textContent();
   }
 }
 

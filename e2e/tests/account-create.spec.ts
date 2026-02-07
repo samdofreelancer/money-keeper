@@ -18,7 +18,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.openCreateAccountDialog();
 
     // Assert - verify dialog is visible
-    await expect(accountPage.getCreateDialog()).toBeVisible();
+    await expect(await accountPage.getCreateDialog()).toBeVisible();
   });
 
   test('should close dialog when cancel button is clicked', async ({ accountPage }) => {
@@ -28,7 +28,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.closeDialog();
 
     // Assert - verify dialog is hidden
-    await expect(accountPage.getCreateDialog()).not.toBeVisible();
+    await expect(await accountPage.getCreateDialog()).not.toBeVisible();
   });
 
   test('should fill account name field', async ({ accountPage }) => {
@@ -38,7 +38,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.fillAccountName('Test Savings');
 
     // Assert - verify value was set
-    await expect(accountPage.getAccountNameInput()).toHaveValue('Test Savings');
+    await expect(await accountPage.getAccountNameInput()).toHaveValue('Test Savings');
   });
 
   test('should fill initial balance field', async ({ accountPage }) => {
@@ -48,7 +48,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.fillInitialBalance(1000000);
 
     // Assert - verify value was set
-    const value = await accountPage.getInitialBalanceInput().inputValue();
+    const value = await (await accountPage.getInitialBalanceInput()).inputValue();
     expect(value).toBe('1000000');
   });
 });
