@@ -25,5 +25,8 @@
     "ddd"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.4"
+  }
 }
