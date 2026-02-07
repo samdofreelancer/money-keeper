@@ -3,7 +3,7 @@ import { AccountBuilder } from '@/test-data/account.builder';
 import { createAccount } from '@/actions/createAccount';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
-import { openCreateDialog, fillAccountForm } from './account-creation.scenario';
+import { givenAccountFormIsOpen, givenFormIsFilledWithValidData, thenAccountShouldBeCreatedSuccessfully, whenUserSubmitsForm } from './account-creation.scenario';
 
 /**
  * Account Creation - Happy Path Tests
@@ -20,6 +20,7 @@ test.describe('Account Creation / Happy Path', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN + WHEN + THEN
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
   });
@@ -31,6 +32,7 @@ test.describe('Account Creation / Happy Path', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN + WHEN + THEN
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
   });
@@ -42,17 +44,23 @@ test.describe('Account Creation / Happy Path', () => {
       .withCurrency('VND')
       .build();
 
+    // GIVEN + WHEN + THEN
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
   });
 
   test('should display dialog and allow closing without saving', async ({ app, accountAPI }) => {
-    await openCreateDialog(app.accountPage);
-
+    // GIVEN
+    await givenAccountFormIsOpen(app.accountPage);
+    
+    // THEN: Dialog should be visible
     const dialog = await app.accountPage.getCreateDialog();
     await expect(dialog).toBeVisible();
 
+    // WHEN: User closes dialog
     await app.accountPage.closeDialog();
+    
+    // THEN: Dialog should be hidden
     await expect(dialog).not.toBeVisible();
   });
 
@@ -64,6 +72,7 @@ test.describe('Account Creation / Happy Path', () => {
       .withType('BANK_ACCOUNT')
       .build();
 
+    // GIVEN + WHEN + THEN
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
   });

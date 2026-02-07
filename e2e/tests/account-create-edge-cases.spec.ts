@@ -3,7 +3,7 @@ import { AccountBuilder } from '@/test-data/account.builder';
 import { createAccount } from '@/actions/createAccount';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
-import { openCreateDialog, fillAccountForm } from './account-creation.scenario';
+import { givenAccountFormIsOpen, givenFormIsFilledWithValidData } from './account-creation.scenario';
 
 /**
  * Account Creation - Edge Cases & Boundary Conditions Tests
@@ -16,15 +16,21 @@ test.describe('Account Creation / Edge Cases', () => {
   test('should clear form when dialog reopens', async ({ app, accountAPI }, testInfo) => {
     const testName = generateTestAccountName(testInfo, 'FormReset');
     
-    await openCreateDialog(app.accountPage);
+    // GIVEN
+    await givenAccountFormIsOpen(app.accountPage);
     
+    // WHEN: User fills form
     await app.accountPage.fillAccountName(testName);
     await app.accountPage.fillInitialBalance(100_000);
     await app.accountPage.selectCurrency('VND');
     
+    // AND: Closes dialog
     await app.accountPage.closeDialog();
-    await openCreateDialog(app.accountPage);
     
+    // WHEN: Opens dialog again
+    await givenAccountFormIsOpen(app.accountPage);
+    
+    // THEN: Form should be cleared
     const nameInput = await app.accountPage.getAccountNameInput();
     const nameValue = await nameInput.inputValue().catch(() => '');
     
@@ -39,14 +45,11 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('USD')
       .build();
 
-    await app.accountPage.navigateToAccounts();
-    await app.accountPage.openCreateAccountDialog();
-    
-    await app.accountPage.fillAccountName(account.name);
-    await app.accountPage.fillInitialBalance(account.initialBalance);
-    await app.accountPage.selectCurrency(account.currency);
-    await app.accountPage.selectAccountType('E_WALLET');
+    // GIVEN
+    await givenAccountFormIsOpen(app.accountPage);
+    await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
 
+    // WHEN: User rapid-clicks submit button
     const submitButton = await app.accountPage.getSubmitButton();
     
     await Promise.all([
@@ -54,6 +57,7 @@ test.describe('Account Creation / Edge Cases', () => {
       submitButton.click().catch(() => {})
     ]);
 
+    // THEN: Should only create one account (dialog closes)
     const dialog = await app.accountPage.getCreateDialog();
     await expect(dialog).toBeHidden({ timeout: 5000 });
     
@@ -67,6 +71,7 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN + WHEN + THEN: Create first account
     await createAccount(app.accountPage, account1);
     await expectAccountExists(app.accountPage, account1.name);
 
@@ -76,6 +81,7 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('EUR')
       .build();
 
+    // GIVEN + WHEN + THEN: Create second account
     await createAccount(app.accountPage, account2);
     await expectAccountExists(app.accountPage, account2.name);
   });
@@ -87,11 +93,14 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN + WHEN + THEN: Create account
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
 
+    // WHEN: User refreshes page
     await app.accountPage.refreshAccountsPage();
 
+    // THEN: Account should still be visible
     await expectAccountExists(app.accountPage, account.name);
   });
 
@@ -102,6 +111,7 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN + WHEN + THEN
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
   });
@@ -113,6 +123,7 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN + WHEN + THEN
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, account.name);
   });

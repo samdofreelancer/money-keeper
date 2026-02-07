@@ -4,7 +4,7 @@ import { createAccount } from '@/actions/createAccount';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import { logger } from '@/utils/logger';
-import { openCreateDialog, fillAccountForm, attemptSubmit, assertFormRejected } from './account-creation.scenario';
+import { givenAccountFormIsOpen, givenFormIsFilledWithValidData, whenUserSubmitsForm, thenFormShouldBeRejected } from './account-creation.scenario';
 
 /**
  * Account Creation - Network & Performance Tests
@@ -21,16 +21,23 @@ test.describe('Account Creation / Network & Performance', () => {
       .withCurrency('USD')
       .build();
 
+    // GIVEN: Network failure is simulated
     await app.accountPage.routeApiRequests('**/api/accounts', async (route) => {
       logger.warn('Network request aborted - simulating failure');
       await route.abort('failed');
     });
 
-    await openCreateDialog(app.accountPage);
-    await fillAccountForm(app.accountPage, account.name, account.initialBalance, account.currency);
-    await attemptSubmit(app.accountPage);
-    await assertFormRejected(app.accountPage);
+    // AND: Form is filled with valid data
+    await givenAccountFormIsOpen(app.accountPage);
+    await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
+    
+    // WHEN: User attempts to submit
+    await whenUserSubmitsForm(app.accountPage);
+    
+    // THEN: Form should be rejected (dialog stays open)
+    await thenFormShouldBeRejected(app.accountPage);
 
+    // Cleanup: Restore network
     await app.accountPage.unrouteApiRequests('**/api/accounts');
 
     logger.success('Network failure handled gracefully');
@@ -43,18 +50,20 @@ test.describe('Account Creation / Network & Performance', () => {
       .withCurrency('USD')
       .build();
 
-    await openCreateDialog(app.accountPage);
-    await fillAccountForm(app.accountPage, account.name, account.initialBalance, account.currency);
+    // GIVEN: Form is filled
+    await givenAccountFormIsOpen(app.accountPage);
+    await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
 
+    // WHEN: Measure submission performance
     const startTime = Date.now();
-    
-    await attemptSubmit(app.accountPage);
+    await whenUserSubmitsForm(app.accountPage);
 
     const dialog = await app.accountPage.getCreateDialog();
     await expect(dialog).toBeHidden({ timeout: 10000 });
 
     const submissionTime = Date.now() - startTime;
     
+    // THEN: Verify performance and account creation
     logger.info(`Submission completed in ${submissionTime}ms`);
     await expect(submissionTime).toBeLessThan(5000);
 

@@ -4,6 +4,17 @@ import { createAccount } from '@/actions/createAccount';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import {
+  givenFormWithEmptyName,
+  givenFormWithInvalidBalance,
+  givenFormWithWhitespaceName,
+  givenFormWithDangerousInput,
+  givenFormWithOversizedName,
+  givenFormWithUndersizedName,
+  whenUserSubmitsForm,
+  givenAccountFormIsOpen,
+  givenFormIsFilledWithValidData,
+  thenFormShouldBeRejected,
+  // Backward compatibility
   setupFormWithEmptyName,
   setupFormWithInvalidBalance,
   setupFormWithWhitespaceName,
@@ -25,16 +36,25 @@ import {
 
 test.describe('Account Creation / Error Cases', () => {
   test('should display empty account name validation error', async ({ app, accountAPI }, testInfo) => {
-    await setupFormWithEmptyName(app.accountPage);
-    await assertFormRejected(app.accountPage);
+    // GIVEN
+    await givenFormWithEmptyName(app.accountPage);
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 
   test('should display validation error when balance is negative or zero', async ({ app, accountAPI }, testInfo) => {
-    await setupFormWithInvalidBalance(app.accountPage, testInfo);
-    await assertFormRejected(app.accountPage);
+    // GIVEN
+    await givenFormWithInvalidBalance(app.accountPage, testInfo);
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 
   test('should display error when account name already exists', async ({ app, accountAPI }, testInfo) => {
+    // GIVEN
     const accountName = generateTestAccountName(testInfo, 'Duplicate');
     const account = AccountBuilder.create()
       .withName(accountName)
@@ -45,28 +65,48 @@ test.describe('Account Creation / Error Cases', () => {
     await createAccount(app.accountPage, account);
     await expectAccountExists(app.accountPage, accountName);
 
-    await openCreateDialog(app.accountPage);
-    await fillAccountForm(app.accountPage, accountName, 200_000, 'USD');
-    await assertFormRejected(app.accountPage);
+    // AND: Form with duplicate account name
+    await givenAccountFormIsOpen(app.accountPage);
+    await givenFormIsFilledWithValidData(app.accountPage, accountName, 200_000, 'USD');
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 
   test('should validate account name with maximum length', async ({ app, accountAPI }, testInfo) => {
-    await setupFormWithOversizedName(app.accountPage, testInfo);
-    await assertFormRejected(app.accountPage);
+    // GIVEN
+    await givenFormWithOversizedName(app.accountPage, testInfo);
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 
   test('should reject account name with only whitespace', async ({ app, accountAPI }) => {
-    await setupFormWithWhitespaceName(app.accountPage);
-    await assertFormRejected(app.accountPage);
+    // GIVEN
+    await givenFormWithWhitespaceName(app.accountPage);
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 
   test('should sanitize dangerous input in account name', async ({ app, accountAPI }, testInfo) => {
-    await setupFormWithDangerousInput(app.accountPage, testInfo);
-    await assertFormRejected(app.accountPage);
+    // GIVEN
+    await givenFormWithDangerousInput(app.accountPage, testInfo);
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 
   test('should validate minimum account name length', async ({ app, accountAPI }, testInfo) => {
-    await setupFormWithUndersizedName(app.accountPage, testInfo);
-    await assertFormRejected(app.accountPage);
+    // GIVEN
+    await givenFormWithUndersizedName(app.accountPage, testInfo);
+    // WHEN
+    await whenUserSubmitsForm(app.accountPage);
+    // THEN
+    await thenFormShouldBeRejected(app.accountPage);
   });
 });
