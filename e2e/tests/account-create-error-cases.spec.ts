@@ -1,7 +1,5 @@
 import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
-import { createAccount } from '@/actions/createAccount';
-import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import {
   givenFormWithEmptyName,
@@ -10,21 +8,11 @@ import {
   givenFormWithDangerousInput,
   givenFormWithOversizedName,
   givenFormWithUndersizedName,
-  whenUserSubmitsForm,
   givenAccountFormIsOpen,
   givenFormIsFilledWithValidData,
-  thenFormShouldBeRejected,
-  // Backward compatibility
-  setupFormWithEmptyName,
-  setupFormWithInvalidBalance,
-  setupFormWithWhitespaceName,
-  setupFormWithDangerousInput,
-  setupFormWithOversizedName,
-  setupFormWithUndersizedName,
-  attemptSubmit,
-  openCreateDialog,
-  fillAccountForm,
-  assertFormRejected
+  givenAccountHasBeenCreated,
+  whenUserSubmitsForm,
+  thenFormShouldBeRejected
 } from './account-creation.scenario';
 
 /**
@@ -54,7 +42,7 @@ test.describe('Account Creation / Error Cases', () => {
   });
 
   test('should display error when account name already exists', async ({ app, accountAPI }, testInfo) => {
-    // GIVEN
+    // GIVEN: An account has been created with a specific name
     const accountName = generateTestAccountName(testInfo, 'Duplicate');
     const account = AccountBuilder.create()
       .withName(accountName)
@@ -62,15 +50,16 @@ test.describe('Account Creation / Error Cases', () => {
       .withCurrency('USD')
       .build();
 
-    await createAccount(app.accountPage, account);
-    await expectAccountExists(app.accountPage, accountName);
+    await givenAccountHasBeenCreated(app.accountPage, account);
 
-    // AND: Form with duplicate account name
+    // AND: Form is open and filled with the same account name (duplicate)
     await givenAccountFormIsOpen(app.accountPage);
     await givenFormIsFilledWithValidData(app.accountPage, accountName, 200_000, 'USD');
-    // WHEN
+    
+    // WHEN: User submits form with duplicate name
     await whenUserSubmitsForm(app.accountPage);
-    // THEN
+    
+    // THEN: Form should be rejected
     await thenFormShouldBeRejected(app.accountPage);
   });
 

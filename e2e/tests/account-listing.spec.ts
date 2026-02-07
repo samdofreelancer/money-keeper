@@ -1,7 +1,15 @@
 import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
-import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
+import {
+  givenAccountsPageIsOpen,
+  givenAccountFormIsOpen,
+  givenFormIsFilledWithValidData,
+  givenAccountHasBeenCreated,
+  whenUserSubmitsForm,
+  thenAccountTableShouldBeVisible,
+  thenAccountShouldBeCreatedSuccessfully
+} from './account-creation.scenario';
 import { logger } from '@/utils/logger';
 
 /**
@@ -19,10 +27,11 @@ import { logger } from '@/utils/logger';
 
 test.describe('Account Listing', () => {
   test('should display accounts page', async ({ app }) => {
-    await app.accountPage.navigateToAccounts();
+    // GIVEN: User navigates to accounts page
+    await givenAccountsPageIsOpen(app.accountPage);
 
-    const table = await app.accountPage.getAccountTable();
-    await expect(table).toBeVisible();
+    // THEN: Accounts table should be visible
+    await thenAccountTableShouldBeVisible(app.accountPage);
 
     logger.success('Accounts page displayed');
   });
@@ -34,51 +43,37 @@ test.describe('Account Listing', () => {
       .withCurrency('USD')
       .build();
 
-    await app.accountPage.navigateToAccounts();
-    await app.accountPage.openCreateAccountDialog();
-    await app.accountPage.fillAccountName(account.name);
-    await app.accountPage.fillInitialBalance(account.initialBalance);
-    await app.accountPage.selectCurrency(account.currency);
-    await app.accountPage.selectAccountType(account.type || 'E_WALLET');
-    await app.accountPage.submitCreateAccountForm();
+    // GIVEN: Accounts page is open and form is filled with valid data
+    await givenAccountsPageIsOpen(app.accountPage);
+    await givenAccountFormIsOpen(app.accountPage);
+    await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
+    
+    // WHEN: User submits form
+    await whenUserSubmitsForm(app.accountPage);
 
-    await expectAccountExists(app.accountPage, account.name);
+    // THEN: Account should appear in the list
+    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 
   test('should display multiple accounts', async ({ app, accountAPI }, testInfo) => {
-    // Create first account via UI
     const account1 = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'First'))
       .withBalance(100_000)
       .build();
 
-    await app.accountPage.navigateToAccounts();
-    await app.accountPage.openCreateAccountDialog();
-    await app.accountPage.fillAccountName(account1.name);
-    await app.accountPage.fillInitialBalance(account1.initialBalance);
-    await app.accountPage.selectCurrency(account1.currency);
-    await app.accountPage.selectAccountType(account1.type || 'E_WALLET');
-    await app.accountPage.submitCreateAccountForm();
-
-    // Verify first account appears
-    await expectAccountExists(app.accountPage, account1.name);
-
-    // Create second account via UI
     const account2 = AccountBuilder.create()
       .withName(`${generateTestAccountName(testInfo, 'Second')}`)
       .withBalance(200_000)
       .build();
 
-    await app.accountPage.openCreateAccountDialog();
-    await app.accountPage.fillAccountName(account2.name);
-    await app.accountPage.fillInitialBalance(account2.initialBalance);
-    await app.accountPage.selectCurrency(account2.currency);
-    await app.accountPage.selectAccountType(account2.type || 'E_WALLET');
-    await app.accountPage.submitCreateAccountForm();
+    // GIVEN: Accounts page is open
+    await givenAccountsPageIsOpen(app.accountPage);
+    
+    // WHEN: Create first account (verified immediately)
+    await givenAccountHasBeenCreated(app.accountPage, account1);
 
-    // Verify both accounts appear in table
-    await expectAccountExists(app.accountPage, account1.name);
-    await expectAccountExists(app.accountPage, account2.name);
+    // AND: Create second account (verified immediately)
+    await givenAccountHasBeenCreated(app.accountPage, account2);
   });
 });
 

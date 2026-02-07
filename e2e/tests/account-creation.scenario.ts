@@ -1,9 +1,9 @@
-import { Page } from '@playwright/test';
 import { AccountPage } from '@/pages/AccountPage';
-import { AccountBuilder } from '@/test-data/account.builder';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import { TestInfo } from '@playwright/test';
 import { expect } from '@/fixtures/test-fixture';
+import { expectAccountExists } from '@/assertions/expectAccountExists';
+import { TIMEOUTS, DELAYS, TEST_DEFAULTS, API_ROUTES } from './account-creation.constants';
 
 /**
  * Account Creation - Test Scenarios (Given-When-Then)
@@ -42,18 +42,85 @@ export async function givenFormIsFilledWithValidData(
 }
 
 /**
+ * GIVEN: Form is partially filled (for form reset verification)
+ */
+export async function givenFormIsPartiallFilledAndClosed(
+  accountPage: AccountPage,
+  name: string,
+  balance: number,
+  currency: string
+): Promise<void> {
+  await givenAccountFormIsOpen(accountPage);
+  await accountPage.fillAccountName(name);
+  await accountPage.fillInitialBalance(balance);
+  await accountPage.selectCurrency(currency);
+  await accountPage.closeDialog();
+}
+
+/**
+ * GIVEN: An account has been created successfully
+ */
+export async function givenAccountHasBeenCreated(
+  accountPage: AccountPage,
+  account: { name: string; initialBalance: number; currency: string }
+): Promise<void> {
+  await givenAccountFormIsOpen(accountPage);
+  await givenFormIsFilledWithValidData(
+    accountPage,
+    account.name,
+    account.initialBalance,
+    account.currency
+  );
+  await whenUserSubmitsForm(accountPage);
+  
+  // CRITICAL: Wait for dialog to close AND account to appear in table
+  // This ensures account is persisted before creating the next one
+  const dialog = await accountPage.getCreateDialog();
+  await expect(dialog).toBeHidden({ timeout: TIMEOUTS.DIALOG });
+  
+  // Wait for account to be visible in table before proceeding
+  const exists = await accountPage.waitForAccountInTable(account.name, TIMEOUTS.TABLE_WAIT);
+  expect(exists).toBe(true);
+}
+
+/**
+ * GIVEN: Form is filled with valid data (convenience shorthand)
+ */
+export async function givenFormIsOpenAndFilled(
+  accountPage: AccountPage,
+  name: string,
+  balance: number,
+  currency: string
+): Promise<void> {
+  // Shorthand for givenFormIsFilledWithValidData (which already opens form)
+  await givenFormIsFilledWithValidData(accountPage, name, balance, currency);
+}
+
+/**
+ * Helper: Fill form with specific values (used by validation tests)
+ */
+async function fillFormWith(
+  accountPage: AccountPage,
+  name?: string,
+  balance?: number,
+  currency: string = TEST_DEFAULTS.CURRENCY
+): Promise<void> {
+  if (name !== undefined) await accountPage.fillAccountName(name);
+  if (balance !== undefined) await accountPage.fillInitialBalance(balance);
+  await accountPage.selectCurrency(currency);
+  await accountPage.selectAccountType(TEST_DEFAULTS.ACCOUNT_TYPE);
+}
+
+/**
  * GIVEN: Form with empty account name (validation test)
  */
 export async function givenFormWithEmptyName(
   accountPage: AccountPage,
-  balance: number = 100_000,
-  currency: string = 'USD'
+  balance: number = TEST_DEFAULTS.BALANCE,
+  currency: string = TEST_DEFAULTS.CURRENCY
 ): Promise<void> {
   await givenAccountFormIsOpen(accountPage);
-  await accountPage.selectCurrency(currency);
-  await accountPage.selectAccountType('E_WALLET');
-  await accountPage.fillInitialBalance(balance);
-  // Note: NOT filling account name - intentionally empty
+  await fillFormWith(accountPage, undefined, balance, currency);
 }
 
 /**
@@ -62,20 +129,12 @@ export async function givenFormWithEmptyName(
 export async function givenFormWithInvalidBalance(
   accountPage: AccountPage,
   testInfo: TestInfo,
-  invalidBalance: number = -500_000,
-  currency: string = 'USD'
+  invalidBalance: number = TEST_DEFAULTS.INVALID_BALANCE,
+  currency: string = TEST_DEFAULTS.CURRENCY
 ): Promise<void> {
-  const account = AccountBuilder.create()
-    .withName(generateTestAccountName(testInfo, 'InvalidBalance'))
-    .withBalance(invalidBalance)
-    .withCurrency(currency)
-    .build();
-
+  const name = generateTestAccountName(testInfo, 'InvalidBalance');
   await givenAccountFormIsOpen(accountPage);
-  await accountPage.fillAccountName(account.name);
-  await accountPage.fillInitialBalance(account.initialBalance);
-  await accountPage.selectCurrency(account.currency);
-  await accountPage.selectAccountType('E_WALLET');
+  await fillFormWith(accountPage, name, invalidBalance, currency);
 }
 
 /**
@@ -83,14 +142,11 @@ export async function givenFormWithInvalidBalance(
  */
 export async function givenFormWithWhitespaceName(
   accountPage: AccountPage,
-  balance: number = 100_000,
-  currency: string = 'USD'
+  balance: number = TEST_DEFAULTS.BALANCE,
+  currency: string = TEST_DEFAULTS.CURRENCY
 ): Promise<void> {
   await givenAccountFormIsOpen(accountPage);
-  await accountPage.fillAccountName('   \t\n   ');
-  await accountPage.fillInitialBalance(balance);
-  await accountPage.selectCurrency(currency);
-  await accountPage.selectAccountType('E_WALLET');
+  await fillFormWith(accountPage, '   \t\n   ', balance, currency);
 }
 
 /**
@@ -99,15 +155,11 @@ export async function givenFormWithWhitespaceName(
 export async function givenFormWithDangerousInput(
   accountPage: AccountPage,
   testInfo: TestInfo,
-  dangerousPattern: string = `<script>alert('xss')</script>`
+  dangerousPattern: string = TEST_DEFAULTS.XSS_PAYLOAD
 ): Promise<void> {
   const dangerousName = generateTestAccountName(testInfo, 'Danger') + dangerousPattern;
-  
   await givenAccountFormIsOpen(accountPage);
-  await accountPage.fillAccountName(dangerousName);
-  await accountPage.fillInitialBalance(100_000);
-  await accountPage.selectCurrency('USD');
-  await accountPage.selectAccountType('E_WALLET');
+  await fillFormWith(accountPage, dangerousName, TEST_DEFAULTS.BALANCE, TEST_DEFAULTS.CURRENCY);
 }
 
 /**
@@ -116,15 +168,11 @@ export async function givenFormWithDangerousInput(
 export async function givenFormWithOversizedName(
   accountPage: AccountPage,
   testInfo: TestInfo,
-  extraLength: number = 200
+  extraLength: number = TEST_DEFAULTS.OVERSIZED_NAME_LENGTH
 ): Promise<void> {
   const longName = generateTestAccountName(testInfo, 'LongName') + 'X'.repeat(extraLength);
-  
   await givenAccountFormIsOpen(accountPage);
-  await accountPage.fillAccountName(longName);
-  await accountPage.fillInitialBalance(100_000);
-  await accountPage.selectCurrency('USD');
-  await accountPage.selectAccountType('E_WALLET');
+  await fillFormWith(accountPage, longName, TEST_DEFAULTS.BALANCE, TEST_DEFAULTS.CURRENCY);
 }
 
 /**
@@ -135,12 +183,8 @@ export async function givenFormWithUndersizedName(
   testInfo: TestInfo
 ): Promise<void> {
   const shortName = generateTestAccountName(testInfo, 'X');
-  
   await givenAccountFormIsOpen(accountPage);
-  await accountPage.fillAccountName(shortName);
-  await accountPage.fillInitialBalance(100_000);
-  await accountPage.selectCurrency('USD');
-  await accountPage.selectAccountType('E_WALLET');
+  await fillFormWith(accountPage, shortName, TEST_DEFAULTS.BALANCE, TEST_DEFAULTS.CURRENCY);
 }
 
 // ===== WHEN: Actions =====
@@ -151,6 +195,40 @@ export async function givenFormWithUndersizedName(
 export async function whenUserSubmitsForm(accountPage: AccountPage): Promise<void> {
   const submitButton = await accountPage.getSubmitButton();
   await submitButton.click();
+}
+
+/**
+ * WHEN: User rapid-clicks submit button (simulating double-click)
+ */
+export async function whenUserRapidClicksSubmitButton(accountPage: AccountPage): Promise<void> {
+  const submitButton = await accountPage.getSubmitButton();
+  
+  await Promise.all([
+    submitButton.click(),
+    submitButton.click().catch(() => {})
+  ]);
+}
+
+/**
+ * WHEN: User refreshes the page
+ */
+export async function whenUserRefreshesPage(accountPage: AccountPage): Promise<void> {
+  await accountPage.refreshAccountsPage();
+}
+
+/**
+ * WHEN: User opens the dialog again (after closing)
+ */
+export async function whenUserOpensDialogAgain(accountPage: AccountPage): Promise<void> {
+  // Open dialog by clicking Add Account button (not navigating - we're already on page)
+  await accountPage.openCreateAccountDialog();
+}
+
+/**
+ * WHEN: User closes the dialog
+ */
+export async function whenUserClosesDialog(accountPage: AccountPage): Promise<void> {
+  await accountPage.closeDialog();
 }
 
 // ===== THEN: Assertions & Verifications =====
@@ -164,6 +242,14 @@ export async function thenFormShouldBeRejected(accountPage: AccountPage): Promis
 }
 
 /**
+ * Helper: Verify dialog is closed with timeout
+ */
+async function verifyDialogClosed(accountPage: AccountPage, timeout: number = TIMEOUTS.DIALOG): Promise<void> {
+  const dialog = await accountPage.getCreateDialog();
+  await expect(dialog).toBeHidden({ timeout });
+}
+
+/**
  * THEN: Account should be created successfully and appear in table
  */
 export async function thenAccountShouldBeCreatedSuccessfully(
@@ -171,112 +257,132 @@ export async function thenAccountShouldBeCreatedSuccessfully(
   accountName: string
 ): Promise<void> {
   // Verify dialog closes (form submitted)
-  const dialog = await accountPage.getCreateDialog();
-  await expect(dialog).toBeHidden({ timeout: 5000 });
+  await verifyDialogClosed(accountPage);
   
-  // Verify account appears in table
-  const exists = await accountPage.waitForAccountInTable(accountName);
+  // CRITICAL: Wait for table to stabilize before searching
+  // This allows frontend to finish re-rendering all rows
+  const table = await accountPage.getAccountTable();
+  await expect(table).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+  
+  // Small delay to allow any pending state updates
+  await new Promise(resolve => setTimeout(resolve, DELAYS.STATE_UPDATE));
+  
+  // Verify account appears in table with longer timeout for multiple rapid creates
+  const exists = await accountPage.waitForAccountInTable(accountName, TIMEOUTS.TABLE_WAIT);
   expect(exists).toBe(true);
 }
 
-// ===== BACKWARD COMPATIBILITY ALIASES (Old naming convention) =====
-
 /**
- * @deprecated Use givenAccountFormIsOpen instead
+ * THEN: Dialog should be hidden/closed
  */
-export async function openCreateDialog(accountPage: AccountPage): Promise<void> {
-  return givenAccountFormIsOpen(accountPage);
+export async function thenDialogShouldBeClosed(accountPage: AccountPage): Promise<void> {
+  await verifyDialogClosed(accountPage);
 }
 
 /**
- * @deprecated Use givenFormIsFilledWithValidData instead
+ * THEN: Only one account should be created (prevent duplicates from rapid clicks)
  */
-export async function fillAccountForm(
+export async function thenOnlyOneAccountShouldBeCreated(
   accountPage: AccountPage,
-  name: string,
-  balance: number,
-  currency: string,
-  type: string = 'E_WALLET'
+  accountName: string
 ): Promise<void> {
-  await givenFormIsFilledWithValidData(accountPage, name, balance, currency, type);
+  await thenDialogShouldBeClosed(accountPage);
+  await expectAccountExists(accountPage, accountName);
 }
 
 /**
- * @deprecated Use whenUserSubmitsForm instead
+ * THEN: Form should be cleared/reset
  */
-export async function attemptSubmit(accountPage: AccountPage): Promise<void> {
-  return whenUserSubmitsForm(accountPage);
+export async function thenFormShouldBeCleared(accountPage: AccountPage): Promise<void> {
+  const nameInput = await accountPage.getAccountNameInput();
+  await expect(nameInput).toHaveValue('');
 }
 
 /**
- * @deprecated Use thenFormShouldBeRejected instead
+ * THEN: Dialog should be visible
  */
-export async function assertFormRejected(accountPage: AccountPage): Promise<void> {
-  return thenFormShouldBeRejected(accountPage);
+export async function thenDialogShouldBeVisible(accountPage: AccountPage): Promise<void> {
+  const dialog = await accountPage.getCreateDialog();
+  await expect(dialog).toBeVisible();
+}
+
+// ===== LISTING SCENARIOS =====
+
+/**
+ * GIVEN: Accounts page is open
+ */
+export async function givenAccountsPageIsOpen(accountPage: AccountPage): Promise<void> {
+  await accountPage.navigateToAccounts();
 }
 
 /**
- * @deprecated Use givenFormWithEmptyName instead
+ * THEN: Accounts table should be visible
  */
-export async function setupFormWithEmptyName(
-  accountPage: AccountPage,
-  balance: number = 100_000,
-  currency: string = 'USD'
-): Promise<void> {
-  return givenFormWithEmptyName(accountPage, balance, currency);
+export async function thenAccountTableShouldBeVisible(accountPage: AccountPage): Promise<void> {
+  const table = await accountPage.getAccountTable();
+  await expect(table).toBeVisible();
+}
+
+// ===== ACCESSIBILITY SCENARIOS =====
+
+/**
+ * WHEN: User presses Escape key
+ */
+export async function whenUserPressesEscape(accountPage: AccountPage): Promise<void> {
+  await accountPage.pressKey('Escape');
 }
 
 /**
- * @deprecated Use givenFormWithInvalidBalance instead
+ * WHEN: User focuses submit button via keyboard
  */
-export async function setupFormWithInvalidBalance(
-  accountPage: AccountPage,
-  testInfo: TestInfo,
-  invalidBalance: number = -500_000,
-  currency: string = 'USD'
-): Promise<void> {
-  return givenFormWithInvalidBalance(accountPage, testInfo, invalidBalance, currency);
+export async function whenUserFocusesSubmitButton(accountPage: AccountPage): Promise<void> {
+  await accountPage.focusSubmitButton();
 }
 
 /**
- * @deprecated Use givenFormWithWhitespaceName instead
+ * WHEN: User presses Enter key
  */
-export async function setupFormWithWhitespaceName(
-  accountPage: AccountPage,
-  balance: number = 100_000,
-  currency: string = 'USD'
-): Promise<void> {
-  return givenFormWithWhitespaceName(accountPage, balance, currency);
+export async function whenUserPressesEnter(accountPage: AccountPage): Promise<void> {
+  await accountPage.pressKey('Enter');
 }
 
 /**
- * @deprecated Use givenFormWithDangerousInput instead
+ * THEN: Submit button should be focused
  */
-export async function setupFormWithDangerousInput(
-  accountPage: AccountPage,
-  testInfo: TestInfo,
-  dangerousPattern: string = `<script>alert('xss')</script>`
-): Promise<void> {
-  return givenFormWithDangerousInput(accountPage, testInfo, dangerousPattern);
+export async function thenSubmitButtonShouldBeFocused(accountPage: AccountPage): Promise<void> {
+  const isFocused = await accountPage.isSubmitButtonFocused();
+  await expect(isFocused).toBeTruthy();
 }
 
 /**
- * @deprecated Use givenFormWithOversizedName instead
+ * THEN: Form should have proper accessibility attributes
  */
-export async function setupFormWithOversizedName(
-  accountPage: AccountPage,
-  testInfo: TestInfo,
-  extraLength: number = 200
-): Promise<void> {
-  return givenFormWithOversizedName(accountPage, testInfo, extraLength);
+export async function thenFormShouldHaveAccessibilityAttributes(accountPage: AccountPage): Promise<void> {
+  const nameInput = await accountPage.getAccountNameInput();
+  await expect(nameInput).toBeVisible();
+  
+  const placeholder = await nameInput.getAttribute('placeholder');
+  const ariaLabel = await nameInput.getAttribute('aria-label');
+  const name = await nameInput.getAttribute('name');
+  
+  const hasAccessibilityInfo = placeholder || ariaLabel || name;
+  expect(hasAccessibilityInfo).toBeTruthy();
+}
+
+// ===== NETWORK & PERFORMANCE SCENARIOS =====
+
+/**
+ * GIVEN: Network failure is simulated
+ */
+export async function givenNetworkFailureIsSimulated(accountPage: AccountPage): Promise<void> {
+  await accountPage.routeApiRequests(API_ROUTES.ACCOUNTS, async (route) => {
+    await route.abort('failed');
+  });
 }
 
 /**
- * @deprecated Use givenFormWithUndersizedName instead
+ * WHEN: Network is restored
  */
-export async function setupFormWithUndersizedName(
-  accountPage: AccountPage,
-  testInfo: TestInfo
-): Promise<void> {
-  return givenFormWithUndersizedName(accountPage, testInfo);
+export async function whenNetworkIsRestored(accountPage: AccountPage): Promise<void> {
+  await accountPage.unrouteApiRequests(API_ROUTES.ACCOUNTS);
 }

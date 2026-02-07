@@ -1,9 +1,16 @@
 import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
-import { createAccount } from '@/actions/createAccount';
-import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
-import { givenAccountFormIsOpen, givenFormIsFilledWithValidData, thenAccountShouldBeCreatedSuccessfully, whenUserSubmitsForm } from './account-creation.scenario';
+import { 
+  givenAccountFormIsOpen, 
+  givenAccountHasBeenCreated,
+  givenFormIsOpenAndFilled,
+  whenUserSubmitsForm,
+  whenUserClosesDialog,
+  thenAccountShouldBeCreatedSuccessfully,
+  thenDialogShouldBeVisible,
+  thenDialogShouldBeClosed
+} from './account-creation.scenario';
 
 /**
  * Account Creation - Happy Path Tests
@@ -20,9 +27,14 @@ test.describe('Account Creation / Happy Path', () => {
       .withCurrency('USD')
       .build();
 
-    // GIVEN + WHEN + THEN
-    await createAccount(app.accountPage, account);
-    await expectAccountExists(app.accountPage, account.name);
+    // GIVEN: Form is open and filled with valid data
+    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
+    
+    // WHEN: User submits form
+    await whenUserSubmitsForm(app.accountPage);
+    
+    // THEN: Account should be created successfully
+    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 
   test('should create account with zero balance', async ({ app, accountAPI }, testInfo) => {
@@ -32,9 +44,14 @@ test.describe('Account Creation / Happy Path', () => {
       .withCurrency('USD')
       .build();
 
-    // GIVEN + WHEN + THEN
-    await createAccount(app.accountPage, account);
-    await expectAccountExists(app.accountPage, account.name);
+    // GIVEN: Form is open and filled with valid data (minimal balance)
+    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
+    
+    // WHEN: User submits form
+    await whenUserSubmitsForm(app.accountPage);
+    
+    // THEN: Account should be created successfully
+    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 
   test('should create account in different currency', async ({ app, accountAPI }, testInfo) => {
@@ -44,24 +61,28 @@ test.describe('Account Creation / Happy Path', () => {
       .withCurrency('VND')
       .build();
 
-    // GIVEN + WHEN + THEN
-    await createAccount(app.accountPage, account);
-    await expectAccountExists(app.accountPage, account.name);
+    // GIVEN: Form is open and filled with valid data (VND currency)
+    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
+    
+    // WHEN: User submits form
+    await whenUserSubmitsForm(app.accountPage);
+    
+    // THEN: Account should be created successfully
+    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 
   test('should display dialog and allow closing without saving', async ({ app, accountAPI }) => {
-    // GIVEN
+    // GIVEN: Dialog is open
     await givenAccountFormIsOpen(app.accountPage);
     
     // THEN: Dialog should be visible
-    const dialog = await app.accountPage.getCreateDialog();
-    await expect(dialog).toBeVisible();
+    await thenDialogShouldBeVisible(app.accountPage);
 
     // WHEN: User closes dialog
-    await app.accountPage.closeDialog();
+    await whenUserClosesDialog(app.accountPage);
     
     // THEN: Dialog should be hidden
-    await expect(dialog).not.toBeVisible();
+    await thenDialogShouldBeClosed(app.accountPage);
   });
 
   test('should create account with different account types', async ({ app, accountAPI }, testInfo) => {
@@ -72,8 +93,10 @@ test.describe('Account Creation / Happy Path', () => {
       .withType('BANK_ACCOUNT')
       .build();
 
-    // GIVEN + WHEN + THEN
-    await createAccount(app.accountPage, account);
-    await expectAccountExists(app.accountPage, account.name);
+    // GIVEN: Account with BANK_ACCOUNT type will be created
+    await givenAccountHasBeenCreated(app.accountPage, account);
+    
+    // THEN: Account should be created successfully
+    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 });

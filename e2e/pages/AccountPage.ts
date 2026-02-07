@@ -358,6 +358,14 @@ export class AccountPage {
     try {
       // Retry loop with multiple strategies
       while (Date.now() - startTime < timeout) {
+        // CRITICAL: Scroll table to top to ensure all rows are potentially visible
+        // This handles cases where table has pagination or is scrolled
+        const table = this.page.locator(this.SELECTORS.accountTable);
+        await table.evaluate((el) => {
+          const scrollable = el.closest('[style*="overflow"]') || el;
+          scrollable.scrollTop = 0;
+        }).catch(() => {});
+        
         // Strategy 1: Look for any cell in tbody containing the account name
         let found = await this.page
           .locator(`${this.SELECTORS.accountTable} tbody td:has-text("${accountName}")`)
@@ -386,8 +394,7 @@ export class AccountPage {
 
         logger.debug(`Selector 2 failed, checking table text content...`);
         
-        // Strategy 3: Check if table contains the text anywhere
-        const table = this.page.locator(this.SELECTORS.accountTable);
+        // Strategy 3: Check if table contains the text anywhere (including DOM, not just visible)
         const tableText = await table.textContent().catch(() => '');
         
         if (tableText.includes(accountName)) {

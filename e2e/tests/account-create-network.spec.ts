@@ -1,10 +1,17 @@
 import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
-import { createAccount } from '@/actions/createAccount';
-import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import { logger } from '@/utils/logger';
-import { givenAccountFormIsOpen, givenFormIsFilledWithValidData, whenUserSubmitsForm, thenFormShouldBeRejected } from './account-creation.scenario';
+import { 
+  givenAccountFormIsOpen, 
+  givenFormIsFilledWithValidData, 
+  givenNetworkFailureIsSimulated,
+  whenUserSubmitsForm,
+  whenNetworkIsRestored,
+  thenFormShouldBeRejected,
+  thenDialogShouldBeClosed,
+  thenAccountShouldBeCreatedSuccessfully
+} from './account-creation.scenario';
 
 /**
  * Account Creation - Network & Performance Tests
@@ -22,10 +29,7 @@ test.describe('Account Creation / Network & Performance', () => {
       .build();
 
     // GIVEN: Network failure is simulated
-    await app.accountPage.routeApiRequests('**/api/accounts', async (route) => {
-      logger.warn('Network request aborted - simulating failure');
-      await route.abort('failed');
-    });
+    await givenNetworkFailureIsSimulated(app.accountPage);
 
     // AND: Form is filled with valid data
     await givenAccountFormIsOpen(app.accountPage);
@@ -37,8 +41,8 @@ test.describe('Account Creation / Network & Performance', () => {
     // THEN: Form should be rejected (dialog stays open)
     await thenFormShouldBeRejected(app.accountPage);
 
-    // Cleanup: Restore network
-    await app.accountPage.unrouteApiRequests('**/api/accounts');
+    // WHEN: Network is restored
+    await whenNetworkIsRestored(app.accountPage);
 
     logger.success('Network failure handled gracefully');
   });
@@ -54,19 +58,17 @@ test.describe('Account Creation / Network & Performance', () => {
     await givenAccountFormIsOpen(app.accountPage);
     await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
 
-    // WHEN: Measure submission performance
+    // WHEN: User submits form (measuring performance)
     const startTime = Date.now();
     await whenUserSubmitsForm(app.accountPage);
-
-    const dialog = await app.accountPage.getCreateDialog();
-    await expect(dialog).toBeHidden({ timeout: 10000 });
-
+    await thenDialogShouldBeClosed(app.accountPage);
     const submissionTime = Date.now() - startTime;
     
-    // THEN: Verify performance and account creation
+    // THEN: Verify submission performance
     logger.info(`Submission completed in ${submissionTime}ms`);
     await expect(submissionTime).toBeLessThan(5000);
 
-    await expectAccountExists(app.accountPage, account.name);
+    // AND: Account should be created
+    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 });
