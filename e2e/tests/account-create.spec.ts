@@ -1,19 +1,21 @@
 import { test, expect } from '@/fixtures/test-fixture';
-import { logger } from '@/utils/logger';
-import { createAccountE2E } from './helpers/account.helper';
+import {
+  userCreatesAccountSuccessfully,
+  userCancelsAccountCreation,
+  userFillsFormFieldsIndividually,
+} from './scenarios/account-creation.scenarios';
 
 /**
  * Account Creation Tests
  * 
- * Tests for the create account dialog:
+ * Tests for the create account dialog covering:
  * - Dialog opening/closing
  * - Form field filling
- * - Form submission
- * - Error handling
- * - Validation
+ * - Complete account creation flow
+ * - Error handling and validation
  * 
  * ✅ Automatic cleanup: All test accounts (TEST_ prefix) deleted after each test
- * ✅ Uses helper functions to DRY up test code
+ * ✅ Uses BDD-style scenarios for clear test documentation
  */
 
 test.describe('Create Account Dialog', () => {
@@ -27,22 +29,17 @@ test.describe('Create Account Dialog', () => {
   });
 
   test('should close dialog when cancel button is clicked', async ({ accountPage }) => {
-    await accountPage.openCreateAccountDialog();
-    await accountPage.closeDialog();
-    await expect(await accountPage.getCreateDialog()).not.toBeVisible();
+    await userCancelsAccountCreation(accountPage);
   });
 
   test('should fill account name field', async ({ accountPage }) => {
     await accountPage.openCreateAccountDialog();
-    await accountPage.fillAccountName('Test Savings');
-    await expect(await accountPage.getAccountNameInput()).toHaveValue('Test Savings');
+    await userFillsFormFieldsIndividually(accountPage, { name: 'Test Savings' });
   });
 
   test('should fill initial balance field', async ({ accountPage }) => {
     await accountPage.openCreateAccountDialog();
-    await accountPage.fillInitialBalance(1000000);
-    const value = await (await accountPage.getInitialBalanceInput()).inputValue();
-    expect(value).toBe('1000000');
+    await userFillsFormFieldsIndividually(accountPage, { balance: 1000000 });
   });
 
   // ========== END-TO-END CREATION TEST WITH CLEANUP ==========
@@ -51,7 +48,6 @@ test.describe('Create Account Dialog', () => {
     accountPage,
     accountAPI,
   }) => {
-    // Arrange
     const testData = {
       name: 'TEST_E2E_Savings_Account',
       type: 'E-Wallet',
@@ -59,17 +55,6 @@ test.describe('Create Account Dialog', () => {
       currency: 'USD',
     };
 
-    // Act & Assert
-    await createAccountE2E(accountPage, testData);
-
-    // Additional verification: Check via API
-    logger.step(8, 'Verify account via API');
-    const createdAccount = await accountAPI.findByName(testData.name);
-    expect(createdAccount).not.toBeNull();
-    expect(createdAccount?.accountName || createdAccount?.name).toBe(testData.name);
-    expect(createdAccount?.initBalance || createdAccount?.balance).toBe(testData.balance);
-
-    // Cleanup message
-    logger.success(`Test passed! Account will be auto-cleaned by fixture`);
+    await userCreatesAccountSuccessfully(accountPage, accountAPI, testData);
   });
 });
