@@ -12,11 +12,11 @@ import { test } from '@/fixtures/test-fixture';
  */
 
 test.describe.skip('Account Update', () => {
-  test('should edit account name', async ({ accountPage }) => {
+  test('should edit account name', async () => {
     // TODO: Implement after account list retrieval
   });
 
-  test('should handle duplicate name on update', async ({ accountPage }) => {
+  test('should handle duplicate name on update', async () => {
     // TODO: Implement after account list retrieval
   });
 });

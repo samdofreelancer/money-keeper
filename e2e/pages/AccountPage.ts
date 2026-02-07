@@ -200,7 +200,7 @@ export class AccountPage {
         timeout: 10000,
       });
       logger.success('Form submitted successfully and dialog closed');
-    } catch (error) {
+    } catch {
       // Check if there's a validation error on the page
       const validationError = await this.getDialogErrorMessage();
       if (validationError) {
@@ -238,8 +238,8 @@ export class AccountPage {
         logger.debug('Account found in table', { accountName });
       }
       return isVisible;
-    } catch (error) {
-      logger.error(`Failed to verify account in table: ${error}`);
+    } catch (_error) {
+      logger.error(`Failed to verify account in table: ${_error}`);
       return false;
     }
   }
@@ -262,7 +262,7 @@ export class AccountPage {
       await cell.waitFor({ state: 'visible', timeout });
       logger.success(`Account "${accountName}" found in table`);
       return true;
-    } catch (error) {
+    } catch {
       logger.error(
         `Account "${accountName}" did not appear in table within ${timeout}ms`
       );

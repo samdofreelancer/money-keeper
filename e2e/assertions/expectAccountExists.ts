@@ -1,4 +1,3 @@
-import { expect } from '@playwright/test';
 import { AccountPage } from '@/pages/AccountPage';
 
 /**
@@ -10,8 +9,8 @@ import { AccountPage } from '@/pages/AccountPage';
  * TODO: Implement after account list retrieval is working
  */
 export async function expectAccountExists(
-  accountPage: AccountPage,
-  accountName: string
+  _accountPage: AccountPage,
+  _accountName: string
 ) {
   // TODO: Implement account list retrieval methods in PageObject
   throw new Error('expectAccountExists not yet implemented');

@@ -1,4 +1,3 @@
-import { expect } from '@playwright/test';
 import { AccountPage } from '@/pages/AccountPage';
 
 /**
@@ -10,9 +9,9 @@ import { AccountPage } from '@/pages/AccountPage';
  * TODO: Implement after account list retrieval is working
  */
 export async function expectAccountBalance(
-  accountPage: AccountPage,
-  accountName: string,
-  expectedBalance: number
+  _accountPage: AccountPage,
+  _accountName: string,
+  _expectedBalance: number
 ) {
   // TODO: Implement account list retrieval methods in PageObject
   throw new Error('expectAccountBalance not yet implemented');
@@ -25,9 +24,9 @@ export async function expectAccountBalance(
  * Currently in development - requires account list retrieval.
  */
 export async function expectAccountCurrency(
-  accountPage: AccountPage,
-  accountName: string,
-  expectedCurrency: string
+  _accountPage: AccountPage,
+  _accountName: string,
+  _expectedCurrency: string
 ) {
   // TODO: Implement account list retrieval methods in PageObject
   throw new Error('expectAccountCurrency not yet implemented');

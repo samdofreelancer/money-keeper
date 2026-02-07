@@ -10,9 +10,9 @@ import { AccountData } from '@/test-data/account.builder';
  * TODO: Implement account list item interactions
  */
 export async function updateAccount(
-  accountPage: AccountPage,
-  oldName: string,
-  newAccount: Partial<AccountData>
+  _accountPage: AccountPage,
+  _oldName: string,
+  _newAccount: Partial<AccountData>
 ) {
   // TODO: Implement after account list retrieval is working
   throw new Error('updateAccount not yet implemented');
