@@ -1,5 +1,4 @@
 import { AccountPage } from '@/pages/AccountPage';
-import { expect } from '@playwright/test';
 import { logger } from '@/utils/logger';
 
 /**

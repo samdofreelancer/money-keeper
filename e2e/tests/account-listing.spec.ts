@@ -44,7 +44,7 @@ test.describe('Account Listing', () => {
     await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should display multiple accounts', async ({ app, accountAPI }) => {
+  test('should display multiple accounts', async ({ app }) => {
     // Create first account via UI
     const account1 = AccountBuilder.create()
       .withName('TEST_First_Account')
