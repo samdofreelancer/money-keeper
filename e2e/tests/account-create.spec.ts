@@ -2,6 +2,7 @@ import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
 import { createAccount } from '@/actions/createAccount';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
+import { generateTestAccountName } from '@/test-data/test-name.util';
 
 /**
  * Account Creation E2E Tests
@@ -18,9 +19,9 @@ import { expectAccountExists } from '@/assertions/expectAccountExists';
  */
 
 test.describe('Account Creation', () => {
-  test('should create account with initial balance', async ({ app }) => {
+  test('should create account with initial balance', async ({ app, accountAPI }, testInfo) => {
     const account = AccountBuilder.create()
-      .withName('TEST_New_Savings')
+      .withName(generateTestAccountName(testInfo, 'Savings'))
       .withBalance(1_000_000)
       .withCurrency('USD')
       .build();
@@ -29,9 +30,9 @@ test.describe('Account Creation', () => {
     await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should create account with zero balance', async ({ app }) => {
+  test('should create account with zero balance', async ({ app, accountAPI }, testInfo) => {
     const account = AccountBuilder.create()
-      .withName('TEST_Empty_Account')
+      .withName(generateTestAccountName(testInfo, 'Account'))
       .withBalance(1)
       .withCurrency('USD')
       .build();
@@ -40,9 +41,9 @@ test.describe('Account Creation', () => {
     await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should create account in different currency', async ({ app }) => {
+  test('should create account in different currency', async ({ app, accountAPI }, testInfo) => {
     const account = AccountBuilder.create()
-      .withName('TEST_VND_Account')
+      .withName(generateTestAccountName(testInfo, 'VND'))
       .withBalance(25_000_000)
       .withCurrency('VND')
       .build();
@@ -51,7 +52,7 @@ test.describe('Account Creation', () => {
     await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should display dialog and allow closing without saving', async ({ app }) => {
+  test('should display dialog and allow closing without saving', async ({ app, accountAPI }) => {
     await app.accountPage.navigateToAccounts();
     await app.accountPage.openCreateAccountDialog();
 

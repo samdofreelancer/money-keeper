@@ -1,6 +1,7 @@
 import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
+import { generateTestAccountName } from '@/test-data/test-name.util';
 import { logger } from '@/utils/logger';
 
 /**
@@ -26,9 +27,9 @@ test.describe('Account Listing', () => {
     logger.success('Accounts page displayed');
   });
 
-  test('should display created account in list', async ({ app }) => {
+  test('should display created account in list', async ({ app, accountAPI }, testInfo) => {
     const account = AccountBuilder.create()
-      .withName('TEST_Listed_Account')
+      .withName(generateTestAccountName(testInfo, 'Account'))
       .withBalance(500_000)
       .withCurrency('USD')
       .build();
@@ -44,10 +45,10 @@ test.describe('Account Listing', () => {
     await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should display multiple accounts', async ({ app }) => {
+  test('should display multiple accounts', async ({ app, accountAPI }, testInfo) => {
     // Create first account via UI
     const account1 = AccountBuilder.create()
-      .withName('TEST_First_Account')
+      .withName(generateTestAccountName(testInfo, 'First'))
       .withBalance(100_000)
       .build();
 
@@ -64,7 +65,7 @@ test.describe('Account Listing', () => {
 
     // Create second account via UI
     const account2 = AccountBuilder.create()
-      .withName('TEST_Second_Account')
+      .withName(`${generateTestAccountName(testInfo, 'Second')}`)
       .withBalance(200_000)
       .build();
 
