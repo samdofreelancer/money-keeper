@@ -15,26 +15,23 @@ test.describe('Account Listing Page', () => {
     // Act
     await accountPage.navigateToAccounts();
 
-    // Assert - verify page title or heading exists
-    const heading = await accountPage.getPage().locator('h1, h2').first();
-    await expect(heading).toBeVisible();
+    // Assert - verify page heading is visible
+    await expect(accountPage.getPageHeading()).toBeVisible();
   });
 
   test('should display account table', async ({ accountPage }) => {
     // Act
     await accountPage.navigateToAccounts();
 
-    // Assert - verify table exists
-    const table = accountPage.getPage().locator('[data-testid="account-table"]');
-    await expect(table).toBeVisible();
+    // Assert - verify table is visible
+    await expect(accountPage.getAccountTable()).toBeVisible();
   });
 
   test('should display create account button', async ({ accountPage }) => {
     // Act
     await accountPage.navigateToAccounts();
 
-    // Assert - verify button exists
-    const createButton = accountPage.getPage().locator('[data-testid="add-account-button"]');
-    await expect(createButton).toBeVisible();
+    // Assert - verify button is visible
+    await expect(accountPage.getCreateAccountButton()).toBeVisible();
   });
 });

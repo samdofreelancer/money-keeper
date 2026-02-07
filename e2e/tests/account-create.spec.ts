@@ -18,8 +18,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.openCreateAccountDialog();
 
     // Assert - verify dialog is visible
-    const dialog = accountPage.getPage().locator('[data-testid="account-dialog"]');
-    await expect(dialog).toBeVisible();
+    await expect(accountPage.getCreateDialog()).toBeVisible();
   });
 
   test('should close dialog when cancel button is clicked', async ({ accountPage }) => {
@@ -29,8 +28,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.closeDialog();
 
     // Assert - verify dialog is hidden
-    const dialog = accountPage.getPage().locator('[data-testid="account-dialog"]');
-    await expect(dialog).not.toBeVisible();
+    await expect(accountPage.getCreateDialog()).not.toBeVisible();
   });
 
   test('should fill account name field', async ({ accountPage }) => {
@@ -40,8 +38,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.fillAccountName('Test Savings');
 
     // Assert - verify value was set
-    const input = accountPage.getPage().locator('[data-testid="input-account-name"]');
-    await expect(input).toHaveValue('Test Savings');
+    await expect(accountPage.getAccountNameInput()).toHaveValue('Test Savings');
   });
 
   test('should fill initial balance field', async ({ accountPage }) => {
@@ -51,8 +48,7 @@ test.describe('Create Account Dialog', () => {
     await accountPage.fillInitialBalance(1000000);
 
     // Assert - verify value was set
-    const input = accountPage.getPage().locator('[data-testid="input-account-balance"] input');
-    const value = await input.inputValue();
+    const value = await accountPage.getInitialBalanceInput().inputValue();
     expect(value).toBe('1000000');
   });
 });

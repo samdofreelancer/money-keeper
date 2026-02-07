@@ -33,6 +33,32 @@ export class AccountPage {
     return await this.page.isVisible('[data-testid="account-table"]');
   }
 
+  // ===== Page Element Getters (for assertions) =====
+
+  getPageHeading() {
+    return this.page.locator('[data-testid="page-title"]');
+  }
+
+  getAccountTable() {
+    return this.page.locator('[data-testid="account-table"]');
+  }
+
+  getCreateAccountButton() {
+    return this.page.locator('[data-testid="add-account-button"]');
+  }
+
+  getCreateDialog() {
+    return this.page.locator('[data-testid="account-dialog"]');
+  }
+
+  getAccountNameInput() {
+    return this.page.locator('[data-testid="input-account-name"]');
+  }
+
+  getInitialBalanceInput() {
+    return this.page.locator('[data-testid="input-account-balance"] input');
+  }
+
   // ===== Create Account Dialog =====
 
   async openCreateAccountDialog() {
