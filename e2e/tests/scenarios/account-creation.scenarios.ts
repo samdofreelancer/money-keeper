@@ -73,8 +73,8 @@ export async function userCreatesAccountSuccessfully(
   logger.step(7, 'Verify account is persisted in the database (API)');
   const createdAccount = await accountAPI.findByName(testData.name);
   expect(createdAccount).not.toBeNull();
-  expect(createdAccount?.accountName || createdAccount?.name).toBe(testData.name);
-  expect(createdAccount?.initBalance || createdAccount?.balance).toBe(testData.balance);
+  expect(createdAccount?.accountName).toBe(testData.name);
+  expect(createdAccount?.initBalance).toBe(testData.balance);
 
   logger.success(`✓ Scenario completed: Account "${testData.name}" created successfully`);
 }

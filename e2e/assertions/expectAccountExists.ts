@@ -1,17 +1,25 @@
 import { AccountPage } from '@/pages/AccountPage';
+import { expect } from '@playwright/test';
+import { logger } from '@/utils/logger';
 
 /**
- * Assertion: Account Exists (Future Implementation)
- * 
+ * Assertion: Account Exists in Table
+ *
  * Verifies that an account appears in the account list.
- * Currently in development - requires account list retrieval.
- * 
- * TODO: Implement after account list retrieval is working
+ * Uses table content (UI) to verify, not API.
+ *
+ * Usage:
+ *   await expectAccountExists(accountPage, 'My Savings');
  */
 export async function expectAccountExists(
-  _accountPage: AccountPage,
-  _accountName: string
+  accountPage: AccountPage,
+  accountName: string
 ) {
-  // TODO: Implement account list retrieval methods in PageObject
-  throw new Error('expectAccountExists not yet implemented');
+  logger.info(`Expecting account to exist: ${accountName}`);
+
+  const exists = await accountPage.waitForAccountInTable(accountName);
+  expect(exists).toBe(true);
+
+  logger.success(`Account exists: ${accountName}`);
 }
+

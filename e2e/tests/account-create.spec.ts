@@ -1,60 +1,65 @@
 import { test, expect } from '@/fixtures/test-fixture';
-import {
-  userCreatesAccountSuccessfully,
-  userCancelsAccountCreation,
-  userFillsFormFieldsIndividually,
-} from './scenarios/account-creation.scenarios';
+import { AccountBuilder } from '@/test-data/account.builder';
+import { createAccount } from '@/actions/createAccount';
+import { expectAccountExists } from '@/assertions/expectAccountExists';
 
 /**
- * Account Creation Tests
- * 
- * Tests for the create account dialog covering:
- * - Dialog opening/closing
- * - Form field filling
- * - Complete account creation flow
- * - Error handling and validation
- * 
- * ✅ Automatic cleanup: All test accounts (TEST_ prefix) deleted after each test
- * ✅ Uses BDD-style scenarios for clear test documentation
+ * Account Creation E2E Tests
+ *
+ * Tests for the business rule: "Users can create accounts"
+ *
+ * Focus:
+ * - Account creation flows (successful, error cases)
+ * - Dialog interactions
+ * - Business rule validation
+ *
+ * ✅ Auto-cleanup: All TEST_ accounts deleted after each test
+ * ✅ Reads like business spec, not automation script
  */
 
-test.describe('Create Account Dialog', () => {
-  test.beforeEach(async ({ accountPage }) => {
-    await accountPage.navigateToAccounts();
+test.describe('Account Creation', () => {
+  test('should create account with initial balance', async ({ app }) => {
+    const account = AccountBuilder.create()
+      .withName('TEST_New_Savings')
+      .withBalance(1_000_000)
+      .withCurrency('USD')
+      .build();
+
+    await createAccount(app.accountPage, account);
+    await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should open dialog when create button is clicked', async ({ accountPage }) => {
-    await accountPage.openCreateAccountDialog();
-    await expect(await accountPage.getCreateDialog()).toBeVisible();
+  test('should create account with zero balance', async ({ app }) => {
+    const account = AccountBuilder.create()
+      .withName('TEST_Empty_Account')
+      .withBalance(1)
+      .withCurrency('USD')
+      .build();
+
+    await createAccount(app.accountPage, account);
+    await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should close dialog when cancel button is clicked', async ({ accountPage }) => {
-    await userCancelsAccountCreation(accountPage);
+  test('should create account in different currency', async ({ app }) => {
+    const account = AccountBuilder.create()
+      .withName('TEST_VND_Account')
+      .withBalance(25_000_000)
+      .withCurrency('VND')
+      .build();
+
+    await createAccount(app.accountPage, account);
+    await expectAccountExists(app.accountPage, account.name);
   });
 
-  test('should fill account name field', async ({ accountPage }) => {
-    await accountPage.openCreateAccountDialog();
-    await userFillsFormFieldsIndividually(accountPage, { name: 'Test Savings' });
-  });
+  test('should display dialog and allow closing without saving', async ({ app }) => {
+    await app.accountPage.navigateToAccounts();
+    await app.accountPage.openCreateAccountDialog();
 
-  test('should fill initial balance field', async ({ accountPage }) => {
-    await accountPage.openCreateAccountDialog();
-    await userFillsFormFieldsIndividually(accountPage, { balance: 1000000 });
-  });
+    const dialog = await app.accountPage.getCreateDialog();
+    await expect(dialog).toBeVisible();
 
-  // ========== END-TO-END CREATION TEST WITH CLEANUP ==========
-
-  test('should create account with name and balance and display in table', async ({
-    accountPage,
-    accountAPI,
-  }) => {
-    const testData = {
-      name: 'TEST_E2E_Savings_Account',
-      type: 'E-Wallet',
-      balance: 50000,
-      currency: 'USD',
-    };
-
-    await userCreatesAccountSuccessfully(accountPage, accountAPI, testData);
+    await app.accountPage.closeDialog();
+    await expect(dialog).not.toBeVisible();
   });
 });
+

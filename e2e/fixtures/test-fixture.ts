@@ -5,29 +5,35 @@ import { AccountAPI } from '@/api/AccountAPI';
 import { logger } from '@/utils/logger';
 
 /**
- * Test fixture that provides all page objects and helpers
- * 
- * Extends base Playwright test with application-specific context.
- * All tests receive: app (page), accountPage, settingsPage, accountAPI
- * 
- * Automatically cleans up test accounts after each test using structured logging.
+ * Test Fixture
+ *
+ * Provides all page objects and helpers to tests.
+ * Automatically cleans up test accounts after each test.
+ *
+ * Usage:
+ *   test('should do something', async ({ app, accountAPI }) => {
+ *     const account = AccountBuilder.create().withName('TEST_Account').build();
+ *     await createAccount(app.accountPage, account);
+ *   });
  */
-export type AppFixture = {
-  app: Awaited<ReturnType<typeof base>>;
+
+export interface AppContext {
   accountPage: AccountPage;
   settingsPage: SettingsPage;
+}
+
+export type AppFixture = {
+  app: AppContext;
   accountAPI: AccountAPI;
 };
 
 export const test = base.extend<AppFixture>({
-  accountPage: async ({ page }, use) => {
-    const accountPage = new AccountPage(page);
-    await use(accountPage);
-  },
-
-  settingsPage: async ({ page }, use) => {
-    const settingsPage = new SettingsPage(page);
-    await use(settingsPage);
+  app: async ({ page }, use) => {
+    const appContext: AppContext = {
+      accountPage: new AccountPage(page),
+      settingsPage: new SettingsPage(page),
+    };
+    await use(appContext);
   },
 
   accountAPI: async ({}, use) => {
@@ -35,13 +41,16 @@ export const test = base.extend<AppFixture>({
     await use(accountAPI);
 
     // ===== CLEANUP HOOK =====
-    // After test completes, delete all test accounts
-    // Test accounts have TEST_ prefix in name
+    // After test completes, delete all test accounts (TEST_ prefix)
+    logger.info('Running cleanup hook...');
     const deleted = await accountAPI.cleanupTestAccounts('TEST_');
     if (deleted > 0) {
       logger.success(`Cleanup: Deleted ${deleted} test account(s)`);
+    } else {
+      logger.warn('Cleanup: No test accounts found to delete');
     }
   },
 });
 
 export { expect };
+

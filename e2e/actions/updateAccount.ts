@@ -1,19 +1,26 @@
 import { AccountPage } from '@/pages/AccountPage';
-import { AccountData } from '@/test-data/account.builder';
+import { logger } from '@/utils/logger';
 
 /**
- * Update Account Action (Future Implementation)
- * 
- * Represents the business action: "update an existing account"
- * Currently in development - not implemented yet.
- * 
- * TODO: Implement account list item interactions
+ * Update Account Action
+ *
+ * Business action: "Update account name"
+ *
+ * Orchestrates UI steps to update account details.
+ * Does NOT assert - that's for assertions module.
+ *
+ * Usage:
+ *   await updateAccount(accountPage, 'Old Account', 'New Account');
  */
 export async function updateAccount(
-  _accountPage: AccountPage,
-  _oldName: string,
-  _newAccount: Partial<AccountData>
+  accountPage: AccountPage,
+  oldName: string,
+  newName: string
 ) {
-  // TODO: Implement after account list retrieval is working
-  throw new Error('updateAccount not yet implemented');
+  logger.info(`Updating account: ${oldName} -> ${newName}`);
+
+  // TODO: Implement update action
+  // This requires editing account row in table (click edit button, update dialog, save)
+  throw new Error('updateAccount not yet implemented - requires table edit flow');
 }
+

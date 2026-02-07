@@ -1,22 +1,22 @@
 import { test } from '@/fixtures/test-fixture';
+import { logger } from '@/utils/logger';
 
 /**
- * Account Update Tests (Future Implementation)
- * 
- * Tests for updating account details:
- * - Edit dialog opening
- * - Form field updates
- * - Submission
- * - Validation
- * - Error handling
+ * Account Update E2E Tests
+ *
+ * Tests for the business rule: "Users can update accounts"
+ *
+ * TODO: Implement when update UI is ready
+ * - Update account name
+ * - Update account type
+ * - Update account currency
+ *
+ * ✅ Auto-cleanup: All TEST_ accounts deleted after each test
  */
 
-test.describe.skip('Account Update', () => {
-  test('should edit account name', async () => {
-    // TODO: Implement after account list retrieval
-  });
-
-  test('should handle duplicate name on update', async () => {
-    // TODO: Implement after account list retrieval
+test.describe('Account Update', () => {
+  test('placeholder - update not yet implemented', async () => {
+    logger.info('Account update tests will be implemented when UI is ready');
   });
 });
+
