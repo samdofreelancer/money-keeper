@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type TestInfo } from '@playwright/test';
 import { AccountPage } from '@/pages/AccountPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { AccountAPI } from '@/api/AccountAPI';
@@ -52,5 +52,5 @@ export const test = base.extend<AppFixture>({
   },
 });
 
-export { expect };
+export { expect, type TestInfo };
 

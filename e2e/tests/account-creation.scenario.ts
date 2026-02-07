@@ -1,7 +1,6 @@
 import { AccountPage } from '@/pages/AccountPage';
 import { generateTestAccountName } from '@/test-data/test-name.util';
-import { TestInfo } from '@playwright/test';
-import { expect } from '@/fixtures/test-fixture';
+import { expect, type TestInfo } from '@/fixtures/test-fixture';
 import { expectAccountExists } from '@/assertions/expectAccountExists';
 import { TIMEOUTS, DELAYS, TEST_DEFAULTS, API_ROUTES } from './account-creation.constants';
 

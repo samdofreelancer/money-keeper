@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, Route } from '@playwright/test';
 import { logger } from '@/utils/logger';
 
 /**
@@ -445,7 +445,7 @@ export class AccountPage {
    */
   async routeApiRequests(
     pattern: string,
-    handler: (route: any) => Promise<void>
+    handler: (route: Route) => Promise<void>
   ): Promise<void> {
     await this.page.route(pattern, handler);
   }
