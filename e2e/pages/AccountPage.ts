@@ -33,6 +33,7 @@ export class AccountPage {
     selectAccountType: '[data-testid="select-account-type"]',
     optionAccountType: '[data-testid="option-account-type"]',
     formItemCurrency: '[data-testid="form-item-currency"]',
+    selectCurrency: '[data-testid="form-item-currency"] .el-select',
     buttonCancel: '[data-testid="button-cancel"]',
     buttonSubmit: '[data-testid="button-submit"]',
     errorMessage: '[data-testid="error-message"]',
@@ -127,76 +128,34 @@ export class AccountPage {
     await selectField.click();
     await this.page.waitForTimeout(300); // Wait for dropdown to open
     
-    // Check what's visible in the DOM after clicking
-    const dropdown = this.page.locator('.el-select-dropdown');
-    const isDropdownVisible = await dropdown.isVisible().catch(() => false);
-    logger.debug(`Dropdown visible after click: ${isDropdownVisible}`);
-    
-    if (isDropdownVisible) {
-      const itemsCount = await this.page.locator('.el-select-dropdown__item').count();
-      logger.debug(`Found ${itemsCount} dropdown items`);
-    }
-    
-    // Try multiple strategies to find and click the option
-    let found = false;
-    let option;
-
-    // Strategy 1: Try finding by data-testid with underscores replaced by spaces
-    const typeDisplay = type.replace(/_/g, ' ');
-    logger.debug(`Strategy 1: Looking for "${typeDisplay}" in data-testid selector`);
-    
-    option = this.page.locator(
-      `${this.SELECTORS.optionAccountType}:has-text("${typeDisplay}")`
-    );
-    found = await option.count().then(c => c > 0).catch(() => false);
-
-    if (found) {
-      await option.first().click();
-      await this.page.waitForTimeout(500);
-      logger.debug('Account type selected', { type });
-      return;
-    }
-
-    logger.debug(`Strategy 1 failed, trying el-select-dropdown items...`);
-
-    // Strategy 2: Try Element UI dropdown items with has-text
-    logger.debug(`Strategy 2: Looking for ".el-select-dropdown__item:has-text(\"${typeDisplay}\")"`);
-    option = this.page.locator(`.el-select-dropdown__item:has-text("${typeDisplay}")`);
-    found = await option.count().then(c => c > 0).catch(() => false);
-
-    if (found) {
-      await option.first().click();
-      await this.page.waitForTimeout(500);
-      logger.debug('Account type selected (el-select)', { type: typeDisplay });
-      return;
-    }
-
-    logger.debug(`Strategy 2 failed, trying title case format...`);
-
-    // Strategy 3: Try with Title Case format
-    const titleCase = type
+    // Convert enum format (E_WALLET) to UI display format (E-Wallet)
+    // Backend: E_WALLET, BANK_ACCOUNT
+    // UI: E-Wallet, Bank Account
+    const displayFormat = type
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-
-    logger.debug(`Strategy 3: Looking for ".el-select-dropdown__item:has-text(\"${titleCase}\")"`);
-    option = this.page.locator(`.el-select-dropdown__item:has-text("${titleCase}")`);
-    found = await option.count().then(c => c > 0).catch(() => false);
+      .join('-');
+    
+    logger.debug(`Looking for dropdown item with text: "${displayFormat}"`);
+    
+    // Try to find the option by exact text match
+    let option = this.page.locator(`.el-select-dropdown__item:has-text("${displayFormat}")`);
+    let found = await option.count().then(c => c > 0).catch(() => false);
 
     if (found) {
       await option.first().click();
       await this.page.waitForTimeout(500);
-      logger.debug('Account type selected (title case)', { type: titleCase });
+      logger.debug('Account type selected', { type, displayFormat });
       return;
     }
 
-    logger.debug(`Strategy 3 failed, trying first available option...`);
+    logger.debug(`Text selector failed, trying first available option...`);
 
-    // Strategy 4: Just click the first available option in the dropdown
+    // Fallback: Just click the first available option
     const allOptions = this.page.locator('.el-select-dropdown__item');
     const count = await allOptions.count();
     
-    logger.debug(`Found ${count} total dropdown items for fallback`);
+    logger.debug(`Found ${count} total dropdown items`);
     
     if (count > 0) {
       const firstOptionText = await allOptions.first().textContent();
@@ -207,8 +166,7 @@ export class AccountPage {
       return;
     }
 
-    logger.error(`Could not find any account type options - dropdown may not have opened`);
-    logger.error(`Selector being used: ${this.SELECTORS.selectAccountType}`);
+    logger.error(`Could not find any account type options`);
     throw new Error(`Account type option not found: ${type}`);
   }
 
@@ -217,18 +175,17 @@ export class AccountPage {
    * @param currency Currency code (e.g., 'USD', 'EUR', 'VND')
    */
   async selectCurrency(currency: string) {
-    // Find the currency select within the form-item
-    const formItemCurrency = this.page.locator(this.SELECTORS.formItemCurrency);
-    const currencyField = formItemCurrency.locator('.el-select');
+    const selectField = this.page.locator(this.SELECTORS.selectCurrency);
+    await selectField.waitFor({ state: 'visible', timeout: 5000 });
     
-    await currencyField.waitFor({ state: 'visible', timeout: 5000 });
-    await currencyField.click();
+    logger.debug(`Opening currency dropdown for: ${currency}`);
     
-    // Wait for the dropdown to open
-    await this.page.waitForTimeout(300);
+    // Click to open the dropdown
+    await selectField.click();
+    await this.page.waitForTimeout(300); // Wait for dropdown to open
     
-    // Strategy 1: Look for the currency option using data-testid: currency-${code}
-    let option = this.page.locator(`[data-testid="currency-${currency.toLowerCase()}"]`);
+    // Try to find the option by exact text match (USD, EUR, VND, etc.)
+    let option = this.page.locator(`.el-select-dropdown__item:has-text("${currency}")`);
     let found = await option.count().then(c => c > 0).catch(() => false);
 
     if (found) {
@@ -238,33 +195,24 @@ export class AccountPage {
       return;
     }
 
-    logger.debug(`Currency data-testid selector failed for: ${currency}, trying alternatives...`);
+    logger.debug(`Text selector failed, trying first available option...`);
 
-    // Strategy 2: Look for currency code in any option
-    option = this.page.locator(`[data-testid*="currency"]:has-text("${currency}")`);
-    found = await option.count().then(c => c > 0).catch(() => false);
-
-    if (found) {
-      await option.first().click();
+    // Fallback: Just click the first available option
+    const allOptions = this.page.locator('.el-select-dropdown__item');
+    const count = await allOptions.count();
+    
+    logger.debug(`Found ${count} total dropdown items`);
+    
+    if (count > 0) {
+      const firstOptionText = await allOptions.first().textContent();
+      logger.debug(`Clicking first option with text: "${firstOptionText}"`);
+      await allOptions.first().click();
       await this.page.waitForTimeout(500);
-      logger.debug('Currency selected (alt selector)', { currency });
+      logger.debug('Currency selected (first option)', { currency });
       return;
     }
 
-    logger.debug(`Currency alt selector failed, searching in dropdown...`);
-
-    // Strategy 3: Look in the dropdown menu for the currency text
-    const dropdownItems = this.page.locator('.el-select-dropdown__item:has-text("' + currency + '")');
-    found = await dropdownItems.count().then(c => c > 0).catch(() => false);
-
-    if (found) {
-      await dropdownItems.first().click();
-      await this.page.waitForTimeout(500);
-      logger.debug('Currency selected (dropdown search)', { currency });
-      return;
-    }
-
-    logger.error(`Could not find currency option for: ${currency}`);
+    logger.error(`Could not find any currency options`);
     throw new Error(`Currency option not found: ${currency}`);
   }
 
