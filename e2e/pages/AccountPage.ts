@@ -419,5 +419,47 @@ export class AccountPage {
       balance: balanceValue,
     };
   }
+
+  // ===== Network & Keyboard Support =====
+
+  /**
+   * Route API requests (for network failure simulation)
+   */
+  async routeApiRequests(
+    pattern: string,
+    handler: (route: any) => Promise<void>
+  ): Promise<void> {
+    await this.page.route(pattern, handler);
+  }
+
+  /**
+   * Stop routing API requests
+   */
+  async unrouteApiRequests(pattern: string): Promise<void> {
+    await this.page.unroute(pattern);
+  }
+
+  /**
+   * Press keyboard key
+   */
+  async pressKey(key: string): Promise<void> {
+    await this.page.keyboard.press(key);
+  }
+
+  /**
+   * Focus on submit button
+   */
+  async focusSubmitButton(): Promise<void> {
+    const submitButton = this.page.locator(this.SELECTORS.buttonSubmit);
+    await submitButton.focus();
+  }
+
+  /**
+   * Check if submit button is focused
+   */
+  async isSubmitButtonFocused(): Promise<boolean> {
+    const submitButton = this.page.locator(this.SELECTORS.buttonSubmit);
+    return await submitButton.evaluate((el) => el === document.activeElement);
+  }
 }
 
