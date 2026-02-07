@@ -1,4 +1,5 @@
 import { test, expect } from '@/fixtures/test-fixture';
+import { logger } from '@/utils/logger';
 
 /**
  * Account Creation Tests
@@ -66,28 +67,33 @@ test.describe('Create Account Dialog', () => {
     const accountType = 'E-Wallet'; // Label from accountTypes constant
     const currency = 'USD'; // Supported currency
 
+    logger.section('Account Creation E2E Test');
+
     // Act 1: Navigate to accounts page
+    logger.step(1, 'Navigate to accounts page');
     await accountPage.navigateToAccounts();
 
     // Act 2: Open create dialog
+    logger.step(2, 'Open create dialog');
     await accountPage.openCreateAccountDialog();
     await expect(await accountPage.getCreateDialog()).toBeVisible();
 
     // Act 3: Fill in account details
-    console.log('📝 Filling account name:', accountName);
+    logger.step(3, 'Fill account form');
+    logger.info(`Account name: ${accountName}`);
     await accountPage.fillAccountName(accountName);
     
-    console.log('📝 Selecting account type:', accountType);
+    logger.info(`Account type: ${accountType}`);
     await accountPage.selectAccountType(accountType);
     
-    console.log('📝 Filling initial balance:', initialBalance);
+    logger.info(`Initial balance: ${initialBalance}`);
     await accountPage.fillInitialBalance(initialBalance);
     
-    console.log('📝 Selecting currency:', currency);
+    logger.info(`Currency: ${currency}`);
     await accountPage.selectCurrency(currency);
 
     // Assert 1: Verify form fields were filled
-    console.log('✓ Verifying form fields...');
+    logger.step(4, 'Verify form fields');
     await expect(await accountPage.getAccountNameInput()).toHaveValue(accountName);
     const balanceValue = await (
       await accountPage.getInitialBalanceInput()
@@ -96,18 +102,18 @@ test.describe('Create Account Dialog', () => {
 
     // Debug: Log form field values
     const formValues = await accountPage.getFormFieldValues();
-    console.log('📊 Form values before submission:', formValues);
+    logger.object('Form values', formValues);
 
     // Act 4: Submit the form
-    console.log('🚀 Submitting form...');
+    logger.step(5, 'Submit form');
     await accountPage.submitCreateAccountForm();
 
     // Assert 2: Verify dialog is closed after submission
-    console.log('✓ Verifying dialog closed...');
+    logger.step(6, 'Verify dialog closed');
     await expect(await accountPage.getCreateDialog()).not.toBeVisible();
 
     // Assert 3: Verify account appears in the table
-    console.log('⏳ Waiting for account to appear in table...');
+    logger.step(7, 'Verify account in table');
     const accountInTable = await accountPage.waitForAccountInTable(
       accountName,
       10000
@@ -115,7 +121,7 @@ test.describe('Create Account Dialog', () => {
     expect(accountInTable).toBe(true);
 
     // Assert 4: Verify account exists via API
-    console.log('🔍 Verifying account via API...');
+    logger.step(8, 'Verify account via API');
     const createdAccount = await accountAPI.findByName(accountName);
     expect(createdAccount).not.toBeNull();
     expect(createdAccount?.accountName || createdAccount?.name).toBe(accountName);
@@ -124,8 +130,6 @@ test.describe('Create Account Dialog', () => {
     );
 
     // ✅ Cleanup: Automatic cleanup via fixture
-    console.log(
-      `✅ Test passed! Created account: ${accountName} (will be auto-cleaned)`
-    );
+    logger.success(`Test passed! Created account: ${accountName} (will be auto-cleaned)`);
   });
 });

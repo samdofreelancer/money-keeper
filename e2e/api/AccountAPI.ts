@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { logger } from '@/utils/logger';
 
 /**
  * Account API Client for E2E Tests
@@ -11,6 +12,7 @@ import axios, { AxiosInstance } from 'axios';
  * ✅ Uses direct axios calls (faster than UI automation)
  * ✅ Separates concerns: UI tests use PageObject, API tests use this
  * ✅ Enables data cleanup after tests (automatic)
+ * ✅ Structured logging via logger utility
  */
 
 export interface Account {
@@ -56,7 +58,8 @@ export class AccountAPI {
       const response = await this.client.get<Account[]>('/accounts');
       return response.data || [];
     } catch (error) {
-      console.error('Failed to fetch accounts:', error);
+      logger.error('Failed to fetch accounts');
+      logger.debug('Error details', error);
       return [];
     }
   }
@@ -72,10 +75,12 @@ export class AccountAPI {
       if (response.status === 200 || response.status === 201) {
         return response.data;
       }
-      console.error(`Failed to create account: ${response.status}`, response.data);
+      logger.error(`Failed to create account with status: ${response.status}`);
+      logger.debug('Response data', response.data);
       return null;
     } catch (error) {
-      console.error('Failed to create account:', error);
+      logger.error('Failed to create account');
+      logger.debug('Error details', error);
       return null;
     }
   }
@@ -90,7 +95,8 @@ export class AccountAPI {
       const response = await this.client.delete(`/accounts/${id}`);
       return response.status === 200 || response.status === 204;
     } catch (error) {
-      console.error(`Failed to delete account ${id}:`, error);
+      logger.error(`Failed to delete account ${id}`);
+      logger.debug('Error details', error);
       return false;
     }
   }
@@ -108,7 +114,8 @@ export class AccountAPI {
         null
       );
     } catch (error) {
-      console.error('Failed to find account by name:', error);
+      logger.error('Failed to find account by name');
+      logger.debug('Error details', error);
       return null;
     }
   }
@@ -138,7 +145,8 @@ export class AccountAPI {
       
       return deleted;
     } catch (error) {
-      console.error('Failed to delete accounts by pattern:', error);
+      logger.error('Failed to delete accounts by pattern');
+      logger.debug('Error details', error);
       return 0;
     }
   }

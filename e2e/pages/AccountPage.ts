@@ -1,4 +1,5 @@
 import { Page, Locator } from '@playwright/test';
+import { logger } from '@/utils/logger';
 
 /**
  * Account Page Object - Best Practice Implementation
@@ -10,6 +11,7 @@ import { Page, Locator } from '@playwright/test';
  * - Encapsulated selectors (no getPage() leaking internals)
  * - DRY principle: selectors defined once
  * - Explicit waits: no arbitrary timeouts
+ * - Structured logging with logger utility
  * 
  * ❌ DOES NOT:
  * - Assert anything
@@ -90,12 +92,14 @@ export class AccountPage {
     const input = this.page.locator(this.SELECTORS.inputAccountName);
     await input.waitFor({ state: 'visible', timeout: 5000 });
     await input.fill(name);
+    logger.debug('Account name filled', { name });
   }
 
   async fillInitialBalance(balance: number) {
     const input = this.page.locator(this.SELECTORS.inputAccountBalance);
     await input.waitFor({ state: 'visible', timeout: 5000 });
     await input.fill(balance.toString());
+    logger.debug('Initial balance filled', { balance });
   }
 
   /**
@@ -119,6 +123,7 @@ export class AccountPage {
     
     // Wait for the selection to be registered
     await this.page.waitForTimeout(500);
+    logger.debug('Account type selected', { type });
   }
 
   /**
@@ -146,6 +151,7 @@ export class AccountPage {
     
     // Wait for the selection to be registered
     await this.page.waitForTimeout(500);
+    logger.debug('Currency selected', { currency });
   }
 
   async closeDialog() {
@@ -154,6 +160,7 @@ export class AccountPage {
       state: 'hidden', 
       timeout: 5000 
     });
+    logger.info('Create account dialog closed');
   }
 
   async getDialogErrorMessage(): Promise<string | null> {
@@ -192,7 +199,7 @@ export class AccountPage {
         state: 'hidden',
         timeout: 10000,
       });
-      console.log('✅ Form submitted successfully and dialog closed');
+      logger.success('Form submitted successfully and dialog closed');
     } catch (error) {
       // Check if there's a validation error on the page
       const validationError = await this.getDialogErrorMessage();
@@ -226,9 +233,13 @@ export class AccountPage {
       const cell = this.page.locator(
         `${this.SELECTORS.accountTable} tbody td:has-text("${accountName}")`
       );
-      return await cell.isVisible({ timeout: 5000 }).catch(() => false);
+      const isVisible = await cell.isVisible({ timeout: 5000 }).catch(() => false);
+      if (isVisible) {
+        logger.debug('Account found in table', { accountName });
+      }
+      return isVisible;
     } catch (error) {
-      console.error(`Failed to verify account in table: ${error}`);
+      logger.error(`Failed to verify account in table: ${error}`);
       return false;
     }
   }
@@ -249,11 +260,11 @@ export class AccountPage {
         `${this.SELECTORS.accountTable} tbody td:has-text("${accountName}")`
       );
       await cell.waitFor({ state: 'visible', timeout });
-      console.log(`✅ Account "${accountName}" found in table`);
+      logger.success(`Account "${accountName}" found in table`);
       return true;
     } catch (error) {
-      console.error(
-        `❌ Account "${accountName}" did not appear in table within ${timeout}ms`
+      logger.error(
+        `Account "${accountName}" did not appear in table within ${timeout}ms`
       );
       return false;
     }

@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import { AccountPage } from '@/pages/AccountPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { AccountAPI } from '@/api/AccountAPI';
+import { logger } from '@/utils/logger';
 
 /**
  * Test fixture that provides all page objects and helpers
@@ -9,7 +10,7 @@ import { AccountAPI } from '@/api/AccountAPI';
  * Extends base Playwright test with application-specific context.
  * All tests receive: app (page), accountPage, settingsPage, accountAPI
  * 
- * Automatically cleans up test accounts after each test.
+ * Automatically cleans up test accounts after each test using structured logging.
  */
 export type AppFixture = {
   app: Awaited<ReturnType<typeof base>>;
@@ -38,7 +39,7 @@ export const test = base.extend<AppFixture>({
     // Test accounts have TEST_ prefix in name
     const deleted = await accountAPI.cleanupTestAccounts('TEST_');
     if (deleted > 0) {
-      console.log(`✅ Cleanup: Deleted ${deleted} test account(s)`);
+      logger.success(`Cleanup: Deleted ${deleted} test account(s)`);
     }
   },
 });
