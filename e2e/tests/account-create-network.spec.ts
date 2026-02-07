@@ -21,7 +21,7 @@ import {
  */
 
 test.describe('Account Creation / Network & Performance', () => {
-  test('should handle network failure gracefully', async ({ app, accountAPI }, testInfo) => {
+  test('should handle network failure gracefully', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'NetworkFail'))
       .withBalance(100_000)
@@ -47,7 +47,7 @@ test.describe('Account Creation / Network & Performance', () => {
     logger.success('Network failure handled gracefully');
   });
 
-  test('should measure form submission performance', async ({ app, accountAPI }, testInfo) => {
+  test('should measure form submission performance', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'Performance'))
       .withBalance(100_000)

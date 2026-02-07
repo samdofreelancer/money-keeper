@@ -3,15 +3,11 @@ import { AccountBuilder } from '@/test-data/account.builder';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import { 
   givenFormIsPartiallFilledAndClosed,
-  givenAccountHasBeenCreated,
-  givenFormIsOpenAndFilled,
-  whenUserRapidClicksSubmitButton,
   whenUserRefreshesPage,
   whenUserOpensDialogAgain,
-  whenUserSubmitsForm,
-  thenOnlyOneAccountShouldBeCreated,
+  thenFormShouldBeCleared,
   thenAccountShouldBeCreatedSuccessfully,
-  thenFormShouldBeCleared
+  createAccountScenario
 } from './account-creation.scenario';
 
 /**
@@ -22,7 +18,7 @@ import {
  */
 
 test.describe('Account Creation / Edge Cases', () => {
-  test('should clear form when dialog reopens', async ({ app, accountAPI }, testInfo) => {
+  test('should clear form when dialog reopens', async ({ app }, testInfo) => {
     const testName = generateTestAccountName(testInfo, 'FormReset');
     
     // GIVEN: Form is partially filled and closed
@@ -35,32 +31,26 @@ test.describe('Account Creation / Edge Cases', () => {
     await thenFormShouldBeCleared(app.accountPage);
   });
 
-  test('should prevent duplicate submission on rapid button clicks', async ({ app, accountAPI }, testInfo) => {
+  test('should prevent duplicate submission on rapid button clicks', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'RapidClick'))
       .withBalance(100_000)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Form is open and filled with valid data
-    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
-
-    // WHEN: User rapid-clicks submit button
-    await whenUserRapidClicksSubmitButton(app.accountPage);
-
-    // THEN: Should only create one account (dialog closes)
-    await thenOnlyOneAccountShouldBeCreated(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 
-  test('should create multiple accounts in quick succession', async ({ app, accountAPI }, testInfo) => {
+  test('should create multiple accounts in quick succession', async ({ app }, testInfo) => {
     const account1 = AccountBuilder.create()
       .withName(`${generateTestAccountName(testInfo, 'First')}`)
       .withBalance(100_000)
       .withCurrency('USD')
       .build();
 
-    // WHEN: Create first account (full cycle: setup → action → verify)
-    await givenAccountHasBeenCreated(app.accountPage, account1);
+    // WHEN: Create first account
+    await createAccountScenario(app, account1);
 
     const account2 = AccountBuilder.create()
       .withName(`${generateTestAccountName(testInfo, 'Second')}`)
@@ -68,11 +58,11 @@ test.describe('Account Creation / Edge Cases', () => {
       .withCurrency('EUR')
       .build();
 
-    // WHEN: Create second account in quick succession (verify system handles rapid creates)
-    await givenAccountHasBeenCreated(app.accountPage, account2);
+    // WHEN: Create second account in quick succession
+    await createAccountScenario(app, account2);
   });
 
-  test('should preserve account data after page refresh', async ({ app, accountAPI }, testInfo) => {
+  test('should preserve account data after page refresh', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'Persist'))
       .withBalance(750_000)
@@ -80,7 +70,7 @@ test.describe('Account Creation / Edge Cases', () => {
       .build();
 
     // GIVEN: Account has been created successfully
-    await givenAccountHasBeenCreated(app.accountPage, account);
+    await createAccountScenario(app, account);
 
     // WHEN: User refreshes the page
     await whenUserRefreshesPage(app.accountPage);
@@ -89,37 +79,25 @@ test.describe('Account Creation / Edge Cases', () => {
     await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
   });
 
-  test('should create account with very large balance', async ({ app, accountAPI }, testInfo) => {
+  test('should create account with very large balance', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'BigMoney'))
       .withBalance(999_999_999_999)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Form is open and filled with valid data (very large balance)
-    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
-    
-    // WHEN: User submits form
-    await whenUserSubmitsForm(app.accountPage);
-    
-    // THEN: Account should be created successfully
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 
-  test('should create account with special characters in name', async ({ app, accountAPI }, testInfo) => {
+  test('should create account with special characters in name', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(`${generateTestAccountName(testInfo, 'Special')}_@#$%`)
       .withBalance(100_000)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Form is open and filled with valid data (special characters in name)
-    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
-    
-    // WHEN: User submits form
-    await whenUserSubmitsForm(app.accountPage);
-    
-    // THEN: Account should be created successfully
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 });

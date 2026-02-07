@@ -40,14 +40,14 @@ test.describe('Account Creation / Accessibility', () => {
     logger.success('Escape key closes dialog');
   });
 
-  test('should support keyboard navigation for form submission', async ({ app, accountAPI }, testInfo) => {
+  test('should support keyboard navigation for form submission', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'KeyboardNav'))
       .withBalance(100_000)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Form is open and filled with valid data
+    // Execute complete account creation scenario via keyboard
     await givenAccountFormIsOpen(app.accountPage);
     await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
 

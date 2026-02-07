@@ -3,12 +3,8 @@ import { AccountBuilder } from '@/test-data/account.builder';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import {
   givenAccountsPageIsOpen,
-  givenAccountFormIsOpen,
-  givenFormIsFilledWithValidData,
-  givenAccountHasBeenCreated,
-  whenUserSubmitsForm,
   thenAccountTableShouldBeVisible,
-  thenAccountShouldBeCreatedSuccessfully
+  createAccountScenario
 } from './account-creation.scenario';
 import { logger } from '@/utils/logger';
 
@@ -36,26 +32,23 @@ test.describe('Account Listing', () => {
     logger.success('Accounts page displayed');
   });
 
-  test('should display created account in list', async ({ app, accountAPI }, testInfo) => {
+  test('should display created account in list', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'Account'))
       .withBalance(500_000)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Accounts page is open and form is filled with valid data
+    // GIVEN: Accounts page is open
     await givenAccountsPageIsOpen(app.accountPage);
-    await givenAccountFormIsOpen(app.accountPage);
-    await givenFormIsFilledWithValidData(app.accountPage, account.name, account.initialBalance, account.currency);
-    
-    // WHEN: User submits form
-    await whenUserSubmitsForm(app.accountPage);
 
-    // THEN: Account should appear in the list
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // WHEN: User creates account
+    await createAccountScenario(app, account);
+
+    logger.success('Account created and displayed in list');
   });
 
-  test('should display multiple accounts', async ({ app, accountAPI }, testInfo) => {
+  test('should display multiple accounts', async ({ app }, testInfo) => {
     const account1 = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'First'))
       .withBalance(100_000)
@@ -69,11 +62,13 @@ test.describe('Account Listing', () => {
     // GIVEN: Accounts page is open
     await givenAccountsPageIsOpen(app.accountPage);
     
-    // WHEN: Create first account (verified immediately)
-    await givenAccountHasBeenCreated(app.accountPage, account1);
+    // WHEN: Create first account
+    await createAccountScenario(app, account1);
 
-    // AND: Create second account (verified immediately)
-    await givenAccountHasBeenCreated(app.accountPage, account2);
+    // AND: Create second account
+    await createAccountScenario(app, account2);
+
+    logger.success('Multiple accounts created and displayed in list');
   });
 });
 

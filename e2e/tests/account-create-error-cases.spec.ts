@@ -23,7 +23,7 @@ import {
  */
 
 test.describe('Account Creation / Error Cases', () => {
-  test('should display empty account name validation error', async ({ app, accountAPI }, testInfo) => {
+  test('should display empty account name validation error', async ({ app }, testInfo) => {
     // GIVEN
     await givenFormWithEmptyName(app.accountPage);
     // WHEN
@@ -32,7 +32,7 @@ test.describe('Account Creation / Error Cases', () => {
     await thenFormShouldBeRejected(app.accountPage);
   });
 
-  test('should display validation error when balance is negative or zero', async ({ app, accountAPI }, testInfo) => {
+  test('should display validation error when balance is negative or zero', async ({ app }, testInfo) => {
     // GIVEN
     await givenFormWithInvalidBalance(app.accountPage, testInfo);
     // WHEN
@@ -41,7 +41,7 @@ test.describe('Account Creation / Error Cases', () => {
     await thenFormShouldBeRejected(app.accountPage);
   });
 
-  test('should display error when account name already exists', async ({ app, accountAPI }, testInfo) => {
+  test('should display error when account name already exists', async ({ app }, testInfo) => {
     // GIVEN: An account has been created with a specific name
     const accountName = generateTestAccountName(testInfo, 'Duplicate');
     const account = AccountBuilder.create()
@@ -63,7 +63,7 @@ test.describe('Account Creation / Error Cases', () => {
     await thenFormShouldBeRejected(app.accountPage);
   });
 
-  test('should validate account name with maximum length', async ({ app, accountAPI }, testInfo) => {
+  test('should validate account name with maximum length', async ({ app }, testInfo) => {
     // GIVEN
     await givenFormWithOversizedName(app.accountPage, testInfo);
     // WHEN
@@ -72,7 +72,7 @@ test.describe('Account Creation / Error Cases', () => {
     await thenFormShouldBeRejected(app.accountPage);
   });
 
-  test('should reject account name with only whitespace', async ({ app, accountAPI }) => {
+  test('should reject account name with only whitespace', async ({ app }) => {
     // GIVEN
     await givenFormWithWhitespaceName(app.accountPage);
     // WHEN
@@ -81,7 +81,7 @@ test.describe('Account Creation / Error Cases', () => {
     await thenFormShouldBeRejected(app.accountPage);
   });
 
-  test('should sanitize dangerous input in account name', async ({ app, accountAPI }, testInfo) => {
+  test('should sanitize dangerous input in account name', async ({ app }, testInfo) => {
     // GIVEN
     await givenFormWithDangerousInput(app.accountPage, testInfo);
     // WHEN
@@ -90,7 +90,7 @@ test.describe('Account Creation / Error Cases', () => {
     await thenFormShouldBeRejected(app.accountPage);
   });
 
-  test('should validate minimum account name length', async ({ app, accountAPI }, testInfo) => {
+  test('should validate minimum account name length', async ({ app }, testInfo) => {
     // GIVEN
     await givenFormWithUndersizedName(app.accountPage, testInfo);
     // WHEN

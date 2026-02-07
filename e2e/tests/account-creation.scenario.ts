@@ -385,3 +385,44 @@ export async function givenNetworkFailureIsSimulated(accountPage: AccountPage): 
 export async function whenNetworkIsRestored(accountPage: AccountPage): Promise<void> {
   await accountPage.unrouteApiRequests(API_ROUTES.ACCOUNTS);
 }
+
+// ===== HIGH-LEVEL ORCHESTRATION SCENARIOS =====
+
+/**
+ * ORCHESTRATION: Complete account creation flow
+ * 
+ * Single-line scenario for standard account creation tests
+ * 
+ * Pattern:
+ *   const account = AccountBuilder.create().withName(...).build();
+ *   await createAccountScenario(app, account);
+ *
+ * This replaces:
+ *   await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
+ *   await whenUserSubmitsForm(app.accountPage);
+ *   await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+ *
+ * Benefits:
+ * - Test expresses business intent only (what, not how)
+ * - No direct Page Object access from tests
+ * - Scenario owns all orchestration logic
+ * - Assertions are reusable and centralized
+ */
+export async function createAccountScenario(
+  app: { accountPage: AccountPage },
+  account: { name: string; initialBalance: number; currency: string }
+): Promise<void> {
+  // GIVEN: Form is open and filled with account data
+  await givenFormIsFilledWithValidData(
+    app.accountPage,
+    account.name,
+    account.initialBalance,
+    account.currency
+  );
+
+  // WHEN: User submits the form
+  await whenUserSubmitsForm(app.accountPage);
+
+  // THEN: Account should be created successfully
+  await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+}

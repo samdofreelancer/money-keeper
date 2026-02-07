@@ -2,14 +2,11 @@ import { test, expect } from '@/fixtures/test-fixture';
 import { AccountBuilder } from '@/test-data/account.builder';
 import { generateTestAccountName } from '@/test-data/test-name.util';
 import { 
-  givenAccountFormIsOpen, 
-  givenAccountHasBeenCreated,
-  givenFormIsOpenAndFilled,
-  whenUserSubmitsForm,
+  givenAccountFormIsOpen,
   whenUserClosesDialog,
-  thenAccountShouldBeCreatedSuccessfully,
   thenDialogShouldBeVisible,
-  thenDialogShouldBeClosed
+  thenDialogShouldBeClosed,
+  createAccountScenario
 } from './account-creation.scenario';
 
 /**
@@ -20,58 +17,40 @@ import {
  */
 
 test.describe('Account Creation / Happy Path', () => {
-  test('should create account with initial balance', async ({ app, accountAPI }, testInfo) => {
+  test('should create account with initial balance', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'Savings'))
       .withBalance(1_000_000)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Form is open and filled with valid data
-    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
-    
-    // WHEN: User submits form
-    await whenUserSubmitsForm(app.accountPage);
-    
-    // THEN: Account should be created successfully
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 
-  test('should create account with zero balance', async ({ app, accountAPI }, testInfo) => {
+  test('should create account with zero balance', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'Account'))
       .withBalance(1)
       .withCurrency('USD')
       .build();
 
-    // GIVEN: Form is open and filled with valid data (minimal balance)
-    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
-    
-    // WHEN: User submits form
-    await whenUserSubmitsForm(app.accountPage);
-    
-    // THEN: Account should be created successfully
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 
-  test('should create account in different currency', async ({ app, accountAPI }, testInfo) => {
+  test('should create account in different currency', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'VND'))
       .withBalance(25_000_000)
       .withCurrency('VND')
       .build();
 
-    // GIVEN: Form is open and filled with valid data (VND currency)
-    await givenFormIsOpenAndFilled(app.accountPage, account.name, account.initialBalance, account.currency);
-    
-    // WHEN: User submits form
-    await whenUserSubmitsForm(app.accountPage);
-    
-    // THEN: Account should be created successfully
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 
-  test('should display dialog and allow closing without saving', async ({ app, accountAPI }) => {
+  test('should display dialog and allow closing without saving', async ({ app }) => {
     // GIVEN: Dialog is open
     await givenAccountFormIsOpen(app.accountPage);
     
@@ -85,7 +64,7 @@ test.describe('Account Creation / Happy Path', () => {
     await thenDialogShouldBeClosed(app.accountPage);
   });
 
-  test('should create account with different account types', async ({ app, accountAPI }, testInfo) => {
+  test('should create account with different account types', async ({ app }, testInfo) => {
     const account = AccountBuilder.create()
       .withName(generateTestAccountName(testInfo, 'BANK'))
       .withBalance(500_000)
@@ -93,10 +72,7 @@ test.describe('Account Creation / Happy Path', () => {
       .withType('BANK_ACCOUNT')
       .build();
 
-    // GIVEN: Account with BANK_ACCOUNT type will be created
-    await givenAccountHasBeenCreated(app.accountPage, account);
-    
-    // THEN: Account should be created successfully
-    await thenAccountShouldBeCreatedSuccessfully(app.accountPage, account.name);
+    // Execute complete account creation scenario
+    await createAccountScenario(app, account);
   });
 });
