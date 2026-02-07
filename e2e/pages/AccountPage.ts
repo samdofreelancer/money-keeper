@@ -56,7 +56,18 @@ export class AccountPage {
   async refreshAccountsPage() {
     logger.debug('Refreshing accounts page...');
     await this.page.reload();
+    // Wait for table to exist
     await this.page.waitForSelector(this.SELECTORS.accountTable, { timeout: 5000 });
+    // Wait for data to load (not "No Data" state)
+    await this.page.waitForFunction(
+      (selector) => {
+        const table = document.querySelector(selector);
+        const noDataElement = table?.textContent?.includes('No Data');
+        return !noDataElement;
+      },
+      this.SELECTORS.accountTable,
+      { timeout: 5000 }
+    );
     logger.debug('Accounts page refreshed');
   }
 
