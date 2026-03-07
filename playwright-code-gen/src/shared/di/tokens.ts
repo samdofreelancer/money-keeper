@@ -7,11 +7,15 @@ export const TOKENS = {
   // Accounts domain tokens
   AccountsPlaywrightPage: Symbol.for('accounts:AccountsPlaywrightPage'),
   AccountApiClient: Symbol.for('accounts:AccountApiClient'),
+  AccountRepository: Symbol.for('accounts:AccountRepository'),
   AccountCreationApiUseCase: Symbol.for('accounts:AccountCreationApiUseCase'),
   AccountDeletionApiUseCase: Symbol.for('accounts:AccountDeletionApiUseCase'),
   AccountBalanceUiUseCase: Symbol.for('accounts:AccountBalanceUiUseCase'),
   AccountCreationUiUseCase: Symbol.for('accounts:AccountCreationUiUseCase'),
   AccountUpdateUiUseCase: Symbol.for('accounts:AccountUpdateUiUseCase'),
+  AccountSortingVerificationUiUseCase: Symbol.for(
+    'accounts:AccountSortingVerificationUiUseCase'
+  ),
   AccountFormComponent: Symbol.for('accounts:AccountFormComponent'),
 
   // Settings domain tokens
@@ -23,6 +27,7 @@ export const TOKENS = {
   CategoryApiClient: Symbol.for('category:CategoryApiClient'),
   CreateCategoryUseCase: Symbol.for('category:CreateCategoryUseCase'),
   CategoryDeletionApiUseCase: Symbol.for('category:CategoryDeletionApiUseCase'),
+  CategoryAssertionUiUseCase: Symbol.for('category:CategoryAssertionUiUseCase'),
 
   // Transaction domain tokens
   TransactionsPage: Symbol.for('transactions:TransactionsPage'),

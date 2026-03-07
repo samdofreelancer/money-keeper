@@ -4,7 +4,7 @@ import {
   getAccountCreationApiUseCase,
   getAccountCreationUiUseCase,
 } from 'shared/utilities/hooks';
-import { AccountCreateDto } from 'account-domains/types/account.dto';
+import { AccountCreateDto, AccountDto } from 'account-domains/types/account.dto';
 
 /**
  * Step definitions for account existence setup
@@ -30,13 +30,17 @@ Given(
     (this as { uniqueAccountName?: string }).uniqueAccountName =
       uniqueAccountName;
 
-    const accountData = new AccountCreateDto({
-      accountName: uniqueAccountName, // Use the unique name for actual creation
-      initBalance: 1000,
+    // Create account data using domain DTO, then convert via factory method
+    const accountDataInput: AccountDto = {
+      name: uniqueAccountName,
+      balance: 1000,
       type: 'BANK_ACCOUNT',
       currency: 'USD',
-      description: `Test account created for duplicate testing`,
-    });
+      description: 'Test account created for duplicate testing',
+    };
+
+    // Convert to API format using factory method (recommended pattern)
+    const accountData = AccountCreateDto.fromAccountDto(accountDataInput);
 
     // Track the created account for cleanup
     TestData.trackCreatedAccount(accountData.accountName);

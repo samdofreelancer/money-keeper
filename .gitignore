@@ -15,3 +15,5 @@ backend/.factorypath
 e2e/src/shared/metadata/environment-info.metadata.json
 /playwright-code-gen/dist
 /.vscode
+e2e/package-lock.json
+/logs

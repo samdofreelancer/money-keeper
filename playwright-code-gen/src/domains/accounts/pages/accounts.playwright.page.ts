@@ -80,15 +80,8 @@ export class AccountsPlaywrightPage extends BasePage {
     return this.verification.isErrorMessageVisible(errorMessage);
   }
 
-  verifyOnAccountsPage(): Promise<void> {
-    return this.verification.verifyOnAccountsPage();
-  }
-
-  verifyAccountsSortedByBalance(
-    balances: number[],
-    order: 'asc' | 'desc'
-  ): Promise<void> {
-    return this.verification.verifyAccountsSortedByBalance(balances, order);
+  isOnAccountsPage(): Promise<boolean> {
+    return this.verification.isOnAccountsPage();
   }
 
   // IAccountsDataRetrieval

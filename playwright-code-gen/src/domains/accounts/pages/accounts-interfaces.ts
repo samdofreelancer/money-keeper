@@ -25,7 +25,7 @@ export interface IAccountsVerification {
   verifyAccountIsListed(name: string): Promise<boolean>;
   isSuccessMessageVisible(): Promise<boolean>;
   isErrorMessageVisible(errorMessage: string): Promise<boolean>;
-  verifyOnAccountsPage(): Promise<void>;
+  isOnAccountsPage(): Promise<boolean>;
 }
 
 /**
