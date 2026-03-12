@@ -8,7 +8,8 @@ CREATE TABLE account (
     currency VARCHAR(10) NOT NULL,
     description VARCHAR(1000),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    active BOOLEAN DEFAULT TRUE NOT NULL
 );
 
 CREATE INDEX idx_account_type ON account(type);
