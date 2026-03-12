@@ -17,3 +17,6 @@ e2e/src/shared/metadata/environment-info.metadata.json
 /.vscode
 e2e/package-lock.json
 /logs
+/backend/tax-service/target
+/backend/money-keeper-service/target
+/backend/common-lib/target
