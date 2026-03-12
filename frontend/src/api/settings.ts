@@ -7,7 +7,7 @@ export interface AppSettingsDto {
 }
 
 const settingsClient = axios.create({
-  baseURL: apiBaseUrl + '/settings',
+  baseURL: apiBaseUrl ? `${apiBaseUrl}/settings` : 'http://localhost:8081/api/settings',
   headers: { 'Content-Type': 'application/json' }
 })
 

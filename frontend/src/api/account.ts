@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { currencyApi } from './currency'
+import { apiBaseUrl } from '@/config'
 
 export interface Account {
   id: string
@@ -19,10 +20,8 @@ export interface AccountCreate {
   active?: boolean
 }
 
-import { apiBaseUrl } from '@/config'
-
 const accountApiClient = axios.create({
-  baseURL: apiBaseUrl + '/accounts',
+  baseURL: apiBaseUrl ? `${apiBaseUrl}/accounts` : 'http://localhost:8081/api/accounts',
   headers: {
     'Content-Type': 'application/json'
   }
