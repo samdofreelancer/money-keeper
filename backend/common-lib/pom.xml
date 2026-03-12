@@ -38,10 +38,16 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- OpenAPI/Swagger -->
+        <!-- OpenAPI/Swagger - Exclude transitive spring-boot-starter-web -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Testing -->
