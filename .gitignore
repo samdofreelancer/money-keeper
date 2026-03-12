@@ -20,3 +20,4 @@ e2e/package-lock.json
 /backend/tax-service/target
 /backend/money-keeper-service/target
 /backend/common-lib/target
+/backend/api-gateway/target

@@ -14,6 +14,7 @@
 
     <modules>
         <module>common-lib</module>
+        <module>api-gateway</module>
         <module>money-keeper-service</module>
         <module>tax-service</module>
     </modules>
