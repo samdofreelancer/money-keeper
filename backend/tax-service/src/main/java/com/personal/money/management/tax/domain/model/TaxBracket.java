@@ -1,24 +1,22 @@
 package com.personal.money.management.tax.domain.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import java.math.BigDecimal;
-
 /**
- * Tax Bracket Value Object
- * Represents a tax bracket with income threshold and rate
+ * Value Object representing tax bracket information for Vietnam personal income tax
  */
-@Data
-@AllArgsConstructor
 public class TaxBracket {
-    private BigDecimal minIncome;
-    private BigDecimal maxIncome;
-    private BigDecimal rate;
-    
-    public BigDecimal calculateTax(BigDecimal income) {
-        if (income.compareTo(minIncome) < 0 || income.compareTo(maxIncome) > 0) {
-            return BigDecimal.ZERO;
-        }
-        return income.multiply(rate);
+    private final long threshold;
+    private final double rate;
+
+    public TaxBracket(long threshold, double rate) {
+        this.threshold = threshold;
+        this.rate = rate;
+    }
+
+    public long getThreshold() {
+        return threshold;
+    }
+
+    public double getRate() {
+        return rate;
     }
 }
