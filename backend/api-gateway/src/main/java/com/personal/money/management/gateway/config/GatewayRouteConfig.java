@@ -18,21 +18,25 @@ public class GatewayRouteConfig {
     @Bean
     public RouteLocator moneyKeeperRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
-                // Money Keeper Service Routes
+                // Money Keeper Service Routes - strip /api prefix, route to http://localhost:8080/accounts
                 .route("accounts",
                         r -> r.path("/api/accounts/**")
+                                .filters(f -> f.stripPrefix(1))
                                 .uri("http://localhost:8080"))
                 .route("categories",
                         r -> r.path("/api/categories/**")
+                                .filters(f -> f.stripPrefix(1))
                                 .uri("http://localhost:8080"))
                 .route("exchange",
                         r -> r.path("/api/exchange/**")
+                                .filters(f -> f.stripPrefix(1))
                                 .uri("http://localhost:8080"))
                 .route("settings",
                         r -> r.path("/api/settings/**")
+                                .filters(f -> f.stripPrefix(1))
                                 .uri("http://localhost:8080"))
                 
-                // Tax Service Routes
+                // Tax Service Routes - tax service has /api context path, strip prefix and keep /api
                 .route("tax",
                         r -> r.path("/api/tax/**")
                                 .uri("http://localhost:8082"))
