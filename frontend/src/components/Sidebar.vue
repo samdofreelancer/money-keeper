@@ -16,6 +16,13 @@
       <li>
         <router-link to="/settings" :class="{ 'active-link': isActive('/settings') }">Settings</router-link>
       </li>
+      <li class="divider">Tax Tools</li>
+      <li>
+        <router-link to="/tax-calculator" :class="{ 'active-link': isActive('/tax-calculator') }">💰 Tax Calculator</router-link>
+      </li>
+      <li>
+        <router-link to="/tax-settings" :class="{ 'active-link': isActive('/tax-settings') }">⚙️ Tax Settings</router-link>
+      </li>
     </ul>
   </div>
 </template>
@@ -58,5 +65,20 @@ a {
 a.active-link {
   color: #42b983;
   font-weight: 700;
+}
+
+li.divider {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #455a64;
+  color: #90a4ae;
+  font-size: 0.85em;
+  font-weight: 600;
+  margin-bottom: 8px;
+  cursor: default;
+}
+
+li.divider:hover {
+  background-color: transparent;
 }
 </style>

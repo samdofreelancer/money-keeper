@@ -17,3 +17,14 @@ e2e/src/shared/metadata/environment-info.metadata.json
 /.vscode
 e2e/package-lock.json
 /logs
+/backend/tax-service/target
+/backend/money-keeper-service/target
+/backend/common-lib/target
+/backend/api-gateway/target
+/backend/api-gateway/.settings
+/backend/common-lib/.settings
+/backend/money-keeper-service/.settings
+/backend/tax-service/.settings
+backend/money-keeper-service/.factorypath
+backend/common-lib/.factorypath
+backend/tax-service/.factorypath

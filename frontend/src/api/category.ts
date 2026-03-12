@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { apiBaseUrl } from '@/config'
 
 export interface Category {
   id: string
@@ -16,7 +17,7 @@ export interface CategoryCreate {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: apiBaseUrl ? `${apiBaseUrl}/categories` : 'http://localhost:8081/api/categories',
   headers: {
     'Content-Type': 'application/json'
   }

@@ -7,7 +7,7 @@ export interface RatesResponseDto {
 }
 
 const client = axios.create({
-  baseURL: apiBaseUrl + '/exchange-rates',
+  baseURL: apiBaseUrl ? `${apiBaseUrl}/exchange-rates` : 'http://localhost:8081/api/exchange-rates',
   headers: { 'Content-Type': 'application/json' }
 })
 

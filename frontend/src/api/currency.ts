@@ -10,7 +10,7 @@ export interface CurrencyDto {
 }
 
 const currencyApiClient = axios.create({
-  baseURL: apiBaseUrl + '/currencies',
+  baseURL: apiBaseUrl ? `${apiBaseUrl}/currencies` : 'http://localhost:8081/api/currencies',
   headers: {
     'Content-Type': 'application/json'
   }
