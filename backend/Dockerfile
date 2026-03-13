@@ -2,30 +2,17 @@ FROM maven:3.8.3-openjdk-17 AS build
 
 WORKDIR /app
 
-RUN microdnf install -y nc curl unzip libaio
-
-COPY pom.xml .
-# Install dependencies including python3 and pip for gdown
-RUN microdnf install -y libnsl python3 python3-pip curl unzip && \
-    pip3 install gdown
-
-# Download Oracle Instant Client zip files from Google Drive using gdown
-ENV FILE_ID_BASIC="1c44k0-0bPxSJsX6Iu7zgJXYhZJ3Q-G35"
-ENV FILE_ID_SQLPLUS="1rMijC54Zjjr7q7jTENf_FN-La6xxd41i"
-
-RUN gdown --id $FILE_ID_BASIC -O /tmp/instantclient-basic.zip && \
-    gdown --id $FILE_ID_SQLPLUS -O /tmp/instantclient-sqlplus.zip && \
-    unzip /tmp/instantclient-basic.zip -d /opt/oracle && \
-    unzip /tmp/instantclient-sqlplus.zip -d /opt/oracle && \
-    rm /tmp/instantclient-basic.zip /tmp/instantclient-sqlplus.zip && \
-    ln -s /opt/oracle/instantclient_12_2 /opt/oracle/instantclient && \
-    sh -c "echo /opt/oracle/instantclient > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
+RUN microdnf install -y nc curl unzip libaio libnsl && \
+    microdnf install -y oraclelinux-release-el9 && \
+    microdnf install -y oracle-instantclient21.3-basic oracle-instantclient21.3-sqlplus && \
+    echo '/usr/lib/oracle/21/client64/lib' > /etc/ld.so.conf.d/oracle-instantclient.conf && \
     ldconfig
 
+COPY pom.xml .
 COPY src ./src
 
-ENV PATH="/opt/oracle/instantclient:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/oracle/instantclient"
+ENV PATH="/usr/lib/oracle/21/client64/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/lib/oracle/21/client64/lib"
 
 RUN mvn dependency:go-offline -B
 
@@ -33,7 +20,7 @@ RUN mvn -B -ntp -Dmaven.repo.local=/root/.m2/repository clean package -DskipTest
 
 FROM eclipse-temurin:17-jdk-alpine
 
-RUN apk add --no-cache netcat-openbsd curl
+RUN apk add --no-cache netcat-openbsd curl libaio1 openssl-dev krb5-libs libnsl
 
 WORKDIR /app
 
