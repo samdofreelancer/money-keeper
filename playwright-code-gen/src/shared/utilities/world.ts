@@ -4,7 +4,6 @@ import { Logger } from './logger';
 import type { Container } from 'shared/di/container';
 import { TOKENS } from 'shared/di/tokens';
 import { AccountApiClient } from 'account-domains/api/account-api.client';
-import { AccountRepository } from 'account-domains/repositories/account.repository';
 import { IAccountRepository } from 'account-domains/types/account.repository';
 import { AccountCreationApiUseCase } from 'account-domains/usecases/api/AccountCreationApiUseCase';
 import { AccountDeletionApiUseCase } from 'account-domains/usecases/api/AccountDeletionApiUseCase';
