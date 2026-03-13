@@ -20,7 +20,7 @@ RUN mvn -B -ntp -Dmaven.repo.local=/root/.m2/repository clean package -DskipTest
 
 FROM eclipse-temurin:17-jdk-alpine
 
-RUN apk add --no-cache netcat-openbsd curl libaio1 openssl-dev krb5-libs libnsl
+RUN apk add --no-cache netcat-openbsd curl openssl
 
 WORKDIR /app
 
