@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: money-keeper-frontend
+  namespace: money-keeper
   labels:
     app: money-keeper-frontend
 spec:
@@ -14,13 +15,23 @@ spec:
       labels:
         app: money-keeper-frontend
     spec:
-      imagePullSecrets:
-      - name: ghcr-secret
+      serviceAccountName: default
       containers:
       - name: frontend
         image: ghcr.io/samdofreelancer/money-keeper-frontend:latest
+        imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 5173
+          name: http
+        env:
+        - name: VITE_BACKEND_HOST
+          value: "money-keeper-backend-service"
+        - name: VITE_API_URL
+          value: "http://money-keeper-backend-service:8080/api"
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: nginx.conf
         resources:
           requests:
             memory: "256Mi"
@@ -28,16 +39,63 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: money-keeper-frontend-service
+  namespace: money-keeper
 spec:
   selector:
     app: money-keeper-frontend
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 5173
+      name: http
   type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: money-keeper-ingress
+  namespace: money-keeper
+spec:
+  rules:
+  - host: money-keeper.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: money-keeper-frontend-service
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: money-keeper-backend-service
+            port:
+              number: 8080

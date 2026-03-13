@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: money-keeper
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oracle-pvc
+  namespace: money-keeper
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: oracle
+  namespace: money-keeper
+  labels:
+    app: oracle
+spec:
+  serviceName: oracle-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracle
+  template:
+    metadata:
+      labels:
+        app: oracle
+    spec:
+      containers:
+      - name: oracle
+        image: gvenzl/oracle-xe:21-slim
+        ports:
+        - containerPort: 1521
+          name: sqlnet
+        env:
+        - name: ORACLE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: oracle-secret
+              key: password
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "3Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: oracle-data
+          mountPath: /opt/oracle/oradata
+        livenessProbe:
+          tcpSocket:
+            port: 1521
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 1521
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+  volumeClaimTemplates:
+  - metadata:
+      name: oracle-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle-service
+  namespace: money-keeper
+  labels:
+    app: oracle
+spec:
+  clusterIP: None
+  selector:
+    app: oracle
+  ports:
+  - name: sqlnet
+    port: 1521
+    targetPort: 1521
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle
+  namespace: money-keeper
+  labels:
+    app: oracle
+spec:
+  type: ClusterIP
+  selector:
+    app: oracle
+  ports:
+  - name: sqlnet
+    port: 1521
+    targetPort: 1521

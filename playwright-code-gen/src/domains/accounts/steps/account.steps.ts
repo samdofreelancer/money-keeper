@@ -264,7 +264,8 @@ Given(
   async function (accountName1: string, accountName2: string) {
     const accountCreationApiUseCase = getAccountCreationApiUseCase();
     const scenarioName =
-      (this as { scenarioName?: string }).scenarioName || 'multi-account-scenario';
+      (this as { scenarioName?: string }).scenarioName ||
+      'multi-account-scenario';
 
     // Create first account
     const uniqueName1 = TestData.generateUniqueAccountName(
@@ -299,7 +300,10 @@ Given(
     );
 
     // Store names for later verification
-    (this as { accountNames?: string[] }).accountNames = [uniqueName1, uniqueName2];
+    (this as { accountNames?: string[] }).accountNames = [
+      uniqueName1,
+      uniqueName2,
+    ];
   }
 );
 
@@ -429,7 +433,7 @@ Then(
 
 Then(
   /^the accounts should be sorted by type in (ascending|descending) order$/,
-  async function (order: string) {
+  async function () {
     // This would require getting account types from the UI
     // For now, we'll provide a placeholder
     throw new Error(
@@ -438,33 +442,43 @@ Then(
   }
 );
 
-Then('the total balance should be {string}', async function (expectedTotal: string) {
-  const accountsPage = getAccountsPage();
-  const actualTotal = await accountsPage.getTotalBalance();
+Then(
+  'the total balance should be {string}',
+  async function (expectedTotal: string) {
+    const accountsPage = getAccountsPage();
+    const actualTotal = await accountsPage.getTotalBalance();
 
-  // Normalize the expected total (remove currency symbol if present)
-  const expectedNum = parseFloat(expectedTotal.replace(/[$€₫]/g, '').replace(/,/g, ''));
-  const actualNum = parseFloat(actualTotal.replace(/[$€₫]/g, '').replace(/,/g, ''));
-
-  if (Math.abs(expectedNum - actualNum) > 0.01) {
-    throw new Error(
-      `Expected total balance "${expectedTotal}", but got "${actualTotal}"`
+    // Normalize the expected total (remove currency symbol if present)
+    const expectedNum = parseFloat(
+      expectedTotal.replace(/[$€₫]/g, '').replace(/,/g, '')
     );
-  }
-});
-
-Then('the account {string} should still exist', async function (accountName: string) {
-  const accountsPage = getAccountsPage();
-  const uniqueAccountName = (this as { uniqueAccountName?: string })
-    .uniqueAccountName || accountName;
-
-  const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
-  if (!exists) {
-    throw new Error(
-      `Account "${uniqueAccountName}" should exist but was not found`
+    const actualNum = parseFloat(
+      actualTotal.replace(/[$€₫]/g, '').replace(/,/g, '')
     );
+
+    if (Math.abs(expectedNum - actualNum) > 0.01) {
+      throw new Error(
+        `Expected total balance "${expectedTotal}", but got "${actualTotal}"`
+      );
+    }
   }
-});
+);
+
+Then(
+  'the account {string} should still exist',
+  async function (accountName: string) {
+    const accountsPage = getAccountsPage();
+    const uniqueAccountName =
+      (this as { uniqueAccountName?: string }).uniqueAccountName || accountName;
+
+    const exists = await accountsPage.verifyAccountIsListed(uniqueAccountName);
+    if (!exists) {
+      throw new Error(
+        `Account "${uniqueAccountName}" should exist but was not found`
+      );
+    }
+  }
+);
 
 Given(
   /^I have accounts with balances \$(\d+), \$(\d+), \$(\d+)$/,
