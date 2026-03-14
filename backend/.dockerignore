@@ -12,7 +12,7 @@ src/test/java/
 allure-results/
 
 # Ignore Postman collections
-postman_collection/
+money-keeper-core/postman_collection/
 
 # Ignore IDE and system files
 .git/

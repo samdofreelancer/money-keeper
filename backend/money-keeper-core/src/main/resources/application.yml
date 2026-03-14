@@ -1,0 +1,41 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: money-keeper-core
+  datasource:
+    url: jdbc:oracle:thin:@oracle:1521/XEPDB1
+    username: system
+    password: ${ORACLE_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    schemas: CORE
+    locations: classpath:db/migration
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.personal.money.management: DEBUG
+    root: INFO
