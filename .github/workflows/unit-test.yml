@@ -47,11 +47,6 @@ jobs:
         run: mvn clean test -Psmall-test
         working-directory: ./backend
 
-      - name: Run test report aggregation script
-        run: |
-          cd scripts
-          node aggregate-test-report.js ../backend/target/small-test-reports
-
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
         with:
