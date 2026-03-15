@@ -25,7 +25,7 @@ RUN apk add --no-cache netcat-openbsd curl openssl
 
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/money-keeper-core/target/*.jar app.jar
 
 ENV RETRY_INTERVAL=5
 ENV MAX_RETRIES=60
