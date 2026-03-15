@@ -31,8 +31,9 @@ jobs:
           node-version: 18
 
       - name: Install xml2js package
-        run: npm install xml2js
-        working-directory: ./backend/scripts
+        run: |
+          cd backend/scripts
+          npm install xml2js
                 
       - name: Cache Maven packages
         uses: actions/cache@v4
@@ -47,8 +48,9 @@ jobs:
         working-directory: ./backend
 
       - name: Run test report aggregation script
-        run: node aggregate-test-report.js ../target/small-test-reports
-        working-directory: ./backend/scripts
+        run: |
+          cd scripts
+          node aggregate-test-report.js ../backend/target/small-test-reports
 
       - name: Upload Surefire Report
         uses: actions/upload-artifact@v4
