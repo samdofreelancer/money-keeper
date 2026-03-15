@@ -1,0 +1,275 @@
+name: '[Manual] GCP Blue-Green Release Trigger'
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      gke_cluster_1:
+        description: 'GKE Cluster 1 Name (Green - V2)'
+        required: true
+        type: string
+        default: 'cluster-1-green'
+      gke_cluster_2:
+        description: 'GKE Cluster 2 Name (Blue - V1/V2)'
+        required: true
+        type: string
+        default: 'cluster-2-blue'
+      gke_zone:
+        description: 'GKE Cluster Zone'
+        required: true
+        type: string
+        default: 'us-central1-a'
+      test_vip_proxy:
+        description: 'On-prem Test-VIP Proxy IP (.51)'
+        required: true
+        type: string
+      prod_vip_load_balancer:
+        description: 'Production VIP Load Balancer Name'
+        required: true
+        type: string
+        default: 'prod-vip-lb'
+      skip_qa_approval:
+        description: 'Skip QA approval gate (staging only)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}-frontend
+  BACKEND_IMAGE_NAME: ${{ github.repository }}-backend
+
+jobs:
+  # ============================================================
+  # PRE-FLIGHT CHECKS
+  # ============================================================
+  pre_flight_checks:
+    name: 'Pre-flight Checks'
+    runs-on: ubuntu-latest
+    environment:
+      name: 'Release - Pre-flight'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 'Validate Release Configuration'
+        run: |
+          set -e
+          echo "🔍 Validating release configuration..."
+          VALID=true
+
+          # Version format validation
+          if [[ ! ${{ inputs.version }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "❌ Invalid version format: '${{ inputs.version }}'"
+            echo "   Expected: v1.0.0 or v1.0.0-beta"
+            VALID=false
+          fi
+
+          # Environment validation
+          if [[ "${{ inputs.environment }}" != "staging" && "${{ inputs.environment }}" != "production" ]]; then
+            echo "❌ Invalid environment: '${{ inputs.environment }}'"
+            echo "   Allowed: staging, production"
+            VALID=false
+          fi
+
+          # Production restrictions
+          if [[ "${{ inputs.environment }}" == "production" ]]; then
+            if [[ "${{ inputs.skip_qa_approval }}" == "true" ]]; then
+              echo "❌ Cannot skip QA approval in production"
+              VALID=false
+            fi
+          fi
+
+          # Cluster name validation (alphanumeric, hyphens, under 63 chars)
+          for cluster in "${{ inputs.gke_cluster_1 }}" "${{ inputs.gke_cluster_2 }}"; do
+            if [[ ! $cluster =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+              echo "❌ Invalid cluster name: '$cluster'"
+              VALID=false
+            fi
+          done
+
+          # GCP Project ID validation
+          if [[ ! ${{ inputs.gcp_project_id }} =~ ^[a-z0-9]([a-z0-9-]{0,28}[a-z0-9])?$ ]]; then
+            echo "❌ Invalid GCP Project ID: '${{ inputs.gcp_project_id }}'"
+            VALID=false
+          fi
+
+          # Zone validation (basic check)
+          if [[ ! ${{ inputs.gke_zone }} =~ ^[a-z]+-[a-z]+[0-9]-[a-z]$ ]]; then
+            echo "⚠️  Zone format looks unusual: '${{ inputs.gke_zone }}' (e.g., us-central1-a)"
+          fi
+
+          if [[ "$VALID" != "true" ]]; then
+            exit 1
+          fi
+
+          echo "✅ All validations passed"
+          echo "   Version: ${{ inputs.version }}"
+          echo "   Environment: ${{ inputs.environment }}"
+          echo "   Project: ${{ inputs.gcp_project_id }}"
+          echo "   Cluster 1: ${{ inputs.gke_cluster_1 }}"
+          echo "   Cluster 2: ${{ inputs.gke_cluster_2 }}"
+          echo "   Zone: ${{ inputs.gke_zone }}"
+
+      - name: Setup GCP credentials
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: 'latest'
+
+      - name: 'Verify GCP Resources'
+        run: |
+          echo "🔍 Verifying GCP resources..."
+
+          # Verify clusters exist
+          for cluster in "${{ inputs.gke_cluster_1 }}" "${{ inputs.gke_cluster_2 }}"; do
+            if ! gcloud container clusters describe "$cluster" \
+              --zone "${{ inputs.gke_zone }}" \
+              --project "${{ inputs.gcp_project_id }}" >/dev/null 2>&1; then
+              echo "❌ Cluster not found: $cluster"
+              exit 1
+            fi
+            echo "✅ Found cluster: $cluster"
+          done
+
+          # Verify load balancer exists
+          if ! gcloud compute backend-services describe "${{ inputs.prod_vip_load_balancer }}" \
+            --global \
+            --project "${{ inputs.gcp_project_id }}" >/dev/null 2>&1; then
+            echo "❌ Load balancer not found: ${{ inputs.prod_vip_load_balancer }}"
+            exit 1
+          fi
+          echo "✅ Found load balancer: ${{ inputs.prod_vip_load_balancer }}"
+
+      - name: 'Verify Docker Images Exist'
+        run: |
+          echo "📦 Verifying Docker images..."
+          REGISTRY="${{ env.REGISTRY }}"
+          FRONTEND_IMG="$REGISTRY/${{ env.FRONTEND_IMAGE_NAME }}:${{ inputs.version }}"
+          BACKEND_IMG="$REGISTRY/${{ env.BACKEND_IMAGE_NAME }}:${{ inputs.version }}"
+
+          for img in "$FRONTEND_IMG" "$BACKEND_IMG"; do
+            if ! gcloud container images describe "$img" \
+              --project "${{ inputs.gcp_project_id }}" >/dev/null 2>&1; then
+              echo "❌ Image not found: $img"
+              echo "   Ensure Docker images are built and pushed to GHCR"
+              exit 1
+            fi
+            echo "✅ Found image: $img"
+          done
+
+  # ============================================================
+  # RELEASE APPROVAL GATE
+  # ============================================================
+  release_approval:
+    name: 'Release Approval Gate'
+    needs: [pre_flight_checks]
+    runs-on: ubuntu-latest
+    environment:
+      name: 'Release - Approval'
+    permissions:
+      contents: read
+    steps:
+      - name: 'Release Information'
+        run: |
+          echo "
+          ╔════════════════════════════════════════════════╗
+          ║ 📋 RELEASE APPROVAL REQUIRED                  ║
+          ╚════════════════════════════════════════════════╝
+
+          Version: ${{ inputs.version }}
+          Environment: ${{ inputs.environment }}
+          Cluster 1: ${{ inputs.gke_cluster_1 }}
+          Cluster 2: ${{ inputs.gke_cluster_2 }}
+          Zone: ${{ inputs.gke_zone }}
+
+          👤 Requester: ${{ github.actor }}
+          🕐 Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          🔗 Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          ⏳ Waiting for approval from Release Manager...
+          "
+
+  # ============================================================
+  # CALL REUSABLE DEPLOYMENT WORKFLOW
+  # ============================================================
+  trigger_deployment:
+    name: 'Trigger Deployment Orchestrator'
+    needs: [release_approval]
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/gcp-blue-green-orchestrator.yml
+    with:
+      version: ${{ inputs.version }}
+      environment: ${{ inputs.environment }}
+      gcp_project_id: ${{ inputs.gcp_project_id }}
+      gke_cluster_1: ${{ inputs.gke_cluster_1 }}
+      gke_cluster_2: ${{ inputs.gke_cluster_2 }}
+      gke_zone: ${{ inputs.gke_zone }}
+      test_vip_proxy: ${{ inputs.test_vip_proxy }}
+      prod_vip_load_balancer: ${{ inputs.prod_vip_load_balancer }}
+      skip_qa_approval: ${{ inputs.skip_qa_approval == 'true' && inputs.environment == 'staging' }}
+    secrets: inherit
+
+  # ============================================================
+  # DEPLOYMENT COMPLETED NOTIFICATION
+  # ============================================================
+  notify_completion:
+    name: 'Notify Deployment Completion'
+    needs: [trigger_deployment]
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: 'Determine Status'
+        id: status
+        run: |
+          if [[ "${{ needs.trigger_deployment.result }}" == "success" ]]; then
+            echo "status=✅ SUCCESS" >> $GITHUB_OUTPUT
+            echo "icon=🎉" >> $GITHUB_OUTPUT
+          else
+            echo "status=❌ FAILED" >> $GITHUB_OUTPUT
+            echo "icon=⚠️" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 'Send Notification'
+        run: |
+          echo "
+          ╔════════════════════════════════════════════════╗
+          ║ ${{ steps.status.outputs.icon }} DEPLOYMENT COMPLETED           ║
+          ╚════════════════════════════════════════════════╝
+
+          Status: ${{ steps.status.outputs.status }}
+          Version: ${{ inputs.version }}
+          Environment: ${{ inputs.environment }}
+
+          📊 Results:
+          • Deployment: ${{ needs.trigger_deployment.result }}
+
+          🔗 Details:
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "

@@ -1,0 +1,22 @@
+apiVersion: v2
+name: money-keeper
+description: GCP Blue-Green Deployment Helm Chart for Money Keeper Application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - money-keeper
+  - blue-green-deployment
+  - gcp
+  - kubernetes
+
+home: https://github.com/samdofreelancer/money-keeper
+sources:
+  - https://github.com/samdofreelancer/money-keeper
+
+maintainers:
+  - name: DevOps Team
+    email: devops@example.com
+
+dependencies: []

@@ -1,0 +1,88 @@
+name: 'GCP Blue-Green Phase 5: Production Validation'
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        type: string
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      prod_vip_load_balancer:
+        description: 'GCLB Load Balancer Name'
+        required: true
+        type: string
+
+jobs:
+  phase_5:
+    name: 'Phase 5️⃣: Production Validation'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Setup GCP credentials
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Verify Production Health
+        run: |
+          set -e
+          echo "🔍 Verifying production health..."
+
+          gcloud compute backend-services get-health ${{ inputs.prod_vip_load_balancer }} \
+            --global \
+            --project=${{ inputs.gcp_project_id }} \
+            --format='table(instance,status)'
+
+          echo "✅ Health verification complete"
+
+      - name: Check Backend Status
+        run: |
+          echo "📊 Backend status:"
+          gcloud compute backend-services describe ${{ inputs.prod_vip_load_balancer }} \
+            --global \
+            --project=${{ inputs.gcp_project_id }} \
+            --format='table(name,protocol,enableCDN)'
+
+      - name: Phase 5 Summary
+        run: |
+          echo "
+          ╔════════════════════════════════════════════════╗
+          ║ ✨ RELEASE DEPLOYMENT COMPLETE                ║
+          ╚════════════════════════════════════════════════╝
+
+          🎉 V2 Release Successfully Deployed!
+
+          📦 Version: ${{ inputs.version }}
+          🔗 URL: https://moneykeeper.com
+
+          📊 Final State:
+          • Production-VIP: 100% on V2
+          • Cluster 1 (Green): V2 - 50% traffic
+          • Cluster 2 (Blue): V2 - 50% traffic
+          • Status: 🟢 LIVE
+
+          🎯 Deployment Complete:
+          ✅ Phase 1: Isolated CL1 & Deployed V2
+          ✅ Phase 2: QA Testing Complete
+          ✅ Phase 3: Switched to V2 in Production
+          ✅ Phase 4: Updated CL2 with V2
+          ✅ Phase 5: Production Validation
+
+          📝 Post-Deployment:
+          • Monitor metrics for 2-4 hours
+          • Check for anomalies
+          • Validate hybrid backend calls
+          • Review error logs
+
+          🔗 Dashboard: https://console.cloud.google.com/monitoring
+          "

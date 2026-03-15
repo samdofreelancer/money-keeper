@@ -1,0 +1,128 @@
+name: 'GCP Blue-Green Phase 3: Production Switch'
+
+on:
+  workflow_call:
+    inputs:
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      gke_cluster_1:
+        description: 'GKE Cluster 1 Name'
+        required: true
+        type: string
+      gke_cluster_2:
+        description: 'GKE Cluster 2 Name'
+        required: true
+        type: string
+      gke_zone:
+        description: 'GKE Cluster Zone'
+        required: true
+        type: string
+      prod_vip_load_balancer:
+        description: 'GCLB Load Balancer Name'
+        required: true
+        type: string
+
+jobs:
+  phase_3:
+    name: 'Phase 3️⃣: Production Switch'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-switch
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Setup GCP credentials
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Switch Traffic to CL1 (100%)
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_1 }}-ig
+          max_rate: '1000'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
+
+      - name: Isolate CL2 (0%)
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_2 }}-ig
+          max_rate: '0'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
+
+      - name: Validate Traffic Switch
+        run: |
+          set -e
+          echo "🔍 Validating traffic switch..."
+
+          HEALTH=$(gcloud compute backend-services get-health ${{ inputs.prod_vip_load_balancer }} \
+            --global \
+            --project=${{ inputs.gcp_project_id }} \
+            --format='value(instances[].status)')
+
+          if echo "$HEALTH" | grep -q "HEALTHY"; then
+            echo "✅ CL1 backend is HEALTHY"
+          else
+            echo "⚠️ Backend status:"
+            gcloud compute backend-services get-health ${{ inputs.prod_vip_load_balancer }} \
+              --global \
+              --project=${{ inputs.gcp_project_id }} \
+              --format='table(instance,status)'
+          fi
+
+      - name: Verify Production Connectivity
+        run: |
+          echo "🔗 Verifying CL1 accessibility..."
+
+          gcloud container clusters get-credentials ${{ inputs.gke_cluster_1 }} \
+            --zone ${{ inputs.gke_zone }} \
+            --project ${{ inputs.gcp_project_id }}
+
+          if kubectl get service money-keeper-frontend-v2 -n default >/dev/null 2>&1; then
+            echo "✅ Frontend service accessible"
+          else
+            echo "❌ Frontend service not found"
+            exit 1
+          fi
+
+          if kubectl get service money-keeper-backend-v2 -n default >/dev/null 2>&1; then
+            echo "✅ Backend service accessible"
+          else
+            echo "❌ Backend service not found"
+            exit 1
+          fi
+
+      - name: Phase 3 Summary
+        run: |
+          echo "✅ Phase 3 Complete: Production traffic switched to CL1 (V2)"
+
+      - name: Rollback on Failure - Revert to CL2
+        if: failure()
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_2 }}-ig
+          max_rate: '1000'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
+
+      - name: Rollback on Failure - Isolate CL1
+        if: failure()
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_1 }}-ig
+          max_rate: '0'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}

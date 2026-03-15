@@ -1,0 +1,132 @@
+name: 'GCP Blue-Green Deployment Orchestrator'
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: string
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      gke_cluster_1:
+        description: 'GKE Cluster 1 Name'
+        required: true
+        type: string
+      gke_cluster_2:
+        description: 'GKE Cluster 2 Name'
+        required: true
+        type: string
+      gke_zone:
+        description: 'GKE Cluster Zone'
+        required: true
+        type: string
+      test_vip_proxy:
+        description: 'Test-VIP Proxy IP'
+        required: true
+        type: string
+      prod_vip_load_balancer:
+        description: 'GCLB Load Balancer Name'
+        required: true
+        type: string
+      skip_qa_approval:
+        description: 'Skip QA approval'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  # Phase 1: Deploy to CL1
+  phase_1:
+    name: 'Phase 1: Deploy to CL1'
+    uses: ./.github/workflows/gcp-blue-green-phase-1.yml
+    with:
+      version: ${{ inputs.version }}
+      gcp_project_id: ${{ inputs.gcp_project_id }}
+      gke_cluster_1: ${{ inputs.gke_cluster_1 }}
+      gke_zone: ${{ inputs.gke_zone }}
+      prod_vip_load_balancer: ${{ inputs.prod_vip_load_balancer }}
+    secrets: inherit
+
+  # Phase 2: QA Testing
+  phase_2:
+    name: 'Phase 2: QA Testing'
+    needs: [phase_1]
+    uses: ./.github/workflows/gcp-blue-green-phase-2.yml
+    with:
+      version: ${{ inputs.version }}
+      environment: ${{ inputs.environment }}
+      skip_qa_approval: ${{ inputs.skip_qa_approval }}
+      test_vip_proxy: ${{ inputs.test_vip_proxy }}
+    secrets: inherit
+
+  # Phase 3: Production Switch
+  phase_3:
+    name: 'Phase 3: Production Switch'
+    needs: [phase_1, phase_2]
+    uses: ./.github/workflows/gcp-blue-green-phase-3.yml
+    with:
+      gcp_project_id: ${{ inputs.gcp_project_id }}
+      gke_cluster_1: ${{ inputs.gke_cluster_1 }}
+      gke_cluster_2: ${{ inputs.gke_cluster_2 }}
+      gke_zone: ${{ inputs.gke_zone }}
+      prod_vip_load_balancer: ${{ inputs.prod_vip_load_balancer }}
+    secrets: inherit
+
+  # Phase 4: Update Cluster 2
+  phase_4:
+    name: 'Phase 4: Update Cluster 2'
+    needs: [phase_1, phase_2, phase_3]
+    uses: ./.github/workflows/gcp-blue-green-phase-4.yml
+    with:
+      version: ${{ inputs.version }}
+      gcp_project_id: ${{ inputs.gcp_project_id }}
+      gke_cluster_1: ${{ inputs.gke_cluster_1 }}
+      gke_cluster_2: ${{ inputs.gke_cluster_2 }}
+      gke_zone: ${{ inputs.gke_zone }}
+      prod_vip_load_balancer: ${{ inputs.prod_vip_load_balancer }}
+    secrets: inherit
+
+  # Phase 5: Production Validation
+  phase_5:
+    name: 'Phase 5: Production Validation'
+    needs: [phase_1, phase_2, phase_3, phase_4]
+    uses: ./.github/workflows/gcp-blue-green-phase-5.yml
+    with:
+      version: ${{ inputs.version }}
+      gcp_project_id: ${{ inputs.gcp_project_id }}
+      prod_vip_load_balancer: ${{ inputs.prod_vip_load_balancer }}
+    secrets: inherit
+
+  # Deployment Complete
+  deployment_complete:
+    name: 'Deployment Complete'
+    needs: [phase_1, phase_2, phase_3, phase_4, phase_5]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Success Notification
+        run: |
+          echo "
+          ╔════════════════════════════════════════════════╗
+          ║ ✅ DEPLOYMENT PIPELINE COMPLETE               ║
+          ╚════════════════════════════════════════════════╝
+
+          🎉 All phases completed successfully!
+
+          Version: ${{ inputs.version }}
+          Environment: ${{ inputs.environment }}
+          Status: 🟢 LIVE
+
+          Next Steps:
+          • Monitor production metrics
+          • Check application logs
+          • Validate user experience
+          • Prepare rollback if needed
+          "

@@ -1,0 +1,67 @@
+name: 'GCP Blue-Green Phase 2: QA Testing'
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: string
+      skip_qa_approval:
+        description: 'Skip QA approval (staging only)'
+        required: false
+        type: boolean
+        default: false
+      test_vip_proxy:
+        description: 'Test-VIP Proxy IP'
+        required: true
+        type: string
+
+jobs:
+  phase_2:
+    name: 'Phase 2️⃣: QA Testing'
+    runs-on: ubuntu-latest
+    environment:
+      name: '${{ inputs.environment }}-qa-approval'
+    permissions:
+      contents: read
+    steps:
+      - name: Check if QA Should Be Skipped
+        id: skip_check
+        run: |
+          if [[ "${{ inputs.skip_qa_approval }}" == "true" && "${{ inputs.environment }}" == "staging" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️ QA approval skipped (staging only)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: QA Testing Instructions
+        if: steps.skip_check.outputs.skip != 'true'
+        run: |
+          echo "
+          ╔════════════════════════════════════════════════╗
+          ║🧪 PHASE 2: INTERNAL QA TESTING              ║
+          ╚════════════════════════════════════════════════╝
+
+          📝 Test Instructions:
+          1. Access Test-VIP: https://${{ inputs.test_vip_proxy }}
+          2. Verify Frontend V2 is working
+          3. Test hybrid call to on-prem backend
+          4. Verify data returned correctly
+          5. Check error rates and performance
+
+          🏷️ Version: ${{ inputs.version }}
+          🌍 Environment: ${{ inputs.environment }}
+
+          ⏸️ Waiting for QA team approval...
+          "
+
+      - name: Auto-Approve for Staging Skip
+        if: steps.skip_check.outputs.skip == 'true'
+        run: |
+          echo "✅ Phase 2 auto-approved (staging with skip flag)"

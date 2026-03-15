@@ -1,0 +1,15 @@
+{{- if and .Values.backend.enabled .Values.backend.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.backend.name }}-pdb
+  namespace: {{ include "money-keeper.namespace" . }}
+  labels:
+    {{- include "money-keeper.labels" . | nindent 4 }}
+    {{- include "money-keeper.backend.selectorLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.backend.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "money-keeper.backend.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,109 @@
+name: 'Set GCLB Backend Traffic Weight'
+description: 'Updates traffic weight for GCLB backend instance group'
+
+inputs:
+  instance_group:
+    description: 'Instance group name (e.g., cluster-1-green-ig)'
+    required: true
+  max_rate:
+    description: 'Max rate per instance (0-1000, use 1000 for 100%)'
+    required: true
+  gcp_project_id:
+    description: 'GCP Project ID'
+    required: true
+  load_balancer:
+    description: 'GCLB load balancer name'
+    required: true
+  zone:
+    description: 'GKE zone'
+    required: true
+
+outputs:
+  status:
+    description: 'Status message'
+    value: ${{ steps.set_traffic.outputs.status }}
+  previous_weight:
+    description: 'Previous weight percentage'
+    value: ${{ steps.get_current.outputs.weight }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Get current traffic weight
+      id: get_current
+      shell: bash
+      run: |
+        set -e
+
+        # Get current weight
+        CURRENT=$(gcloud compute backend-services get-health "${{ inputs.load_balancer }}" \
+          --global \
+          --project="${{ inputs.gcp_project_id }}" \
+          --format='value(instances[].status)' 2>/dev/null | head -1 || echo "0")
+
+        # Calculate percentage (approximate)
+        RATE="${{ inputs.max_rate }}"
+        if [[ "$RATE" == "0" ]]; then
+          PERCENT="0%"
+        elif [[ "$RATE" == "1000" ]]; then
+          PERCENT="100%"
+        elif [[ "$RATE" == "500" ]]; then
+          PERCENT="50%"
+        else
+          PERCENT="$((RATE / 10))%"
+        fi
+
+        echo "weight=${PERCENT}" >> $GITHUB_OUTPUT
+        echo "Previous weight: ${PERCENT}"
+
+    - name: Set GCLB backend traffic weight
+      id: set_traffic
+      shell: bash
+      run: |
+        set -e
+
+        INSTANCE_GROUP="${{ inputs.instance_group }}"
+        MAX_RATE="${{ inputs.max_rate }}"
+        PROJECT="${{ inputs.gcp_project_id }}"
+        LB="${{ inputs.load_balancer }}"
+        ZONE="${{ inputs.zone }}"
+
+        # Calculate percentage for logging
+        if [[ "$MAX_RATE" == "0" ]]; then
+          PERCENT="0% (isolated)"
+        elif [[ "$MAX_RATE" == "1000" ]]; then
+          PERCENT="100% (active)"
+        elif [[ "$MAX_RATE" == "500" ]]; then
+          PERCENT="50% (active-active)"
+        else
+          PERCENT="$((MAX_RATE / 10))%"
+        fi
+
+        echo "🔄 Setting $INSTANCE_GROUP to $PERCENT..."
+
+        # Update backend service
+        gcloud compute backend-services update-backend "$LB" \
+          --instance-group="$INSTANCE_GROUP" \
+          --instance-group-zone="$ZONE" \
+          --balancing-mode=RATE \
+          --max-rate-per-instance="$MAX_RATE" \
+          --project="$PROJECT" \
+          --global
+
+        echo "status=✅ Set $INSTANCE_GROUP to $PERCENT" >> $GITHUB_OUTPUT
+        echo "✅ Traffic weight updated"
+
+    - name: Verify traffic update
+      shell: bash
+      run: |
+        set -e
+        echo "🔍 Verifying traffic distribution..."
+
+        sleep 3  # Wait for change to propagate
+
+        gcloud compute backend-services get-health "${{ inputs.load_balancer }}" \
+          --global \
+          --project="${{ inputs.gcp_project_id }}" \
+          --format='table(instance,status)'
+
+        echo "✅ Traffic distribution verified"

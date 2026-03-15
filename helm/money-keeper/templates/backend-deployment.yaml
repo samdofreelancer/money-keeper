@@ -1,0 +1,152 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.backend.name }}
+  namespace: {{ include "money-keeper.namespace" . }}
+  labels:
+    {{- include "money-keeper.labels" . | nindent 4 }}
+    {{- include "money-keeper.backend.selectorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  strategy:
+    type: {{ .Values.strategy.type }}
+    rollingUpdate:
+      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}
+  selector:
+    matchLabels:
+      {{- include "money-keeper.backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "money-keeper.labels" . | nindent 8 }}
+        {{- include "money-keeper.backend.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.backend.service.port }}"
+        prometheus.io/path: "/actuator/prometheus"
+        deployment.timestamp: "{{ .Release.Revision }}"
+    spec:
+      serviceAccountName: money-keeper-backend
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        fsGroup: 1000
+      {{- if .Values.backend.initContainer.enabled }}
+      initContainers:
+      - name: {{ .Values.backend.initContainer.name }}
+        image: "{{ include "money-keeper.image" .Values.backend.image }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "migration"
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            secretKeyRef:
+              name: backend-db-secret
+              key: url
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: backend-db-secret
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-db-secret
+              key: password
+        - name: SPRING_FLYWAY_ENABLED
+          value: "true"
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 12 }}
+      {{- end }}
+      containers:
+      - name: backend
+        image: "{{ include "money-keeper.image" .Values.backend.image }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.backend.service.targetPort }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 12 }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.backend.livenessProbe.httpGet.path }}
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
+          successThreshold: 1
+          failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.backend.readinessProbe.httpGet.path }}
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.readinessProbe.timeoutSeconds }}
+          successThreshold: 1
+          failureThreshold: {{ .Values.backend.readinessProbe.failureThreshold }}
+        securityContext:
+          {{- toYaml .Values.backend.securityContext | nindent 12 }}
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "{{ .Values.backend.env.SPRING_PROFILES_ACTIVE }}"
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            secretKeyRef:
+              name: backend-db-secret
+              key: url
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: backend-db-secret
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: backend-db-secret
+              key: password
+        - name: SPRING_FLYWAY_ENABLED
+          value: "{{ .Values.backend.env.SPRING_FLYWAY_ENABLED }}"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      {{- if .Values.backend.podAntiAffinity }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - money-keeper-backend
+              topologyKey: kubernetes.io/hostname
+      {{- end }}
+{{- end }}

@@ -1,0 +1,47 @@
+1. Get the application status by running these commands:
+{{- if .Values.frontend.enabled }}
+   kubectl get deployment {{ .Values.frontend.name }} -n {{ include "money-keeper.namespace" . }}
+   kubectl get service {{ .Values.frontend.name }} -n {{ include "money-keeper.namespace" . }}
+   kubectl logs -n {{ include "money-keeper.namespace" . }} -l app=money-keeper-frontend --tail=100
+{{- end }}
+{{- if .Values.backend.enabled }}
+   kubectl get deployment {{ .Values.backend.name }} -n {{ include "money-keeper.namespace" . }}
+   kubectl get service {{ .Values.backend.name }} -n {{ include "money-keeper.namespace" . }}
+   kubectl logs -n {{ include "money-keeper.namespace" . }} -l app=money-keeper-backend --tail=100
+{{- end }}
+
+2. For port forwarding to access the services locally:
+{{- if .Values.frontend.enabled }}
+   kubectl port-forward svc/{{ .Values.frontend.name }} {{ .Values.frontend.service.port }}:{{ .Values.frontend.service.port }} -n {{ include "money-keeper.namespace" . }}
+{{- end }}
+{{- if .Values.backend.enabled }}
+   kubectl port-forward svc/{{ .Values.backend.name }} {{ .Values.backend.service.port }}:{{ .Values.backend.service.port }} -n {{ include "money-keeper.namespace" . }}
+{{- end }}
+
+3. To check the deployment status:
+   kubectl rollout status deployment/{{ .Values.frontend.name }} -n {{ include "money-keeper.namespace" . }}
+   kubectl rollout status deployment/{{ .Values.backend.name }} -n {{ include "money-keeper.namespace" . }}
+
+4. Check pod antiaffinity and distribution:
+   kubectl get pods -n {{ include "money-keeper.namespace" . }} -o wide
+
+5. View replica counts and HPA status:
+{{- if .Values.frontend.enabled }}
+   kubectl get hpa {{ .Values.frontend.name }}-hpa -n {{ include "money-keeper.namespace" . }}
+{{- end }}
+{{- if .Values.backend.enabled }}
+   kubectl get hpa {{ .Values.backend.name }}-hpa -n {{ include "money-keeper.namespace" . }}
+{{- end }}
+
+6. View Pod Disruption Budget status:
+{{- if .Values.frontend.enabled }}
+   kubectl get pdb -n {{ include "money-keeper.namespace" . }} -l app=money-keeper-frontend
+{{- end }}
+{{- if .Values.backend.enabled }}
+   kubectl get pdb -n {{ include "money-keeper.namespace" . }} -l app=money-keeper-backend
+{{- end }}
+
+---
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+Environment: {{ .Values.global.environment }}

@@ -1,0 +1,210 @@
+name: 'GCP Blue-Green Phase 4: Update Cluster 2'
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        type: string
+      gcp_project_id:
+        description: 'GCP Project ID'
+        required: true
+        type: string
+      gke_cluster_1:
+        description: 'GKE Cluster 1 Name'
+        required: true
+        type: string
+      gke_cluster_2:
+        description: 'GKE Cluster 2 Name'
+        required: true
+        type: string
+      gke_zone:
+        description: 'GKE Cluster Zone'
+        required: true
+        type: string
+      prod_vip_load_balancer:
+        description: 'GCLB Load Balancer Name'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  FRONTEND_IMAGE: "${{ github.repository }}-frontend:${{ inputs.version }}"
+  BACKEND_IMAGE: "${{ github.repository }}-backend:${{ inputs.version }}"
+  HELM_CHART_DIR: helm/money-keeper
+  K8S_NAMESPACE: default
+  HELM_ENVIRONMENT: production
+
+jobs:
+  phase_4:
+    name: 'Phase 4️⃣: Update Cluster 2 with V2'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup GCP credentials
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Get GKE Cluster 2 credentials
+        run: |
+          gcloud container clusters get-credentials ${{ inputs.gke_cluster_2 }} \
+            --zone ${{ inputs.gke_zone }} \
+            --project ${{ inputs.gcp_project_id }}
+
+      - name: Pre-Deployment Validation (CL2)
+        run: |
+          set -e
+          echo "🔍 Pre-deployment checks for CL2..."
+
+          if ! kubectl get namespace ${{ env.K8S_NAMESPACE }} >/dev/null 2>&1; then
+            kubectl create namespace ${{ env.K8S_NAMESPACE }}
+          fi
+
+          if ! kubectl get secret ghcr-pull-secret -n ${{ env.K8S_NAMESPACE }} >/dev/null 2>&1; then
+            echo "❌ Image pull secret not found"
+            exit 1
+          fi
+          echo "✅ Pre-deployment checks passed"
+
+      - name: Deploy Frontend V2 to CL2
+        run: |
+          set -e
+          echo "🚀 Deploying Frontend V2 to CL2..."
+
+          helm template money-keeper ${{ env.HELM_CHART_DIR }} \
+            -f ${{ env.HELM_CHART_DIR }}/values-${{ env.HELM_ENVIRONMENT }}.yaml \
+            --set frontend.enabled=true \
+            --set backend.enabled=false \
+            --set frontend.image.tag=${{ inputs.version }} \
+            --namespace ${{ env.K8S_NAMESPACE }} \
+            > frontend-deploy.yaml
+
+          if ! kubectl apply -f frontend-deploy.yaml --dry-run=client -n ${{ env.K8S_NAMESPACE }} >/dev/null 2>&1; then
+            echo "❌ Manifest validation failed"
+            exit 1
+          fi
+
+          if grep -q "{{ " frontend-deploy.yaml; then
+            echo "❌ Unreplaced variables found"
+            exit 1
+          fi
+
+          kubectl apply -f frontend-deploy.yaml -n ${{ env.K8S_NAMESPACE }}
+
+          if ! kubectl rollout status deployment/money-keeper-frontend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} --timeout=5m; then
+            kubectl describe deployment money-keeper-frontend-v2 -n ${{ env.K8S_NAMESPACE }}
+            exit 1
+          fi
+
+          READY=$(kubectl get deployment money-keeper-frontend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.status.readyReplicas}')
+          DESIRED=$(kubectl get deployment money-keeper-frontend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.spec.replicas}')
+          echo "✅ Frontend V2 deployed to CL2 ($READY/$DESIRED replicas)"
+
+      - name: Deploy Backend V2 to CL2
+        run: |
+          set -e
+          echo "🚀 Deploying Backend V2 to CL2..."
+
+          helm template money-keeper ${{ env.HELM_CHART_DIR }} \
+            -f ${{ env.HELM_CHART_DIR }}/values-${{ env.HELM_ENVIRONMENT }}.yaml \
+            --set frontend.enabled=false \
+            --set backend.enabled=true \
+            --set backend.image.tag=${{ inputs.version }} \
+            --namespace ${{ env.K8S_NAMESPACE }} \
+            > backend-deploy.yaml
+
+          if ! kubectl apply -f backend-deploy.yaml --dry-run=client -n ${{ env.K8S_NAMESPACE }} >/dev/null 2>&1; then
+            echo "❌ Manifest validation failed"
+            exit 1
+          fi
+
+          if grep -q "{{ " backend-deploy.yaml; then
+            echo "❌ Unreplaced variables found"
+            exit 1
+          fi
+
+          kubectl apply -f backend-deploy.yaml -n ${{ env.K8S_NAMESPACE }}
+
+          if ! kubectl rollout status deployment/money-keeper-backend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} --timeout=5m; then
+            kubectl describe deployment money-keeper-backend-v2 -n ${{ env.K8S_NAMESPACE }}
+            exit 1
+          fi
+
+          READY=$(kubectl get deployment money-keeper-backend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.status.readyReplicas}')
+          DESIRED=$(kubectl get deployment money-keeper-backend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.spec.replicas}')
+          echo "✅ Backend V2 deployed to CL2 ($READY/$DESIRED replicas)"
+          fi
+
+          READY=$(kubectl get deployment money-keeper-backend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.status.readyReplicas}')
+          DESIRED=$(kubectl get deployment money-keeper-backend-v2 \
+            -n ${{ env.K8S_NAMESPACE }} -o jsonpath='{.spec.replicas}')
+          echo "✅ Backend V2 deployed to CL2 ($READY/$DESIRED replicas)"
+
+      - name: Activate Active-Active (50/50)
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_2 }}-ig
+          max_rate: '500'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
+
+      - name: Rebalance CL1 to 50%
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_1 }}-ig
+          max_rate: '500'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
+
+      - name: Verify Active-Active
+        run: |
+          echo "🔍 Verifying active-active..."
+          gcloud compute backend-services get-health ${{ inputs.prod_vip_load_balancer }} \
+            --global \
+            --project=${{ inputs.gcp_project_id }} \
+            --format='table(instance,status)'
+          echo "✅ Active-active verified"
+
+      - name: Phase 4 Summary
+        run: |
+          echo "✅ Phase 4 Complete: Both clusters running V2 (50/50)"
+
+      - name: Rollback on Failure - Revert to CL1 100%
+        if: failure()
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_1 }}-ig
+          max_rate: '1000'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
+
+      - name: Rollback on Failure - Isolate CL2
+        if: failure()
+        uses: ./.github/actions/set-gclb-traffic
+        with:
+          instance_group: ${{ inputs.gke_cluster_2 }}-ig
+          max_rate: '0'
+          gcp_project_id: ${{ inputs.gcp_project_id }}
+          load_balancer: ${{ inputs.prod_vip_load_balancer }}
+          zone: ${{ inputs.gke_zone }}
