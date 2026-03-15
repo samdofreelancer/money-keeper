@@ -12,7 +12,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: money-keeper-backend-service
+            name: gateway-service
             port:
               number: 8080
       - path: /

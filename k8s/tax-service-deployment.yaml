@@ -1,44 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gateway
+  name: tax-service
   namespace: money-keeper
   labels:
-    app: gateway
+    app: tax-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gateway
+      app: tax-service
   template:
     metadata:
       labels:
-        app: gateway
+        app: tax-service
     spec:
       serviceAccountName: default
       containers:
-      - name: gateway
-        image: ghcr.io/samdofreelancer/money-keeper-gateway:latest
+      - name: tax-service
+        image: ghcr.io/samdofreelancer/money-keeper-tax-service:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 8082
           name: http
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "ci"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:oracle:thin:@oracle:1521/XEPDB1"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "system"
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: oracle-secret
+              key: password
+        - name: ORACLE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: oracle-secret
+              key: password
         - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
           value: "http://eureka-server-service:8761/eureka/"
         resources:
           requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
             memory: "512Mi"
             cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8082
           initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 5
@@ -46,7 +60,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8082
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -55,14 +69,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gateway-service
+  name: tax-service-service
   namespace: money-keeper
 spec:
   selector:
-    app: gateway
+    app: tax-service
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8082
+      targetPort: 8082
       name: http
   type: ClusterIP

@@ -1,44 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gateway
+  name: eureka-server
   namespace: money-keeper
   labels:
-    app: gateway
+    app: eureka-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gateway
+      app: eureka-server
   template:
     metadata:
       labels:
-        app: gateway
+        app: eureka-server
     spec:
       serviceAccountName: default
       containers:
-      - name: gateway
-        image: ghcr.io/samdofreelancer/money-keeper-gateway:latest
+      - name: eureka-server
+        image: ghcr.io/samdofreelancer/money-keeper-eureka-server:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 8761
           name: http
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "ci"
-        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-          value: "http://eureka-server-service:8761/eureka/"
         resources:
           requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
             memory: "512Mi"
             cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
         livenessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8761
           initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 5
@@ -46,7 +44,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /actuator/health
-            port: 8080
+            port: 8761
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -55,14 +53,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gateway-service
+  name: eureka-server-service
   namespace: money-keeper
 spec:
   selector:
-    app: gateway
+    app: eureka-server
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8761
+      targetPort: 8761
       name: http
   type: ClusterIP

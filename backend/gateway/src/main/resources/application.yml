@@ -19,12 +19,13 @@ spring:
           uri: lb://tax-service
           predicates:
             - Path=/api/tax/**
-      global-cors-cors-configurations:
-        '[/**]':
-          allowedOriginPatterns: ["*"]
-          allowedMethods: ["*"]
-          allowedHeaders: ["*"]
-          allowCredentials: true
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: ["*"]
+            allowedMethods: ["*"]
+            allowedHeaders: ["*"]
+            allowCredentials: true
 
 eureka:
   client:

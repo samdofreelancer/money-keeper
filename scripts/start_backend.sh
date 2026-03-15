@@ -1,25 +1,43 @@
 #!/bin/bash
 
-# This script is intended to be sourced by the main start_all.sh script
+echo "Starting microservices using Docker Compose..."
+echo ""
+echo "Services to start:"
+echo "  - Eureka Server (8761)"
+echo "  - money-keeper-core (8081)"
+echo "  - tax-service (8082)"
+echo "  - gateway (8080)"
+echo ""
 
-echo "--- Starting Backend ---"
-cd backend
-mvn clean install -DskipTests
-java -jar target/springboot-ddd-category-1.0-SNAPSHOT.jar &
-BACKEND_PID=$!
-cd ..
-
-echo "--- Waiting for Backend (port 8080) ---"
-for i in $(seq 1 30); do
-  if curl -sSf http://localhost:8080/actuator/health; then
-    echo "Backend is up!"
-    break
-  fi
-  if [ $i -eq 30 ]; then
-    echo "Backend failed to start after 150 seconds. Exiting."
-    kill $BACKEND_PID
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "ERROR: Docker is not installed. Please install Docker Desktop."
     exit 1
-  fi
-  echo "Attempt $i: Backend not up yet. Waiting 5 seconds..."
-  sleep 5
-done
+fi
+
+# Determine docker-compose command
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+else
+    DOCKER_COMPOSE_CMD="docker compose"
+fi
+
+# Check for ORACLE_PASSWORD
+if [ -z "$ORACLE_PASSWORD" ]; then
+    echo "WARNING: ORACLE_PASSWORD not set. Please set it first:"
+    echo "  export ORACLE_PASSWORD=your_password"
+fi
+
+echo ""
+echo "Building and starting services..."
+$DOCKER_COMPOSE_CMD up -d --build
+
+echo ""
+echo "Waiting for services to be ready..."
+bash ./scripts/wait_for_backend.sh
+
+echo ""
+echo "Backend microservices are running!"
+echo "Access via gateway at: http://localhost:8080"
+echo ""
+echo "To view logs: $DOCKER_COMPOSE_CMD logs -f"

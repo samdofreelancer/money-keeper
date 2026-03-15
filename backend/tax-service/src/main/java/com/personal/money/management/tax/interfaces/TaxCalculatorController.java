@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/tax")
-@CrossOrigin(originPatterns = "*", maxAge = 3600)
 public class TaxCalculatorController {
 
     private final TaxCalculatorApplicationService taxCalculatorApplicationService;

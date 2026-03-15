@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/tax/brackets")
-@CrossOrigin(originPatterns = "*", maxAge = 3600)
 public class TaxConfigController {
     
     private final TaxConfigService taxConfigService;

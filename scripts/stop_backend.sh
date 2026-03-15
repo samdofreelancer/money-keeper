@@ -1,15 +1,22 @@
 #!/bin/bash
 
-# Port for backend
-BACKEND_PORT=8080
-echo "Searching for process on port $BACKEND_PORT..."
-# Use PowerShell for a more reliable way to get the PID on Windows
-BACKEND_PID=$(powershell -Command "(Get-NetTCPConnection -LocalPort $BACKEND_PORT -State Listen -ErrorAction SilentlyContinue).OwningProcess" | head -n 1)
+echo "Stopping microservices..."
+echo ""
 
-if [ -n "$BACKEND_PID" ]; then
-    echo "Found backend process with PID $BACKEND_PID. Terminating..."
-    # Use //PID to prevent Git Bash path conversion
-    taskkill //PID $BACKEND_PID //F
+# Determine docker-compose command
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD="docker-compose"
 else
-    echo "No backend process found listening on port $BACKEND_PORT."
+    DOCKER_COMPOSE_CMD="docker compose"
 fi
+
+# Stop Docker Compose services
+echo "Stopping Docker Compose services..."
+$DOCKER_COMPOSE_CMD down
+
+echo ""
+echo "Microservices stopped successfully!"
+echo ""
+echo "To clean up volumes and images (optional):"
+echo "  $DOCKER_COMPOSE_CMD down -v"
+echo "  docker system prune"
