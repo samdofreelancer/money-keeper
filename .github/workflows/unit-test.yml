@@ -32,7 +32,7 @@ jobs:
 
       - name: Install xml2js package
         run: |
-          cd backend/scripts
+          cd scripts
           npm install xml2js
                 
       - name: Cache Maven packages
