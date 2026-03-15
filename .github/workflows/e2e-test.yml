@@ -42,7 +42,16 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.ref }}
 
       - name: Start Oracle service
-        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
+        run: |
+          ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
+          for i in {1..30}; do
+            echo "Waiting for Oracle healthy... ($i)"
+            if docker compose ps --services --filter "status=running" --filter "health=healthy" | grep -q oracle; then
+              echo "Oracle healthy"
+              break
+            fi
+            sleep 10
+          done
 
       - name: Run Flyway migration
         run: bash scripts/flyway_migrate.sh ${{ secrets.ORACLE_PASSWORD_SECRET }}
