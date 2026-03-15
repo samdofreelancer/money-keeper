@@ -20,7 +20,7 @@ on:
         required: true
         type: string
       prod_vip_load_balancer:
-        description: 'GCLB Load Balancer Name'
+        description: 'On-Premise Load Balancer Endpoint'
         required: true
         type: string
 
@@ -81,13 +81,27 @@ jobs:
           echo "✅ Pre-deployment checks passed"
 
       - name: Isolate CL1 from Production
-        uses: ./.github/actions/set-gclb-traffic
-        with:
-          instance_group: ${{ inputs.gke_cluster_1 }}-ig
-          max_rate: '0'
-          gcp_project_id: ${{ inputs.gcp_project_id }}
-          load_balancer: ${{ inputs.prod_vip_load_balancer }}
-          zone: ${{ inputs.gke_zone }}
+        run: |
+          set -e
+          echo "🔌 Removing CL1 from on-premise load balancer..."
+          
+          RESPONSE=$(curl -s -X POST "${{ inputs.prod_vip_load_balancer }}/api/backend/remove" \
+            -H "Authorization: Bearer ${{ secrets.ONPREM_LB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"backend_pool":"cl1-backend","cluster":"${{ inputs.gke_cluster_1 }}"}' \
+            -w "\n%{http_code}")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Failed to remove CL1 from load balancer"
+            echo "Response: $BODY"
+            exit 1
+          fi
+          
+          echo "✅ CL1 removed from production load balancer pool"
+          echo "Response: $BODY"
 
       - name: Deploy Frontend V2 to CL1
         id: deploy_frontend
@@ -199,10 +213,11 @@ jobs:
 
       - name: Revert Traffic on Failure
         if: failure()
-        uses: ./.github/actions/set-gclb-traffic
-        with:
-          instance_group: ${{ inputs.gke_cluster_1 }}-ig
-          max_rate: '1000'
-          gcp_project_id: ${{ inputs.gcp_project_id }}
-          load_balancer: ${{ inputs.prod_vip_load_balancer }}
-          zone: ${{ inputs.gke_zone }}
+        run: |
+          echo "⚠️ Phase 1 failed, re-adding CL1 to load balancer..."
+          
+          curl -s -X POST "${{ inputs.prod_vip_load_balancer }}/api/backend/add" \
+            -H "Authorization: Bearer ${{ secrets.ONPREM_LB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"backend_pool":"cl1-backend","cluster":"${{ inputs.gke_cluster_1 }}"}' \
+            || echo "⚠️ Warning: Could not re-add CL1 to load balancer"
