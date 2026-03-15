@@ -5,7 +5,15 @@ WORKDIR /app
 RUN microdnf install -y nc curl unzip libaio libnsl
 
 COPY pom.xml .
+COPY money-keeper-core/pom.xml money-keeper-core/
+COPY tax-service/pom.xml tax-service/
+COPY gateway/pom.xml gateway/
+COPY eureka-server/pom.xml eureka-server/
 COPY src ./src
+COPY money-keeper-core/src ./money-keeper-core/src
+COPY tax-service/src ./tax-service/src
+COPY gateway/src ./gateway/src
+COPY eureka-server/src ./eureka-server/src
 
 RUN mvn dependency:go-offline -B
 
@@ -17,7 +25,7 @@ RUN apk add --no-cache netcat-openbsd curl openssl
 
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/money-keeper-core/target/*.jar app.jar
 
 ENV RETRY_INTERVAL=5
 ENV MAX_RETRIES=60

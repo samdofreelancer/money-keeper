@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    config:
+      fail-fast: true
+      retry:
+        initial-interval: 2000
+        max-attempts: 10
+  application:
+    name: money-keeper-core
