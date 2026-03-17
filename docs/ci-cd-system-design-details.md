@@ -7,9 +7,10 @@ This repository uses a modular GitHub Actions architecture with Orchestrator (Ca
 ### Key Roles
 - **Developer**: pushes code / opens PR / triggers workflow_dispatch.
 - **Orchestrator**: `pr-sequential-checks.yml` (for PR), calls reusable workflows in sequence.
-- **Reusable Workflows**: `eslint.yaml`, `e2e-test.yml`, `integration-test.yml`, `unit-test.yml`, `docker-publish.yml`, `static.yml`.
+- **Reusable Workflows**: `eslint.yaml`, `e2e-test.yml`, `integration-test.yml`, `unit-test.yml`, `docker-publish.yml`, `static.yml`, `release-production-gcp.yml`.
 - **GHCR**: container image registry used for docker images and local testing.
-- **GCP**: Not currently implemented in these workflows (no gcloud, Workload Identity Federation, or explicit GCP deployment steps in actual YAML), but architecture can be extended.
+- **GCP**: Release production uses OIDC with workload identity federation to deploy to GKE.
+
 
 ### Trigger overview (push/PR behavior)
 - `pull_request` on `develop/master` for backend/frontend/playwright triggers `pr-sequential-checks.yml`, which runs eslint + e2e.
@@ -17,6 +18,7 @@ This repository uses a modular GitHub Actions architecture with Orchestrator (Ca
 - `push` on develop/master for backend/frontend/playwright triggers `e2e-test.yml` directly.
 - `push` on master triggers `static.yml` for GitHub Pages deploy.
 - `push`/`pull_request` on backend/frontend triggers `docker-publish.yml` to build/push Docker images.
+- Manual dispatch triggers `release-production-gcp.yml` to build and deploy production to GKE via OIDC.
 
 ### Trigger diagram (Mermaid)
 ```mermaid
@@ -94,7 +96,26 @@ sequenceDiagram
 |---|---|
 | `deployment` job outputs `page_url` (used by environment URL in deploy-pages job) | URL of deployed GitHub Pages
 
-### 2.3 `integration-test.yml`
+### 2.3 `release-production-gcp.yml` (Production release)
+
+| Input | Type | Default | Required | Description |
+|---|---|---|---|---|
+| version | string | `${{ github.sha }}` | false | Image tag for release
+| gcp_project | string | n/a | true | GCP project ID
+| gke_cluster | string | n/a | true | GKE cluster name
+| gke_location | string | n/a | true | GKE cluster zone/region
+
+| Secret | Description | Inherited? |
+|---|---|---|
+| GCP_WORKLOAD_IDENTITY_PROVIDER | OIDC provider resource name | explicit (repo secret)
+| GCP_SERVICE_ACCOUNT | Service account email to impersonate | explicit (repo secret)
+| GITHUB_TOKEN | For GHCR login and deploy status | implicit
+
+| Output | Description |
+|---|---|
+| job summary lines via `GITHUB_STEP_SUMMARY` | Release metadata and deployed tag
+
+### 2.4 `integration-test.yml`
 
 | Input | Type | Default | Required | Description |
 |---|---|---|---|---|
@@ -239,6 +260,9 @@ sequenceDiagram
 - `unit-test.yml`: reusable unit test job with maven container and caching.
 - `integration-test.yml`: reusable integration test job with Oracle and Flyway.
 - `docker-publish.yml`: image build/push to GHCR for backend/frontend.
+- `release-production-gcp.yml`: production release pipeline building and deploying to GKE using OIDC/WIF.
 - `deploy-pages.yml`: deploy artifact to GitHub Pages.
+
+> Production release doc: `docs/production-release-gcp.md`.
 
 ---

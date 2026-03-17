@@ -1,0 +1,64 @@
+name: Rollback Production to GCP
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Rollback image version tag'
+        required: true
+      rollback_backend:
+        description: 'Rollback backend deployment'
+        required: false
+        default: 'true'
+        type: boolean
+      rollback_frontend:
+        description: 'Rollback frontend deployment'
+        required: false
+        default: 'true'
+        type: boolean
+      gcp_project:
+        description: 'GCP project ID'
+        required: true
+      prod_cluster:
+        description: 'Production GKE cluster name'
+        required: true
+      gke_location:
+        description: 'GKE zone or region'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  rollback-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - run: |
+          gcloud container clusters get-credentials ${{ inputs.prod_cluster }} --zone ${{ inputs.gke_location }} --project ${{ inputs.gcp_project }}
+          kubectl config view --raw > ~/.kube/config
+
+      - name: Rollback backend
+        if: ${{ inputs.rollback_backend == 'true' }}
+        run: |
+          kubectl set image deployment/money-keeper-backend backend=ghcr.io/${{ github.repository }}-backend:${{ inputs.version }} --namespace=money-keeper
+          kubectl rollout status deployment/money-keeper-backend --namespace=money-keeper --timeout=180s
+
+      - name: Rollback frontend
+        if: ${{ inputs.rollback_frontend == 'true' }}
+        run: |
+          kubectl set image deployment/money-keeper-frontend frontend=ghcr.io/${{ github.repository }}-frontend:${{ inputs.version }} --namespace=money-keeper
+          kubectl rollout status deployment/money-keeper-frontend --namespace=money-keeper --timeout=180s
+
+      - name: Rollback summary
+        run: |
+          echo "## Rollback completed" >> $GITHUB_STEP_SUMMARY
+          echo "- rollback version: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- backend rollback: ${{ inputs.rollback_backend }}" >> $GITHUB_STEP_SUMMARY
+          echo "- frontend rollback: ${{ inputs.rollback_frontend }}" >> $GITHUB_STEP_SUMMARY

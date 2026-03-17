@@ -1,0 +1,119 @@
+name: Release Production to GCP (Blue/Green)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Image version tag to deploy (existing in GHCR)'
+        required: true
+      gcp_project:
+        description: 'GCP project ID'
+        required: true
+      prod_cluster:
+        description: 'Production GKE cluster name'
+        required: true
+      gke_location:
+        description: 'GKE zone or region'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-production-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  identify:
+    runs-on: ubuntu-latest
+    outputs:
+      active_slot: ${{ steps.get-slot.outputs.active_slot }}
+      idle_slot: ${{ steps.get-slot.outputs.idle_slot }}
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ inputs.prod_cluster }}
+          location: ${{ inputs.gke_location }}
+          project_id: ${{ inputs.gcp_project }}
+
+      - name: Identify active slot
+        id: get-slot
+        run: |
+          ACTIVE=$(kubectl get svc money-keeper-prod -n money-keeper -o jsonpath='{.spec.selector.slot}')
+          echo "active_slot=$ACTIVE" >> $GITHUB_OUTPUT
+          if [ "$ACTIVE" = "blue" ]; then
+            echo "idle_slot=green" >> $GITHUB_OUTPUT
+          else
+            echo "idle_slot=blue" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Print slot values
+        run: |
+          echo "active=${{ steps.get-slot.outputs.active_slot }}"
+          echo "idle=${{ steps.get-slot.outputs.idle_slot }}"
+
+  deploy-idle:
+    runs-on: ubuntu-latest
+    needs: identify
+    steps:
+      - name: Deploy to idle slot
+        uses: ./.github/workflows/wc-gke-deploy.yml
+        with:
+          slot: ${{ needs.identify.outputs.idle_slot }}
+          image_tag: ${{ inputs.version }}
+          cluster_name: ${{ inputs.prod_cluster }}
+          gcp_project: ${{ inputs.gcp_project }}
+          gke_location: ${{ inputs.gke_location }}
+
+  approval:
+    runs-on: ubuntu-latest
+    needs: deploy-idle
+    environment: production
+    steps:
+      - name: Approval gate
+        run: echo "Production approval gate reached"
+
+  switch-traffic:
+    runs-on: ubuntu-latest
+    needs: approval
+    steps:
+      - name: Switch production traffic to idle slot
+        uses: ./.github/workflows/wc-traffic-switch.yml
+        with:
+          target_slot: ${{ needs.identify.outputs.idle_slot }}
+          cluster_name: ${{ inputs.prod_cluster }}
+          gcp_project: ${{ inputs.gcp_project }}
+          gke_location: ${{ inputs.gke_location }}
+
+  sync-old:
+    runs-on: ubuntu-latest
+    needs: switch-traffic
+    steps:
+      - name: Sync old slot with new version
+        uses: ./.github/workflows/wc-gke-deploy.yml
+        with:
+          slot: ${{ needs.identify.outputs.active_slot }}
+          image_tag: ${{ inputs.version }}
+          cluster_name: ${{ inputs.prod_cluster }}
+          gcp_project: ${{ inputs.gcp_project }}
+          gke_location: ${{ inputs.gke_location }}
+
+  release-summary:
+    runs-on: ubuntu-latest
+    needs: [sync-old, switch-traffic]
+    if: always()
+    steps:
+      - name: Write release summary
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- version: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- active_slot: ${{ needs.identify.outputs.active_slot }}" >> $GITHUB_STEP_SUMMARY
+          echo "- idle_slot: ${{ needs.identify.outputs.idle_slot }}" >> $GITHUB_STEP_SUMMARY

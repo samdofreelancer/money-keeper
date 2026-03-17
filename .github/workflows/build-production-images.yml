@@ -1,0 +1,84 @@
+name: Build Production Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Image version tag (recommended: ${{ github.sha }})'
+        required: false
+        default: '${{ github.sha }}'
+      build_backend:
+        description: 'Build backend image'
+        required: false
+        type: boolean
+        default: true
+      build_frontend:
+        description: 'Build frontend image'
+        required: false
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      version:
+        required: false
+        default: '${{ github.sha }}'
+      build_backend:
+        required: false
+        default: true
+      build_frontend:
+        required: false
+        default: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_image: ${{ steps.set-backend.outputs.backend_image }}
+      frontend_image: ${{ steps.set-frontend.outputs.frontend_image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v5
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        if: ${{ inputs.build_backend == true }}
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-backend:${{ inputs.version }}
+            ghcr.io/${{ github.repository }}-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set backend image output
+        id: set-backend
+        run: |
+          echo "backend_image=ghcr.io/${{ github.repository }}-backend:${{ inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Build and push frontend image
+        if: ${{ inputs.build_frontend == true }}
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-frontend:${{ inputs.version }}
+            ghcr.io/${{ github.repository }}-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set frontend image output
+        id: set-frontend
+        run: |
+          echo "frontend_image=ghcr.io/${{ github.repository }}-frontend:${{ inputs.version }}" >> $GITHUB_OUTPUT

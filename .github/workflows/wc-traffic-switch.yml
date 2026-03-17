@@ -1,0 +1,46 @@
+name: WC Traffic Switch
+
+on:
+  workflow_call:
+    inputs:
+      target_slot:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      gcp_project:
+        required: true
+        type: string
+      gke_location:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ inputs.cluster_name }}
+          location: ${{ inputs.gke_location }}
+          project_id: ${{ inputs.gcp_project }}
+
+      - name: Switch active traffic slot
+        run: |
+          kubectl patch svc money-keeper-prod -n money-keeper -p '{"spec":{"selector":{"slot":"'"${{ inputs.target_slot }}"'"}}}'
+
+      - name: Verify service selector
+        run: |
+          kubectl get svc money-keeper-prod -n money-keeper -o jsonpath='{.spec.selector.slot}'

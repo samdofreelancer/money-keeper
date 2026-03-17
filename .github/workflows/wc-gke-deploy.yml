@@ -1,0 +1,58 @@
+name: WC GKE Deploy
+
+on:
+  workflow_call:
+    inputs:
+      slot:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      gcp_project:
+        required: true
+        type: string
+      gke_location:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ inputs.cluster_name }}
+          location: ${{ inputs.gke_location }}
+          project_id: ${{ inputs.gcp_project }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy slot manifest updates (kustomize style placeholder)
+        run: |
+          echo "Deploying to slot: ${{ inputs.slot }} with image tag: ${{ inputs.image_tag }}"
+          kubectl set image deployment/money-keeper-backend-${{ inputs.slot }} backend=ghcr.io/${{ github.repository }}-backend:${{ inputs.image_tag }} --namespace=money-keeper
+          kubectl set image deployment/money-keeper-frontend-${{ inputs.slot }} frontend=ghcr.io/${{ github.repository }}-frontend:${{ inputs.image_tag }} --namespace=money-keeper
+
+      - name: Rollout status backend
+        run: |
+          kubectl rollout status deployment/money-keeper-backend-${{ inputs.slot }} --namespace=money-keeper --timeout=180s
+
+      - name: Rollout status frontend
+        run: |
+          kubectl rollout status deployment/money-keeper-frontend-${{ inputs.slot }} --namespace=money-keeper --timeout=180s
