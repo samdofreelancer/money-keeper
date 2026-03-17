@@ -27,6 +27,9 @@ jobs:
   playwright-code-gen-test:
     name: Run playwright-code-gen Tests
     runs-on: ubuntu-latest
+    concurrency:
+      group: e2e-${{ github.ref }}
+      cancel-in-progress: true
     env:
       SPRING_PROFILES_ACTIVE: ci
       REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -52,7 +55,7 @@ jobs:
       - name: Build Backend Docker image locally
         run: |
           cd backend
-          docker build -t ghcr.io/samdofreelancer/money-keeper-backend:latest -f Dockerfile .
+          docker build -t ghcr.io/samdofreelancer/money-keeper-backend:${{ github.sha }} -f Dockerfile .
 
       - name: Start Backend and Frontend containers
         run: docker compose up -d backend frontend
@@ -78,6 +81,28 @@ jobs:
       - name: Generate Allure report
         if: always()
         run: bash scripts/generate_allure_report.sh ${{ env.E2E_SOURCE_FOLDER }}
+
+      - name: Zip Allure report for artifact upload
+        if: always()
+        run: |
+          cd ${{ env.E2E_SOURCE_FOLDER }}/test-results
+          zip -r allure-report.zip allure-report
+
+      - name: Upload Allure artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: '${{ env.E2E_SOURCE_FOLDER }}/test-results/allure-report.zip'
+          retention-days: 14
+
+      - name: Add E2E summary to job summary
+        if: always()
+        run: |
+          echo "## Playwright Test Result" >> $GITHUB_STEP_SUMMARY
+          echo "- Run: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Report: allure-report.zip" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Allure report for Github Pages
         if: always()
