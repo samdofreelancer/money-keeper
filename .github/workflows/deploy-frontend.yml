@@ -47,9 +47,9 @@ jobs:
 
       - name: Deploy frontend to GKE
         env:
-          FRONTEND_IMAGE: ${{ inputs.frontend-image }}
-          BACKEND_URL: ${{ inputs.backend-url }}
-          BACKEND_API_URL: ${{ inputs.backend-url }}/api
+          FRONTEND_IMAGE: "${{ inputs.frontend-image }}"
+          BACKEND_URL: "${{ inputs.backend-url }}"
+          BACKEND_API_URL: "${{ inputs.backend-url }}/api"
         run: |
           # Generate deployment YAML with Helm
           helm template frontend ./k8s \
