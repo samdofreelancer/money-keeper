@@ -24,6 +24,10 @@ env:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
+    env:
+      FRONTEND_IMAGE: "${{ inputs.frontend-image }}"
+      BACKEND_URL: "${{ inputs.backend-url }}"
+      BACKEND_API_URL: "${{ inputs.backend-url }}/api"
     outputs:
       frontend-url: ${{ steps.get-ip.outputs.url }}
     steps:
@@ -46,10 +50,6 @@ jobs:
           sudo mv linux-amd64/helm /usr/local/bin/helm
 
       - name: Deploy frontend to GKE
-        env:
-          FRONTEND_IMAGE: "${{ inputs.frontend-image }}"
-          BACKEND_URL: "${{ inputs.backend-url }}"
-          BACKEND_API_URL: "${{ inputs.backend-url }}/api"
         run: |
           # Generate deployment YAML with Helm
           helm template frontend ./k8s \
