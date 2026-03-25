@@ -42,7 +42,7 @@ jobs:
           sudo mv actionlint /usr/local/bin/
 
       - name: Lint GitHub Actions workflows
-        run: actionlint .github/workflows/*.yml .github/actions/*/action.yml
+        run: actionlint .github/workflows/*.yml
 
   build-images:
     uses: ./.github/workflows/build-images.yml

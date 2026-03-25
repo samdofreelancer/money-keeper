@@ -49,8 +49,8 @@ jobs:
         run: |
           # Generate deployment YAML with Helm
           helm template frontend ./k8s \
-            --set frontend.image=${{ inputs.frontend-image }} \
-            --set frontend.env[0].value=${{ inputs.backend-url }}/api \
+            --set frontend.image="${{ inputs.frontend-image }}" \
+            --set frontend.env[0].value="${{ inputs.backend-url }}/api" \
             > frontend-deploy.yaml
           kubectl apply -f frontend-deploy.yaml
 
@@ -63,7 +63,7 @@ jobs:
       - name: Get frontend external IP
         id: get-ip
         run: |
-          for i in {1..30}; do
+          for _ in {1..30}; do
             IP=$(kubectl get svc money-keeper-frontend-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             if [ -n "$IP" ]; then
               echo "url=http://$IP" >> $GITHUB_OUTPUT

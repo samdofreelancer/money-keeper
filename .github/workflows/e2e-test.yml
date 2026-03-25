@@ -59,7 +59,11 @@ jobs:
         run: bash scripts/wait_for_frontend.sh
 
       - name: Run playwright-code-gen tests
-        run: docker compose run --rm -e GITHUB_REF=${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || github.ref }} -e GITHUB_SHA=${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }} -e GITHUB_REPOSITORY=${{ github.repository }} -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
+        env:
+          GITHUB_REF: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || github.ref }}
+          GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: docker compose run --rm -e GITHUB_REF="$GITHUB_REF" -e GITHUB_SHA="$GITHUB_SHA" -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
 
       - name: Generate Allure report
         if: always()
