@@ -1,0 +1,85 @@
+name: Deploy Backend
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      backend-image:
+        required: true
+        type: string
+    outputs:
+      backend-url:
+        value: ${{ jobs.deploy-backend.outputs.backend-url }}
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-url: ${{ steps.ngrok.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Start Oracle DB
+        run: |
+          docker run -d --name oracle -p 1521:1521 -e ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} gvenzl/oracle-xe:21-slim
+
+      - name: Wait for Oracle
+        run: |
+          for i in {1..30}; do
+            if docker exec oracle sqlplus -S system/${{ secrets.ORACLE_PASSWORD_SECRET }}@//localhost:1521/XE <<< "SELECT 1 FROM DUAL;" > /dev/null 2>&1; then
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Run Flyway migration
+        run: |
+          docker run --rm --network host -v $(pwd)/backend/src/main/resources/db/migration/oracle:/flyway/sql \
+            flyway/flyway:9.22.3 \
+            -url=jdbc:oracle:thin:@localhost:1521/XE -user=system -password=${{ secrets.ORACLE_PASSWORD_SECRET }} \
+            migrate
+
+      - name: Start Backend
+        run: |
+          docker run -d --name backend -p 8080:8080 --network host \
+            -e SPRING_PROFILES_ACTIVE=ci \
+            -e SPRING_DATASOURCE_URL=jdbc:oracle:thin:@localhost:1521/XE \
+            -e SPRING_DATASOURCE_USERNAME=system \
+            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} \
+            ${{ inputs.backend-image }}
+
+      - name: Wait for Backend
+        run: |
+          for i in {1..30}; do
+            if curl -f http://localhost:8080/actuator/health; then
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Install ngrok
+        run: |
+          wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          tar xvf ngrok-v3-stable-linux-amd64.tgz
+          sudo mv ngrok /usr/local/bin/
+
+      - name: Start ngrok tunnel
+        run: ngrok http 8080 --log=stdout > ngrok.log &
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+
+      - name: Get ngrok URL
+        id: ngrok
+        run: |
+          sleep 5
+          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          echo "url=$NGROK_URL" >> $GITHUB_OUTPUT

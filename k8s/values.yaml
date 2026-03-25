@@ -1,0 +1,12 @@
+# Default values for money-keeper.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+frontend:
+  image: ghcr.io/samdofreelancer/money-keeper-frontend:latest
+  env:
+    - name: VITE_BACKEND_HOST
+      value: "http://localhost:8080/api"
+
+backend:
+  image: ghcr.io/samdofreelancer/money-keeper-backend:latest
