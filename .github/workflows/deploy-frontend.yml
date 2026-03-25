@@ -49,11 +49,12 @@ jobs:
         env:
           FRONTEND_IMAGE: ${{ inputs.frontend-image }}
           BACKEND_URL: ${{ inputs.backend-url }}
+          BACKEND_API_URL: ${{ inputs.backend-url }}/api
         run: |
           # Generate deployment YAML with Helm
           helm template frontend ./k8s \
             --set frontend.image="$FRONTEND_IMAGE" \
-            --set frontend.env[0].value="$BACKEND_URL/api" \
+            --set frontend.env[0].value="$BACKEND_API_URL" \
             > frontend-deploy.yaml
           kubectl apply -f frontend-deploy.yaml
 
