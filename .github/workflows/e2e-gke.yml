@@ -46,7 +46,6 @@ jobs:
     with:
       branch: ${{ inputs.branch }}
     secrets: inherit
-    timeout-minutes: 10
 
   deploy-backend:
     needs: build-images
@@ -55,7 +54,6 @@ jobs:
       branch: ${{ inputs.branch }}
       backend-image: ${{ needs.build-images.outputs.backend-image }}
     secrets: inherit
-    timeout-minutes: 15
 
   deploy-frontend:
     needs: [build-images, deploy-backend]
@@ -65,7 +63,6 @@ jobs:
       frontend-image: ${{ needs.build-images.outputs.frontend-image }}
       backend-url: ${{ needs.deploy-backend.outputs.backend-url }}
     secrets: inherit
-    timeout-minutes: 15
 
   run-e2e:
     needs: [deploy-backend, deploy-frontend]
@@ -75,7 +72,6 @@ jobs:
       backend-url: ${{ needs.deploy-backend.outputs.backend-url }}
       frontend-url: ${{ needs.deploy-frontend.outputs.frontend-url }}
     secrets: inherit
-    timeout-minutes: 20
 
   cleanup:
     needs: run-e2e
@@ -84,4 +80,3 @@ jobs:
     with:
       branch: ${{ inputs.branch }}
     secrets: inherit
-    timeout-minutes: 5
