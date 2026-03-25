@@ -24,10 +24,6 @@ env:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    env:
-      FRONTEND_IMAGE: ${{ inputs.frontend-image }}
-      BACKEND_URL: ${{ inputs.backend-url }}
-      BACKEND_API_URL: ${{ inputs.backend-url }}/api
     outputs:
       frontend-url: ${{ steps.get-ip.outputs.url }}
     steps:
@@ -35,6 +31,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
+
+      - name: Set env vars
+        run: |
+          echo "FRONTEND_IMAGE=${{ inputs.frontend-image }}" >> $GITHUB_ENV
+          echo "BACKEND_URL=${{ inputs.backend-url }}" >> $GITHUB_ENV
+          echo "BACKEND_API_URL=${{ inputs.backend-url }}/api" >> $GITHUB_ENV
 
       - name: Setup GCP
         uses: ./.github/actions/setup-gcp

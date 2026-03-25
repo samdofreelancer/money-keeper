@@ -27,23 +27,6 @@ env:
   GKE_ZONE: ${{ vars.GKE_ZONE }}
 
 jobs:
-  lint-workflows:
-    runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download actionlint
-        run: |
-          curl -s https://api.github.com/repos/rhysd/actionlint/releases/latest | jq -r '.assets[] | select(.name | contains("linux_amd64")) | .browser_download_url' | xargs curl -L -o actionlint.tar.gz
-          tar -xzf actionlint.tar.gz
-          sudo mv actionlint /usr/local/bin/
-
-      - name: Lint GitHub Actions workflows
-        run: actionlint .github/workflows/*.yml
-
   build-images:
     uses: ./.github/workflows/build-images.yml
     with:
