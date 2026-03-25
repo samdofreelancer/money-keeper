@@ -32,6 +32,12 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
+      - name: Set env vars
+        run: |
+          echo "FRONTEND_IMAGE=${{ inputs.frontend-image }}" >> $GITHUB_ENV
+          echo "BACKEND_URL=${{ inputs.backend-url }}" >> $GITHUB_ENV
+          echo "BACKEND_API_URL=${{ inputs.backend-url }}/api" >> $GITHUB_ENV
+
       - name: Setup GCP
         uses: ./.github/actions/setup-gcp
         with:
@@ -49,8 +55,8 @@ jobs:
         run: |
           # Generate deployment YAML with Helm
           helm template frontend ./k8s \
-            --set frontend.image=${{ inputs.frontend-image }} \
-            --set frontend.env[0].value=${{ inputs.backend-url }}/api \
+            --set frontend.image="$FRONTEND_IMAGE" \
+            --set frontend.env[0].value="$BACKEND_API_URL" \
             > frontend-deploy.yaml
           kubectl apply -f frontend-deploy.yaml
 
@@ -63,7 +69,7 @@ jobs:
       - name: Get frontend external IP
         id: get-ip
         run: |
-          for i in {1..30}; do
+          for _ in {1..30}; do
             IP=$(kubectl get svc money-keeper-frontend-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             if [ -n "$IP" ]; then
               echo "url=http://$IP" >> $GITHUB_OUTPUT

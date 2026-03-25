@@ -19,9 +19,12 @@ env:
 jobs:
   build-images:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     outputs:
-      backend-image: ${{ steps.build-backend.outputs.image }}
-      frontend-image: ${{ steps.build-frontend.outputs.image }}
+      backend-image: ${{ env.REGISTRY }}/money-keeper-backend:${{ env.IMAGE_TAG }}
+      frontend-image: ${{ env.REGISTRY }}/money-keeper-frontend:${{ env.IMAGE_TAG }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.0

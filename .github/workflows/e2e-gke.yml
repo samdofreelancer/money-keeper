@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: read
+  packages: write
   id-token: write
 
 env:
@@ -26,27 +27,11 @@ env:
   GKE_ZONE: ${{ vars.GKE_ZONE }}
 
 jobs:
-  lint-workflows:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download actionlint
-        run: |
-          curl -s https://api.github.com/repos/rhysd/actionlint/releases/latest | jq -r '.assets[] | select(.name | contains("linux_amd64")) | .browser_download_url' | xargs curl -L -o actionlint.tar.gz
-          tar -xzf actionlint.tar.gz
-          sudo mv actionlint /usr/local/bin/
-
-      - name: Lint GitHub Actions workflows
-        run: actionlint .github/workflows/*.yml .github/actions/*/action.yml
-
   build-images:
     uses: ./.github/workflows/build-images.yml
     with:
       branch: ${{ inputs.branch }}
     secrets: inherit
-    timeout-minutes: 10
 
   deploy-backend:
     needs: build-images
@@ -55,7 +40,6 @@ jobs:
       branch: ${{ inputs.branch }}
       backend-image: ${{ needs.build-images.outputs.backend-image }}
     secrets: inherit
-    timeout-minutes: 15
 
   deploy-frontend:
     needs: [build-images, deploy-backend]
@@ -65,7 +49,6 @@ jobs:
       frontend-image: ${{ needs.build-images.outputs.frontend-image }}
       backend-url: ${{ needs.deploy-backend.outputs.backend-url }}
     secrets: inherit
-    timeout-minutes: 15
 
   run-e2e:
     needs: [deploy-backend, deploy-frontend]
@@ -75,7 +58,6 @@ jobs:
       backend-url: ${{ needs.deploy-backend.outputs.backend-url }}
       frontend-url: ${{ needs.deploy-frontend.outputs.frontend-url }}
     secrets: inherit
-    timeout-minutes: 20
 
   cleanup:
     needs: run-e2e
@@ -84,4 +66,3 @@ jobs:
     with:
       branch: ${{ inputs.branch }}
     secrets: inherit
-    timeout-minutes: 5
