@@ -25,9 +25,9 @@ jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
     env:
-      FRONTEND_IMAGE: "${{ inputs.frontend-image }}"
-      BACKEND_URL: "${{ inputs.backend-url }}"
-      BACKEND_API_URL: "${{ inputs.backend-url }}/api"
+      FRONTEND_IMAGE: ${{ inputs.frontend-image }}
+      BACKEND_URL: ${{ inputs.backend-url }}
+      BACKEND_API_URL: ${{ inputs.backend-url }}/api
     outputs:
       frontend-url: ${{ steps.get-ip.outputs.url }}
     steps:
