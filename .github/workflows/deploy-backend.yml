@@ -75,7 +75,7 @@ jobs:
       - name: Start ngrok tunnel
         run: ngrok http 8080 --log=stdout > ngrok.log &
         env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+          NGROK_AUTH_TOKEN: "${{ secrets.NGROK_AUTH_TOKEN }}"
 
       - name: Get ngrok URL
         id: ngrok

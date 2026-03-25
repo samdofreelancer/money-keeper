@@ -46,11 +46,14 @@ jobs:
           sudo mv linux-amd64/helm /usr/local/bin/helm
 
       - name: Deploy frontend to GKE
+        env:
+          FRONTEND_IMAGE: ${{ inputs.frontend-image }}
+          BACKEND_URL: ${{ inputs.backend-url }}
         run: |
           # Generate deployment YAML with Helm
           helm template frontend ./k8s \
-            --set frontend.image="${{ inputs.frontend-image }}" \
-            --set frontend.env[0].value="${{ inputs.backend-url }}/api" \
+            --set frontend.image="$FRONTEND_IMAGE" \
+            --set frontend.env[0].value="$BACKEND_URL/api" \
             > frontend-deploy.yaml
           kubectl apply -f frontend-deploy.yaml
 
