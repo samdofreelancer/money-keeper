@@ -7,7 +7,7 @@ COPY src ./src
 
 RUN mvn -B -ntp -Dmaven.repo.local=/root/.m2/repository clean package -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-FROM maven:3.9-eclipse-temurin-17
+FROM eclipse-temurin:17-jdk-slim
 
 WORKDIR /app
 
