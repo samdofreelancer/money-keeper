@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
 RUN apk add --no-cache curl netcat-openbsd
 
