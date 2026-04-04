@@ -14,6 +14,12 @@
         <router-link to="/accounts" :class="{ 'active-link': isActive('/accounts') }">Accounts</router-link>
       </li>
       <li>
+        <router-link to="/tax-calculator" :class="{ 'active-link': isActive('/tax-calculator') }">💰 Tax Calculator</router-link>
+      </li>
+      <li>
+        <router-link to="/tax-settings" :class="{ 'active-link': isActive('/tax-settings') }">⚙️ Tax Settings</router-link>
+      </li>
+      <li>
         <router-link to="/settings" :class="{ 'active-link': isActive('/settings') }">Settings</router-link>
       </li>
     </ul>

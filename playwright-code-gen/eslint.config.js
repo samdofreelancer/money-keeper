@@ -4,6 +4,9 @@ const prettierPlugin = require('eslint-plugin-prettier');
 
 module.exports = [
   {
+    ignores: ['dist/', 'node_modules/', 'test-results/', 'rules/'],
+  },
+  {
     files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
@@ -24,6 +27,5 @@ module.exports = [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
-    ignores: ['dist/', 'node_modules/', 'test-results/'],
   },
 ];

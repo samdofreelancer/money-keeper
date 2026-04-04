@@ -4,5 +4,6 @@ CREATE TABLE categories (
     icon VARCHAR(255),
     type VARCHAR(10) CHECK (type IN ('EXPENSE', 'INCOME')),
     parent_id BIGINT,
+    version BIGINT DEFAULT 0 NOT NULL,
     CONSTRAINT fk_parent FOREIGN KEY (parent_id) REFERENCES categories(id)
 );
