@@ -1,6 +1,6 @@
 package com.personal.money.management.core.exchange.infrastructure.persistence;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity

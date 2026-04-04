@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.stream.Collectors;

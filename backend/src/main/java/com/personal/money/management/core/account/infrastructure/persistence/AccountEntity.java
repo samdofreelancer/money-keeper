@@ -2,7 +2,7 @@ package com.personal.money.management.core.account.infrastructure.persistence;
 
 import com.personal.money.management.core.account.domain.model.AccountType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

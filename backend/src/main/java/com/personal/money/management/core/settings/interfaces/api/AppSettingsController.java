@@ -5,7 +5,7 @@ import com.personal.money.management.core.settings.infrastructure.persistence.Ap
 import com.personal.money.management.core.settings.interfaces.api.dto.UpdateCurrencyRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/settings")

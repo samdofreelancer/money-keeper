@@ -1,6 +1,6 @@
 package com.personal.money.management.core.settings.infrastructure.persistence;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "app_settings")

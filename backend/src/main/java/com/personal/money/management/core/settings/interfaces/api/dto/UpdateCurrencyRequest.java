@@ -1,7 +1,7 @@
 package com.personal.money.management.core.settings.interfaces.api.dto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class UpdateCurrencyRequest {
     @NotBlank(message = "Default currency is required")

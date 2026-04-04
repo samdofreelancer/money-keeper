@@ -1,7 +1,7 @@
 package com.personal.money.management.core.category.infrastructure.persistence;
 
 import com.personal.money.management.core.category.domain.model.CategoryType;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;

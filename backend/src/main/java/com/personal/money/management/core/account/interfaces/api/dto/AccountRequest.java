@@ -2,7 +2,7 @@ package com.personal.money.management.core.account.interfaces.api.dto;
 
 import com.personal.money.management.core.account.domain.model.AccountType;
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class AccountRequest {
