@@ -1,7 +1,7 @@
 /**
  * Domain DTO for Account operations (UI/Test layer).
  * Uses standardized field names: name, balance.
- * 
+ *
  * This is the primary DTO for the test automation layer.
  * All test code should use this interface.
  */
@@ -18,7 +18,7 @@ export interface AccountDto {
 /**
  * Backend API DTO for Account operations.
  * Backend format: accountName, balance (not initBalance in response).
- * 
+ *
  * Used only for API responses from the backend.
  */
 export interface AccountApiDto {
@@ -31,21 +31,21 @@ export interface AccountApiDto {
 
 /**
  * Unified DTO for account creation API requests.
- * 
+ *
  * IMPORTANT: Always create instances using the fromAccountDto() factory method.
  * This ensures proper field name mapping and prevents bugs.
- * 
+ *
  * Field Mapping (for reference):
  * - AccountDto.name → AccountCreateDto.accountName (backend expects this)
  * - AccountDto.balance → AccountCreateDto.initBalance (backend expects this)
- * 
+ *
  * @example
  * ```typescript
  * // Correct usage - always use factory:
  * const accountDto: AccountDto = { name: "My Account", balance: 1000, type: "BANK_ACCOUNT" };
  * const createDto = AccountCreateDto.fromAccountDto(accountDto);
  * await apiUseCase.createAccount(createDto);
- * 
+ *
  * // Alternative (direct construction) - ONLY if you have backend format already:
  * const createDto = new AccountCreateDto({
  *   accountName: "My Account",
@@ -99,17 +99,17 @@ export class AccountCreateDto {
   // Convert from AccountDto to AccountCreateDto
   /**
    * Factory method to create AccountCreateDto from domain AccountDto.
-   * 
+   *
    * This is the recommended way to construct AccountCreateDto instances.
    * It handles field name mapping and default values automatically:
    * - name → accountName
    * - balance → initBalance
    * - Defaults currency to 'US Dollar' if not provided
    * - Defaults active to true if not provided
-   * 
+   *
    * @param accountDto Domain DTO with standardized field names (name, balance)
    * @returns Properly formatted AccountCreateDto for backend API calls
-   * 
+   *
    * @example
    * ```typescript
    * const dto = AccountCreateDto.fromAccountDto({
@@ -140,12 +140,12 @@ export class AccountCreateDto {
  * Maps backend field names to domain field names:
  * - accountName → name
  * - balance → balance (no change)
- * 
+ *
  * Use this when converting API responses to domain models.
- * 
+ *
  * @param apiDto Backend API response DTO
  * @returns Domain DTO with standardized field names
- * 
+ *
  * @example
  * ```typescript
  * const apiResponse = { id: "123", accountName: "My Account", balance: 1000 };
@@ -181,14 +181,14 @@ export function toAccountApiDto(accountDto: AccountDto): AccountApiDto {
  * Maps domain field names to backend field names:
  * - name → accountName
  * - balance → balance (no change)
- * 
+ *
  * IMPORTANT: Requires account to have an ID (for update operations).
  * For creation, use AccountCreateDto.fromAccountDto() instead.
- * 
+ *
  * @param accountDto Domain DTO with standardized field names
  * @returns Backend API DTO format
  * @throws Error if accountDto.id is missing
- * 
+ *
  * @example
  * ```typescript
  * const domainDto = { id: "123", name: "Updated Account", balance: 2000 };

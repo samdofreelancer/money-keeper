@@ -7,18 +7,23 @@ const fs = require('fs');
 // Parse command line arguments
 function parseArgs() {
   const args = process.argv.slice(2);
+  
+  // Detect if running in Docker to reduce workers
+  const isRunningInDocker = fs.existsSync('/.dockerenv');
+  const defaultWorkers = isRunningInDocker ? 2 : 4;
+  
   const options = {
     skipClean: args.includes('--skip-clean'),
     skipReport: args.includes('--skip-report'),
     skipOpen: args.includes('--skip-open'),
     fastMode: args.includes('--fast'),
-    workers: 4 // Default to 4 workers for parallel execution
+    workers: defaultWorkers // Reduce to 2 workers in Docker, 4 on host
   };
 
   // Extract workers count if specified
   const workersIndex = args.findIndex(arg => arg.startsWith('--workers='));
   if (workersIndex !== -1) {
-    options.workers = parseInt(args[workersIndex].split('=')[1]) || 4;
+    options.workers = parseInt(args[workersIndex].split('=')[1]) || defaultWorkers;
   }
 
   return options;

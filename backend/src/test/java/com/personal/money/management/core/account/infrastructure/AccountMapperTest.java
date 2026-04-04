@@ -5,9 +5,7 @@ import com.personal.money.management.core.account.domain.model.AccountType;
 import com.personal.money.management.core.account.infrastructure.persistence.AccountEntity;
 import com.personal.money.management.core.account.infrastructure.persistence.AccountMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -16,11 +14,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AccountMapperTest {
-    @Autowired
-    private AccountMapper mapper;
+    private final AccountMapper mapper = Mappers.getMapper(AccountMapper.class);
 
     @Test
     void testMapperFunctionality() {

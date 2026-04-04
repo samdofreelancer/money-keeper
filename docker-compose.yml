@@ -21,7 +21,7 @@ services:
     depends_on:
       oracle:
         condition: service_healthy
-    command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -schemas=CORE -locations=filesystem:/flyway/sql -baselineOnMigrate=false migrate
+    command: -url=jdbc:oracle:thin:@oracle:1521/XEPDB1 -user=system -password=${ORACLE_PASSWORD} -schemas=CORE -locations=filesystem:/flyway/sql -baselineOnMigrate=false -cleanDisabled=false clean migrate
     restart: on-failure
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
@@ -37,10 +37,11 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: ci
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      SPRING_FLYWAY_ENABLED: "false"
     restart: unless-stopped
     depends_on:
-      oracle:
-        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 10s
@@ -50,15 +51,20 @@ services:
       - money-keeper-net
 
   frontend:
-    image: ghcr.io/samdofreelancer/money-keeper-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "5173:5173"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      test: ["CMD", "sh", "-c", "curl -f http://localhost:5173/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
     networks:
       - money-keeper-net
 

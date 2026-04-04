@@ -4,5 +4,6 @@ CREATE TABLE CORE.categories (
     icon VARCHAR2(255),
     type VARCHAR2(10) CHECK (type IN ('EXPENSE', 'INCOME')),
     parent_id NUMBER,
+    version NUMBER DEFAULT 0 NOT NULL,
     CONSTRAINT fk_parent FOREIGN KEY (parent_id) REFERENCES CORE.categories(id)
 );
