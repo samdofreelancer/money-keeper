@@ -1,0 +1,28 @@
+name: 'Setup GCP'
+description: 'Authenticate and setup GCP for GKE access'
+inputs:
+  cluster:
+    description: 'GKE cluster name'
+    required: true
+  zone:
+    description: 'GKE zone'
+    required: true
+  credentials:
+    description: 'GCP service account key JSON'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.credentials }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Get GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ inputs.cluster }}
+        location: ${{ inputs.zone }}

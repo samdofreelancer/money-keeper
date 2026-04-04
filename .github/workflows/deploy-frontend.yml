@@ -1,0 +1,79 @@
+name: Deploy Frontend
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      frontend-image:
+        required: true
+        type: string
+      backend-url:
+        required: true
+        type: string
+    outputs:
+      frontend-url:
+        value: ${{ jobs.deploy-frontend.outputs.frontend-url }}
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ vars.GKE_CLUSTER }}
+  GKE_ZONE: ${{ vars.GKE_ZONE }}
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-url: ${{ steps.get-ip.outputs.url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set env vars
+        run: |
+          echo "FRONTEND_IMAGE=${{ inputs.frontend-image }}" >> $GITHUB_ENV
+          echo "BACKEND_URL=${{ inputs.backend-url }}" >> $GITHUB_ENV
+          echo "BACKEND_API_URL=${{ inputs.backend-url }}/api" >> $GITHUB_ENV
+
+      - name: Setup GCP
+        uses: ./.github/actions/setup-gcp
+        with:
+          cluster: ${{ env.GKE_CLUSTER }}
+          zone: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Install Helm
+        run: |
+          curl https://get.helm.sh/helm-v3.14.0-linux-amd64.tar.gz -o helm.tar.gz
+          tar -zxvf helm.tar.gz
+          sudo mv linux-amd64/helm /usr/local/bin/helm
+
+      - name: Deploy frontend to GKE
+        run: |
+          # Generate deployment YAML with Helm
+          helm template frontend ./k8s \
+            --set frontend.image="$FRONTEND_IMAGE" \
+            --set frontend.env[0].value="$BACKEND_API_URL" \
+            > frontend-deploy.yaml
+          kubectl apply -f frontend-deploy.yaml
+
+          # Change service to LoadBalancer for external access
+          kubectl patch svc money-keeper-frontend-service -p '{"spec":{"type":"LoadBalancer"}}'
+
+      - name: Wait for frontend deployment
+        run: kubectl rollout status deployment/money-keeper-frontend
+
+      - name: Get frontend external IP
+        id: get-ip
+        run: |
+          for _ in {1..30}; do
+            IP=$(kubectl get svc money-keeper-frontend-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ -n "$IP" ]; then
+              echo "url=http://$IP" >> $GITHUB_OUTPUT
+              break
+            fi
+            sleep 10
+          done

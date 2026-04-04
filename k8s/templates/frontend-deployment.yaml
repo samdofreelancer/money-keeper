@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: money-keeper-frontend
+  labels:
+    app: money-keeper-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: money-keeper-frontend
+  template:
+    metadata:
+      labels:
+        app: money-keeper-frontend
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: frontend
+        image: {{ .Values.frontend.image }}
+        ports:
+        - containerPort: 80
+        env:
+        {{- range .Values.frontend.env }}
+        - name: {{ .name }}
+          value: {{ .value }}
+        {{- end }}
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"

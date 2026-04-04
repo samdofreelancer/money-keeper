@@ -1,0 +1,68 @@
+name: E2E Test with Frontend on GKE and Backend on Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: true
+        default: 'develop'
+        type: string
+
+# Cancel previous runs on same branch to save resources
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  IMAGE_TAG: ${{ github.sha }}
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ vars.GKE_CLUSTER }}
+  GKE_ZONE: ${{ vars.GKE_ZONE }}
+
+jobs:
+  build-images:
+    uses: ./.github/workflows/build-images.yml
+    with:
+      branch: ${{ inputs.branch }}
+    secrets: inherit
+
+  deploy-backend:
+    needs: build-images
+    uses: ./.github/workflows/deploy-backend.yml
+    with:
+      branch: ${{ inputs.branch }}
+      backend-image: ${{ needs.build-images.outputs.backend-image }}
+    secrets: inherit
+
+  deploy-frontend:
+    needs: [build-images, deploy-backend]
+    uses: ./.github/workflows/deploy-frontend.yml
+    with:
+      branch: ${{ inputs.branch }}
+      frontend-image: ${{ needs.build-images.outputs.frontend-image }}
+      backend-url: ${{ needs.deploy-backend.outputs.backend-url }}
+    secrets: inherit
+
+  run-e2e:
+    needs: [deploy-backend, deploy-frontend]
+    uses: ./.github/workflows/run-e2e.yml
+    with:
+      branch: ${{ inputs.branch }}
+      backend-url: ${{ needs.deploy-backend.outputs.backend-url }}
+      frontend-url: ${{ needs.deploy-frontend.outputs.frontend-url }}
+    secrets: inherit
+
+  cleanup:
+    needs: run-e2e
+    if: always()
+    uses: ./.github/workflows/cleanup.yml
+    with:
+      branch: ${{ inputs.branch }}
+    secrets: inherit
