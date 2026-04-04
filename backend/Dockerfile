@@ -2,18 +2,12 @@ FROM maven:3.9-eclipse-temurin-17 as build
 
 WORKDIR /app
 
-RUN microdnf install -y nc curl unzip libaio libnsl
-
 COPY pom.xml .
 COPY src ./src
 
-RUN mvn dependency:go-offline -B
-
 RUN mvn -B -ntp -Dmaven.repo.local=/root/.m2/repository clean package -DskipTests -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-FROM eclipse-temurin:17-jdk-alpine
-
-RUN apk add --no-cache netcat-openbsd curl openssl
+FROM maven:3.9-eclipse-temurin-17
 
 WORKDIR /app
 
