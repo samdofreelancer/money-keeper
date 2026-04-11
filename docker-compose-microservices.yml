@@ -10,6 +10,19 @@ services:
     networks:
       - moneykeeper-net
 
+  account-service:
+    build: ./backend/account-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka-server
+      - oracle-db
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - ORACLE_PASSWORD=money123
+    networks:
+      - moneykeeper-net
+
   oracle-db:
     image: container-registry.oracle.com/database/free:latest
     environment:
@@ -22,3 +35,4 @@ services:
 networks:
   moneykeeper-net:
     driver: bridge
+
