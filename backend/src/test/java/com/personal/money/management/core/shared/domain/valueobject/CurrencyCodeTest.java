@@ -114,4 +114,69 @@ class CurrencyCodeTest {
         CurrencyCode code = CurrencyCode.of("USD");
         assertEquals("USD", code.toString());
     }
+
+    @Test
+    @DisplayName("Should accept 'Euro' display name and resolve to EUR")
+    void testCreateCurrencyCodeFromDisplayNameEuro() {
+        CurrencyCode code = CurrencyCode.of("Euro");
+        assertNotNull(code);
+        assertEquals("EUR", code.getCode());
+        assertEquals("Euro", code.getDisplayName());
+    }
+
+    @Test
+    @DisplayName("Should accept 'US Dollar' display name and resolve to USD")
+    void testCreateCurrencyCodeFromDisplayNameUSDollar() {
+        CurrencyCode code = CurrencyCode.of("US Dollar");
+        assertNotNull(code);
+        assertEquals("USD", code.getCode());
+    }
+
+    @Test
+    @DisplayName("Should accept 'Dollar' display name and resolve to USD")
+    void testCreateCurrencyCodeFromDisplayNameDollar() {
+        CurrencyCode code = CurrencyCode.of("Dollar");
+        assertNotNull(code);
+        assertEquals("USD", code.getCode());
+    }
+
+    @Test
+    @DisplayName("Should accept lowercase display name 'euro' and resolve to EUR")
+    void testCreateCurrencyCodeFromLowercaseDisplayNameEuro() {
+        CurrencyCode code = CurrencyCode.of("euro");
+        assertNotNull(code);
+        assertEquals("EUR", code.getCode());
+    }
+
+    @Test
+    @DisplayName("Should accept display name ignore space differences")
+    void testCreateCurrencyCodeFromDisplayNameWithSpaces() {
+        CurrencyCode code = CurrencyCode.of("  Euro  ");
+        assertNotNull(code);
+        assertEquals("EUR", code.getCode());
+    }
+
+    @Test
+    @DisplayName("Should accept 'Pound' display name and resolve to GBP")
+    void testCreateCurrencyCodeFromDisplayNamePound() {
+        CurrencyCode code = CurrencyCode.of("Pound");
+        assertNotNull(code);
+        assertEquals("GBP", code.getCode());
+    }
+
+    @Test
+    @DisplayName("Should accept 'British Pound' display name and resolve to GBP")
+    void testCreateCurrencyCodeFromDisplayNameBritishPound() {
+        CurrencyCode code = CurrencyCode.of("British Pound");
+        assertNotNull(code);
+        assertEquals("GBP", code.getCode());
+    }
+
+    @Test
+    @DisplayName("Should accept 'Yen' display name and resolve to JPY")
+    void testCreateCurrencyCodeFromDisplayNameYen() {
+        CurrencyCode code = CurrencyCode.of("Yen");
+        assertNotNull(code);
+        assertEquals("JPY", code.getCode());
+    }
 }
