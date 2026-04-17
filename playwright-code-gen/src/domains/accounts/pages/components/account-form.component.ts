@@ -27,20 +27,41 @@ export class AccountFormComponent {
 
   async selectAccountType(type: string) {
     await this.page.click(this.selectors.inputs.accountType);
+    // Wait for dropdown to appear
     await this.page.waitForSelector(
-      `.el-select-dropdown__item:has-text("${type}")`,
+      '[data-testid="option-account-type"]',
       { state: 'visible', timeout: 3000 }
     );
-    await this.page.click(`.el-select-dropdown__item:has-text("${type}")`);
+    // Find and click the option that matches the label text
+    const options = await this.page.$$('[data-testid="option-account-type"]');
+    for (const option of options) {
+      const text = await option.textContent();
+      if (text && text.includes(type)) {
+        await option.click();
+        return;
+      }
+    }
+    throw new Error(`Account type "${type}" not found in dropdown options`);
   }
 
   async selectCurrencyByName(name: string) {
     await this.page.click(this.selectors.inputs.currencySelect);
+    // Currency selector might have different data-testid, so use a more general approach
+    // Wait for the dropdown and find the item with matching text
     await this.page.waitForSelector(
-      `.el-select-dropdown__item:has-text("${name}")`,
+      '.el-select-dropdown__item',
       { state: 'visible', timeout: 3000 }
     );
-    await this.page.click(`.el-select-dropdown__item:has-text("${name}")`);
+    // Get all dropdown items and find the one with matching text
+    const items = await this.page.$$('.el-select-dropdown__item');
+    for (const item of items) {
+      const text = await item.textContent();
+      if (text && text.includes(name)) {
+        await item.click();
+        return;
+      }
+    }
+    throw new Error(`Currency "${name}" not found in dropdown options`);
   }
 
   async fillBalance(balance: number) {
