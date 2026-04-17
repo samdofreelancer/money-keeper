@@ -5,6 +5,9 @@ import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountRequest;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountResponse;
 import com.personal.money.management.core.account.application.exception.DuplicateAccountNameException;
+import com.personal.money.management.core.shared.domain.valueobject.AccountName;
+import com.personal.money.management.core.shared.domain.valueobject.CurrencyCode;
+import com.personal.money.management.core.shared.domain.valueobject.Money;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,20 +104,19 @@ public class AccountController {
     private AccountResponse toResponse(Account account) {
         return new AccountResponse(
                 account.getId(),
-                account.getAccountName(),
-                account.getInitBalance(),
+                account.getName().getValue(),
+                account.getInitialBalance().getAmount(),
                 account.getType(),
-                account.getCurrency(),
+                account.getInitialBalance().getCurrency().getCode(),
                 account.getDescription()
         );
     }
 
     private Account toDomain(AccountRequest request) {
         return new Account(
-                request.getAccountName(),
-                request.getInitBalance(),
+                AccountName.of(request.getAccountName()),
+                Money.of(request.getInitBalance(), CurrencyCode.of(request.getCurrency())),
                 request.getType(),
-                request.getCurrency(),
                 request.getDescription()
         );
     }

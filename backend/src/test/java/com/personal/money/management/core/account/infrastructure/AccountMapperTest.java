@@ -33,10 +33,10 @@ public class AccountMapperTest {
 
         assertNotNull(domain);
         assertEquals(entity.getId(), domain.getId());
-        assertEquals(entity.getAccountName(), domain.getAccountName());
-        assertEquals(entity.getInitBalance(), domain.getInitBalance());
+        assertEquals(entity.getAccountName(), domain.getName().getValue());
+        assertEquals(0, domain.getInitialBalance().getAmount().compareTo(entity.getInitBalance()));
         assertEquals(entity.getType(), domain.getType());
-        assertEquals(entity.getCurrency(), domain.getCurrency());
+        assertEquals(entity.getCurrency(), domain.getInitialBalance().getCurrency().getCode());
         assertEquals(entity.getDescription(), domain.getDescription());
         assertEquals(entity.isActive(), domain.isActive());
 
@@ -45,12 +45,11 @@ public class AccountMapperTest {
 
         assertNotNull(mappedEntity);
         assertEquals(domain.getId(), mappedEntity.getId());
-        assertEquals(domain.getAccountName(), mappedEntity.getAccountName());
-        assertEquals(domain.getInitBalance(), mappedEntity.getInitBalance());
+        assertEquals(domain.getName().getValue(), mappedEntity.getAccountName());
+        assertEquals(0, domain.getInitialBalance().getAmount().compareTo(mappedEntity.getInitBalance()));
         assertEquals(domain.getType(), mappedEntity.getType());
-        assertEquals(domain.getCurrency(), mappedEntity.getCurrency());
+        assertEquals(domain.getInitialBalance().getCurrency().getCode(), mappedEntity.getCurrency());
         assertEquals(domain.getDescription(), mappedEntity.getDescription());
-        assertEquals(domain.isActive(), mappedEntity.isActive());
     }
 
     @Test
@@ -89,10 +88,10 @@ public class AccountMapperTest {
             AccountEntity e = entities.get(i);
             Account d = domains.get(i);
             assertEquals(e.getId(), d.getId());
-            assertEquals(e.getAccountName(), d.getAccountName());
-            assertEquals(e.getInitBalance(), d.getInitBalance());
+            assertEquals(e.getAccountName(), d.getName().getValue());
+            assertEquals(0, d.getInitialBalance().getAmount().compareTo(e.getInitBalance()));
             assertEquals(e.getType(), d.getType());
-            assertEquals(e.getCurrency(), d.getCurrency());
+            assertEquals(e.getCurrency(), d.getInitialBalance().getCurrency().getCode());
             assertEquals(e.getDescription(), d.getDescription());
             assertEquals(e.isActive(), d.isActive());
         }

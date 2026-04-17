@@ -5,6 +5,9 @@ import com.personal.money.management.core.account.domain.model.AccountType;
 import com.personal.money.management.core.account.domain.repository.AccountRepository;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountRequest;
 import com.personal.money.management.core.account.interfaces.api.dto.AccountResponse;
+import com.personal.money.management.core.shared.domain.valueobject.AccountName;
+import com.personal.money.management.core.shared.domain.valueobject.Money;
+import com.personal.money.management.core.shared.domain.valueobject.CurrencyCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +64,9 @@ public class AccountIntegrationTest {
 
     @Test
     void testUpdateAccount() {
-        Account account = new Account("Old Account", BigDecimal.valueOf(100), AccountType.CASH, "USD", "desc");
+        AccountName name = AccountName.of("Old Account");
+        Money balance = Money.of(BigDecimal.valueOf(100), CurrencyCode.of("USD"));
+        Account account = new Account(name, balance, AccountType.CASH, "desc");
         account = accountRepository.save(account);
         // Ensure the ID is set before using it in the update URL
         assertNotNull(account.getId(), "Saved account ID should not be null");
@@ -86,7 +91,9 @@ public class AccountIntegrationTest {
 
     @Test
     void testDeleteAccount() {
-        Account account = new Account("Delete Account", BigDecimal.valueOf(100), AccountType.CASH, "USD", "desc");
+        AccountName name = AccountName.of("Delete Account");
+        Money balance = Money.of(BigDecimal.valueOf(100), CurrencyCode.of("USD"));
+        Account account = new Account(name, balance, AccountType.CASH, "desc");
         account = accountRepository.save(account);
 
         restTemplate.delete(baseUrl + "/" + account.getId());
@@ -96,9 +103,18 @@ public class AccountIntegrationTest {
 
     @Test
     void testGetTotalBalance() {
-        Account a1 = new Account("A1", BigDecimal.valueOf(100), AccountType.CASH, "USD", "desc1");
-        Account a2 = new Account("A2", BigDecimal.valueOf(0), AccountType.BANK_ACCOUNT, "USD", "desc2");
-        Account a3 = new Account("A3", BigDecimal.valueOf(200), AccountType.CREDIT_CARD, "USD", "desc3");
+        AccountName name1 = AccountName.of("A1");
+        Money balance1 = Money.of(BigDecimal.valueOf(100), CurrencyCode.of("USD"));
+        Account a1 = new Account(name1, balance1, AccountType.CASH, "desc1");
+        
+        AccountName name2 = AccountName.of("A2");
+        Money balance2 = Money.of(BigDecimal.ZERO, CurrencyCode.of("USD"));
+        Account a2 = new Account(name2, balance2, AccountType.BANK_ACCOUNT, "desc2");
+        
+        AccountName name3 = AccountName.of("A3");
+        Money balance3 = Money.of(BigDecimal.valueOf(200), CurrencyCode.of("USD"));
+        Account a3 = new Account(name3, balance3, AccountType.CREDIT_CARD, "desc3");
+        
         accountRepository.save(a1);
         accountRepository.save(a2);
         accountRepository.save(a3);
