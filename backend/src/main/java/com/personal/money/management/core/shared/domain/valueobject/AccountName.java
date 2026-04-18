@@ -7,13 +7,13 @@ import java.util.Objects;
  * 
  * This VO encapsulates account name validation logic:
  * - Must not be blank
- * - Maximum length is 100 characters
+ * - Maximum length is 150 characters
  * - Trimmed on creation
  * 
  * It's immutable and compared by value.
  */
 public class AccountName {
-    private static final int MAX_LENGTH = 100;
+    private static final int MAX_LENGTH = 150;
     private final String name;
 
     private AccountName(String name) {
@@ -25,7 +25,7 @@ public class AccountName {
      * 
      * Validates:
      * - Name is not blank
-     * - Name is <= 100 characters
+     * - Name is <= 150 characters
      *
      * @param name the account name
      * @return a new AccountName instance

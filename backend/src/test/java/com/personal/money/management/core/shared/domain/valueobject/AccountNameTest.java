@@ -40,16 +40,16 @@ class AccountNameTest {
     @Test
     @DisplayName("Should throw exception for name exceeding max length")
     void testCreateAccountNameExceedsMaxLength() {
-        String longName = "a".repeat(101);
+        String longName = "a".repeat(151);
         assertThrows(IllegalArgumentException.class, () -> AccountName.of(longName));
     }
 
     @Test
     @DisplayName("Should accept name at max length")
     void testCreateAccountNameAtMaxLength() {
-        String maxName = "a".repeat(100);
+        String maxName = "a".repeat(150);
         AccountName name = AccountName.of(maxName);
-        assertEquals(100, name.length());
+        assertEquals(150, name.length());
     }
 
     @Test
