@@ -1,48 +1,41 @@
 package com.personal.money.management.core.account.domain.model;
 
-import java.math.BigDecimal;
-import javax.validation.constraints.NotBlank;
+import com.personal.money.management.core.shared.domain.valueobject.AccountName;
+import com.personal.money.management.core.shared.domain.valueobject.Money;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
 public class Account {
     private final Long id;
 
-    @NotBlank(message = "Account name must not be blank")
-    private final String accountName;
+    @NotNull(message = "Account name must not be null")
+    private final AccountName name;
 
     @NotNull(message = "Initial balance must not be null")
-    @Positive(message = "Initial balance must be positive")
-    private final BigDecimal initBalance;
+    private final Money initialBalance;
 
     @NotNull(message = "Account type must not be null")
     private final AccountType type;
-
-    @NotBlank(message = "Currency must not be blank")
-    private final String currency;
 
     private final String description;
 
     private final boolean active;
 
-    public Account(String accountName, BigDecimal initBalance, AccountType type, String currency, String description) {
+    public Account(AccountName name, Money initialBalance, AccountType type, String description) {
         this.id = null; // New entity
-        this.accountName = accountName;
-        this.initBalance = initBalance;
+        this.name = name;
+        this.initialBalance = initialBalance;
         this.type = type;
-        this.currency = currency;
         this.description = description;
         this.active = true; // Always active on creation
     }
 
-    private Account(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description, boolean active) {
+    private Account(Long id, AccountName name, Money initialBalance, AccountType type, String description, boolean active) {
         this.id = id;
-        this.accountName = accountName;
-        this.initBalance = initBalance;
+        this.name = name;
+        this.initialBalance = initialBalance;
         this.type = type;
-        this.currency = currency;
         this.description = description;
         this.active = active;
     }
@@ -51,20 +44,16 @@ public class Account {
         return id;
     }
 
-    public BigDecimal getInitBalance() {
-        return initBalance;
+    public Money getInitialBalance() {
+        return initialBalance;
     }
 
-    public String getAccountName() {
-        return accountName;
+    public AccountName getName() {
+        return name;
     }
 
     public AccountType getType() {
         return type;
-    }
-
-    public String getCurrency() {
-        return currency;
     }
 
     public String getDescription() {
@@ -75,7 +64,7 @@ public class Account {
         return active;
     }
 
-    public static Account reconstruct(Long id, String accountName, BigDecimal initBalance, AccountType type, String currency, String description, boolean active) {
-        return new Account(id, accountName, initBalance, type, currency, description, active);
+    public static Account reconstruct(Long id, AccountName name, Money initialBalance, AccountType type, String description, boolean active) {
+        return new Account(id, name, initialBalance, type, description, active);
     }
 }

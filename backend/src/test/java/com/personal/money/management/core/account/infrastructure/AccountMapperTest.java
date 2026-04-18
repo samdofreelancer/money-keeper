@@ -33,10 +33,10 @@ public class AccountMapperTest {
 
         assertNotNull(domain);
         assertEquals(entity.getId(), domain.getId());
-        assertEquals(entity.getAccountName(), domain.getAccountName());
-        assertEquals(entity.getInitBalance(), domain.getInitBalance());
+        assertEquals(entity.getAccountName(), domain.getName().getValue());
+        assertEquals(0, domain.getInitialBalance().getAmount().compareTo(entity.getInitBalance()));
         assertEquals(entity.getType(), domain.getType());
-        assertEquals(entity.getCurrency(), domain.getCurrency());
+        assertEquals(entity.getCurrency(), domain.getInitialBalance().getCurrency().getCode());
         assertEquals(entity.getDescription(), domain.getDescription());
         assertEquals(entity.isActive(), domain.isActive());
 
@@ -45,10 +45,10 @@ public class AccountMapperTest {
 
         assertNotNull(mappedEntity);
         assertEquals(domain.getId(), mappedEntity.getId());
-        assertEquals(domain.getAccountName(), mappedEntity.getAccountName());
-        assertEquals(domain.getInitBalance(), mappedEntity.getInitBalance());
+        assertEquals(domain.getName().getValue(), mappedEntity.getAccountName());
+        assertEquals(0, domain.getInitialBalance().getAmount().compareTo(mappedEntity.getInitBalance()));
         assertEquals(domain.getType(), mappedEntity.getType());
-        assertEquals(domain.getCurrency(), mappedEntity.getCurrency());
+        assertEquals(domain.getInitialBalance().getCurrency().getCode(), mappedEntity.getCurrency());
         assertEquals(domain.getDescription(), mappedEntity.getDescription());
         assertEquals(domain.isActive(), mappedEntity.isActive());
     }
@@ -57,6 +57,31 @@ public class AccountMapperTest {
     void testNullEntityToDomain() {
         Account domain = mapper.toDomain(null);
         assertNull(domain);
+    }
+
+    @Test
+    void testActiveStatusPreservation() {
+        // Test with inactive entity -> domain -> entity
+        AccountEntity inactiveEntity = new AccountEntity();
+        inactiveEntity.setId(10L);
+        inactiveEntity.setAccountName("Inactive Account");
+        inactiveEntity.setInitBalance(BigDecimal.valueOf(500));
+        inactiveEntity.setType(AccountType.BANK_ACCOUNT);
+        inactiveEntity.setCurrency("EUR");
+        inactiveEntity.setDescription("This account is inactive");
+        inactiveEntity.setActive(false);
+
+        // Entity -> Domain
+        Account inactiveDomain = mapper.toDomain(inactiveEntity);
+        assertNotNull(inactiveDomain);
+        assertFalse(inactiveDomain.isActive(), "Domain should preserve inactive status from entity");
+
+        // Domain -> Entity
+        AccountEntity remappedEntity = mapper.toEntity(inactiveDomain);
+        assertNotNull(remappedEntity);
+        assertFalse(remappedEntity.isActive(), "Entity should preserve inactive status from domain");
+        assertEquals(10L, remappedEntity.getId());
+        assertEquals("Inactive Account", remappedEntity.getAccountName());
     }
 
     @Test
@@ -89,10 +114,10 @@ public class AccountMapperTest {
             AccountEntity e = entities.get(i);
             Account d = domains.get(i);
             assertEquals(e.getId(), d.getId());
-            assertEquals(e.getAccountName(), d.getAccountName());
-            assertEquals(e.getInitBalance(), d.getInitBalance());
+            assertEquals(e.getAccountName(), d.getName().getValue());
+            assertEquals(0, d.getInitialBalance().getAmount().compareTo(e.getInitBalance()));
             assertEquals(e.getType(), d.getType());
-            assertEquals(e.getCurrency(), d.getCurrency());
+            assertEquals(e.getCurrency(), d.getInitialBalance().getCurrency().getCode());
             assertEquals(e.getDescription(), d.getDescription());
             assertEquals(e.isActive(), d.isActive());
         }

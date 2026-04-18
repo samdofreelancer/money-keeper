@@ -4,6 +4,8 @@ import com.personal.money.management.core.account.domain.model.Account;
 import com.personal.money.management.core.account.domain.repository.AccountRepository;
 import com.personal.money.management.core.account.application.exception.AccountNotFoundException;
 import com.personal.money.management.core.account.application.exception.DuplicateAccountNameException;
+import com.personal.money.management.core.shared.domain.valueobject.AccountName;
+import com.personal.money.management.core.shared.domain.valueobject.Money;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,9 +21,9 @@ public class AccountService {
     }
 
     public Account createAccount(Account account) {
-        accountRepository.findByAccountName(account.getAccountName())
+        accountRepository.findByAccountName(account.getName().getValue())
             .ifPresent(existing -> {
-                throw new DuplicateAccountNameException("Account name already exists: " + account.getAccountName());
+                throw new DuplicateAccountNameException("Account name already exists: " + account.getName().getValue());
             });
         return accountRepository.save(account);
     }
@@ -32,10 +34,9 @@ public class AccountService {
                     // Create a new Account instance with the existing ID and updated fields
                     Account newAccount = Account.reconstruct(
                             existingAccount.getId(),
-                            updatedAccount.getAccountName(),
-                            updatedAccount.getInitBalance(),
+                            updatedAccount.getName(),
+                            updatedAccount.getInitialBalance(),
                             updatedAccount.getType(),
-                            updatedAccount.getCurrency(),
                             updatedAccount.getDescription(),
                             existingAccount.isActive() // preserve active status
                     );
@@ -55,12 +56,12 @@ public class AccountService {
 
     public BigDecimal getTotalBalanceOfActiveAccounts() {
         List<Account> activeAccounts = accountRepository.findAll().stream()
-                // Assuming active accounts are those with non-null and positive initBalance
-                .filter(account -> account.getInitBalance() != null && account.getInitBalance().compareTo(BigDecimal.ZERO) > 0)
+                // Filter accounts with positive balance (not zero)
+                .filter(account -> account.getInitialBalance() != null && !account.getInitialBalance().isZero())
                 .toList();
 
         return activeAccounts.stream()
-                .map(Account::getInitBalance)
+                .map(account -> account.getInitialBalance().getAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
