@@ -1,6 +1,29 @@
 package com.personal.money.management.core.category.domain.model;
 
+import com.personal.money.management.core.shared.domain.AggregateRoot;
 
+/**
+ * Aggregate Root representing a transaction category.
+ *
+ * <p>Responsibilities:</p>
+ * <ul>
+ *   <li>Maintains category identity and state</li>
+ *   <li>Manages category metadata (name, icon, type)</li>
+ *   <li>Supports hierarchical category structure</li>
+ *   <li>Ensures consistency within the category aggregate</li>
+ * </ul>
+ *
+ * <p>Business Rules:</p>
+ * <ul>
+ *   <li>Category cannot be its own parent (cyclic dependency prevention)</li>
+ *   <li>Categories can be organized hierarchically for better classification</li>
+ *   <li>Different types have specific semantics (Income, Expense, etc.)</li>
+ * </ul>
+ */
+@AggregateRoot(
+    boundedContext = "category",
+    description = "Manages transaction categories - Income, Expense, and custom categories. Supports hierarchy and ensures consistency."
+)
 public class Category {
     private final Long id;
     private String name;

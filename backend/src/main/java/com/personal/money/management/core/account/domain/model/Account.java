@@ -2,9 +2,32 @@ package com.personal.money.management.core.account.domain.model;
 
 import com.personal.money.management.core.shared.domain.valueobject.AccountName;
 import com.personal.money.management.core.shared.domain.valueobject.Money;
+import com.personal.money.management.core.shared.domain.AggregateRoot;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 
+/**
+ * Aggregate Root representing a financial account.
+ *
+ * <p>Responsibilities:</p>
+ * <ul>
+ *   <li>Maintains account identity and state</li>
+ *   <li>Manages account basic information (name, type, balance)</li>
+ *   <li>Ensures account consistency and business rules</li>
+ *   <li>Acts as entry point to the account aggregate</li>
+ * </ul>
+ *
+ * <p>Business Rules:</p>
+ * <ul>
+ *   <li>Account name must be unique</li>
+ *   <li>Account can be activated/deactivated</li>
+ *   <li>Initial balance is immutable</li>
+ * </ul>
+ */
+@AggregateRoot(
+    boundedContext = "account",
+    description = "Manages financial accounts - bank accounts, wallets, cash storage. Ensures account consistency and business rules."
+)
 @Data
 public class Account {
     private final Long id;
