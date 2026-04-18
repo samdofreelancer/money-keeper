@@ -24,7 +24,7 @@ public interface AccountMapper {
         entity.setCurrency(account.getInitialBalance().getCurrency().getCode());
         entity.setType(account.getType());
         entity.setDescription(account.getDescription());
-        // Note: active status is handled by AccountEntity defaults; we preserve existing entity status on updates
+        entity.setActive(account.isActive());
         return entity;
     }
 
