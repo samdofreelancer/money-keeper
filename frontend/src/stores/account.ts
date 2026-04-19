@@ -1,20 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { accountApi, type Account, type AccountCreate } from '@/api/account'
+import { accountApi, type AccountCreate } from '@/api/account'
+import { AccountAdapter, type AccountDTO } from '@/api/adapters'
+import { Account } from '@/domain/models'
+import { Money } from '@/domain/value-objects'
 
 function generateTempId(): string {
   return 'temp-' + Date.now().toString()
-}
-
-function mapApiAccount(a: any): Account {
-  return {
-    id: a.id,
-    name: a.accountName,
-    type: a.type,
-    balance: a.initBalance,
-    currency: a.currency || 'USD',
-    active: a.active ?? true
-  } as Account
 }
 
 export const useAccountStore = defineStore('account', () => {
@@ -22,20 +14,37 @@ export const useAccountStore = defineStore('account', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const activeAccounts = computed((): Account[] =>
-    accounts.value.filter((a: Account) => a.active)
-  )
+  const activeAccounts = computed((): Account[] => {
+    const result = accounts.value.filter(a => a.isActive())
+    return result as Account[]
+  })
 
-  const totalBalance = computed((): number =>
-    activeAccounts.value.reduce((sum: number, account: Account) => sum + account.balance, 0)
-  )
+  const totalBalance = computed((): Money | null => {
+    if (activeAccounts.value.length === 0) return null
+    
+    try {
+      let total = activeAccounts.value[0].getInitialBalance()
+      for (let i = 1; i < activeAccounts.value.length; i++) {
+        // Only sum accounts with same currency
+        if (activeAccounts.value[i].getInitialBalance().getCurrency().equals(
+          total.getCurrency()
+        )) {
+          total = total.add(activeAccounts.value[i].getInitialBalance())
+        }
+      }
+      return total
+    } catch {
+      return null
+    }
+  })
+
 
   async function fetchAccounts(): Promise<void> {
     try {
       loading.value = true
       error.value = null
       const backendAccounts = await accountApi.getAll()
-      accounts.value = backendAccounts.map(mapApiAccount)
+      accounts.value = AccountAdapter.toDomainArray(backendAccounts)
     } catch (e: any) {
       error.value = 'Failed to fetch accounts'
     } finally {
@@ -43,29 +52,15 @@ export const useAccountStore = defineStore('account', () => {
     }
   }
 
-  async function createAccount(account: AccountCreate): Promise<Account> {
-    const tempId = generateTempId()
-    const tempAccount: Account = {
-      id: tempId,
-      name: account.accountName,
-      type: account.type,
-      balance: account.initBalance ?? 0,
-      currency: account.currency || 'USD',
-      active: account.active ?? true
-    }
-    accounts.value.push(tempAccount)
+  async function createAccount(createDto: AccountCreate): Promise<Account> {
     try {
       loading.value = true
       error.value = null
-      const newAccountRaw = await accountApi.create(account)
-      const newAccount = mapApiAccount(newAccountRaw)
-      const index = accounts.value.findIndex((a: Account) => a.id === tempId)
-      if (index !== -1) {
-        accounts.value[index] = newAccount
-      }
+      const newAccountRaw = await accountApi.create(createDto)
+      const newAccount = AccountAdapter.toDomain(newAccountRaw)
+      accounts.value.push(newAccount)
       return newAccount
     } catch (e: any) {
-      accounts.value = accounts.value.filter((a: Account) => a.id !== tempId)
       console.error('Create account error:', e, e?.response?.data)
       error.value = e?.response?.data?.message || e?.message || 'Failed to create account'
       throw e
@@ -74,26 +69,18 @@ export const useAccountStore = defineStore('account', () => {
     }
   }
 
-  async function updateAccount(id: string, account: AccountCreate): Promise<Account> {
-    const index = accounts.value.findIndex((a: Account) => a.id === id)
+  async function updateAccount(id: string, createDto: AccountCreate): Promise<Account> {
+    const index = accounts.value.findIndex(a => a.getId() === id)
     if (index === -1) {
       error.value = 'Account not found'
       throw new Error('Account not found')
     }
-    const oldAccount = { ...accounts.value[index] }
-    accounts.value[index] = {
-      ...oldAccount,
-      name: account.accountName,
-      type: account.type,
-      balance: account.initBalance ?? 0,
-      currency: account.currency || oldAccount.currency || 'USD',
-      active: account.active ?? true
-    }
+    const oldAccount = accounts.value[index]
     try {
       loading.value = true
       error.value = null
-      const updatedRaw = await accountApi.update(id, account)
-      const updatedAccount = mapApiAccount(updatedRaw)
+      const updatedRaw = await accountApi.update(id, createDto)
+      const updatedAccount = AccountAdapter.toDomain(updatedRaw)
       accounts.value[index] = updatedAccount
       return updatedAccount
     } catch (e: any) {
@@ -107,11 +94,12 @@ export const useAccountStore = defineStore('account', () => {
   }
 
   function getAccountById(id: string): Account | undefined {
-    return accounts.value.find((a: Account) => a.id === id)
+    const result = accounts.value.find(a => a.getId() === id)
+    return result as Account | undefined
   }
 
   async function deleteAccount(id: string): Promise<void> {
-    const index = accounts.value.findIndex((a: Account) => a.id === id)
+    const index = accounts.value.findIndex(a => a.getId() === id)
     if (index === -1) {
       error.value = 'Account not found'
       throw new Error('Account not found')
@@ -145,4 +133,5 @@ export const useAccountStore = defineStore('account', () => {
   }
 })
 
-export type { Account, AccountCreate } from '@/api/account'
+export type { AccountCreate } from '@/api/account'
+export type { Account } from '@/domain/models'
