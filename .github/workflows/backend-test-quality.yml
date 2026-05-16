@@ -1,6 +1,7 @@
 name: Backend Tests & Quality
 
 on:
+  workflow_dispatch:
   push:
     branches: [develop, master]
     paths: [backend/**]
