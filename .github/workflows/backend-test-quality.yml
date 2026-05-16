@@ -48,6 +48,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}
+          restore-keys: ${{ runner.os }}-maven-
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-compile@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
