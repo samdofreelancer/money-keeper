@@ -13,11 +13,6 @@ concurrency:
   group: backend-test-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pull-requests: write
-  checks: write
-
 env:
   BACKEND_DIR: ./backend
 
@@ -28,6 +23,8 @@ jobs:
     outputs:
       has-changes: ${{ steps.detect.outputs.has-changes }}
       sha-short: ${{ steps.detect.outputs.sha-short }}
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: samdofreelancer/cloud-workflow/.github/actions/detect-changes@develop
@@ -35,80 +32,9 @@ jobs:
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
 
-  compile:
-    name: Compile
-    needs: prepare
-    if: needs.prepare.outputs.has-changes == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-
-    container:
-      image: maven:3.8.6-openjdk-18
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate pom hash
-        id: pom-hash
-        shell: bash
-        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
-
-      - uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ${{ env.HOME }}/.m2/repository
-
-      - uses: samdofreelancer/cloud-workflow/.github/actions/backend-compile@develop
-        with:
-          backend-dir: ${{ env.BACKEND_DIR }}
-          sha-short: ${{ needs.prepare.outputs.sha-short }}
-
-      - name: Debug - Check Maven Artifacts
-        shell: bash
-        run: |
-          echo "=== After backend-compile action ==="
-          echo "Checking backend target directory:"
-          ls -la ${{ env.BACKEND_DIR }}/target/ 2>/dev/null | tail -20 || echo "No target directory"
-          echo ""
-          echo "=== Full directory structure of HOME ==="
-          du -sh $HOME/* 2>/dev/null | head -20
-
-      - name: Debug - Find M2 Repository
-        shell: bash
-        run: |
-          echo "=== Environment ==="
-          echo "HOME: $HOME"
-          echo "PWD: $PWD"
-          echo "MAVEN_OPTS: $MAVEN_OPTS"
-          echo ""
-          echo "=== Checking m2 directory structure ==="
-          if [ -d "$HOME/.m2" ]; then
-            echo "$HOME/.m2 exists"
-            ls -la $HOME/.m2
-          else
-            echo "$HOME/.m2 does NOT exist"
-          fi
-          echo ""
-          echo "=== Searching for m2 and repository directories ==="
-          find $HOME -type d -name ".m2" 2>/dev/null
-          find $HOME -type d -name "repository" 2>/dev/null | head -10
-
-      - name: Upload Maven Repository
-        uses: actions/upload-artifact@v4
-        if: always()
-        continue-on-error: true
-        with:
-          name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ${{ env.HOME }}/.m2/repository
-          retention-days: 7
-          if-no-files-found: ignore
-
   unit-test:
     name: Unit Tests
-    needs: [prepare, compile]
+    needs: prepare
     if: needs.prepare.outputs.has-changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -122,15 +48,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Generate pom hash
-        id: pom-hash
-        shell: bash
-        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
-      - uses: actions/download-artifact@v4
-        continue-on-error: true
+
+      - uses: actions/cache@v4
         with:
-          name: m2-repository-${{ steps.pom-hash.outputs.hash }}
           path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-unit-test@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
@@ -138,7 +63,7 @@ jobs:
 
   integration-test:
     name: Integration Tests
-    needs: [prepare, compile]
+    needs: prepare
     if: needs.prepare.outputs.has-changes == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -149,7 +74,7 @@ jobs:
 
     services:
       oracle:
-        image: gvenzl/oracle-xe:latest
+        image: gvenzl/oracle-xe:21-slim
         env:
           ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
         options: >-
@@ -167,15 +92,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Generate pom hash
-        id: pom-hash
-        shell: bash
-        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
-      - uses: actions/download-artifact@v4
-        continue-on-error: true
+
+      - uses: actions/cache@v4
         with:
-          name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ${{ env.HOME }}/.m2/repository
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-integration-test@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
@@ -201,15 +125,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Generate pom hash
-        id: pom-hash
-        shell: bash
-        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
-      - uses: actions/download-artifact@v4
-        continue-on-error: true
+
+      - uses: actions/cache@v4
         with:
-          name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ${{ env.HOME }}/.m2/repository
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
       - uses: samdofreelancer/cloud-workflow/.github/actions/quality-gate@develop
         id: quality
         with:
