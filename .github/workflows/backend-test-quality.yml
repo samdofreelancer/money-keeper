@@ -1,13 +1,12 @@
 name: Backend Tests & Quality
 
 on:
-  workflow_dispatch:
   push:
     branches: [develop, master]
     paths: [backend/**]
   pull_request:
     branches: [develop, master]
-    paths: [backend/**]
+    paths: [backend/**, .github/workflows/backend-test-quality.yml]
 
 concurrency:
   group: backend-test-${{ github.ref }}
