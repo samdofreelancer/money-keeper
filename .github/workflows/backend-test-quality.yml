@@ -66,15 +66,35 @@ jobs:
           backend-dir: ${{ env.BACKEND_DIR }}
           sha-short: ${{ needs.prepare.outputs.sha-short }}
 
+      - name: Debug - Check Maven Artifacts
+        shell: bash
+        run: |
+          echo "=== After backend-compile action ==="
+          echo "Checking backend target directory:"
+          ls -la ${{ env.BACKEND_DIR }}/target/ 2>/dev/null | tail -20 || echo "No target directory"
+          echo ""
+          echo "=== Full directory structure of HOME ==="
+          du -sh $HOME/* 2>/dev/null | head -20
+
       - name: Debug - Find M2 Repository
         shell: bash
         run: |
+          echo "=== Environment ==="
           echo "HOME: $HOME"
           echo "PWD: $PWD"
-          echo "Checking m2 locations:"
-          ls -la $HOME/.m2/repository 2>/dev/null || echo "  $HOME/.m2/repository not found"
-          ls -la ~/.m2/repository 2>/dev/null || echo "  ~/.m2/repository not found"
-          find $HOME -type d -name "repository" 2>/dev/null | head -5
+          echo "MAVEN_OPTS: $MAVEN_OPTS"
+          echo ""
+          echo "=== Checking m2 directory structure ==="
+          if [ -d "$HOME/.m2" ]; then
+            echo "$HOME/.m2 exists"
+            ls -la $HOME/.m2
+          else
+            echo "$HOME/.m2 does NOT exist"
+          fi
+          echo ""
+          echo "=== Searching for m2 and repository directories ==="
+          find $HOME -type d -name ".m2" 2>/dev/null
+          find $HOME -type d -name "repository" 2>/dev/null | head -10
 
       - name: Upload Maven Repository
         uses: actions/upload-artifact@v4
