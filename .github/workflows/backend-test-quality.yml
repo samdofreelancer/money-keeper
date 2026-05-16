@@ -53,7 +53,7 @@ jobs:
       - name: Generate pom hash
         id: pom-hash
         shell: bash
-        run: echo "hash=$(md5sum ${{ env.BACKEND_DIR }}/pom.xml | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
 
       - uses: actions/download-artifact@v4
         continue-on-error: true
@@ -125,7 +125,7 @@ jobs:
       - name: Generate pom hash
         id: pom-hash
         shell: bash
-        run: echo "hash=$(md5sum ${{ env.BACKEND_DIR }}/pom.xml | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -170,7 +170,7 @@ jobs:
       - name: Generate pom hash
         id: pom-hash
         shell: bash
-        run: echo "hash=$(md5sum ${{ env.BACKEND_DIR }}/pom.xml | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -204,7 +204,7 @@ jobs:
       - name: Generate pom hash
         id: pom-hash
         shell: bash
-        run: echo "hash=$(md5sum ${{ env.BACKEND_DIR }}/pom.xml | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles(format('{0}/pom.xml', env.BACKEND_DIR)) }}" >> $GITHUB_OUTPUT
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
