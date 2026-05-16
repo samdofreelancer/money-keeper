@@ -46,7 +46,6 @@ jobs:
 
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=volume,source=maven-repo,target=/root/.m2
 
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +72,6 @@ jobs:
 
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=volume,source=maven-repo,target=/root/.m2
 
     steps:
       - uses: actions/checkout@v4
@@ -108,7 +106,6 @@ jobs:
 
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=volume,source=maven-repo,target=/root/.m2
       env:
         SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle:1521/XEPDB1
 
@@ -133,7 +130,6 @@ jobs:
 
     container:
       image: maven:3.8.6-openjdk-18
-      options: --mount type=volume,source=maven-repo,target=/root/.m2
 
     outputs:
       status: ${{ steps.quality.outputs.status }}
