@@ -26,7 +26,7 @@ jobs:
       has-changes: ${{ steps.detect.outputs.has-changes }}
       sha-short: ${{ steps.detect.outputs.sha-short }}
     steps:
-      - uses: actions/checkout@e2f20c305c34d93f5c5edf45df8f7ef2d4bcc075  # v4
+      - uses: actions/checkout@v4
       - uses: samdofreelancer/cloud-workflow/.github/actions/detect-changes@develop
         id: detect
         with:
