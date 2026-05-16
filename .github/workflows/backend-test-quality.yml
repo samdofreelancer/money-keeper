@@ -46,7 +46,7 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2
 
     steps:
-      - uses: actions/checkout@e2f20c305c34d93f5c5edf45df8f7ef2d4bcc075  # v4
+      - uses: actions/checkout@v4
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-compile@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
@@ -67,7 +67,7 @@ jobs:
       options: --mount type=volume,source=maven-repo,target=/root/.m2
 
     steps:
-      - uses: actions/checkout@e2f20c305c34d93f5c5edf45df8f7ef2d4bcc075  # v4
+      - uses: actions/checkout@v4
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-unit-test@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
@@ -103,7 +103,7 @@ jobs:
         SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle:1521/XEPDB1
 
     steps:
-      - uses: actions/checkout@e2f20c305c34d93f5c5edf45df8f7ef2d4bcc075  # v4
+      - uses: actions/checkout@v4
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-integration-test@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
@@ -128,7 +128,7 @@ jobs:
       status: ${{ steps.quality.outputs.status }}
 
     steps:
-      - uses: actions/checkout@e2f20c305c34d93f5c5edf45df8f7ef2d4bcc075  # v4
+      - uses: actions/checkout@v4
       - uses: samdofreelancer/cloud-workflow/.github/actions/quality-gate@develop
         id: quality
         with:
