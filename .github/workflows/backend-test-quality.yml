@@ -7,7 +7,7 @@ on:
     paths: [backend/**]
   pull_request:
     branches: [develop, master]
-    paths: [backend/**, .github/workflows/backend-test-quality.yml]
+    paths: [backend/**]
 
 concurrency:
   group: backend-test-${{ github.ref }}
