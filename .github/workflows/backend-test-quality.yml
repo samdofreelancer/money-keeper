@@ -59,19 +59,32 @@ jobs:
         continue-on-error: true
         with:
           name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ~/.m2/repository
+          path: ${{ env.HOME }}/.m2/repository
 
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-compile@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
           sha-short: ${{ needs.prepare.outputs.sha-short }}
 
-      - uses: actions/upload-artifact@v4
+      - name: Debug - Find M2 Repository
+        shell: bash
+        run: |
+          echo "HOME: $HOME"
+          echo "PWD: $PWD"
+          echo "Checking m2 locations:"
+          ls -la $HOME/.m2/repository 2>/dev/null || echo "  $HOME/.m2/repository not found"
+          ls -la ~/.m2/repository 2>/dev/null || echo "  ~/.m2/repository not found"
+          find $HOME -type d -name "repository" 2>/dev/null | head -5
+
+      - name: Upload Maven Repository
+        uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ~/.m2/repository
+          path: ${{ env.HOME }}/.m2/repository
           retention-days: 7
+          if-no-files-found: ignore
 
   unit-test:
     name: Unit Tests
@@ -142,7 +155,7 @@ jobs:
         continue-on-error: true
         with:
           name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ~/.m2/repository
+          path: ${{ env.HOME }}/.m2/repository
       - uses: samdofreelancer/cloud-workflow/.github/actions/backend-integration-test@develop
         with:
           backend-dir: ${{ env.BACKEND_DIR }}
@@ -176,7 +189,7 @@ jobs:
         continue-on-error: true
         with:
           name: m2-repository-${{ steps.pom-hash.outputs.hash }}
-          path: ~/.m2/repository
+          path: ${{ env.HOME }}/.m2/repository
       - uses: samdofreelancer/cloud-workflow/.github/actions/quality-gate@develop
         id: quality
         with:
