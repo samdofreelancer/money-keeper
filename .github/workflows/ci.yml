@@ -1,0 +1,28 @@
+name: CI (Unit & Integration Tests)
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'backend/**'
+
+jobs:
+  ci:
+    uses: company/github-platform/.github/workflows/wf-java-ci.yml@v1
+    with:
+      working-directory: backend
+      java-version: '17'
+      node-version: '18'
+      artifact-retention-days: 30
+    secrets:
+      oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
