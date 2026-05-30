@@ -27,3 +27,4 @@ jobs:
     secrets:
       oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
+      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
