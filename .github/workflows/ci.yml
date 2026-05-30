@@ -23,8 +23,8 @@ jobs:
     with:
       working-directory: backend
       java-version: '17'
+      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
       artifact-retention-days: 30
     secrets:
       oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
-      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
