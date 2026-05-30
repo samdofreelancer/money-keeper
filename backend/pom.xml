@@ -16,7 +16,7 @@
         <spring.boot.version>2.7.5</spring.boot.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <sonar.projectKey>samdofreelancer_money-keeper</sonar.projectKey>
+        <sonar.projectKey>springboot-ddd-category</sonar.projectKey>
         <sonar.organization>samdofreelancer</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
