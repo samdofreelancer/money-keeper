@@ -16,6 +16,7 @@
         <spring.boot.version>2.7.5</spring.boot.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <sonar.projectKey>springboot-ddd-category</sonar.projectKey>
         <sonar.organization>samdofreelancer</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
@@ -148,10 +149,23 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
+                        <id>report-unit</id>
                         <phase>test</phase>
                         <goals>
                             <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report-integration</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report-integration</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -224,10 +238,39 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.8</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent-integration-profile</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>prepare-agent-integration</goal>
+                                </goals>
+                                <configuration>
+                                    <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>report-integration-profile</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>report-integration</goal>
+                                </goals>
+                                <configuration>
+                                    <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                                    <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <version>3.0.0-M7</version>
                         <configuration>
+                            <argLine>@{argLine}</argLine>
                             <reportsDirectory>${project.build.directory}/medium-test-reports</reportsDirectory>
                             <includes>
                                 <include>**/*IntegrationTest.java</include>
@@ -235,7 +278,6 @@
                             <additionalClasspathElements>
                                 <additionalClasspathElement>${project.build.outputDirectory}</additionalClasspathElement>
                             </additionalClasspathElements>
-                            <argLine>-verbose:class</argLine>
                         </configuration>
                         <executions>
                             <execution>

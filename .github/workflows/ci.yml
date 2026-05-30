@@ -23,7 +23,7 @@ jobs:
     with:
       working-directory: backend
       java-version: '17'
-      node-version: '18'
       artifact-retention-days: 30
     secrets:
       oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
