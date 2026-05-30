@@ -19,7 +19,7 @@ on:
 
 jobs:
   ci:
-    uses: samdofreelancer/cloud-workflow/.github/workflows/wf-java-ci.yml@develop
+    uses: samdofreelancer/cloud-workflow/.github/workflows/wf-java-ci.yml@v1.0.0
     with:
       working-directory: backend
       java-version: '17'
