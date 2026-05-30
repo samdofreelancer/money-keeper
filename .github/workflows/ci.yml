@@ -26,3 +26,4 @@ jobs:
       artifact-retention-days: 30
     secrets:
       oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
