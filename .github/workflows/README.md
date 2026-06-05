@@ -4,6 +4,13 @@ This directory contains GitHub Actions workflows for CI/CD of the Money Keeper p
 
 ## Workflows
 
+### ci.yml
+Main backend CI workflow. It is the single push/pull-request entrypoint for
+backend CI and composes reusable workflows for unit tests, integration tests,
+and code analysis.
+
+- **Architecture doc**: [`docs/CI_WORKFLOW_ARCHITECTURE.md`](../../docs/CI_WORKFLOW_ARCHITECTURE.md)
+
 ### e2e-gke.yml
 Main workflow for end-to-end testing with frontend on GKE and backend on GitHub runner.
 

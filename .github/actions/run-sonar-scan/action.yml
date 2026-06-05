@@ -1,0 +1,51 @@
+name: Run Sonar Scan
+description: Run Maven-based SonarCloud analysis.
+
+inputs:
+  working-directory:
+    description: Directory containing pom.xml.
+    required: false
+    default: backend
+  sonar-token:
+    description: Sonar authentication token.
+    required: true
+  sonar-project-key:
+    description: Sonar project key.
+    required: true
+  sonar-organization:
+    description: SonarCloud organization.
+    required: false
+    default: ''
+  sonar-host-url:
+    description: Sonar host URL.
+    required: false
+    default: https://sonarcloud.io
+  qualitygate-wait:
+    description: Whether to wait for the quality gate result.
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Run Sonar scan
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+
+        branch_name="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+        sonar_args=(
+          "-Dsonar.projectKey=${{ inputs.sonar-project-key }}"
+          "-Dsonar.host.url=${{ inputs.sonar-host-url }}"
+          "-Dsonar.login=${{ inputs.sonar-token }}"
+          "-Dsonar.qualitygate.wait=${{ inputs.qualitygate-wait }}"
+          "-Dsonar.java.binaries=target/classes"
+          "-Dsonar.branch.name=${branch_name}"
+        )
+
+        if [ -n "${{ inputs.sonar-organization }}" ]; then
+          sonar_args+=("-Dsonar.organization=${{ inputs.sonar-organization }}")
+        fi
+
+        mvn sonar:sonar "${sonar_args[@]}"

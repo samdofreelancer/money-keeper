@@ -1,0 +1,39 @@
+name: Upload Test Artifacts
+description: Upload Maven test reports and JaCoCo HTML coverage as workflow artifacts.
+
+inputs:
+  test-artifact-name:
+    description: Artifact name for test reports.
+    required: true
+  test-report-path:
+    description: Path to the test report directory.
+    required: true
+  jacoco-artifact-name:
+    description: Artifact name for JaCoCo reports.
+    required: true
+  jacoco-report-path:
+    description: Path to the JaCoCo report directory.
+    required: true
+  retention-days:
+    description: Artifact retention days.
+    required: false
+    default: '30'
+
+runs:
+  using: composite
+  steps:
+    - name: Upload test reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.test-artifact-name }}
+        path: ${{ inputs.test-report-path }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ignore
+
+    - name: Upload JaCoCo report
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.jacoco-artifact-name }}
+        path: ${{ inputs.jacoco-report-path }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ignore

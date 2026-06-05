@@ -1,0 +1,55 @@
+name: Run Maven Tests
+description: Run a Maven test profile and optionally aggregate Surefire/Failsafe XML reports.
+
+inputs:
+  working-directory:
+    description: Directory containing pom.xml.
+    required: false
+    default: backend
+  maven-goal:
+    description: Maven lifecycle goal to run.
+    required: true
+  maven-profile:
+    description: Maven profile to activate.
+    required: true
+  maven-args:
+    description: Additional Maven arguments.
+    required: false
+    default: ''
+  report-directory:
+    description: Test report directory relative to the working directory.
+    required: true
+  aggregate-report:
+    description: Whether to generate overview-report.json from XML reports.
+    required: false
+    default: 'true'
+  node-version:
+    description: Node.js version used by the aggregation script.
+    required: false
+    default: '20'
+
+runs:
+  using: composite
+  steps:
+    - name: Run Maven tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: mvn clean ${{ inputs.maven-goal }} -P${{ inputs.maven-profile }} ${{ inputs.maven-args }}
+
+    - name: Set up Node for report aggregation
+      if: inputs.aggregate-report == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install report aggregation dependencies
+      if: inputs.aggregate-report == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}/scripts
+      run: npm install xml2js
+
+    - name: Aggregate test report
+      if: inputs.aggregate-report == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}/scripts
+      run: node aggregate-test-report.js ../${{ inputs.report-directory }}

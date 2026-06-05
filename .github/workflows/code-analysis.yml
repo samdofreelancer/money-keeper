@@ -1,0 +1,64 @@
+name: Code Analysis
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  WORKING_DIRECTORY: backend
+  JAVA_VERSION: '17'
+  SPRING_PROFILES_ACTIVE: ci
+
+jobs:
+  analysis:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Java toolchain
+        uses: ./.github/actions/setup-java-maven
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Compile analysis target
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: mvn clean compile -DskipTests
+
+      - name: Download unit coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report-unit
+          path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco-unit
+        continue-on-error: true
+
+      - name: Download integration coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report-integration
+          path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco-integration
+        continue-on-error: true
+
+      - name: Prepare coverage report
+        uses: ./.github/actions/merge-jacoco-reports
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Run quality gate
+        if: env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != ''
+        uses: ./.github/actions/run-sonar-scan
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
+          sonar-organization: ${{ vars.SONAR_ORGANIZATION }}

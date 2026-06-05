@@ -7,24 +7,28 @@ on:
     branches:
       - develop
       - master
-    paths:
-      - 'backend/**'
   pull_request:
     branches:
       - develop
       - master
     paths:
       - 'backend/**'
-      - '.github/workflows/ci.yml'
 
 jobs:
-  ci:
-    uses: samdofreelancer/cloud-workflow/.github/workflows/wf-java-ci.yml@v1.0.0
-    with:
-      working-directory: backend
-      java-version: '17'
-      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
-      artifact-retention-days: 30
-    secrets:
-      oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-      sonar-token: ${{ secrets.SONAR_TOKEN }}
+  unit-test:
+    name: Unit Tests
+    uses: ./.github/workflows/unit-test.yml
+    secrets: inherit
+
+  integration-test:
+    name: Integration Tests
+    uses: ./.github/workflows/integration-test.yml
+    secrets: inherit
+
+  analysis:
+    name: Code Analysis
+    needs:
+      - unit-test
+      - integration-test
+    uses: ./.github/workflows/code-analysis.yml
+    secrets: inherit
