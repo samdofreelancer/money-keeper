@@ -3,22 +3,6 @@ name: Unit Tests
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - '.github/actions/**'
-      - '.github/workflows/unit-test.yml'
-  pull_request:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - '.github/actions/**'
-      - '.github/workflows/unit-test.yml'
 
 env:
   WORKING_DIRECTORY: backend

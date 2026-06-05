@@ -28,11 +28,6 @@ on:
       - '.github/workflows/unit-test.yml'
       - 'docker-compose.yml'
 
-env:
-  WORKING_DIRECTORY: backend
-  JAVA_VERSION: '17'
-  SPRING_PROFILES_ACTIVE: ci
-
 jobs:
   unit-test:
     name: Unit Tests

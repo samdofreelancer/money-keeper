@@ -3,24 +3,6 @@ name: Integration Tests
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - '.github/actions/**'
-      - '.github/workflows/integration-test.yml'
-      - 'docker-compose.yml'
-  pull_request:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - '.github/actions/**'
-      - '.github/workflows/integration-test.yml'
-      - 'docker-compose.yml'
 
 env:
   WORKING_DIRECTORY: backend
