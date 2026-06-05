@@ -11,6 +11,8 @@ on:
       - 'backend/**'
       - '.github/actions/**'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/integration-test.yml'
+      - '.github/workflows/unit-test.yml'
       - 'docker-compose.yml'
   pull_request:
     branches:
@@ -20,101 +22,25 @@ on:
       - 'backend/**'
       - '.github/actions/**'
       - '.github/workflows/ci.yml'
+      - '.github/workflows/integration-test.yml'
+      - '.github/workflows/unit-test.yml'
       - 'docker-compose.yml'
 
 env:
   WORKING_DIRECTORY: backend
   JAVA_VERSION: '17'
-  ARTIFACT_RETENTION_DAYS: 30
   SPRING_PROFILES_ACTIVE: ci
 
 jobs:
   unit-test:
     name: Unit Tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Prepare Java toolchain
-        uses: ./.github/actions/setup-java-maven
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          working-directory: ${{ env.WORKING_DIRECTORY }}
-
-      - name: Execute unit test suite
-        uses: ./.github/actions/run-maven-tests
-        with:
-          working-directory: ${{ env.WORKING_DIRECTORY }}
-          maven-goal: test
-          maven-profile: small-test
-          report-directory: target/small-test-reports
-
-      - name: Publish unit test artifacts
-        if: always()
-        uses: ./.github/actions/upload-test-artifacts
-        with:
-          test-artifact-name: surefire-report-unit
-          test-report-path: ${{ env.WORKING_DIRECTORY }}/target/small-test-reports
-          jacoco-artifact-name: jacoco-report-unit
-          jacoco-report-path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco
-          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+    uses: ./.github/workflows/unit-test.yml
+    secrets: inherit
 
   integration-test:
     name: Integration Tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    env:
-      ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
-      SPRING_DATASOURCE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-      VITE_BACKEND_HOST: backend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Prepare Java toolchain
-        uses: ./.github/actions/setup-java-maven
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          working-directory: ${{ env.WORKING_DIRECTORY }}
-
-      - name: Prepare database
-        uses: ./.github/actions/setup-oracle-flyway
-        with:
-          oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-
-      - name: Execute integration test suite
-        uses: ./.github/actions/run-maven-tests
-        with:
-          working-directory: ${{ env.WORKING_DIRECTORY }}
-          maven-goal: verify
-          maven-profile: medium-test
-          maven-args: -DskipUnitTests=true
-          report-directory: target/medium-test-reports
-
-      - name: Publish integration test artifacts
-        if: always()
-        uses: ./.github/actions/upload-test-artifacts
-        with:
-          test-artifact-name: surefire-report-integration
-          test-report-path: ${{ env.WORKING_DIRECTORY }}/target/medium-test-reports
-          jacoco-artifact-name: jacoco-report-integration
-          jacoco-report-path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco
-          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
-
-      - name: Tear down database
-        if: always()
-        uses: ./.github/actions/teardown-docker-compose
-        env:
-          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+    uses: ./.github/workflows/integration-test.yml
+    secrets: inherit
 
   analysis:
     name: Code Analysis
