@@ -1,0 +1,28 @@
+name: Publish Allure Report
+description: Generate an Allure report and publish it to GitHub Pages.
+
+inputs:
+  source-folder:
+    description: Folder containing the E2E project and Allure scripts.
+    required: false
+    default: playwright-code-gen
+  artifact-name:
+    description: GitHub Pages artifact name.
+    required: false
+    default: github-pages
+
+runs:
+  using: composite
+  steps:
+    - name: Generate Allure report
+      shell: bash
+      run: bash scripts/generate_allure_report.sh "${{ inputs.source-folder }}"
+
+    - name: Upload Allure report for GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ${{ inputs.source-folder }}/test-results/allure-report
+        name: ${{ inputs.artifact-name }}
+
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4

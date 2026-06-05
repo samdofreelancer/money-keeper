@@ -6,7 +6,7 @@ workflow ownership inside the `money-keeper` repository.
 
 ## Design Goals
 
-- Keep `ci.yml` as the single push/pull-request entrypoint for backend CI.
+- Keep `ci.yml` as the single push/pull-request entrypoint for CI.
 - Model each CI capability as a small reusable workflow.
 - Keep platform-specific implementation details inside local composite actions.
 - Avoid dependency on the former external `cloud-workflow` repository.
@@ -19,7 +19,7 @@ The CI design follows a clean architecture style:
 | Layer | Responsibility | Files |
 | --- | --- | --- |
 | Composition root | Defines the high-level CI flow and job dependencies. | `.github/workflows/ci.yml` |
-| Use cases | Encapsulate one CI capability. | `unit-test.yml`, `integration-test.yml`, `code-analysis.yml` |
+| Use cases | Encapsulate one CI capability. | `unit-test.yml`, `integration-test.yml`, `code-analysis.yml`, `e2e-test.yml` |
 | Interface adapters | Convert workflow intent into tool-specific steps. | `.github/actions/*` |
 | Infrastructure | External tools and services. | GitHub Actions, Maven, Docker Compose, Oracle, Flyway, SonarCloud |
 
@@ -31,21 +31,24 @@ flowchart TD
     Unit["unit-test.yml<br/>Use case"]
     Integration["integration-test.yml<br/>Use case"]
     Analysis["code-analysis.yml<br/>Use case"]
+    E2E["e2e-test.yml<br/>Use case"]
     Actions[".github/actions/*<br/>Interface adapters"]
     Infra["Maven / Docker Compose / Oracle / Flyway / SonarCloud<br/>Infrastructure"]
 
     CI --> Unit
     CI --> Integration
     CI --> Analysis
+    CI --> E2E
     Unit --> Actions
     Integration --> Actions
     Analysis --> Actions
+    E2E --> Infra
     Actions --> Infra
 ```
 
 ## Main Pipeline
 
-`ci.yml` is the only backend CI workflow that runs automatically on `push` and
+`ci.yml` is the only CI workflow that runs automatically on `push` and
 `pull_request`. It does not contain implementation steps. It only composes
 reusable workflows:
 
@@ -55,6 +58,8 @@ flowchart LR
     CI --> Integration["integration-test.yml"]
     Unit --> Analysis["code-analysis.yml"]
     Integration --> Analysis
+    Unit --> E2E["e2e-test.yml"]
+    Integration --> E2E
 ```
 
 ### Entry Point
@@ -67,7 +72,8 @@ Responsibilities:
   `workflow_call`.
 - Call the reusable unit test workflow.
 - Call the reusable integration test workflow.
-- Run code analysis only after both test workflows complete successfully.
+- Run code analysis after unit and integration tests complete successfully.
+- Run E2E tests after unit and integration tests complete successfully.
 
 Non-responsibilities:
 
@@ -155,6 +161,28 @@ Note: `workflow_dispatch` on `code-analysis.yml` is useful for debugging, but
 coverage artifacts are normally available only when this workflow is called by
 `ci.yml` after unit and integration tests have run.
 
+### E2E Test Workflow
+
+File: `.github/workflows/e2e-test.yml`
+
+Triggers:
+
+- `workflow_call`
+- `workflow_dispatch`
+
+Responsibilities:
+
+- Checkout source code.
+- Start Oracle and run Flyway migrations.
+- Build and start backend/frontend services with Docker Compose.
+- Run Playwright E2E tests from `playwright-code-gen`.
+- Publish the Allure report to GitHub Pages.
+- Tear down Docker Compose services.
+
+Note: E2E is called by `ci.yml` after unit and integration tests pass. The
+workflow remains manually runnable for debugging, but it does not trigger
+automatically on push or pull request.
+
 ## Composite Actions
 
 Composite actions are the infrastructure adapter layer. They keep reusable
@@ -170,10 +198,13 @@ workflow files focused on intent instead of tool commands.
 | `run-sonar-scan` | Run Maven SonarCloud analysis. |
 | `teardown-docker-compose` | Stop Docker Compose services after integration tests. |
 | `run-eslint` | Install npm dependencies and run a package lint script. |
+| `prepare-e2e-stack` | Reuse database setup, build backend, and start app services for E2E. |
+| `run-e2e-suite` | Run the Playwright E2E test command in Docker Compose. |
+| `publish-allure-report` | Generate and publish the Allure report to GitHub Pages. |
 
 ## Trigger Policy
 
-Backend CI should run automatically from `ci.yml` only.
+CI should run automatically from `ci.yml` only.
 
 Reusable child workflows intentionally avoid `push` and `pull_request` triggers
 to prevent duplicate runs:
@@ -235,6 +266,7 @@ consumer workflow in the same change.
     unit-test.yml
     integration-test.yml
     code-analysis.yml
+    e2e-test.yml
   actions/
     setup-java-maven/
     run-maven-tests/
@@ -244,4 +276,7 @@ consumer workflow in the same change.
     run-sonar-scan/
     teardown-docker-compose/
     run-eslint/
+    prepare-e2e-stack/
+    run-e2e-suite/
+    publish-allure-report/
 ```

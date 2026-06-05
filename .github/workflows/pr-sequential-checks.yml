@@ -1,14 +1,6 @@
 name: PR Sequential Checks
 
 on:
-  pull_request:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'playwright-code-gen/**'
   workflow_dispatch:
 
 permissions:

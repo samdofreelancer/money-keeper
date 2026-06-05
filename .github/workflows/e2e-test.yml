@@ -2,20 +2,6 @@ name: playwright-code-gen Tests
 
 on:
   workflow_call:
-  workflow_run:
-    workflows: ["eslint-wrapper"]
-    types:
-      - completed
-    branches:
-      - develop
-  push:
-    branches:
-      - develop
-      - master
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
-      - 'playwright-code-gen/**'
   workflow_dispatch:
 
 permissions:
@@ -39,63 +25,35 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
-      - name: Start Oracle service
-        run: ORACLE_PASSWORD=${{ secrets.ORACLE_PASSWORD_SECRET }} docker compose up -d oracle
-
-      - name: Run Flyway migration
-        run: bash scripts/flyway_migrate.sh ${{ secrets.ORACLE_PASSWORD_SECRET }}
-        env:
-          SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
-          
-      - name: Build Backend Docker image locally
-        run: |
-          cd backend
-          docker build -t ghcr.io/samdofreelancer/money-keeper-backend:latest -f Dockerfile .
-
-      - name: Start Backend and Frontend containers
-        run: docker compose up -d backend frontend
-
-      - name: Wait for Backend to be healthy
-        run: bash scripts/wait_for_backend.sh
-
-      - name: Wait for Frontend to be healthy
-        run: bash scripts/wait_for_frontend.sh
-
-      - name: Check Backend logs before running tests
-        run: docker compose logs backend
+      - name: Prepare E2E stack
+        uses: ./.github/actions/prepare-e2e-stack
+        with:
+          oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
 
       - name: Run playwright-code-gen tests
-        env:
-          GITHUB_REF: ${{ github.event.workflow_run.head_branch || github.event.pull_request.head.ref || github.ref }}
-          GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: docker compose run --rm -e GITHUB_REF="$GITHUB_REF" -e GITHUB_SHA="$GITHUB_SHA" -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" -e BASE_URL=http://frontend:5173 -e API_BASE_URL=http://backend:8080/api playwright-code-gen npm run test:ci
+        uses: ./.github/actions/run-e2e-suite
+        with:
+          github-ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          github-sha: ${{ github.event.pull_request.head.sha || github.sha }}
+          github-repository: ${{ github.repository }}
 
       - name: Check Backend and Frontend logs on failure
         if: failure()
         run: |
-          echo "=== Backend logs ===" && docker compose logs backend
-          echo "=== Frontend logs ===" && docker compose logs frontend
+          echo "=== Backend logs ==="
+          docker compose logs backend
 
-      - name: Generate Allure report
-        if: always()
-        run: bash scripts/generate_allure_report.sh ${{ env.E2E_SOURCE_FOLDER }}
+          echo "=== Frontend logs ==="
+          docker compose logs frontend
 
-      - name: Upload Allure report for Github Pages
+      - name: Publish Allure report
         if: always()
-        uses: actions/upload-pages-artifact@v3
+        uses: ./.github/actions/publish-allure-report
         with:
-          path: '${{ env.E2E_SOURCE_FOLDER }}/test-results/allure-report'
-          name: github-pages
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        if: always()
-        uses: actions/deploy-pages@v4
+          source-folder: ${{ env.E2E_SOURCE_FOLDER }}
 
-      # Clean up containers to free resources
       - name: Stop containers
         if: always()
-        run: docker compose down
+        uses: ./.github/actions/teardown-docker-compose
