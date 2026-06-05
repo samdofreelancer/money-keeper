@@ -1,0 +1,35 @@
+name: Prepare E2E Stack
+description: Prepare database and application services for E2E tests.
+
+inputs:
+  oracle-password:
+    description: Oracle database password.
+    required: true
+  backend-image:
+    description: Backend Docker image tag to build.
+    required: false
+    default: ghcr.io/samdofreelancer/money-keeper-backend:latest
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare database
+      uses: ./.github/actions/setup-oracle-flyway
+      with:
+        oracle-password: ${{ inputs.oracle-password }}
+
+    - name: Build backend Docker image
+      shell: bash
+      run: docker build -t "${{ inputs.backend-image }}" -f backend/Dockerfile backend
+
+    - name: Start backend and frontend
+      shell: bash
+      run: docker compose up -d backend frontend
+
+    - name: Wait for backend
+      shell: bash
+      run: bash scripts/wait_for_backend.sh
+
+    - name: Wait for frontend
+      shell: bash
+      run: bash scripts/wait_for_frontend.sh

@@ -1,0 +1,47 @@
+name: Run E2E Suite
+description: Run Playwright E2E tests inside the docker-compose test service.
+
+inputs:
+  github-ref:
+    description: Git ref passed into the E2E container.
+    required: true
+  github-sha:
+    description: Git SHA passed into the E2E container.
+    required: true
+  github-repository:
+    description: GitHub repository name passed into the E2E container.
+    required: true
+  base-url:
+    description: Frontend base URL used by the E2E suite.
+    required: false
+    default: http://frontend:5173
+  api-base-url:
+    description: Backend API URL used by the E2E suite.
+    required: false
+    default: http://backend:8080/api
+  service:
+    description: Docker Compose service that runs the E2E suite.
+    required: false
+    default: playwright-code-gen
+  test-command:
+    description: Command to run in the E2E service.
+    required: false
+    default: npm run test:ci
+
+runs:
+  using: composite
+  steps:
+    - name: Run E2E tests
+      shell: bash
+      env:
+        E2E_GITHUB_REF: ${{ inputs.github-ref }}
+        E2E_GITHUB_SHA: ${{ inputs.github-sha }}
+        E2E_GITHUB_REPOSITORY: ${{ inputs.github-repository }}
+      run: |
+        docker compose run --rm \
+          -e GITHUB_REF="$E2E_GITHUB_REF" \
+          -e GITHUB_SHA="$E2E_GITHUB_SHA" \
+          -e GITHUB_REPOSITORY="$E2E_GITHUB_REPOSITORY" \
+          -e BASE_URL="${{ inputs.base-url }}" \
+          -e API_BASE_URL="${{ inputs.api-base-url }}" \
+          ${{ inputs.service }} ${{ inputs.test-command }}

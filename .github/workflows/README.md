@@ -7,7 +7,7 @@ This directory contains GitHub Actions workflows for CI/CD of the Money Keeper p
 ### ci.yml
 Main backend CI workflow. It is the single push/pull-request entrypoint for
 backend CI and composes reusable workflows for unit tests, integration tests,
-and code analysis.
+code analysis, and E2E tests.
 
 - **Architecture doc**: [`docs/CI_WORKFLOW_ARCHITECTURE.md`](../../docs/CI_WORKFLOW_ARCHITECTURE.md)
 
@@ -32,6 +32,9 @@ Main workflow for end-to-end testing with frontend on GKE and backend on GitHub 
 
 ## Actions
 - `setup-gcp`: Composite action to authenticate and setup GCP for GKE.
+- `prepare-e2e-stack`: Composite action to prepare Docker Compose services for E2E tests.
+- `run-e2e-suite`: Composite action to run Playwright E2E tests.
+- `publish-allure-report`: Composite action to generate and publish the Allure report.
 
 ## Setup
 1. Set repository variables: `GKE_CLUSTER`, `GKE_ZONE`.

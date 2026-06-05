@@ -1,4 +1,4 @@
-name: CI (Unit & Integration Tests)
+name: CI
 
 on:
   workflow_call:
@@ -7,12 +7,21 @@ on:
     branches:
       - develop
       - master
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
   pull_request:
     branches:
       - develop
       - master
     paths:
       - 'backend/**'
+      - 'frontend/**'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   unit-test:
@@ -31,4 +40,12 @@ jobs:
       - unit-test
       - integration-test
     uses: ./.github/workflows/code-analysis.yml
+    secrets: inherit
+
+  e2e-test:
+    name: E2E Tests
+    needs:
+      - unit-test
+      - integration-test
+    uses: ./.github/workflows/e2e-test.yml
     secrets: inherit
