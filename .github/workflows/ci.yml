@@ -10,15 +10,6 @@ on:
     paths:
       - 'backend/**'
       - 'frontend/**'
-      - 'playwright-code-gen/**'
-      - '.github/actions/**'
-      - '.github/workflows/ci.yml'
-      - '.github/workflows/code-analysis.yml'
-      - '.github/workflows/e2e-test.yml'
-      - '.github/workflows/integration-test.yml'
-      - '.github/workflows/unit-test.yml'
-      - 'docker-compose.yml'
-      - 'scripts/**'
   pull_request:
     branches:
       - develop
@@ -26,15 +17,6 @@ on:
     paths:
       - 'backend/**'
       - 'frontend/**'
-      - 'playwright-code-gen/**'
-      - '.github/actions/**'
-      - '.github/workflows/ci.yml'
-      - '.github/workflows/code-analysis.yml'
-      - '.github/workflows/e2e-test.yml'
-      - '.github/workflows/integration-test.yml'
-      - '.github/workflows/unit-test.yml'
-      - 'docker-compose.yml'
-      - 'scripts/**'
 
 permissions:
   contents: read
