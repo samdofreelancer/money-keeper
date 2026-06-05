@@ -9,22 +9,165 @@ on:
       - master
     paths:
       - 'backend/**'
+      - '.github/actions/**'
+      - '.github/workflows/ci.yml'
+      - 'docker-compose.yml'
   pull_request:
     branches:
       - develop
       - master
     paths:
       - 'backend/**'
+      - '.github/actions/**'
       - '.github/workflows/ci.yml'
+      - 'docker-compose.yml'
+
+env:
+  WORKING_DIRECTORY: backend
+  JAVA_VERSION: '17'
+  ARTIFACT_RETENTION_DAYS: 30
+  SPRING_PROFILES_ACTIVE: ci
 
 jobs:
-  ci:
-    uses: samdofreelancer/cloud-workflow/.github/workflows/wf-java-ci.yml@v1.0.0
-    with:
-      working-directory: backend
-      java-version: '17'
-      sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
-      artifact-retention-days: 30
-    secrets:
-      oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
-      sonar-token: ${{ secrets.SONAR_TOKEN }}
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Java toolchain
+        uses: ./.github/actions/setup-java-maven
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Execute unit test suite
+        uses: ./.github/actions/run-maven-tests
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          maven-goal: test
+          maven-profile: small-test
+          report-directory: target/small-test-reports
+
+      - name: Publish unit test artifacts
+        if: always()
+        uses: ./.github/actions/upload-test-artifacts
+        with:
+          test-artifact-name: surefire-report-unit
+          test-report-path: ${{ env.WORKING_DIRECTORY }}/target/small-test-reports
+          jacoco-artifact-name: jacoco-report-unit
+          jacoco-report-path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+      SPRING_DATASOURCE_URL: jdbc:oracle:thin:@localhost:1522/XEPDB1
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+      VITE_BACKEND_HOST: backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Java toolchain
+        uses: ./.github/actions/setup-java-maven
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Prepare database
+        uses: ./.github/actions/setup-oracle-flyway
+        with:
+          oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+
+      - name: Execute integration test suite
+        uses: ./.github/actions/run-maven-tests
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          maven-goal: verify
+          maven-profile: medium-test
+          maven-args: -DskipUnitTests=true
+          report-directory: target/medium-test-reports
+
+      - name: Publish integration test artifacts
+        if: always()
+        uses: ./.github/actions/upload-test-artifacts
+        with:
+          test-artifact-name: surefire-report-integration
+          test-report-path: ${{ env.WORKING_DIRECTORY }}/target/medium-test-reports
+          jacoco-artifact-name: jacoco-report-integration
+          jacoco-report-path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Tear down database
+        if: always()
+        uses: ./.github/actions/teardown-docker-compose
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+
+  analysis:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    needs:
+      - unit-test
+      - integration-test
+    permissions:
+      contents: read
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Java toolchain
+        uses: ./.github/actions/setup-java-maven
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Download unit coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report-unit
+          path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco-unit
+        continue-on-error: true
+
+      - name: Download integration coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-report-integration
+          path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco-integration
+        continue-on-error: true
+
+      - name: Prepare coverage report
+        uses: ./.github/actions/merge-jacoco-reports
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+
+      - name: Compile analysis target
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: mvn clean compile -DskipTests
+
+      - name: Run quality gate
+        if: env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != ''
+        uses: ./.github/actions/run-sonar-scan
+        with:
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          sonar-token: ${{ secrets.SONAR_TOKEN }}
+          sonar-project-key: ${{ vars.SONAR_PROJECT_KEY }}
+          sonar-organization: ${{ vars.SONAR_ORGANIZATION }}

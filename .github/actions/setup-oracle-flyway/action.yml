@@ -1,0 +1,70 @@
+name: Setup Oracle and Flyway
+description: Start Oracle with Docker Compose, wait for readiness, and run Flyway migrations.
+
+inputs:
+  oracle-password:
+    description: Oracle database password.
+    required: true
+  docker-compose-file:
+    description: Docker Compose file path.
+    required: false
+    default: docker-compose.yml
+  oracle-port:
+    description: Host port exposed by Oracle.
+    required: false
+    default: '1522'
+  wait-attempts:
+    description: Number of readiness attempts.
+    required: false
+    default: '60'
+
+runs:
+  using: composite
+  steps:
+    - name: Start Oracle
+      shell: bash
+      env:
+        ORACLE_PASSWORD: ${{ inputs.oracle-password }}
+      run: docker compose -f "${{ inputs.docker-compose-file }}" up -d oracle
+
+    - name: Wait for Oracle port
+      shell: bash
+      run: |
+        for attempt in $(seq 1 "${{ inputs.wait-attempts }}"); do
+          if timeout 2 bash -c "</dev/tcp/localhost/${{ inputs.oracle-port }}" 2>/dev/null; then
+            echo "Oracle is listening on port ${{ inputs.oracle-port }}"
+            sleep 2
+            exit 0
+          fi
+
+          echo "Waiting for Oracle port... ($attempt/${{ inputs.wait-attempts }})"
+          sleep 2
+        done
+
+        docker compose -f "${{ inputs.docker-compose-file }}" ps oracle
+        exit 1
+
+    - name: Wait for Oracle readiness
+      shell: bash
+      env:
+        ORACLE_PASSWORD: ${{ inputs.oracle-password }}
+      run: |
+        for attempt in $(seq 1 "${{ inputs.wait-attempts }}"); do
+          if docker compose -f "${{ inputs.docker-compose-file }}" exec -T oracle sqlplus -v > /dev/null 2>&1; then
+            echo "Oracle is ready"
+            exit 0
+          fi
+
+          echo "Waiting for Oracle readiness... ($attempt/${{ inputs.wait-attempts }})"
+          sleep 5
+        done
+
+        docker compose -f "${{ inputs.docker-compose-file }}" ps oracle
+        docker compose -f "${{ inputs.docker-compose-file }}" logs oracle
+        exit 1
+
+    - name: Run Flyway migrations
+      shell: bash
+      env:
+        ORACLE_PASSWORD: ${{ inputs.oracle-password }}
+      run: docker compose -f "${{ inputs.docker-compose-file }}" run --rm flyway

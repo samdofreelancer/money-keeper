@@ -1,0 +1,26 @@
+name: Teardown Docker Compose
+description: Stop Docker Compose services created during CI.
+
+inputs:
+  docker-compose-file:
+    description: Docker Compose file path.
+    required: false
+    default: docker-compose.yml
+  services:
+    description: Optional services to stop. Empty value runs docker compose down.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Teardown Docker Compose
+      shell: bash
+      run: |
+        set +e
+
+        if [ -n "${{ inputs.services }}" ]; then
+          docker compose -f "${{ inputs.docker-compose-file }}" stop ${{ inputs.services }}
+        else
+          docker compose -f "${{ inputs.docker-compose-file }}" down
+        fi

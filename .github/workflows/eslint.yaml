@@ -1,15 +1,28 @@
 name: eslint-wrapper
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      node-version:
+        description: Node.js version
+        required: false
+        default: '20'
+        type: string
+      working-directory:
+        description: Directory containing package.json
+        required: false
+        default: frontend
+        type: string
   workflow_call:
     inputs:
       node-version:
-        required: true
+        required: false
         type: string
+        default: '20'
       working-directory:
-        required: true
+        required: false
         type: string
+        default: frontend
 
 concurrency:
   group: pr-${{ github.event.pull_request.number || github.ref }}-eslint
@@ -19,10 +32,17 @@ permissions:
   contents: read
 
 jobs:
-  call-eslint:
-    if: ${{ !github.event.pull_request.draft }} # Skip if the PR is a draft
-    uses: samdofreelancer/cloud-workflow/.github/workflows/eslint.yml@main
-    with:
-      node-version: ${{ inputs['node-version'] }}
-      working-directory: ${{ inputs['working-directory'] }}
+  eslint-check:
+    name: ESLint
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Execute lint check
+        uses: ./.github/actions/run-eslint
+        with:
+          node-version: ${{ inputs['node-version'] || '20' }}
+          working-directory: ${{ inputs['working-directory'] || 'frontend' }}

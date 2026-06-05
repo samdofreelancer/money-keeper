@@ -1,3 +1,5 @@
+name: Unit Tests
+
 on:
   workflow_call:
   workflow_dispatch:
@@ -7,51 +9,53 @@ on:
       - master
     paths:
       - 'backend/**'
+      - '.github/actions/**'
+      - '.github/workflows/unit-test.yml'
   pull_request:
     branches:
       - develop
       - master
     paths:
       - 'backend/**'
+      - '.github/actions/**'
+      - '.github/workflows/unit-test.yml'
+
+env:
+  WORKING_DIRECTORY: backend
+  JAVA_VERSION: '17'
+  ARTIFACT_RETENTION_DAYS: 30
+  SPRING_PROFILES_ACTIVE: ci
 
 jobs:
   unit-test:
-    name: Run Unit Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
-    container:
-      image: maven:3.8.6-openjdk-18
-      options: --mount type=volume,source=maven-repo,target=/root/.m2
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Prepare Java toolchain
+        uses: ./.github/actions/setup-java-maven
         with:
-          node-version: 18
+          java-version: ${{ env.JAVA_VERSION }}
+          working-directory: ${{ env.WORKING_DIRECTORY }}
 
-      - name: Install xml2js package
-        run: npm install xml2js
-        working-directory: ./backend/scripts
-                
-      - name: Cache Maven packages
-        uses: actions/cache@v4
+      - name: Execute unit test suite
+        uses: ./.github/actions/run-maven-tests
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          maven-goal: test
+          maven-profile: small-test
+          report-directory: target/small-test-reports
 
-      - name: Run unit tests
-        run: mvn clean test -Psmall-test
-        working-directory: ./backend
-
-      - name: Run test report aggregation script
-        run: node aggregate-test-report.js ../target/small-test-reports
-        working-directory: ./backend/scripts
-
-      - name: Upload Surefire Report
-        uses: actions/upload-artifact@v4
+      - name: Publish unit test artifacts
+        if: always()
+        uses: ./.github/actions/upload-test-artifacts
         with:
-          name: surefire-report-small
-          path: ./backend/target/small-test-reports/
+          test-artifact-name: surefire-report-unit
+          test-report-path: ${{ env.WORKING_DIRECTORY }}/target/small-test-reports
+          jacoco-artifact-name: jacoco-report-unit
+          jacoco-report-path: ${{ env.WORKING_DIRECTORY }}/target/site/jacoco
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}

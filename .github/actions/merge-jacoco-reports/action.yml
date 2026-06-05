@@ -1,0 +1,45 @@
+name: Merge JaCoCo Reports
+description: Publish the best available JaCoCo report into a single output directory for analysis.
+
+inputs:
+  working-directory:
+    description: Directory containing backend code.
+    required: false
+    default: backend
+  unit-report-path:
+    description: Unit JaCoCo path relative to the working directory.
+    required: false
+    default: target/site/jacoco-unit
+  integration-report-path:
+    description: Integration JaCoCo path relative to the working directory.
+    required: false
+    default: target/site/jacoco-integration
+  output-report-path:
+    description: Output JaCoCo path relative to the working directory.
+    required: false
+    default: target/site/jacoco
+
+runs:
+  using: composite
+  steps:
+    - name: Merge JaCoCo reports
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        unit_path="${{ inputs.working-directory }}/${{ inputs.unit-report-path }}"
+        integration_path="${{ inputs.working-directory }}/${{ inputs.integration-report-path }}"
+        output_path="${{ inputs.working-directory }}/${{ inputs.output-report-path }}"
+
+        rm -rf "$output_path"
+        mkdir -p "$output_path"
+
+        if [ -d "$integration_path" ] && [ "$(ls -A "$integration_path" 2>/dev/null || true)" ]; then
+          echo "Using integration JaCoCo report"
+          cp -r "$integration_path"/. "$output_path"/
+        elif [ -d "$unit_path" ] && [ "$(ls -A "$unit_path" 2>/dev/null || true)" ]; then
+          echo "Using unit JaCoCo report"
+          cp -r "$unit_path"/. "$output_path"/
+        else
+          echo "No JaCoCo reports found; analysis will run without merged coverage."
+        fi
