@@ -1,0 +1,144 @@
+name: Backend Tests & Quality
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop, master]
+    paths: [backend/**]
+  pull_request:
+    branches: [develop, master]
+    paths: [backend/**]
+
+concurrency:
+  group: backend-test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BACKEND_DIR: ./backend
+
+jobs:
+  prepare:
+    name: Prepare Build Context
+    runs-on: ubuntu-latest
+    outputs:
+      has-changes: ${{ steps.detect.outputs.has-changes }}
+      sha-short: ${{ steps.detect.outputs.sha-short }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: samdofreelancer/cloud-workflow/.github/actions/detect-changes@develop
+        id: detect
+        with:
+          backend-dir: ${{ env.BACKEND_DIR }}
+
+  unit-test:
+    name: Unit Tests
+    needs: prepare
+    if: needs.prepare.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    container:
+      image: maven:3.8.6-openjdk-18
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - uses: samdofreelancer/cloud-workflow/.github/actions/backend-unit-test@develop
+        with:
+          backend-dir: ${{ env.BACKEND_DIR }}
+          sha-short: ${{ needs.prepare.outputs.sha-short }}
+
+  integration-test:
+    name: Integration Tests
+    needs: prepare
+    if: needs.prepare.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
+    services:
+      oracle:
+        image: gvenzl/oracle-xe:21-slim
+        env:
+          ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 10
+        ports:
+          - 1522:1521
+
+    container:
+      image: maven:3.8.6-openjdk-18
+      env:
+        SPRING_DATASOURCE_URL: jdbc:oracle:thin:@oracle:1521/XEPDB1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - uses: samdofreelancer/cloud-workflow/.github/actions/backend-integration-test@develop
+        with:
+          backend-dir: ${{ env.BACKEND_DIR }}
+          sha-short: ${{ needs.prepare.outputs.sha-short }}
+          oracle-password: ${{ secrets.ORACLE_PASSWORD_SECRET }}
+
+  quality-gate:
+    name: Quality Gate
+    if: needs.prepare.outputs.has-changes == 'true'
+    needs: [prepare, unit-test, integration-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    container:
+      image: maven:3.8.6-openjdk-18
+
+    outputs:
+      status: ${{ steps.quality.outputs.status }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - uses: samdofreelancer/cloud-workflow/.github/actions/quality-gate@develop
+        id: quality
+        with:
+          backend-dir: ${{ env.BACKEND_DIR }}
+          sha-short: ${{ needs.prepare.outputs.sha-short }}
+          sonar-host-url: ${{ secrets.SONAR_HOST_URL }}
+          sonar-login: ${{ secrets.SONAR_LOGIN }}
+          unit-test-result: ${{ needs.unit-test.result }}
+          integration-test-result: ${{ needs.integration-test.result }}
