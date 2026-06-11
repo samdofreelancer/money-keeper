@@ -1,12 +1,5 @@
 import axios from 'axios'
-
-export interface Category {
-  id: string
-  name: string
-  icon: string
-  type: string
-  parentId: string | null
-}
+import type { CategoryDTO } from './adapters'
 
 export interface CategoryCreate {
   name: string
@@ -44,12 +37,12 @@ function convertParentId(parentId?: string | null): number | null | undefined {
 }
 
 export const categoryApi = {
-  async getAll(): Promise<Category[]> {
+  async getAll(): Promise<CategoryDTO[]> {
     const response = await api.get('/categories')
     return response.data
   },
 
-  async create(category: CategoryCreate): Promise<Category> {
+  async create(category: CategoryCreate): Promise<CategoryDTO> {
     // Convert parentId to number or null before sending
     const payload = {
       ...category,
@@ -59,7 +52,7 @@ export const categoryApi = {
     return response.data
   },
 
-  async update(id: string, category: CategoryCreate): Promise<Category> {
+  async update(id: string, category: CategoryCreate): Promise<CategoryDTO> {
     const payload = {
       ...category,
       parentId: convertParentId(category.parentId)
