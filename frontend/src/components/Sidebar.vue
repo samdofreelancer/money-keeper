@@ -1,14 +1,19 @@
 <template>
   <div class="sidebar">
+    <div class="user-section" v-if="authStore.isAuthenticated">
+      <div class="user-info">
+        <div class="user-avatar">{{ authStore.userName.charAt(0).toUpperCase() }}</div>
+        <div class="user-details">
+          <div class="user-name">{{ authStore.userName }}</div>
+          <div class="user-email">{{ authStore.userEmail }}</div>
+        </div>
+      </div>
+      <el-button type="danger" size="small" @click="handleLogout" plain>Logout</el-button>
+    </div>
+
     <ul>
       <li>
         <router-link to="/categories" :class="{ 'active-link': isActive('/categories') }">Categories</router-link>
-      </li>
-      <li>
-        <router-link to="/transactions" :class="{ 'active-link': isActive('/transactions') }">Transactions</router-link>
-      </li>
-      <li>
-        <router-link to="/reports" :class="{ 'active-link': isActive('/reports') }">Reports</router-link>
       </li>
       <li>
         <router-link to="/accounts" :class="{ 'active-link': isActive('/accounts') }">Accounts</router-link>
@@ -27,12 +32,20 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
 function isActive(path: string) {
   return route.path === path || route.path.startsWith(path + '/')
+}
+
+function handleLogout() {
+  authStore.logout()
+  router.push('/login')
 }
 </script>
 
